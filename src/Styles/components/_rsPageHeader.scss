@@ -1,0 +1,93 @@
+.main-heading-wrapper {
+    // background-color: $white;
+    // margin-bottom: var(--pageButtonTopSpace);
+    // margin-bottom: 30px;
+    //margin-top: 45px;
+    --bs-gutter-x: 1.5rem;
+    @include space($padding: 0 calc(var(--bs-gutter-x) * 0.5) 0 calc(var(--bs-gutter-x) * 0.5));
+    .mhw-container {
+        display: flex;
+        align-items: flex-end;
+        //flex-wrap: wrap;
+        justify-content: space-between;
+        padding: var(--sp-space-sm) 0;
+        min-height: 45px;
+        .mhwc-left {
+            //flex: 48%;
+            h1 {
+                color: $primary-blue;
+                //font-size: 32px;
+                font-family: $rs-font-medium;
+                @extend .clearfix;
+                .mh-wrapper {
+                    @extend .clearfix;
+                    .mh-text {
+                        float: left;
+                    }
+                }
+                .sh {
+                    display: block;
+                    color: $secondary-black;
+                    font-size: $font-sm;
+                    font-family: $rs-font-regular;
+                    position: relative;
+                    top: 3px;
+                }
+            }
+        }
+        .mhwc-right {
+            //flex: 50%;
+            text-align: right;
+
+            .mhwcr-item {
+                display: inline-block;
+                margin-left: 15px;
+                &:first-child {
+                    margin-left: 0;
+                }
+                &.mhwcr-back {
+                    margin-left: 5px;
+                }
+            }
+            .mhwcr-back {
+                cursor: pointer;
+                color: $primary-blue;
+                .header-back {
+                    display: flex;
+                    align-items: baseline;
+                    gap: 5px;
+                }
+                i {
+                    position: relative;
+                    top: 1px;
+                    right: -5px;
+                }
+            }
+        }
+    }
+    hr {
+        display: none;
+        margin: 0;
+        padding: 0;
+        opacity: 1;
+        border-color: $primary-blue;
+    }
+}
+
+.notification-header {
+    background-color: #f1f1f1;
+}
+
+// Snapshot header centered below module icons
+.snapshot-header-center {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    width: 100%;
+    h1 {
+        font-size: $font-lg;
+        font-family: $rs-font-medium;
+    }
+}

@@ -1,0 +1,86 @@
+@use '../../kendoDocsVariables.scss' as *;
+// ResCheckbox - self-contained checkbox chrome (ported from global .checkbox-wrapper)
+.#{$res-checkbox-class} {
+    .checkbox-wrapper {
+        label {
+            margin-right: 10px;
+            white-space: nowrap;
+            cursor: pointer;
+            position: relative;
+
+            input[type='checkbox'],
+            input.checkbox[type='checkbox'],
+            input.checkbox-sm[type='checkbox'] {
+                width: 15px;
+                height: 15px;
+                opacity: 0;
+                position: absolute;
+                top: 6px;
+                z-index: 15;
+                cursor: pointer;
+
+                &:disabled + .lbl {
+                    .res-checkbox-box {
+                        stroke: #999999;
+                    }
+                }
+
+                &:checked + .lbl {
+                    .res-checkbox-tick-layer {
+                        opacity: 1;
+                        clip-path: inset(-2px -2px -2px 0);
+                    }
+                }
+            }
+
+            .lbl {
+                min-height: 15px;
+                min-width: 15px;
+                position: relative;
+
+                .res-checkbox-icon {
+                    display: inline-flex;
+                    width: 15px;
+                    min-width: 15px;
+                    height: 15px;
+                    margin-right: 5px;
+                    margin-top: -1px;
+                    vertical-align: middle;
+
+                    svg {
+                        display: block;
+                        width: 15px;
+                        height: 15px;
+                        overflow: visible;
+                    }
+                }
+
+                .res-checkbox-box {
+                    fill: none;
+                    stroke: #333333;
+                    stroke-width: 1;
+                    transition: stroke 0.2s ease;
+                }
+
+                .res-checkbox-tick-layer {
+                    opacity: 0;
+                    clip-path: inset(-2px 100% -2px 0);
+                    transition:
+                        clip-path 0.28s ease,
+                        opacity 0.12s ease;
+                }
+
+                .res-checkbox-tick-outline {
+                    fill: #ffffff;
+                    stroke: #ffffff;
+                    stroke-width: 2px;
+                    stroke-linejoin: miter;
+                }
+
+                .res-checkbox-tick {
+                    fill: #5ba529;
+                }
+            }
+        }
+    }
+}

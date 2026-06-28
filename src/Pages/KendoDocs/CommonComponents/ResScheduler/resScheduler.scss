@@ -1,0 +1,213 @@
+@use '../../kendoDocsVariables.scss' as *;
+
+$scheduler-inline-padding: 3px;
+$box-design-body-inset: var(--boxDesignBodySpace, 19px);
+
+.#{$res-scheduler-prefix} {
+    width: 100%;
+    box-sizing: border-box;
+    padding-inline: $scheduler-inline-padding;
+
+    > .row,
+    .form-group {
+        width: 100%;
+        max-width: 100%;
+    }
+
+    > .row,
+    .form-group > .row {
+        margin-inline: 0;
+        --bs-gutter-x: 1.9rem;
+    }
+
+    &__row {
+        margin-bottom: 12px;
+    }
+
+    &__field {
+        width: 100%;
+    }
+
+    &__datetime {
+        width: 100%;
+
+        .#{$res-kendo-datetimepicker-wrapper} {
+            width: 100%;
+        }
+    }
+
+    &__field--error {
+        .k-datetimepicker::after,
+        .k-picker::after {
+            border-bottom-color: $primary-red;
+        }
+    }
+
+    // Checkbox + timezone row below the input line
+    .rs-list-inline {
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
+        width: 100%;
+        margin-top: 8px;
+        padding: 0;
+        list-style: none;
+
+        > li {
+            margin: 0;
+        }
+
+        > li.float-end {
+            margin-left: auto;
+        }
+    }
+
+    .bg-tertiary-blue {
+        width: 100%;
+    }
+
+    .control-label-left {
+        font-size: $font-sm;
+        font-family: $rs-font-regular;
+        color: $secondary-black;
+        line-height: 1.5;
+    }
+
+    // ── Send-time optimisation overlay ────────────────────────────────────────
+    // Semi-transparent backdrop covers viewport; blue band sits at vertical centre
+    &__overlay {
+        position: fixed;
+        inset: 0;
+        z-index: 9999;
+    }
+
+    &__overlay-bg {
+        position: absolute;
+        inset: 0;
+        background-color: rgba($primary-black, 0.3);
+    }
+
+    &__overlay-content {
+        position: fixed;
+        top: 50%;
+        left: 0;
+        transform: translateY(-50%);
+        width: 100%;
+        background-color: #0043ff;
+        color: $white;
+        z-index: 10000;
+        box-shadow: 0 3px 4px rgba($primary-black, 0.5);
+    }
+
+    &__overlay-body {
+        max-width: 1260px;
+        margin: 0 auto;
+        padding: 30px;
+        color: $white;
+    }
+
+    &__overlay-title {
+        color: $white;
+        margin-bottom: 10px;
+    }
+
+    &__overlay-list {
+        list-style: none;
+        padding: 0;
+        margin: 0 0 30px;
+
+        li {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 10px;
+            font-family: $rs-font-regular;
+            font-size: $font-xsm;
+            color: $white;
+            background-color: #19b3e280;
+            padding: 5px;
+
+            &:last-child { margin-bottom: 0; }
+
+            i {
+                flex-shrink: 0;
+                margin-left: 5px;
+                margin-right: 10px;
+            }
+        }
+    }
+
+    &__overlay-actions {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        justify-content: end;
+    }
+
+    // ── Scheduler buttons (overlay + future reuse) ────────────────────────────
+    &__btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        border: 0;
+        border-radius: 5px;
+        font-family: $rs-font-regular;
+        font-size: $font-sm;
+        line-height: 24px;
+        padding: 8px 25px;
+        letter-spacing: $letterSpacing;
+        transition: background-color 0.3s ease, box-shadow 0.3s ease;
+
+        &--primary {
+            background-color: $white;
+            color: $primary-blue;
+
+            &:hover,
+            &:focus {
+                background-color: darken($white, 5%);
+                box-shadow: 0 0 12px rgba($white, 0.5);
+            }
+        }
+
+        &--secondary {
+            background-color: transparent;
+            color: $white;
+            border: 0;
+            border-radius: 0;
+            padding: 6px 8px;
+            text-decoration: none;
+            box-shadow: none;
+
+            &:hover,
+            &:focus {
+                background-color: transparent;
+                box-shadow: none;
+                text-decoration: underline;
+            }
+        }
+    }
+}
+
+// Inside .box-design replace the 19px card inset with 1px scheduler-only horizontal padding.
+.box-design .#{$res-scheduler-prefix} {
+    margin-inline: calc(-1 * (#{$box-design-body-inset} - #{$scheduler-inline-padding}));
+    width: calc(100% + 2 * (#{$box-design-body-inset} - #{$scheduler-inline-padding}));
+    padding-inline: $scheduler-inline-padding;
+}
+
+// KendoDocs preview — DateTimePicker popup portals to document.body; first-paint rules live in ResDateTimePicker.scss
+.kendo-docs-scheduler-demo,
+.kendo-docs-preview-container {
+    overflow: visible;
+
+    .#{$res-scheduler-prefix} {
+        overflow: visible;
+    }
+}
+
+.kendo-docs-scheduler-demo {
+    .#{$res-scheduler-prefix} {
+        width: 100%;
+    }
+}

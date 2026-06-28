@@ -1,0 +1,389 @@
+/*.modal-xxlg{width:1280px; max-width:97%}
+.modal-xlg{width:956px; max-width:97%}
+.modal-lg{width:770px; max-width:97%}
+.modal-xmd{width:630px; max-width:97%}
+.modal-md{width:500px; max-width:97%}
+.modal-sm{width:500px; max-width:97%}*/
+
+.modal {
+    .modal-dialog {
+        .modal-content {
+            @extend .box-design;
+            margin: 30px 0;
+            //@include space($padding: 15px 20px 20px !important);
+            //@include space($padding: 20px 30px 30px 30px !important);
+            .modal-header {
+                padding: 0;
+                border-color: $quaternary-blue !important;
+                .modal-title {
+                    padding: var(--modalBodyTopSpaceTable);
+                    line-height: 28px;
+                    color: $primary-blue;
+                    width: 100%;
+                }
+                .close {
+                    z-index: 1;
+                    top: 7px;
+                    right: 7px;
+                }
+                .modal-header-right-content {
+                    display: flex;
+                    position: absolute;
+                    right: 50px;
+                }
+                &.rs-modal-heading-ellipsis {
+                    white-space: nowrap;
+                    display: inline-block;
+                    overflow: hidden;
+                    width: 100%;
+                    text-overflow: ellipsis;
+                    .modal-title {
+                        overflow: hidden;
+                        text-overflow: ellipsis;
+                    }
+                }
+            }
+            .modal-body {
+                padding: var(--popupmodalbodyspace);
+                display: inline-block;
+                width: 100%;
+                //@extend .css-scrollbar;
+                &.css-scrollbar {
+                    max-height: calc(100vh - 220px);
+                    overflow-x: hidden;
+                }
+                &.modal-min-height {
+                    // min-height: 150px;
+                }
+            }
+            .modal-footer {
+                margin: 0;
+                padding: 0 var(--popupmodalbodyspace) var(--popupmodalbodyspace) var(--popupmodalbodyspace);
+                border: none;
+                width: 100%;
+            }
+        }
+        &.modal-gpa {
+            --bs-modal-width: 980px;
+        }
+    }
+    &.modal-gpa {
+        .rs-gpa-modal-preview-block {
+            height: calc(100vh - 200px);
+            overflow: hidden;
+            overflow-x: hidden;
+            margin: auto;
+            .rsgmpb-block {
+                background: url(#{$image}/annotation-preview-mobile.png) no-repeat top left;
+                width: 436px;
+                height: 580px;
+                position: relative;
+                margin: 10px auto 0 auto;
+                .rsgmpbb-content {
+                    position: absolute;
+                    width: 360px;
+                    top: 165px;
+                    left: 38px;
+                    display: block;
+                    .preview__logo {
+                        height: 50px;
+                        width: 50px;
+                        background: $quaternary-grey;
+                        border: 1px solid $tertiary-grey;
+                        padding: 5px;
+                        float: left;
+                        vertical-align: top;
+                        border-radius: 100%;
+                        img {
+                            width: 100%;
+                            max-width: 40px;
+                            margin: auto;
+                            text-align: center;
+                            display: block;
+                            position: relative;
+                            top: 50%;
+                            transform: translateY(-50%);
+                        }
+                    }
+                    .preview__description {
+                        display: block;
+                        padding-left: 10px;
+                        width: 310px;
+                        float: left;
+                        .preview__name {
+                            text-align: left;
+                            font-size: $font-xs;
+                            font-family: $rs-font-semi-bold;
+                            max-width: 167px;
+                            text-overflow: ellipsis;
+                            overflow: hidden;
+                            display: block;
+                            white-space: nowrap;
+                        }
+                        .preview__expire {
+                            position: absolute;
+                            top: 0;
+                            right: 0;
+                            text-align: right;
+                            font-size: $font-xs;
+                            span {
+                                font-family: $rs-font-semi-bold;
+                            }
+                        }
+                        .preview__subject {
+                            white-space: nowrap;
+                            max-width: 270px;
+                            text-overflow: ellipsis;
+                            display: block;
+                            overflow: hidden;
+                            font-size: $font-xs;
+                            margin-top: 2px;
+                        }
+                        .preview__info {
+                            position: relative;
+                            margin-top: 5px;
+                            .preview__info__description {
+                                display: inline-block;
+                                font-size: $font-xs;
+                                padding: 2px 5px 2px 5px;
+                                color: $white;
+                                background-color: $green-light;
+                                margin-right: 10px;
+                            }
+                            .preview__promo {
+                                display: inline-block;
+                                .preview__promo__code {
+                                    display: inline-block;
+                                    color: $secondary-grey;
+                                    font-size: $font-xs;
+                                }
+                                .preview__promo__content {
+                                    display: inline-block;
+                                    background-color: $quaternary-grey;
+                                    padding: 1px 5px;
+                                    margin-left: 5px;
+                                    color: $secondary-black;
+                                    font-size: $font-xs;
+                                }
+                            }
+                        }
+                        .preview__banner {
+                            width: 100%;
+                            height: 85px;
+                            margin: 10px 0 8px 0;
+                            background-color: $quaternary-grey;
+                            display: flex;
+                        }
+                    }
+                }
+            }
+        }
+        .rs-gpa-modal-props-block {
+            height: calc(100vh - 200px);
+            overflow: hidden;
+            overflow-x: hidden;
+            .rsgmpb-heading {
+                background-color: $primary-blue;
+                padding: 7px 10px;
+                h5 {
+                    margin: 0;
+                    padding: 0;
+                    color: $white;
+                }
+            }
+            .rsgmpb-content {
+                background-color: $tertiary-blue;
+                border: 1px solid $quaternary-blue;
+                border-top: none;
+                padding: 10px;
+                height: calc(100vh - 235px);
+                @extend .css-scrollbar;
+                .rs-gpa-content-block {
+                    margin: 0 0 10px 0;
+                    padding: 0 0 10px 0;
+                    border-bottom: 1px solid $quaternary-blue;
+                }
+            }
+        }
+    }
+    &.rs-planner-info-modal {
+        .gaugeslider-wrapper {
+            .carousel-control-prev,
+            .carousel-control-next {
+                top: -62px;
+            }
+            .carousel-control-prev {
+                left: -47px;
+            }
+            .carousel-control-next {
+                right: -47px;
+            }
+        }
+    }
+}
+// Body scroll lock — compensates scrollbar width to prevent layout shift on open/close
+body.rs-body-scroll-lock {
+    overflow: hidden !important;
+}
+
+// ── Modal overlay & dialog transitions (open AND close) ─────────────────────
+// CSS transitions reverse automatically when Bootstrap removes .show,
+// and correctly fire transitionend so Bootstrap's JS teardown works.
+// ─────────────────────────────────────────────────────────────────────────────
+
+.modal.show {
+    z-index: 10002;
+}
+
+// Backdrop — fades in/out with the navy-blue tint + blur
+.modal-backdrop {
+    background-color: rgba(7, 28, 38, 0.82);
+    backdrop-filter: blur(2px);
+    -webkit-backdrop-filter: blur(2px);
+    z-index: 10001;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.25s ease-out, visibility 0.25s ease-out;
+}
+.modal-backdrop.show {
+    opacity: 1;
+    visibility: visible;
+}
+
+// Stacked modals (e.g. upload inside add region): each new backdrop must sit above the
+// previous .modal.show (10002), otherwise the nested backdrop never dims the parent dialog.
+.modal-backdrop.show ~ .modal-backdrop.show {
+    z-index: 10003;
+}
+.modal-backdrop.show ~ .modal-backdrop.show ~ .modal-backdrop.show {
+    z-index: 10005;
+}
+.modal-backdrop.show ~ .modal-backdrop.show ~ .modal-backdrop.show ~ .modal-backdrop.show {
+    z-index: 10007;
+}
+.modal.show ~ .modal.show {
+    z-index: 10004;
+}
+.modal.show ~ .modal.show ~ .modal.show {
+    z-index: 10006;
+}
+.modal.show ~ .modal.show ~ .modal.show ~ .modal.show {
+    z-index: 10008;
+}
+
+// Dialog — closed state: invisible + scaled down
+.modal.fade .modal-dialog {
+    opacity: 0;
+    transform: scale(0.82);
+    // ease-in on close (fast → slow scale-down)
+    transition:
+        opacity  0.22s ease-in,
+        transform 0.22s ease-in;
+}
+
+// Dialog — open state: smooth scale-up (no spring overshoot)
+.modal.show .modal-dialog {
+    opacity: 1;
+    transform: scale(1);
+    transition:
+        opacity  0.32s cubic-bezier(0.33, 1, 0.68, 1),
+        transform 0.32s cubic-bezier(0.33, 1, 0.68, 1);
+}
+
+// Static shake keeps the dialog visible, no scale change
+.modal.modal-static .modal-dialog {
+    transform: scale(1);
+}
+
+@media (min-width: 992px) {
+     .modal-xmd {
+        --bs-modal-width: 600px;
+    }
+    .modal-lg,
+    .modal-xl {
+        --bs-modal-width: 980px;
+    }
+    .modal-xlg {
+        --bs-modal-width: 980px;
+    }
+    .modal-xxlg {
+        --bs-modal-width: 1260px;
+    }
+    .modal-fullscreen{
+        .modal-content{
+            padding: 0 !important;
+            .modal-body{
+                padding: 16px !important;
+            }
+        }
+    }
+}
+@media (min-width: 992px) {
+     .modal-xmd {
+        --bs-modal-width: 600px;
+    }
+    .modal-lg,
+    .modal-xl {
+        --bs-modal-width: 800px;
+    }
+    .modal-xlg {
+        --bs-modal-width: 980px;
+    }
+    .modal-xxlg {
+        --bs-modal-width: 1260px;
+    }
+    .modal-fullscreen{
+        .modal-content{
+            padding: 0 !important;
+            .modal-body{
+                padding: 16px !important;
+            }
+        }
+    }
+}
+.rsm-dialog{
+    .errorContainer{
+        // .validation-message{
+        //     width:70%;
+        // }
+        .k-input-button {
+            span {
+                &.k-svg-i-calendar {
+                    display: block;
+                }
+            }
+        }
+    }
+}
+.rs-modal-no-footer-button {
+    margin-bottom: var( --popupmodal-lastchaild-input-space) !important;
+}
+
+// Body lock during async submit — block page behind, keep open modal clickable
+body[data-rs-body-pointer-lock='true'] {
+    pointer-events: none;
+
+    .modal.show,
+    .modal.show .modal-dialog,
+    .modal.show .modal-content {
+        pointer-events: auto;
+    }
+
+    .modal-backdrop.show {
+        pointer-events: auto;
+    }
+}
+
+.rs-modal--locked {
+    .rs-modal-close--disabled {
+        cursor: not-allowed !important;
+        opacity: var(--click-off-opacity, 0.5);
+        pointer-events: none;
+
+        .close,
+        i {
+            pointer-events: none;
+            cursor: not-allowed !important;
+        }
+    }
+}

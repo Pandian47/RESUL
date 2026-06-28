@@ -1,0 +1,130 @@
+.mobile-fcm-guidelines-modal {
+    .fcm-carousel-container {
+
+        // Platform Tabs Styling using RSTabbar
+        .fcm-platform-tabs-wrapper {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 20px;
+
+            .fcm-platform-tabs {
+                display: flex;
+                justify-content: center;
+                gap: 0;
+                padding: 0;
+                margin: 0;
+                list-style: none;
+                background-color: #f5f7fa;
+                border-radius: 8px;
+                overflow: hidden;
+
+                .fcm-tab-item {
+                    padding: 10px 32px;
+                    border: none;
+                    background-color: transparent;
+                    color: #666;
+                    font-size: 14px;
+                    font-weight: 500;
+                    cursor: pointer;
+                    transition: all 0.3s ease;
+                    position: relative;
+
+                    &:hover {
+                        color: #0e68b4;
+                        background-color: rgba(14, 104, 180, 0.1);
+                    }
+
+                    &.active {
+                        background-color: #0e68b4;
+                        color: #ffffff;
+
+                        &:hover {
+                            background-color: #0a5a9e;
+                        }
+                    }
+                }
+
+                // Hide the tabs-content div that RSTabbar renders
+                +.tabs-content {
+                    display: none;
+                }
+            }
+
+            // Override RSTabbar default styles
+            .rsp-tab-container,
+            .rs-tabs-with-heading {
+
+                .portlet-body,
+                .tabs-content {
+                    display: none;
+                }
+            }
+        }
+
+        .fcm-carousel {
+            text-align: center;
+            margin-bottom: 30px;
+
+            .fcm-image {
+                width: 100%;
+                max-height: 500px;
+                object-fit: contain;
+                border: 1px solid #c2cfe3;
+                border-radius: var(--borderRadiusTabDropMenu);
+                background-color: #f8f9fa;
+                padding: 10px;
+                margin-bottom: 30px;
+            }
+
+            .fcm-step-info {
+                .fcm-step-title {
+                    font-size: 20px;
+                    color: #0000ff;
+                }
+
+                .fcm-step-desc {
+                    font-size: 16px;
+                    color: #666;
+                    line-height: 1.6;
+                }
+            }
+        }
+
+        .fcm-nav {
+            padding-top: 30px;
+            border-top: 1px solid #c2cfe3;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 20px;
+
+            .fcm-btn {
+                &:disabled {
+                    opacity: 0.5;
+                    cursor: not-allowed;
+                }
+            }
+
+            .fcm-indicator {
+                font-size: 15px;
+                color: #666;
+                background-color: #ffffff;
+                padding: 5px 15px;
+                border-radius: var(--globalBorderRadius);
+                flex-shrink: 0;
+                border: 1px solid #c2cfe3;
+            }
+        }
+    }
+}
+   .apns-text {
+        position: relative;
+        &::before {
+            content: '';
+            height: 36px;
+            position: absolute;
+            border: solid 1px #c2cfe3;
+            right:0;
+            top: 1px;
+        }
+    }

@@ -1,0 +1,1295 @@
+@import '../../../../../Styles//abstarct/variables';
+
+// CSS custom properties for form builder - used for dynamic alignment
+:root {
+  --form-switch-width: 55px; // Width of the RSSwitch component for alignment
+}
+
+.pop {
+  display: none;
+}
+
+.popView:hover .pop {
+  display: block;
+}
+
+.outLine:hover {
+  outline: 1px solid $primary-blue;
+}
+
+.drop-box {
+  border: 1px solid $black;
+  border-radius: $theme-space;
+  height: 50px;
+  background: $primary-grey;
+  border-style: dashed;
+}
+
+div[disabled] {
+  pointer-events: none;
+  opacity: 0.7;
+}
+
+// Firefox-specific drag and drop fixes
+.dragging-active {
+  * {
+    user-select: none !important;
+    -webkit-user-select: none !important;
+    -moz-user-select: none !important;
+    -ms-user-select: none !important;
+  }
+}
+
+
+.text-editor-container {
+  transition: width 0.3s ease;
+  display: inline-block;
+  min-width: 20%;
+
+  & .editView {
+    opacity: 0;
+  }
+
+  &:hover .editView {
+    opacity: 1;
+  }
+
+  & .ProseMirror {
+    overflow-wrap: anywhere;
+  }
+}
+
+.starButton {
+  background-color: transparent;
+  border: none;
+  outline: none;
+  cursor: pointer;
+}
+
+.on {
+  color: $black;
+}
+
+.off {
+  color: $others;
+}
+
+// Width adjustment controls for Text component
+.width-adjustment-controls {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 8px;
+  padding: 6px 8px;
+  background-color: $quaternary-grey;
+  border: 1px solid $quaternary-blue;
+  border-radius: 6px;
+
+  .width-adjust-btn {
+    background-color: $primary-blue;
+    border: none;
+    border-radius: 4px;
+    color: $white;
+    cursor: pointer;
+    padding: 6px $theme-space;
+    transition: all 0.2s ease;
+    min-width: 32px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    &:hover {
+      background-color: $blue-lighter;
+      transform: translateY(-1px);
+    }
+
+    &:active {
+      background-color: $primary-blue;
+      transform: translateY(0);
+    }
+
+    &:disabled {
+      background-color: $secondary-grey;
+      cursor: not-allowed;
+      transform: none;
+    }
+  }
+
+  .width-indicator {
+    color: $secondary-black;
+    min-width: 45px;
+    text-align: center;
+    background-color: $tertiary-grey;
+    padding: 4px 8px;
+    border-radius: 4px;
+    border: 1px solid $quaternary-blue;
+  }
+}
+
+.rs-tags-wrapper.rs-tags-wrapper-scroll ul.form-options {
+  max-height: 70px;
+}
+
+.rs-form-builder-settings-popup.platform-mac {
+  font-family: -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Helvetica, Arial, sans-serif;
+}
+
+.rs-form-builder-settings-popup.platform-win {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.rs-form-builder-settings-popup.platform-linux {
+  font-family: Ubuntu, Cantarell, 'DejaVu Sans', 'Liberation Sans', sans-serif;
+}
+
+.rs-form-builder-settings-popup.platform-other {
+  font-family: system-ui, sans-serif;
+}
+
+.rs-form-builder-settings-popup.platform-mac .rsfph-icons ul,
+.rs-form-builder-settings-popup.platform-win .rsfph-icons ul,
+.rs-form-builder-settings-popup.platform-linux .rsfph-icons ul {
+  gap: 8px;
+}
+
+.rsch-label-container {
+  width: 100%;
+}
+
+.rsch-label-image {
+  display: block;
+  max-height: 48px;
+  object-fit: contain;
+  margin: 0 auto;
+}
+
+.rsch-row {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 8px;
+}
+
+.rsch-image-col {
+  align-self: start;
+}
+
+.rsch-editor-col {
+  width: 100%;
+}
+
+.rs-header-image-modal {
+
+  .rs-header-image-preview {
+    display: flex;
+    min-height: 80px;
+    border: 1px dashed $quaternary-blue;
+    border-radius: 8px;
+    background: $tertiary-blue;
+    padding: 16px;
+
+    img {
+      max-height: 60px;
+      object-fit: contain;
+    }
+
+    .rs-header-image-empty {
+      color: $primary-grey;
+    }
+  }
+
+  .rs-header-image-align-section {
+    p {
+      margin-bottom: 8px;
+      color: $primary-black;
+    }
+  }
+
+  .rs-header-image-toolbar {
+    display: flex;
+    gap: 8px;
+
+    button {
+      border-radius: 6px;
+      width: 40px;
+      height: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
+      &.active {
+        background: rgba($primary-blue, 0.1);
+        border-color: $secondary_blue;
+      }
+    }
+  }
+}
+
+.rs-builder-elements-content-wrapper,
+.rsfbpw-content {
+  .form-builder-component,
+  .fbc-preview {
+    // Apply font size to all text content in the wrapper
+    .rsbecw-row,
+    .rs-pop-view {
+      p,
+      label,
+      div,
+      h1, h2, h3, h4, h5, h6 {
+        font-size: var(--label-font-size, inherit) !important;
+        color: var(--label-font-color, inherit) !important;
+        font-family: var(--label-font-family, MuktaRegular) !important;
+      }
+    }
+
+    .rsfch-label {
+      font-size: var(--label-font-size, inherit) !important;
+      min-width: 0; // Fixes flex item overflow in Firefox
+
+      // Target all text elements inside labels for both size and color
+      p,
+      label,
+      div[role="textbox"],
+      div[role="textbox"] p,
+      .k-editor-content,
+      .k-editor-content p,
+      .text-editor-container,
+      .text-editor-container p,
+      .ProseMirror,
+      .ProseMirror p {
+        font-size: var(--label-font-size, inherit) !important;
+        color: var(--label-font-color, inherit) !important;
+        overflow-wrap: anywhere !important;
+        word-break: break-word !important;
+        white-space: pre-wrap !important;
+        font-family: var(--label-font-family, MuktaRegular) !important;
+
+      }
+    }
+
+    .rsfch-content {
+      .rs-textarea-wrapper textArea {
+        background-color: transparent;
+      }
+      input {
+      //  color: var(--label-font-color) !important;
+      }
+
+      label,
+      .lbl,
+      .k-label {
+       // color: var(--label-font-color) !important;
+      }
+
+      .special-label span {
+     //   color: var(--label-font-color) !important;
+      }
+    }
+
+    .rsfph-map .k-input-value-text,
+    .k-label {
+    //  color: var(--label-font-color, inherit) !important;
+    }
+
+    .rs-form-content-holder {
+      .tiny {
+
+        p {
+          color: var(--label-font-color) !important;
+        font-family: var(--label-font-family, MuktaRegular) !important;
+
+        }
+      }
+    }
+
+    .tiny {
+
+      p {
+        color: var(--label-font-color) !important;
+                font-family: var(--label-font-family, MuktaRegular) !important;
+
+      }
+
+      .rsfb-submit {
+        .tiny {
+
+          a,
+          p {
+            color: transparent;
+          }
+        }
+      }
+    }
+  }
+
+
+}
+
+// Form Layout Selector Styles
+.layout-selector-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin-top: $theme-space;
+}
+
+.layout-selector-card {
+  border: 1px solid $quaternary-blue;
+  border-radius: 10px;
+  padding: 10px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  background: $white;
+
+  &:hover {
+    border-color: $primary-blue;
+  }
+
+  &.selected {
+    border-color: $primary-blue;
+    background: rgba($primary-blue, 0.05);
+  }
+
+  .layout-preview {
+    height: 70px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .layout-preview-content {
+    width: 100%;
+  }
+
+  .layout-label {
+    text-align: center;
+    color: $secondary-black;
+  }
+}
+
+// Form Layout Styles - Horizontal (Default)
+.form-layout-horizontal {
+
+  .form-builder-component,
+  .fbc-preview {
+    .rs-form-element-wrapper {
+      .rs-form-content-holder {
+        display: flex !important;
+        flex-direction: row !important;
+        //justify-content: space-between !important;
+        //align-items: flex-start !important;
+        gap: 15px;
+
+        .rsfch-label {
+          text-align: left !important;
+          flex-shrink: 0;
+          min-width: 0; // Ensures the label respects flex bounds in Firefox
+
+          // font-size: var(--label-font-size, inherit) !important;
+          // Target the actual label text content
+          p,
+          
+          label,
+          div[role="textbox"] p,
+          .text-editor-container,
+          .text-editor-container p,
+          .k-editor-content,
+          .k-editor-content p,
+          .ProseMirror,
+          .ProseMirror p {
+            font-size: var(--label-font-size, inherit) !important;
+            color: var(--label-font-color, inherit) !important;
+            overflow-wrap: anywhere !important;
+            word-break: break-word !important;
+            white-space: pre-wrap !important;
+            font-family: var(--label-font-family, MuktaRegular) !important;
+
+          }
+        }
+
+        .rsfch-content,
+        .participant-content {
+          .rs-phone-input {
+            width: 100% !important;
+
+          }
+        }
+
+      }
+    }
+
+    // Special handling for multi-choice, ranking, rating, slider, comment, matrix
+    &.multichoiceForm,
+    &.rankingForm,
+    &.ratingForm,
+    &.sliderForm,
+    &.commentboxForm {
+      .rsfch-multi-top {
+        .rs-form-content-holder {
+          display: flex !important;
+          flex-direction: row !important;
+          //align-items: flex-start !important;
+        }
+
+      }
+    }
+  }
+
+  .fbc-preview {
+    .rs-form-builder-matrix-table-wrapper {
+    }
+    .sliderpreview {
+    }.ratingbottom  {
+    }
+    .rankingbottom {
+      .input-field {
+        margin-bottom: 41px;
+      }
+    
+    }
+    .commentboxbottom  {
+      }
+      .multioption  {
+       // margin-left: 11%;
+      }
+    .rs-form-element-wrapper {
+      .rs-form-content-holder {
+        gap: 0;
+      }
+    }
+  }
+  .form-button-spacer {
+    width: 55px;
+  }
+}
+
+// Form Layout Styles - Vertical
+.form-layout-vertical {
+
+  .form-builder-component,
+  .fbc-preview {
+
+    &.commentbox-optional,
+    &.slider-optional, &.matrix-optional, &.rating-optional, &.multichoice-optional, &.ranking-optional, &.datetime-optional, &.checkbox-optional, &.radio-optional {
+      .rs-form-element-wrapper {
+        .rs-form-properties-holder {
+          position: inherit !important;
+        }
+      }
+    }
+  }
+}
+
+
+// Form Layout Styles - Vertical
+.form-layout-vertical {
+
+  .form-builder-component,
+  .fbc-preview {
+    .rs-form-element-wrapper {
+      .rs-form-properties-holder {
+        // position: absolute !important;
+        // bottom: 11px !important;
+        // right: 0;
+        margin-bottom: 59px;
+      }
+    }
+    &.consentcheckbox-optional, &.multichoice-optional, &.commentbox-optional,&.ranking-optional, &.rating-optional, &.slider-optional, &.matrix-optional, &.AgreeForm{
+      .rs-form-element-wrapper {
+      .rs-form-properties-holder {
+        margin-bottom: 0 !important;
+      }
+    }
+    }
+
+    .form-button {
+      justify-content: normal;
+    }
+
+    &.AgreeForm .rs-form-element-wrapper.offset-3 {
+      margin-left: 0 !important;
+      padding-left: 0 !important;
+    }
+
+    .rs-form-element-wrapper {
+      .rs-form-content-holder {
+        display: flex !important;
+        flex-direction: column !important;
+
+        .rsfch-label {
+          text-align: left !important;
+          width: 100% !important;
+          max-width: 100% !important;
+          min-width: 100% !important;
+          flex: none !important;
+          font-size: inherit !important;
+          + // Target the actual label text content
+
+          p,
+          label,
+          div[role="textbox"] p,
+          .text-editor-container,
+          .text-editor-container p,
+          .k-editor-content,
+          .k-editor-content p,
+          .ProseMirror,
+          .ProseMirror p {
+            font-size: var(--label-font-size, inherit) !important;
+            color: var(--label-font-color, inherit) !important;
+            font-family: var(--label-font-family, MuktaRegular) !important;
+
+          }
+        }
+        .rsfch-content {
+         margin-top: 27px !important;
+        }
+        .rsfch-content,
+        .participant-content {
+          width: 100% !important;
+
+          .rs-phone-input {
+            width: 100% !important;
+
+          }
+        }
+
+      }
+    }
+
+        .rankingbottom .rs-form-element-wrapper .rs-form-content-holder {
+      display: flex;
+      flex-direction: row !important;
+      gap: 10px;
+      .rsfch-content {
+      margin-bottom: 0 !important;}
+    }
+
+
+  }
+
+  .fbc-preview {
+    .rs-form-element-wrapper {
+      width: 100%;
+   
+      .rs-form-content-holder {
+        .rsfch-label {
+          margin-bottom: 11px !important;
+          margin-left: -2%;
+        }
+        .rsfch-content {
+         margin-top: 0px !important;
+        }
+      }
+
+    }
+       &.Addparticipants .rs-form-element-wrapper .rs-form-content-holder{
+        .rsfch-label {
+          margin-left: -1% !important;
+        }
+     }
+    &.matrix-optional,
+    &.rating-optional,
+    &.ranking-optional,
+    &.commentbox-optional,
+    &.slider-optional {
+      display: flex;
+      flex-direction: column;
+
+      .rs-form-builder-matrix-table-wrapper,
+      .commentboxbottom,
+      .rankingbottom,
+      .ratingbottom,.slider-optional,.sliderpreview  {
+        width: 100% !important;
+      
+        .rsfch-content:not(:last-child) {
+          margin-bottom: 41px;
+        }
+
+      }
+    }
+    &.multichoiceForm {
+      display: flex;
+      flex-direction: column !important;
+      //gap: 10px;
+    }
+  }
+}
+
+
+// Form Layout Styles - No Labels
+.form-layout-noLabels {
+
+  .form-builder-component,
+  .fbc-preview {
+    .rs-form-element-wrapper {
+      margin-bottom: 21px;
+      margin-top: 21px;
+      .rs-form-properties-holder {
+        //  margin-bottom: 21px;
+        }
+      .rs-form-content-holder {
+        gap: 10px;
+        flex-direction: column !important;
+        align-items: flex-start !important;
+        
+        .rsfch-label {
+          display: none !important;
+        }
+
+        .rsfch-content {
+          width: 100% !important;
+          max-width: 100% !important;
+          flex: 1 1 100% !important;
+        }
+      }
+      .rs-form-properties-holder .rsfph-icons .rs-list-inline {
+        display: flex;
+        align-items: flex-end;
+      }
+
+      // Hide rsfch-multi-top for most fields by default
+      &.rsfch-multi-top {
+        display: none;
+      }
+    }
+    
+    // Special handling for multi-choice, ranking, rating, slider, comment, matrix
+    // Keep rsfch-multi-top visible for these fields so mapTo field remains accessible
+    // Handle both required and optional variants
+    &.multichoiceForm,
+    &.ratingForm,
+    &.rankingForm,
+    &.matrixForm,
+    &.commentboxForm,
+    &.sliderForm,
+    &.multichoice-required,
+    &.multichoice-optional,
+    &.rating-required,
+    &.rating-optional,
+    &.ranking-required,
+    &.ranking-optional,
+    &.matrix-required,
+    &.matrix-optional,
+    &.commentbox-required,
+    &.commentbox-optional,
+    &.slider-required,
+    &.slider-optional {
+      .rs-form-element-wrapper.rsfch-multi-top {
+        display: flex !important;
+        .rs-form-content-holder {
+          gap: 10px;
+          .rsfch-label {
+            display: none !important;
+          }
+        }
+        // Keep the properties holder visible
+        .rs-form-properties-holder {
+          display: flex !important;
+        }
+      }
+    }
+    
+    &.matrixForm  {
+      width: 97% !important;
+    }
+    .fbc-preview {
+      .rs-form-element-wrapper:last-child {
+        margin-top: 0 !important;
+        margin-bottom: 0 !important;
+      }
+       .rs-form-element-wrapper {
+        margin-bottom: 41px !important;
+        margin-top: 0 !important;
+      .rs-form-content-holder {
+        gap: 10px;
+        flex-direction: column !important;
+        align-items: flex-start !important;
+        
+        .rsfch-content,
+        >div:not(.rsfch-label) {
+          width: 100% !important;
+          max-width: 100% !important;
+        }
+        .rsfch-content .rs-phone-input{
+          width: 100%;
+        }
+    }}}
+        &.matrix-optional,
+    &.rating-optional,
+    &.ranking-optional,
+    &.commentbox-optional, &.slider-optional {
+
+      .rs-form-builder-matrix-table-wrapper,
+      .commentboxbottom,
+      .rankingbottom,
+      .ratingbottom,.sliderpreview  {
+        width: 100% !important;
+        margin-left: 0 !important;
+      }
+    }
+  }
+
+  // Preview mode - ensure full width and no left margins
+  .fbc-preview {
+    .rs-form-builder-matrix-table-wrapper,
+    .sliderpreview,
+    .ratingbottom,
+    .rankingbottom,
+    .commentboxbottom,
+    .multioption {
+      margin-left: 0 !important;
+      width: 100% !important;
+    }
+   .rs-form-element-wrapper.rsfch-multi-bottom {
+    margin-bottom: 0 !important;
+   }
+   &.ranking-optional .rankingbottom.form-group{
+        margin-bottom: 41px !important;
+   } 
+  }
+  .k-editor-content > .ProseMirror{
+    padding-left: 0;
+  }
+  .form-builder-component.radio-required,
+  .form-builder-component.radio-optional,
+  .form-builder-component.checkbox-required,
+  .form-builder-component.checkbox-optional,
+  .form-builder-component.multichoice-required,
+  .form-builder-component.multichoice-optional,
+  .fbc-preview.radio-required,
+  .fbc-preview.radio-optional,
+  .fbc-preview.checkbox-required,
+  .fbc-preview.checkbox-optional,
+  .fbc-preview.multichoice-required,
+  .fbc-preview.multichoice-optional {
+    .rs-form-element-wrapper:first-child {
+      .rs-form-content-holder {
+        flex-direction: row !important;
+        align-items: center !important;
+        gap: 16px;
+
+        .rsfch-label {
+          display: block !important;
+        }
+
+        .rsfch-content {
+          width: auto !important;
+          max-width: 100% !important;
+          flex: 1 1 auto;
+        }
+      }
+    }
+  }
+
+  .form-button {
+    justify-content: flex-start;
+  }
+}
+
+// Form button spacer - aligns Cancel button with Enable CAPTCHA text
+// Uses CSS variable for dynamic sizing across all screen sizes
+.form-button-spacer {
+  width: 85px;
+  flex-shrink: 0;
+  visibility: hidden;
+}
+
+// Ensure form buttons alignment matches FormCaptcha for all layouts
+.form-layout-horizontal,
+.form-layout-vertical,
+.form-layout-noLabels {
+  .form-button {
+    .form-button-spacer {
+      display: inline-block;
+    }
+  }
+}
+
+body.formGenerator-body {
+  overflow: hidden;
+
+  footer.rs-page-footer-wrapper {
+    margin-top: 7px;
+  }
+}
+
+.tellAFriend .rs-form-styles-wrapper {
+  height: calc(100vh - 230px);
+}
+
+// Form Section Styles (replacing accordion)
+.form-section {
+  border-bottom: 1px solid $grey-light;
+  padding-bottom: 15px;
+  margin-bottom: 15px;
+
+  &:last-child {
+    border-bottom: none;
+    margin-bottom: 0;
+  }
+
+  h4 {
+    color: $primary-black;
+    margin-bottom: 15px;
+    padding-bottom: 10px;
+  }
+
+  .form-section-body {
+    padding: 0;
+  }
+
+  // Section header with switch (for Pagination, etc.)
+  .form-section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 15px;
+  }
+
+  // Switch controls within sections
+  .form-section-switch {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    //border-bottom: 1px solid $quaternary-blue;
+    // margin-bottom: 21px;
+    //padding-bottom: 15px;
+  }
+
+  // Uniform field group spacing and structure
+  .form-field-group {
+    margin-bottom: 21px;
+
+    label {
+      color: $secondary-black;
+      font-weight: 500;
+      margin-bottom: 0;
+    }
+
+  }
+}
+
+.rs-form-styles-wrapper {
+  .rs-form-styles-main-header {
+    background-color: $tertiary-blue;
+
+    h3 {
+      font-family: $rs-font-regular;
+    }
+  }
+}
+
+// Color Picker Display Styles (matching first image format)
+.color-picker-display {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px;
+  border-radius: 6px;
+  border: 1px solid $quaternary-blue;
+  width: 100%;
+  max-width: 100%;
+
+  .color-swatch {
+    width: 15px;
+    height: 15px;
+    border-radius: 4px;
+    border: 1px solid $quaternary-blue;
+    flex-shrink: 0;
+  }
+
+  .color-hex {
+    font-size: $font-xxs;
+    color: $primary-grey;
+    font-weight: 500;
+    flex: 0 0 auto;
+  }
+
+  .color-opacity {
+    font-size: 13px;
+    color: #333333;
+    flex-shrink: 0;
+    min-width: 45px;
+  }
+
+  .rs-builder-colorpicker-container {
+    flex-shrink: 0;
+    margin-left: auto;
+
+    button,
+    .rs-color-picker-trigger {
+      padding: 0;
+      border: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+  }
+}
+
+// Responsive styles for color picker when less than 1280px
+@media (max-width: 1280px) {
+  .color-picker-display {
+    gap: 1px;
+  }
+
+.fromGenerator .rs-form-styles-wrapper .rs-builder-colorpicker-container .rs-colorpicker-wrapper .horizontal-picker-container .sketch-picker{
+      width: 255px !important;
+  }
+.rsfbmt-row-add {
+  right: -49px ;
+}
+  // Apply css-scrollbar-y styles to matrix table wrapper for screens <= 1280px
+  .rs-form-builder-matrix-table-wrapper {
+    overflow-y: hidden !important;
+    overflow-x: auto !important;
+    scrollbar-width: 5px;
+    @-moz-document url-prefix(){scrollbar-color: $secondary-grey $tertiary-grey;}
+    &::-webkit-scrollbar-track {
+      display: none;
+      background: transparent;
+    }
+    &::-webkit-scrollbar {
+      width: 5px;
+      height: 5px;
+      background-color: transparent;
+      border-radius: 3px;
+    }
+    &::-webkit-scrollbar-thumb {
+      background-color: transparent;
+      border-radius: 100px;
+      -webkit-border-radius: 100px;
+      -moz-border-radius: 100px;
+      cursor: pointer;
+    }
+    &:hover {
+      &::-webkit-scrollbar-thumb {
+        background-color: $secondary-grey;
+        border-radius: 3px;
+      }
+    }
+  }
+}
+
+// Update existing color controls to use new format
+.color-controls {
+  width: 100%;
+
+  .color-picker-display {
+    width: 100%;
+  }
+}
+
+.color-display {
+  width: 100%;
+
+  .color-picker-display {
+    width: 100%;
+  }
+}
+
+// Segmented control button text styling
+.segment-btn {
+  .segment-btn-text {
+    font-size: 11px;
+  }
+}
+
+
+
+.rs-form-styles-wrapper .rs-builder-colorpicker-container .rs-colorpicker-wrapper {
+  .rscw-content::before {
+    top: -4px;
+    right: 4px;
+  }
+
+  .horizontal-picker-container .sketch-picker {
+    width: 290px !important;
+
+  }
+}
+
+// Preview Modal Containment Styles
+.rs-form-builder-preview-wrapper-container {
+  width: 100%;
+  overflow: hidden;
+  position: relative;
+  box-sizing: border-box;
+
+  .rs-form-builder-preview-wrapper {
+    width: 100%;
+    max-width: 100%;
+    overflow: hidden;
+    position: relative;
+    box-sizing: border-box;
+  }
+
+  .form-layout-container {
+    width: 100%;
+    max-width: 100%;
+    overflow: hidden;
+    box-sizing: border-box;
+    position: relative;
+    background-clip: padding-box;
+    background-origin: padding-box;
+
+    // Ensure header columns don't overflow
+    .form-header-column {
+      box-sizing: border-box;
+      overflow: hidden;
+      position: relative;
+      background-clip: padding-box;
+
+      img {
+        max-width: 100%;
+        height: auto;
+        display: block;
+      }
+
+      &.header-top {
+        width: 100% !important;
+        max-width: 100% !important;
+      }
+
+      &.header-side {
+        flex-shrink: 0;
+      }
+    }
+
+    // Ensure content column doesn't overflow
+    .form-content-column {
+      box-sizing: border-box;
+      overflow-x: hidden;
+      overflow-y: auto;
+      min-width: 0; // Important for flexbox containment
+
+      &.content-full {
+        width: 100%;
+        max-width: 100%;
+      }
+
+      &.content-with-header {
+        // Adjust width when header is present
+        max-width: calc(100% - 200px);
+      }
+    }
+
+    // Layout adjustments
+    &.layout-top {
+      flex-direction: column;
+
+      .form-header-column {
+        width: 100% !important;
+        max-width: 100% !important;
+      }
+
+      .form-content-column {
+        width: 100% !important;
+        max-width: 100% !important;
+      }
+    }
+
+    &.layout-row {
+      flex-direction: row;
+
+      .form-content-column.content-with-header {
+        max-width: calc(100% - 200px);
+      }
+    }
+  }
+
+  .rsfbpw-content {
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+    overflow-x: hidden;
+
+    // Remove offset that might push content outside
+    &.offset-md-1 {
+      margin-left: 0 !important;
+    }
+  }
+}
+
+// Moved to resDDCustomUpload.scss (ResDDCustomUpload)
+// .rs-form-styles-wrapper .rs-formStyles-properties-wrapper .image-upload-wrapper .drag-drop-zone {
+//   padding: 10px;
+//
+//   .drag-drop-content {
+//     gap: 0px !important;
+//   }
+// }
+
+.tellafriend.preview .rs-builder-elements-content-wrapper {
+  outline: none !important;
+}
+
+.tellAFriend .rs-builder-elements-holder {
+  margin: 7px -2px !important;
+}
+
+.form-layout-container.tellafriend .rs-builder-elements-dropped-wrapper.rsbedw-form-builder .rs-builder-elements-content-wrapper {
+
+  h4,
+  label,
+  input,
+  .k-label {
+   // color: var(--label-font-color) !important;
+  }
+
+  .special-label span {
+   // color: var(--label-font-color) !important;
+  }
+}
+
+// Carousel next button positioning
+.rs-builder-elements-holder {
+
+  .rs-form-builder-carousel-wrapper {
+    position: relative !important;
+
+    .carousel-control-next {
+      position: absolute;
+      right: -49px  !important; // Position at the far right, just before buttons
+      top: 50%;
+      transform: translateY(-50%);
+
+    }
+  }
+}
+
+.rs-form-element-wrapper .rs-form-content-holder .rsfch-content {
+  width: 100%;
+}
+
+.tellafriend {
+    h4,
+  label,
+  input,
+  .k-label {
+   color: var(--label-font-color) !important;
+  }
+
+  .special-label span {
+    color: var(--label-font-color) !important;
+    
+  }
+  .rs-builder-elements-content-wrapper .rs-form-element-wrapper{
+  .tiny {
+    p {
+      span {
+                font-size: var(--label-font-size, inherit) !important;
+
+      }
+    }
+  }
+}
+}
+
+
+.rs-form-builder-preview-wrapper-container section {
+    padding-right: 20px;
+  }
+
+// Disable carousel navigation buttons at boundaries
+.rs-form-builder-carousel-wrapper {
+  &.disable-prev {
+    .carousel-control-prev {
+      pointer-events: none;
+      opacity: 0.3;
+      cursor: not-allowed;
+    }
+  }
+
+  &.disable-next {
+    .carousel-control-next {
+      pointer-events: none;
+      opacity: 0.3;
+      cursor: not-allowed;
+    }
+  }
+
+  // Hide carousel navigation buttons at boundaries
+  &.hide-prev {
+    .carousel-control-prev {
+      display: none !important;
+    }
+  }
+
+  &.hide-next {
+    .carousel-control-next {
+      display: none !important;
+    }
+  }
+}
+
+.rs-form-styles-wrapper 
+.rs-formStyles-properties-wrapper 
+.rs-colorpicker-wrapper {
+  .rscw-content {
+    z-index: 9;
+    .horizontal-picker-container 
+    .buttons-holder 
+    .rs-button-wrapper:first-child {
+      display: flex;
+      align-items: center;
+    }
+
+  }
+}
+
+.rs-builder-elements-content-wrapper .form-builder-component,.fbc-preview{
+  .rs-form-button.rsfb-submit .tiny .k-editor-content  p{
+  color: $white !important;
+  font-family: $rs-font-regular !important;
+}
+
+  .rs-form-button.rsfb-cancel .tiny {
+
+    a,
+    p {
+      color: $primary-black !important;
+        font-family: $rs-font-regular !important;
+
+    }
+  }
+}
+
+
+
+
+.form-layout-horizontal .form-builder-component .rs-form-element-wrapper .rs-form-content-holder .rsfch-label .text-editor  {
+  font-size: 19px !important;
+  font-family: 'MuktaRegular' !important;
+  label {
+   font-size: 11px !important;
+  font-family: 'MuktaRegular' !important;   
+  color: #111111 !important;
+  }
+}
+
+.fbc-preview .rs-form-element-wrapper.rsfch-multi-top .rsfch-label{
+  width: 36%;
+}
+
+.rs-forms-captcha .tiny .k-editor-content p{
+  font-size:inherit !important;
+  font-family: $rs-font-regular !important;
+  color : $secondary-grey !important
+  
+}
+
+
+.form-builder-component.AgreeForm .tiny p{
+  font-family: $rs-font-regular !important;
+  a {
+      font-family: $rs-font-regular !important;
+
+  }
+}
+
+.rs-form-builder-preview-wrapper .rsfb-cancel .ProseMirror {
+    overflow: hidden;
+}

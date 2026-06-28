@@ -1,0 +1,986 @@
+// ============================================================================
+// ResTextEditor Component Styles
+// ============================================================================
+
+@import 'Styles/abstarct/variables';
+@import 'Styles/abstarct/mixins';
+
+// Paragraph / Format dropdown — ResKendoDropdown picker chrome (underline + caret)
+@mixin editor-format-dropdown-picker {
+    position: relative;
+    display: inline-flex;
+    align-items: flex-end;
+    background: none !important;
+    border: 0 !important;
+    box-shadow: none !important;
+    min-width: 0 !important;
+    max-width: 100%;
+    min-height: 30px;
+    padding-bottom: 2px;
+    flex: 0 0 auto;
+    border-right: 0 !important;
+    overflow: visible;
+
+    // Global .k-picker::after spans full picker width — hide; underline lives on inner input only
+    &::before,
+    &::after {
+        border: 0 !important;
+        display: none !important;
+        content: none !important;
+    }
+
+    .k-button,
+    .k-input-inner {
+        position: relative;
+        background: transparent !important;
+        border: 0 !important;
+        box-shadow: none !important;
+        height: auto !important;
+        min-height: 0 !important;
+        width: 100%;
+        padding: 0 4px 0 0 !important;
+        display: inline-flex;
+        align-items: flex-end;
+        gap: 4px;
+
+        &::after {
+            content: '';
+            position: absolute;
+            left: 0;
+            right: 0;
+            bottom: 2px;
+            height: 1px;
+            border-bottom: 1px solid $secondary-grey;
+            z-index: 3;
+            pointer-events: none;
+        }
+
+        .k-button-text,
+        .k-input-inner,
+        .k-input-value-text {
+            font-family: $rs-font-regular;
+            font-size: $font-xsm;
+            color: $primary-black !important;
+            opacity: 1 !important;
+            visibility: visible !important;
+            display: inline !important;
+            text-decoration: none !important;
+            padding-top: 2px;
+            position: relative;
+            top: -1px;
+            line-height: 1.4;
+            white-space: nowrap;
+            background: transparent !important;
+        }
+
+        &:hover,
+        &.k-hover {
+            background-color: transparent !important;
+        }
+    }
+
+    &.k-focus,
+    &:focus-within {
+        .k-button::after,
+        .k-input-inner::after {
+            border-bottom-color: $secondary-blue;
+        }
+    }
+
+    .k-input-button,
+    .k-button-icon,
+    .k-icon-button {
+        flex: 0 0 16px;
+        align-self: flex-end;
+        width: 16px;
+        min-width: 16px;
+        padding: 0 !important;
+        margin: 0 0 4px;
+        position: static;
+        left: auto;
+        color: $secondary-grey;
+    }
+
+    &:hover,
+    &.k-hover {
+        background-color: transparent !important;
+    }
+}
+
+// Disabled toolbar control — show tooltip + not-allowed cursor, block clicks
+@mixin editor-toolbar-disabled-control {
+    cursor: not-allowed !important;
+    pointer-events: auto !important;
+    position: relative;
+
+    &::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: transparent;
+        pointer-events: all;
+        cursor: not-allowed !important;
+        z-index: 2;
+    }
+
+    &:hover,
+    &.k-hover,
+    &:focus,
+    &.k-focus {
+        background-color: transparent !important;
+        background-image: none !important;
+        box-shadow: none !important;
+    }
+
+    *,
+    i,
+    .icon-md,
+    .k-button-icon,
+    [data-rs-icon-replaced],
+    [data-rs-icon-replaced] > .icon-md,
+    .rs-tooltip-wrapper,
+    .rs-tooltip-wrapper i {
+        cursor: not-allowed !important;
+    }
+}
+
+// Last toolbar control — never show a trailing right divider (buttons, custom icons, dropdown toggles)
+@mixin editor-toolbar-no-trailing-border {
+    .k-toolbar {
+        > :last-child {
+            border-right: 0 !important;
+        }
+
+        > .k-button-group:last-child > :last-child,
+        > .k-button-group:last-child > :last-child .k-button,
+        > .k-button-group:last-child > :last-child .dropdown-toggle,
+        > .k-button-group:last-child > .k-button:last-child,
+        > .k-button-group:last-child .rs-editor-custom-icon:last-child,
+        > .k-button-group:last-child .rs-editor-custom-icon:last-of-type,
+        > .k-button-group:last-child .rs-editor-custom-icon:last-child .k-button,
+        > .k-button-group:last-child .rs-editor-custom-icon:last-of-type .k-button,
+        > .k-button-group:last-child .rs-editor-custom-icon:last-child .dropdown-toggle,
+        > .k-button-group:last-child .rs-editor-custom-icon:last-of-type .dropdown-toggle,
+        > .k-button-group:last-child .rs-editor-custom-icon:last-child .rs-bootstrap-dropdown .dropdown-toggle,
+        > .k-button-group:last-child .rs-editor-custom-icon:last-of-type .rs-bootstrap-dropdown .dropdown-toggle,
+        > .k-button-group:last-child .rs-bootstrap-dropdown:last-child,
+        > .k-button-group:last-child .rs-bootstrap-dropdown:last-child .dropdown-toggle,
+        > .k-button-group:last-child .k-toolbar-item:last-child,
+        > .k-button-group:last-child .k-toolbar-item:last-child .k-button,
+        > .k-button-group:last-child .k-toolbar-item:last-child .rs-editor-custom-icon,
+        > .k-button-group:last-child .k-toolbar-item:last-child .dropdown-toggle,
+        > .k-toolbar-item:last-child,
+        > .k-toolbar-item:last-child .k-button,
+        > .k-toolbar-item:last-child .rs-editor-custom-icon,
+        > .k-toolbar-item:last-child .dropdown-toggle,
+        .k-button-group:last-child .rs-editor-custom-icon:last-child,
+        .k-button-group:last-child .rs-editor-custom-icon:last-of-type,
+        .k-button-group:last-child .rs-editor-custom-icon:last-child .k-button,
+        .k-button-group:last-child .rs-editor-custom-icon:last-of-type .k-button,
+        .k-button-group:last-child .rs-editor-custom-icon:last-child .dropdown-toggle,
+        .k-button-group:last-child .rs-editor-custom-icon:last-of-type .dropdown-toggle,
+        .k-button-group:last-child .rs-editor-custom-icon:last-child .rs-bootstrap-dropdown .dropdown-toggle,
+        .k-button-group:last-child .rs-editor-custom-icon:last-of-type .rs-bootstrap-dropdown .dropdown-toggle,
+        .k-button-group:last-child .rs-bootstrap-dropdown:last-child .dropdown-toggle {
+            border-right: 0 !important;
+        }
+    }
+}
+
+// Email / communication editor — match legacy single-row rs-kendo-editor toolbar
+.restexteditor.kendo-text-format {
+    overflow: visible;
+
+    .k-editor {
+        overflow: visible;
+    }
+    .k-dropdownlist {
+        padding-left: 10px;
+    }
+    .k-editor .k-toolbar {
+        display: flex !important;
+        flex-wrap: nowrap !important;
+        flex-direction: row;
+        align-items: center;
+        height: 35px !important;
+        min-height: 35px !important;
+        max-height: 35px;
+        overflow: visible !important;
+
+        .k-button-group,
+        .k-toolbar-item {
+            display: inline-flex;
+            flex: 0 0 auto;
+            flex-wrap: nowrap;
+            width: auto !important;
+            float: none;
+        }
+
+        > .k-button-group:first-child {
+            border-right: 1px solid $quaternary-blue;
+            margin-right: 0;
+            padding-right: 0;
+        }
+    }
+
+    // Paragraph dropdown — ResKendoDropdown picker (underline + caret, not flat icon box)
+    .k-toolbar .k-dropdownlist.k-picker,
+    .k-toolbar .k-dropdown-button,
+    .k-toolbar .k-dropdownlist[title='Format'] {
+        @include editor-format-dropdown-picker;
+    }
+
+    .k-toolbar .k-dropdownlist[title='Format'] {
+        width: 110px !important;
+        min-width: 110px !important;
+        max-width: 110px !important;
+        flex: 0 0 110px !important;
+        margin-right: 5px;
+    }
+
+    // Custom tools stay on the same row — dropdown menus must not clip
+    .rs-editor-custom-icon {
+        flex-shrink: 0;
+        overflow: visible;
+        position: relative;
+        z-index: 1;
+
+        &.editor-custom-offer {
+            .k-button,
+            button.k-button {
+                width: 100%;
+                height: 33px !important;
+                min-height: 33px;
+                display: inline-flex !important;
+                align-items: center;
+                justify-content: center;
+                background: transparent !important;
+                background-color: transparent !important;
+                background-image: none !important;
+                border: 0 !important;
+                box-shadow: none !important;
+                color: inherit !important;
+
+                .k-button-text {
+                    color: inherit !important;
+                }
+
+                i.icon-md {
+                    color: $primary-black;
+                }
+
+                &:hover,
+                &.k-hover,
+                &:focus,
+                &.k-focus,
+                &:active,
+                &.k-active {
+                    background: transparent !important;
+                    background-color: transparent !important;
+                    background-image: none !important;
+                    border: 0 !important;
+                    box-shadow: none !important;
+
+                    i.icon-md {
+                        color: $primary-blue;
+                    }
+                }
+            }
+             
+        }
+
+        .rs-bootstrap-dropdown {
+            width: 100%;
+            height: 100%;
+            overflow: visible;
+
+            .rs-dropdown {
+                width: 100%;
+                height: 100%;
+
+                &.show {
+                    z-index: 10002;
+                    background-color: $secondary-blue !important;
+
+                    .dropdown-toggle i {
+                        color: $white !important;
+                    }
+                }
+
+                // Smart link — keep icon blue on white when open (not white on blue)
+                &.email-editor-smartlink.show {
+                    background-color: $white !important;
+
+                    .dropdown-toggle i,
+                    .dropdown-toggle .rs-tooltip-wrapper i {
+                        color: $primary-blue !important;
+                    }
+                }
+
+                &.no_caret .dropdown-toggle::after {
+                    display: none !important;
+                    content: none !important;
+                }
+
+                .dropdown-toggle {
+                    width: 100%;
+                    height: 33px;
+                    min-height: 33px;
+                    display: inline-flex !important;
+                    align-items: center;
+                    justify-content: center;
+                    padding: 0 !important;
+                    line-height: 1;
+
+                    &::after {
+                        display: none !important;
+                        content: none !important;
+                    }
+
+                    i.icon-md {
+                        color: $primary-black;
+                        font-size: 16px;
+                        line-height: 1;
+                    }
+
+                    .rs-tooltip-wrapper {
+                        display: inline-flex;
+                        align-items: center;
+                        justify-content: center;
+                        line-height: 0;
+                        pointer-events: none;
+
+                        i {
+                            pointer-events: auto;
+                        }
+                    }
+
+                    &:hover {
+                        background-color: $white;
+
+                        i.icon-md {
+                            color: $primary-blue;
+                        }
+                    }
+                }
+
+                .dropdown-menu {
+                    z-index: 10005 !important;
+                }
+            }
+        }
+    }
+
+    // Email editor has no ForeColor/BackColor tools — hide stray Kendo color picker nodes
+    .k-toolbar .k-button[title='Background color'],
+    .k-toolbar .k-button[title='Text color'],
+    .k-toolbar .k-button[title='Foreground color'],
+    .k-toolbar .k-colorpicker {
+        display: none !important;
+    }
+}
+
+.restexteditor {
+    font-family: $rs-font-regular;
+    font-size: $font-xsm;
+    color: $primary-black;
+    position: relative;
+    overflow: visible;
+
+    &--label {
+        display: block;
+        font-size: $font-xsm;
+        font-family: $rs-font-regular;
+        color: $primary-grey;
+        margin-bottom: $theme-space;
+    }
+
+    &--char-count {
+        display: block;
+        text-align: right;
+        margin-top: 4px;
+        line-height: 1.2;
+
+        small {
+            font-size: $font-xxs;
+            color: $secondary-grey;
+            font-family: $rs-font-regular;
+            letter-spacing: 0.02em;
+        }
+
+        .color-primary-red {
+            color: $primary-red;
+        }
+    }
+
+    &--error-msg {
+        font-size: $font-xs;
+        margin-top: $theme-space;
+        font-family: $rs-font-regular;
+    }
+
+    &--html-preview {
+        margin-top: $theme-space * 2;
+        border: 1px solid $quaternary-blue;
+        border-radius: var(--globalBorderRadius);
+        overflow: hidden;
+    }
+
+    &--html-preview-header {
+        padding: $theme-space $theme-space * 1.5;
+        background-color: $tertiary-blue;
+        font-family: $rs-font-semi-bold;
+        font-size: $font-xsm;
+        color: $primary-black;
+        border-bottom: 1px solid $quaternary-blue;
+    }
+
+    &--html-preview-body {
+        margin: 0;
+        padding: $theme-space * 1.5;
+        max-height: 200px;
+        overflow: auto;
+        font-family: monospace;
+        font-size: $font-xxs;
+        color: $secondary-black;
+        background-color: $white;
+        white-space: pre-wrap;
+        word-break: break-word;
+    }
+
+    &--disabled,
+    &--readonly {
+        opacity: 0.7;
+        pointer-events: none;
+    }
+
+    &--error {
+        .k-editor {
+            border-color: $primary-red;
+        }
+    }
+
+    &--required {
+        .restexteditor--label::after {
+            content: ' *';
+            color: $primary-red;
+        }
+    }
+
+    // ── Kendo SVG icon safety-net ─────────────────────────────────────────────
+    // useEditorIconReplacements hides each SVG via inline style after injecting
+    // the RS <i> icon. This rule covers any that render before the hook fires.
+    .k-toolbar [data-rs-icon-replaced] svg {
+        display: none !important;
+    }
+
+    // RS icon child injected by useEditorIconReplacements on legacy k-i-* hosts
+    .k-toolbar [data-rs-icon-replaced] > .icon-md {
+        font-size: 16px;
+        line-height: 1;
+        color: $primary-black;
+    }
+
+    .k-editor {
+        background-color: $white;
+        border-radius: var(--globalBorderRadius);
+        border: 1px solid $quaternary-blue;
+        box-shadow: none;
+        padding: 0;
+        // Allow toolbar tooltips to extend above the editor chrome
+        overflow: visible;
+
+        .k-toolbar {
+            border-top-left-radius: var(--globalBorderRadius);
+            border-top-right-radius: var(--globalBorderRadius);
+            background-color: $tertiary-blue;
+            border-color: $quaternary-blue;
+            padding: 0 0 0 7px;
+            min-height: 35px;
+            overflow: visible;
+            gap: 0;
+            margin-left: 1px;
+
+            > .k-button-group:first-child .k-button:first-child:hover,
+            > .k-button-group:first-child .k-dropdown-button:first-child:hover {
+                border-top-left-radius: 0;
+            }
+
+            .k-button-group {
+                align-items: center;
+                width: auto;
+
+                .k-button {
+                    margin-inline-start: 0 !important;
+
+                    &.k-disabled,
+                    &:disabled,
+                    &[aria-disabled='true'] {
+                        @include editor-toolbar-disabled-control;
+                        opacity: 0.6;
+                    }
+                }
+
+                // ── Paragraph / Format dropdown (ResKendoDropdown underline + caret) ──
+                > .k-dropdown-button,
+                > .k-dropdownlist,
+                .k-dropdownlist {
+                    @include editor-format-dropdown-picker;
+                    top: -1px;
+                    margin-right: 0;
+
+                    &.k-picker:not([title='Format']) {
+                        width: auto !important;
+                        min-width: auto !important;
+                        max-width: none !important;
+                    }
+
+                    .k-button {
+                        width: auto !important;
+                        min-width: auto !important;
+                        max-width: none !important;
+                        border-radius: 0;
+                        border-color: transparent;
+                        outline: none !important;
+                    }
+
+                    .k-input-button {
+                        padding-right: 0 !important;
+                        width: 16px;
+                        min-width: 16px;
+                    }
+                }
+
+                > .k-dropdownlist[title='Format'] {
+                    width: 110px !important;
+                    min-width: 110px !important;
+                    max-width: 110px !important;
+                    flex: 0 0 110px !important;
+                }
+
+                // ── Icon-only toolbar buttons (Bold, Italic, etc.) ──
+                > .k-button:has(.k-button-icon) {
+                    border-radius: 0;
+                    background-color: transparent;
+                    background-image: none;
+                    border-color: transparent;
+                    padding: 4px;
+                    width: 40px;
+                    height: 33px;
+                    box-shadow: none !important;
+                    outline: none !important;
+
+                    .k-button-text {
+                        display: flex;
+                        color: transparent;
+                    }
+
+                    &:hover:not(.k-disabled):not(:disabled):not([aria-disabled='true']) {
+                        background-color: $white;
+
+                        .k-button-icon {
+                            color: $primary-blue;
+                        }
+                    }
+
+                    &.k-disabled,
+                    &:disabled,
+                    &[aria-disabled='true'] {
+                        @include editor-toolbar-disabled-control;
+                        opacity: 0.6;
+                    }
+
+                    .k-button-icon {
+                        color: $primary-black;
+                        position: relative;
+                        left: -2px;
+                    }
+
+                    &.k-selected {
+                        background-color: $secondary-blue !important;
+                        color: $white;
+                        border-radius: 0;
+                        border-left-color: transparent;
+
+                        .k-button-icon {
+                            color: $white;
+                        }
+
+                        [data-rs-icon-replaced] > .icon-md {
+                            color: $white !important;
+                        }
+                    }
+                }
+            }
+
+            // Format dropdown when rendered as direct toolbar child
+            > .k-dropdown-button,
+            > .k-dropdownlist {
+                @include editor-format-dropdown-picker;
+                margin-right: 0;
+            }
+
+            > .k-dropdownlist[title='Format'] {
+                width: 110px !important;
+                min-width: 110px !important;
+                max-width: 110px !important;
+                flex: 0 0 110px !important;
+                margin-right: 5px;
+            }
+
+            // Dropdown caret arrow (matches ResKendoDropdown)
+            .k-dropdownlist .k-icon-button .k-icon.k-i-caret-alt-down:before,
+            .k-dropdownlist .k-icon-button .k-icon.k-svg-i-chevron-down:before,
+            .k-dropdown-button .k-button-icon.k-i-arrow-60-down:before,
+            .k-dropdown-button .k-button-icon.k-i-caret-alt-down:before {
+                content: '';
+                position: relative;
+                top: 2px;
+                display: inline-block;
+                width: 0;
+                height: 0;
+                border-left: 6px solid transparent;
+                border-right: 6px solid transparent;
+                border-top: 7px solid $secondary-grey;
+            }
+
+            .k-dropdownlist .k-icon-button .k-icon.k-svg-i-chevron-down svg {
+                display: none;
+            }
+
+            // Custom toolbar tools: InsertLinks, InsertOffer, Personalize, SmartLink
+            .rs-editor-custom-icon {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                height: 33px;
+                width: 40px;
+                padding: 0;
+                border-right: 1px solid $quaternary-blue;
+                overflow: visible;
+
+                &.editor-custom-offer {
+                    .k-button,
+                    button.k-button {
+                        width: 100%;
+                        height: 33px !important;
+                        min-height: 33px;
+                        display: inline-flex !important;
+                        align-items: center;
+                        justify-content: center;
+                        background: transparent !important;
+                        background-color: transparent !important;
+                        background-image: none !important;
+                        border: 0 !important;
+                        box-shadow: none !important;
+                        color: inherit !important;
+
+                        .k-button-text {
+                            color: inherit !important;
+                        }
+
+                        i.icon-md {
+                            color: $primary-black;
+                        }
+
+                        &:hover,
+                        &.k-hover,
+                        &:focus,
+                        &.k-focus,
+                        &:active,
+                        &.k-active {
+                            background: transparent !important;
+                            background-color: transparent !important;
+                            background-image: none !important;
+                            border: 0 !important;
+                            box-shadow: none !important;
+
+                            i.icon-md {
+                                color: $primary-blue;
+                            }
+                        }
+                    }
+                }
+
+                &.editor-custom-smartlink {
+                    .rs-bootstrap-dropdown .rs-dropdown {
+                        &.show {
+                            background-color: $white !important;
+
+                            .dropdown-toggle i,
+                            .dropdown-toggle .rs-tooltip-wrapper i {
+                                color: $primary-blue !important;
+                            }
+                        }
+                    }
+                }
+
+                .rs-bootstrap-dropdown {
+                    width: 100%;
+                    height: 100%;
+                    overflow: visible;
+
+                    .rs-dropdown .dropdown-toggle {
+                        border-right: 0;
+                    }
+                }
+
+                &:not(.editor-custom-offer) {
+                    .k-button,
+                    button.k-button {
+                        display: flex;
+                        justify-content: center;
+                        align-items: center;
+                        width: 40px;
+                        height: 33px !important;
+                        box-shadow: none;
+                        border-right: 0 !important;
+                        padding: 0;
+                        background-color: transparent !important;
+                        background-image: none;
+                        border: 0 !important;
+
+                        .k-button-text {
+                            color: inherit !important;
+                            display: flex;
+                            align-items: center;
+                            justify-content: center;
+                        }
+
+                        i.icon-md {
+                            color: $primary-black;
+                        }
+
+                        &:hover {
+                            background-color: $white;
+
+                            i.icon-md {
+                                color: $primary-blue;
+                            }
+                        }
+
+                        span[data-rs-icon-replaced] {
+                            width: 100%;
+                            height: 100%;
+                            cursor: pointer;
+
+                            > .icon-md {
+                                color: $primary-black;
+                            }
+                        }
+                    }
+                }
+            }
+
+            // Image upload dropdown (RSBootstrapdown) — outside rs-editor-custom-icon wrapper too
+            .rs-bootstrap-dropdown {
+                overflow: visible;
+
+                .rs-dropdown {
+                    &.no_caret .dropdown-toggle::after {
+                        display: none !important;
+                        content: none !important;
+                    }
+
+                    .dropdown-toggle::after {
+                        display: none !important;
+                        content: none !important;
+                    }
+                }
+
+                .rs-dropdown {
+                    .dropdown-toggle {
+                        display: flex;
+                        justify-content: center;
+                        align-items: center;
+                        width: 40px;
+                        height: 33px;
+                        border-right: 1px solid $quaternary-blue;
+
+                        i {
+                            color: $primary-black;
+                        }
+
+                        &:hover {
+                            background-color: $white;
+
+                            i {
+                                color: $primary-blue;
+                            }
+                        }
+                    }
+
+                    &.show {
+                        background-color: $primary-blue !important;
+
+                        i {
+                            color: $white !important;
+                        }
+                    }
+
+                    &.email-editor-smartlink.show {
+                        background-color: $white !important;
+
+                        .dropdown-toggle i,
+                        .dropdown-toggle .rs-tooltip-wrapper i {
+                            color: $primary-blue !important;
+                        }
+                    }
+                }
+            }
+        }
+
+        // Smart link list — .active must not force white text on white background
+        .addImportSmartLinkDropdownListContainer {
+            .dropdown-item {
+                &.active,
+                &.active:not(:hover) {
+                    background-color: transparent !important;
+                    color: $primary-black !important;
+                    pointer-events: auto;
+
+                    .smartlink-dd-primary-line,
+                    .rs-dd-sub-label {
+                        color: $primary-black !important;
+                    }
+                }
+
+                &:hover:not(:disabled),
+                &:focus:not(:disabled),
+                &.focus:not(:disabled) {
+                    background-color: $secondary-blue !important;
+                    color: $white !important;
+
+                    .smartlink-dd-primary-line,
+                    .rs-dd-sub-label {
+                        color: $white !important;
+                    }
+                }
+            }
+        }
+
+        &.rsk-dd-start {
+            .k-toolbar {
+                > .k-button-group:first-child,
+                > .k-button-group:first-child > .k-dropdown-button,
+                > .k-button-group:first-child .k-dropdownlist {
+                    margin-left: 10px;
+                    top: -2px;
+                }
+
+                .k-dropdownlist[title='Format'] {
+                    width: 110px !important;
+                    min-width: 110px !important;
+                    max-width: 110px !important;
+                    flex: 0 0 110px !important;
+                    margin-right: 5px;
+                }
+
+                .k-button-group:first-child .k-button:first-child:not(:only-child) {
+                    border-top-left-radius: 0;
+                }
+            }
+        }
+
+        .k-button {
+            border-right: 1px solid $quaternary-blue !important;
+        }
+
+        @include editor-toolbar-no-trailing-border;
+
+        .k-toolbar .k-button.k-disabled,
+        .k-toolbar .k-button:disabled,
+        .k-toolbar .k-button[aria-disabled='true'],
+        .k-toolbar .k-dropdown-button.k-disabled,
+        .k-toolbar .k-dropdown-button[aria-disabled='true'],
+        .k-toolbar .k-dropdownlist.k-disabled,
+        .k-toolbar .k-dropdownlist[aria-disabled='true'],
+        .k-toolbar .k-dropdownlist.k-disabled .k-button,
+        .k-toolbar .rs-editor-custom-icon .k-button.k-disabled,
+        .k-toolbar .rs-editor-custom-icon .k-button:disabled,
+        .k-toolbar .rs-editor-custom-icon .k-button[aria-disabled='true'] {
+            @include editor-toolbar-disabled-control;
+            opacity: 0.6;
+        }
+
+        // Format dropdown trigger should not get icon-button right border on inner btn
+        .k-dropdown-button .k-button,
+        .k-dropdownlist .k-button {
+            border-right: 0 !important;
+        }
+
+        .k-editor-content {
+            font-family: $rs-font-regular;
+            font-size: $font-xsm;
+            color: $primary-black;
+            border-bottom-left-radius: var(--globalBorderRadius);
+            border-bottom-right-radius: var(--globalBorderRadius);
+            overflow: hidden;
+
+            > .ProseMirror {
+                min-height: 80px;
+            }
+        }
+    }
+}
+
+// Portaled toolbar tooltips (appended to body by useEditorIconReplacements).
+// JS sets position via inline !important — keep this block cosmetics-only.
+.rs-editor-tooltip {
+    background: transparent !important;
+    border: 0 !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    box-shadow: none !important;
+    width: auto !important;
+    opacity: 1 !important;
+    display: block !important;
+
+    &__text {
+        display: inline-block;
+        background-color: $tooltip-bg-color;
+        color: $white;
+        font-size: 12px;
+        line-height: normal;
+        letter-spacing: 0.5px;
+        padding: 4px 8px 6px;
+        border-radius: 5px;
+        white-space: nowrap;
+    }
+
+    &__arrow {
+        display: block;
+        width: 0;
+        height: 0;
+        margin: 0 auto;
+        border-left: 6px solid transparent;
+        border-right: 6px solid transparent;
+        border-top: 6px solid $tooltip-bg-color;
+    }
+}
+
+// Format block tool — ResKendoDropdown in editor toolbar (replaces native Kendo FormatBlock)
+.restexteditor.kendo-text-format {
+    .rs-editor-format-block-tool {
+        width: 110px;
+        min-width: 110px;
+        max-width: 110px;
+        flex: 0 0 110px;
+        margin-right: 5px;
+
+        .res-kendo-dd-menu-wrapper {
+            width: 100%;
+        }
+
+        .k-floating-label-container > .k-floating-label,
+        .k-floating-label-container > .k-label {
+            display: none !important;
+        }
+    }
+}
+
+.rs-textarea-component-wrapper .rstcw-top-icons .editor-custom-offer {
+ .k-button::before{
+        background-color: transparent ;
+    }  
+}

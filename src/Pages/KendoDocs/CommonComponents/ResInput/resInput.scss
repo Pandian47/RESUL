@@ -1,0 +1,363 @@
+// ResInput — self-contained floating-label text input (ported from components_new/input + global reset)
+@use '../../kendoDocsVariables.scss' as *;
+
+$input-meter-draft: #b8b8b8;
+$input-meter-alert: #e5c553;
+$input-meter-scheduled: #f58332;
+$input-meter-inprogress: #26ade0;
+$input-meter-completed: #379904;
+
+@keyframes res-input-spin {
+    0% {
+        transform: rotate(0deg);
+    }
+
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+.#{$res-input-wrapper} {
+    position: relative;
+    width: 100%;
+    margin: 0;
+
+    .#{$res-input-field} {
+        position: relative;
+        width: 100%;
+
+        .#{$res-input-border-bottom-required} {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            pointer-events: none;
+        }
+
+   
+
+        .#{$res-input-password-meter} {
+            height: 2px;
+            position: absolute;
+            width: 100%;
+            bottom: 0;
+            left: 0;
+
+            &::before {
+                content: '';
+                height: 100%;
+                display: block;
+                transition: width 0.2s;
+            }
+
+            &.bg20::before {
+                background-color: $input-meter-draft;
+                width: 20%;
+            }
+
+            &.bg40::before {
+                background-color: $input-meter-alert;
+                width: 40%;
+            }
+
+            &.bg60::before {
+                background-color: $input-meter-scheduled;
+                width: 60%;
+            }
+
+            &.bg80::before {
+                background-color: $input-meter-inprogress;
+                width: 80%;
+            }
+
+            &.bg100::before {
+                background-color: $input-meter-completed;
+                width: 100%;
+            }
+        }
+
+        .#{$res-input-icon-wrapper} {
+            position: absolute;
+            right: 0;
+            bottom: 1px;
+            padding: 0;
+            z-index: 5;
+            line-height: 0;
+            letter-spacing: 0;
+            background: transparent;
+            border-radius: 100%;
+
+            .#{$res-input-segment-loader} {
+                border: 2px solid #d3d3d3;
+                border-top: 2px solid #1da7ee;
+                border-radius: 50%;
+                width: 16px;
+                height: 16px;
+                max-width: 16px;
+                max-height: 16px;
+                padding: 0;
+                margin: 4px;
+                position: relative;
+                bottom: 0;
+                animation: res-input-spin 0.9s linear infinite;
+            }
+        }
+
+        .#{$res-input-validate-success} {
+            position: absolute;
+            right: 0;
+            bottom: 5px;
+            padding: 3px;
+            line-height: 0;
+            z-index: 6;
+            background: transparent;
+            border-radius: 100%;
+        }
+
+        .#{$res-input-form-field-icon} {
+            position: absolute;
+            right: 0;
+            bottom: 5px;
+            padding: 3px;
+            line-height: 0;
+            z-index: 4;
+            background: transparent;
+            border-radius: 100%;
+
+            i {
+                color: $primary-blue;
+            }
+        }
+    }
+
+    input,
+    input[disabled],
+    input[readonly],
+    input[required] {
+        border: 0;
+        border-radius: 0;
+        background-color: transparent;
+        outline: none !important;
+        box-shadow: none !important;
+        padding-left: 0;
+        padding-right: 0;
+        border-bottom: 1px solid $secondary-grey;
+        min-width: 0;
+        text-overflow: ellipsis;
+        overflow: hidden;
+        white-space: nowrap;
+
+        &:placeholder-shown {
+            & + label {
+                top: 1px;
+                font-size: $font-xsm;
+                max-width: 100%;
+            }
+        }
+
+        &:-webkit-autofill,
+        &:autofill {
+            border-bottom: 1px solid $secondary-grey !important;
+
+            & + label {
+                top: -16px;
+                font-size: $font-xxs;
+                color: $primary-grey;
+            }
+        }
+
+        & + label {
+            position: absolute;
+            left: 0;
+            right: 0;
+            top: -16px;
+            color: $secondary-grey;
+            font-size: $font-xxs;
+            transition: all 0.4s ease;
+            z-index: 1;
+            width: auto;
+            max-width: 100%;
+            min-width: 0;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            box-sizing: border-box;
+
+            .#{$res-input-label-text} {
+                display: block;
+                width: 100%;
+                min-width: 0;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                white-space: nowrap;
+            }
+        }
+
+        &:focus {
+            border-color: $secondary-blue;
+
+            & + label {
+                top: -16px;
+                font-size: $font-xxs;
+                color: $primary-grey;
+            }
+        }
+
+        & + label + .#{$res-input-border-bottom-required} {
+            &::before {
+                content: '';
+                width: 15px;
+                height: 1px;
+                border-bottom: 3px solid $primary-red;
+                position: absolute;
+                bottom: 0;
+                left: 0;
+                z-index: 4;
+                transform: translateY(70%);
+            }
+        }
+    }
+
+    &.#{$res-input-icon-placeholder},
+    &.#{$res-input-custom-icon} {
+        input,
+        input[disabled],
+        input[readonly],
+        input[required] {
+            padding-right: 24px;
+        }
+
+        input + label {
+            max-width: calc(100% - 24px);
+        }
+    }
+
+    input.pr25 {
+        padding-right: 25px;
+
+        & + label {
+            max-width: calc(100% - 25px);
+        }
+    }
+
+    &.#{$res-input-custom-double-icon} {
+        input,
+        input[disabled],
+        input[readonly],
+        input[required] {
+            padding-right: 50px;
+        }
+    }
+
+    &.#{$res-input-bg} {
+        input {
+            border-bottom: 1px solid $white;
+        }
+
+        input,
+        input::placeholder,
+        input + label,
+        input[disabled] + label,
+        input[readonly] + label,
+        input[required] + label {
+            color: $white;
+        }
+    }
+
+    .rcs-custom-params + label {
+        white-space: nowrap;
+        max-width: 100%;
+        text-overflow: ellipsis;
+        overflow: hidden;
+    }
+
+    .form-control {
+        background: transparent;
+    }
+
+    .#{$res-input-meta} {
+        min-height: 16px;
+        width: 100%;
+
+        &--tooltip-only {
+            justify-content: flex-end;
+        }
+
+        .#{$res-input-meta-text} {
+            font-size: $font-xs;
+            color: $secondary-grey;
+            font-family: $rs-font-regular;
+            line-height: 1.4;
+            display: block;
+            min-width: 0;
+            flex: 1 1 auto;
+        }
+
+        .#{$res-input-meta-content} {
+            font-size: $font-xs;
+            color: $secondary-grey;
+            font-family: $rs-font-regular;
+            line-height: 1.4;
+            min-width: 0;
+            flex: 1 1 auto;
+        }
+
+        i {
+            cursor: pointer;
+            flex-shrink: 0;
+        }
+    }
+}
+
+.#{$res-input-placeholder-wrapper} {
+    label {
+        .#{$res-input-label-required} {
+            color: $primary-red !important;
+            font-family: $rs-font-bold;
+            display: none;
+        }
+    }
+}
+
+.errorContainer.#{$res-input-wrapper} {
+    // input,
+    // input[disabled],
+    // input[readonly],
+    // input[required] {
+    //     & + label + .#{$res-input-border-bottom-required} {
+    //         &::before {
+    //             content: '';
+    //         }
+    //     }
+    // }
+    input {
+        border-color: $primary-red;
+
+        & + label {
+            color: $primary-red;
+        }
+
+        &:focus {
+            & + label {
+            color: $primary-red;
+            }
+        }
+
+        &:placeholder-shown + label {
+            color: $primary-red;
+        }
+    }
+
+    label {
+            color: $primary-red;
+    }
+
+    .#{$res-input-meta-text},
+    .#{$res-input-meta-content} {
+            color: $primary-red;
+    }
+}
+
+input::-ms-reveal {
+    display: none;
+}

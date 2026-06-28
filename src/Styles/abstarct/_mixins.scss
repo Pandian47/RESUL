@@ -1,0 +1,292 @@
+@mixin image($value, $position: center, $repeat: no-repeat) {
+    background-image: url('#{$image}#{$value}');
+    background-position: $position;
+    background-repeat: $repeat;
+}
+
+@mixin inputBorder($right, $bottom, $left, $height: 15px) {
+    background: bottom left -webkit-linear-gradient($left, $left) no-repeat,
+        bottom center -webkit-linear-gradient($bottom, $bottom) repeat-x,
+        bottom right -webkit-linear-gradient($right, $right) no-repeat !important;
+    background: bottom left linear-gradient($left, $left) no-repeat,
+        bottom center linear-gradient($bottom, $bottom) repeat-x, bottom right linear-gradient($right, $right) no-repeat !important;
+    background-size: 1px $height, 1px 1px, 1px $height !important;
+    -webkit-background-size: 1px $height, 1px 1px, 1px $height !important;
+}
+
+// using
+@mixin sizing(
+    $ff: false,
+    $fs: false,
+    $w: false,
+    $h: false,
+    $lh: false,
+    $wh: false,
+    $mh: false,
+    $fw: false,
+    $mw: false,
+    $maxw: false,
+    $maxh: false
+) {
+    @if $ff {
+        font-family: $ff;
+    }
+    @if $fs {
+        font-size: $fs;
+    }
+    @if $w {
+        width: $w;
+    }
+    @if $h {
+        height: $h;
+    }
+    @if $lh {
+        line-height: $lh;
+    }
+    @if $wh {
+        width: $wh;
+        height: $wh;
+    }
+    @if $mh {
+        min-height: $mh;
+    }
+    @if $fw {
+        font-weight: $fw;
+    }
+    @if $mw {
+        min-width: $mw;
+    }
+    @if $maxw {
+        max-width: $maxw;
+    }
+    @if $maxh {
+        max-height: $maxh;
+    }
+}
+@mixin color($color: false, $bg: false) {
+    @if $color {
+        color: $color;
+    }
+    @if $bg {
+        background-color: $bg;
+    }
+}
+@mixin br($radius) {
+    -webkit-border-radius: $radius;
+    -ms-border-radius: $radius;
+    border-radius: $radius;
+}
+@mixin border-radius-all($brtl: false, $brtr: false, $brbl: false, $brbr: false, $borderStyle: false) {
+    @if $borderStyle {
+        border-style: $borderStyle;
+    }
+    @if $brtl {
+        border-top-left-radius: $brtl;
+    }
+    @if $brtr {
+        border-top-right-radius: $brtr;
+    }
+    @if $brbr {
+        border-bottom-right-radius: $brbr;
+    }
+    @if $brbl {
+        border-bottom-right-radius: $brbl;
+    }
+}
+@mixin bor($width: 1px, $borderStyle: solid, $color: $dropdown-border) {
+    border: $width $borderStyle $color;
+}
+@mixin css3-prefix($props, $value) {
+    -webkit-#{$props}: #{$value};
+    -moz-#{$props}: #{$value};
+    -ms-#{$props}: #{$value};
+    -o-#{$props}: #{$value};
+    #{$props}: #{$value};
+}
+@mixin pseudo($display: block, $pos: absolute, $content: '') {
+    content: $content;
+    display: $display;
+    position: $pos;
+}
+// ABSOLUTE POSITIONING
+@mixin abs-position(
+    $position: null,
+    $top: null,
+    $right: null,
+    $bottom: null,
+    $left: null,
+    $zindex: null,
+    $contentcommon: null,
+    $dc: null
+) {
+    // position: absolute;
+    position: $position;
+    top: $top;
+    right: $right;
+    bottom: $bottom;
+    left: $left;
+    z-index: $zindex;
+    content: $contentcommon;
+    display: $dc;
+}
+// TEXT SHORTENING
+@mixin text-shorten {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+@mixin truncate($truncation-boundary) {
+    max-width: $truncation-boundary;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+@mixin center($align: center, $justify: center, $direction: row, $flow: false, $wrap: false) {
+    display: -ms-flexbox;
+    display: -webkit-flex;
+    display: flex;
+    -webkit-align-items: $align;
+    align-items: $align;
+    -webkit-justify-content: $justify;
+    justify-content: $justify;
+    -webkit-flex-direction: $direction;
+    flex-direction: $direction;
+    @if $wrap {
+        -webkit-flex-wrap: wrap;
+        flex-wrap: wrap;
+    }
+    @if $flow {
+        -webkit-flex-flow: $flow;
+        flex-flow: $flow;
+    }
+}
+@mixin flexbox($x: false, $y: false, $dir: false, $type: flex) {
+    @if ($type) {
+        display: $type;
+    }
+    @if ($x) {
+        justify-content: $x;
+    }
+    @if ($y) {
+        align-items: $y;
+    }
+    @if ($dir) {
+        flex-direction: $dir;
+    }
+}
+@mixin grid($tc: auto, $tr: 100%, $gap: 10px, $type: grid) {
+    @if ($type) {
+        display: $type;
+    }
+    @if ($tc) {
+        grid-template-columns: $tc;
+    }
+    @if ($tr) {
+        grid-template-rows: $tr;
+    }
+    @if ($gap) {
+        row-gap: $gap;
+    }
+}
+// margin padding letter-spacing list-style
+@mixin space(
+    $margin: false,
+    $padding: false,
+    $mt: false,
+    $ml: false,
+    $mr: false,
+    $mb: false,
+    $pt: false,
+    $pl: false,
+    $pr: false,
+    $pb: false,
+    $letterspace: false,
+    $liststyle: false
+) {
+    @if ($margin) {
+        margin: $margin;
+    }
+    @if ($padding) {
+        padding: $padding;
+    }
+    @if ($mt) {
+        margin-top: $mt;
+    }
+    @if ($ml) {
+        margin-left: $ml;
+    }
+    @if ($mr) {
+        margin-right: $mr;
+    }
+    @if ($mb) {
+        margin-bottom: $mb;
+    }
+    @if ($pt) {
+        padding-top: $pt;
+    }
+    @if ($pl) {
+        padding-left: $pl;
+    }
+    @if ($pr) {
+        padding-right: $pr;
+    }
+    @if ($pb) {
+        padding-bottom: $pb;
+    }
+    @if ($letterspace) {
+        letter-spacing: $letterspace;
+    }
+    @if ($liststyle) {
+        list-style: $liststyle;
+    }
+}
+// text-align & text-decoration common use
+@mixin textalign($ta: false) {
+    @if ($ta) {
+        text-align: $ta;
+    }
+}
+// =============================================================================
+// Font Face
+// =============================================================================
+
+@mixin font-face($name, $path, $weight: null, $style: null, $exts: woff) {
+    // @mixin font-face($name, $path, $weight: null, $style: null, $exts: eot woff2 woff ttf svg) {
+    $src: null;
+
+    $extmods: (
+        eot: '?',
+       // svg: '#' + str-replace($name, ' ', '_'),
+    );
+
+    $formats: (
+        otf: 'opentype',
+        ttf: 'truetype',
+    );
+
+    @each $ext in $exts {
+        $extmod: if(map-has-key($extmods, $ext), $ext + map-get($extmods, $ext), $ext);
+        $format: if(map-has-key($formats, $ext), map-get($formats, $ext), $ext);
+        $src: append($src, url(quote($path + '.' + $extmod)) format(quote($format)), comma);
+    }
+
+    @font-face {
+        font-family: quote($name);
+        font-style: $style;
+        font-weight: $weight;
+        src: $src;
+    }
+}
+
+// Dropdown tip up arrow start
+@mixin Dropdownuparrow() {
+    @include abs-position($position: absolute, $contentcommon: '');
+    @include sizing($wh: 8px);
+    background-color: $white;
+    -webkit-transform: rotate(45deg);
+    transform: rotate(45deg);
+    @include bor($color: $quaternary-blue);
+    border-right: none;
+    border-bottom: none;
+}
+// Dropdown tip up arrow end

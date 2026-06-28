@@ -1,0 +1,169 @@
+*,
+*::before,
+*::after {
+    padding: 0;
+    margin: 0;
+    box-sizing: border-box;
+}
+// for usage sample: @extend %animate;
+%required {
+    @include inputBorder($primary-grey, $primary-grey, $secondary-red);
+    &:hover {
+        @include inputBorder($primary-grey, $primary-grey, $secondary-red);
+    }
+    &:focus {
+        @include inputBorder($secondary_blue, $secondary_blue, $secondary-red);
+    }
+}
+
+%boxshadow {
+    @include bor($width: 1px, $color: $secondary-grey);
+}
+
+%center-div {
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    position: absolute;
+}
+
+// platform
+%css-scrollbar,
+%css-scrollbar-y {
+    overflow-y: auto !important;
+    overflow-x: hidden;
+    @-moz-document url-prefix(){scrollbar-color: $secondary-grey $tertiary-grey;}
+    @-moz-document url-prefix(){scrollbar-width: thin;}
+    &::-webkit-scrollbar-track {
+        display: none;
+        background: transparent;
+    }
+    &::-webkit-scrollbar {
+        width: 5px;
+        height: 5px;
+        background-color: transparent;
+        border-radius: 3px;
+        transition: 0.3s ease all;
+    }
+    &::-webkit-scrollbar-thumb {
+        background-color: transparent;
+        border-radius: 100px;
+        -webkit-border-radius: 100px;
+        -moz-border-radius: 100px;
+        cursor: pointer;
+    }
+     &:hover {
+        &::-webkit-scrollbar-thumb {
+            background-color: $secondary-grey;
+            border-radius: 3px;
+        }
+    }
+}
+
+%dropdown-scrollbar {
+    &::-webkit-scrollbar {
+        width: 0;
+        height: 0;
+    }
+     &:hover {
+        &::-webkit-scrollbar {
+            width: 5px;
+            height: 5px;
+        }
+    }
+}
+
+.rs-dropdown {
+    .css-scrollbar {
+        @extend %dropdown-scrollbar;
+    }
+}
+
+%css-scrollbar-y {
+    overflow-y: hidden;
+    overflow-x: auto !important;
+    scrollbar-width: 5px;
+    @-moz-document url-prefix(){scrollbar-color: $secondary-grey $tertiary-grey;}
+    &::-webkit-scrollbar-track {
+        display: none;
+        background: transparent;
+    }
+    &::-webkit-scrollbar {
+        width: 5px;
+        height: 5px;
+        background-color: transparent;
+        border-radius: 3px;
+    }
+    &::-webkit-scrollbar-thumb {
+        background-color: transparent;
+        border-radius: 100px;
+        -webkit-border-radius: 100px;
+        -moz-border-radius: 100px;
+        cursor: pointer;
+    }
+     &:hover {
+        &::-webkit-scrollbar-thumb {
+            background-color: $secondary-grey;
+            border-radius: 3px;
+        }
+    }
+}
+
+%dropdown-arrow-grey {
+    border-top: 10px solid transparent;
+    border-left: 4px solid transparent;
+    border-bottom: 6px solid $primary-grey;
+    border-right: 6px solid $primary-grey;
+}
+%dropdown-arrow-color {
+    border-top: 10px solid transparent;
+    border-left: 4px solid transparent;
+    border-bottom: 6px solid $secondary-grey;
+    border-right: 6px solid $secondary-grey;
+}
+%animate {
+    -webkit-transition: all 0.3s ease;
+    -moz-transition: all 0.3s ease;
+    -o-transition: all 0.3s ease;
+    transition: all 0.3s ease;
+}
+
+%calendarUI {
+    font-family: 'icomoon';
+    speak: none;
+    font-style: normal;
+    font-weight: normal;
+    font-variant: normal;
+    text-transform: none;
+    line-height: 1;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    color: $secondary_blue !important;
+    font-size: 25px;
+    background-image: none;
+    &:before {
+        content: '\e90a';
+        opacity: 1;
+    }
+}
+
+%pipe-separator {
+    li {
+        position: relative;
+        border-right: 0px;
+        &:first-child:before {
+            border-left: 0px;
+        }
+        &:before {
+            content: '';
+            height: 13px;
+            border-left: 1px solid $tertiary-grey;
+            @include abs-position($position: absolute, $left: -9px, $top: 2px);
+            border-width: thin;
+        }
+        &:last-of-type {
+            border-right: 0;
+        }
+    }
+}
+

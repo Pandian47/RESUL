@@ -1,0 +1,246 @@
+// Create Dynamic list page
+.dynamic-list-creation-skeleton {
+    position: relative;
+    min-height: 0;
+
+    &__card {
+        position: relative;
+        overflow: hidden;
+    }
+
+    .nodata-bar.nodata-skeleton-con {
+        top: 50%;
+    }
+}
+
+.CreateDynamicListCSS {
+    .fg-icons {
+        display: flex;
+        align-items: center;
+        position: static;
+        top: auto;
+        &.dynamiclist-input-icon{
+            z-index: 9999;
+        }
+    }
+    .triggerAddRemoveIcon {
+        &.rule-type-icons-offset {
+            padding-top: 5px;
+        }
+        .trigger-action-icons {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            line-height: 0;
+
+            .rs-tooltip-wrapper {
+                line-height: 0;
+            }
+        }
+    }
+    .recency-date-range-row {
+        margin-top: 6px;
+        margin-bottom: 0;
+
+        .recency-date-range-label {
+            color: $primary-black;
+            font-size: $font-xsm;
+            line-height: 1.4;
+            padding-left: 0;
+        }
+    }
+    .customEventColoum8 {
+        .recency-date-range-row {
+            margin-top: 8px;
+        }
+    }
+    .numbersList {
+        top: 5px;
+    }
+    .row > div {
+        position: relative;
+    }
+    .successIcon {
+        position: absolute;
+        right: -50px;
+        bottom: 0;
+        line-height: 0;
+    }
+    .rightOutSidePlusIcon {
+        position: absolute;
+        right: -35px;
+        top: auto;
+        bottom: 0;
+        .rs-bootstrap-dropdown .rs-dropdown .dropdown-toggle {
+            height: auto;
+            line-height: 0;
+        }
+    }
+    .createDynamicListBox {
+        .rs-tooltip-wrapper {
+            line-height: 0;
+        }
+        & > div {
+            @extend .box-design;
+            border: 1px dashed $primary-blue !important;
+            margin-top: 60px;
+            margin-bottom: 20px;
+            position: relative;
+            & > .row,
+            & > .triggerRules.row {
+                & > div > .row {
+                    position: relative;
+                    margin-bottom: 30px;
+/* [Kendo disabled]
+                    .rs-kendo-multi-dropdownmenu-wrapper .k-floating-label-container.k-empty > .k-floating-label {
+                        top: 2px;
+                    }
+*/
+/* [Kendo disabled]
+                    .k-floating-label-container .rs-kendo-multi-dropdown .k-floating-label {
+                        top: -16px;
+                    }
+*/
+/* [Kendo disabled]
+                    .rs-kendo-multi-dropdownmenu-wrapper .k-floating-label-container:focus-within .k-floating-label {
+                        top: -16px;
+                    }
+*/
+                }
+                .rs-input-wrapper{
+                    display: flex;
+                    align-items: flex-end;
+                    width: 100%;
+                    // height: 32px;
+                    input,
+                    select {
+                        height: auto;
+                    }
+                }
+
+            }
+            &:first-child {
+                margin-top: 0;
+            }
+            .customEventGroup {
+                .customEventRow {
+                    margin: 0;
+                    padding: 0 30px 30px 15px;
+                    background: $tertiary-blue;
+                    &.first {
+                        padding: 30px 30px 30px 0;
+                        & .customEventColoum4 {
+                            padding-right: 11px;
+                        }
+                        & .customEventColoum8 {
+                            padding-left: 20px;
+                        }
+                    }
+                    & .customEventColoum4 {
+                        padding-right: 21px;
+                    }
+                    & .customEventColoum8 {
+                        padding-left: 10px;
+                        .col-sm-4 {
+                            padding-right: 0;
+                        }
+                        .col-sm-8 {
+                            padding-left: 30px;
+                        }
+                    }
+                }
+                .addCustomEventRow {
+                    position: absolute;
+                    right: -22px;
+                    bottom: 0;
+                    line-height: 0;
+                }
+                .removeCustomEventRow {
+                    position: absolute;
+                    right: -15px;
+                    bottom: 0;
+                    line-height: 0;
+
+                    &--inline {
+                        position: static;
+                        right: auto;
+                        bottom: auto;
+                        flex-shrink: 0;
+                        padding-bottom: 8px;
+                    }
+                }
+                .custom-event-field-with-remove {
+                    gap: 8px;
+                }
+                .triggerAddRemoveIcon {
+                    position: relative;
+
+                    .trigger-action-icons {
+                        align-items: center;
+                    }
+
+                    .fg-icons {
+                        position: static;
+                        top: auto;
+                        height: auto;
+                    }
+                }
+                .numbersList {
+                    top: 37px;
+                }
+            }
+
+            .groupCloseIcon {
+                position: absolute;
+                top: 0; //15px;
+                right: -35px; //15px;
+                text-align: right;
+            }
+            .switchBlock {
+                position: absolute;
+                top: -45px;
+                left: 0;
+                text-align: center;
+                width: 100%;
+                & [class='position-relative'] {
+                    &:before {
+                        content: '';
+                        position: absolute;
+                        top: 50%;
+                        left: 0;
+                        width: 100%;
+                        height: 1px;
+                        background: #ccc;
+                    }
+                }
+            }
+            .rs-render-field-operator {
+                display: initial;
+            }
+        }
+    }
+}
+.triggerRules {
+/* [Kendo disabled]
+    .rs-kendo-datepicker-wrapper.errorContainer .validation-message {
+        // padding-right: 25px !important;
+        width: 100%;
+        padding-right: 5px;
+    }
+*/
+    .errorContainer.rs-input-wrapper label {
+        color: $primary-red !important;
+    }
+}
+
+.dynamiclistError {
+    .errorContainer.rs-radio-wrapper {
+        .validation-message {
+            display: none;
+        }
+    }
+}
+
+.crossdevice {
+    left: 230px
+}

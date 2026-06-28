@@ -1,0 +1,103 @@
+import _get from 'lodash/get';
+export const FORM_INITIAL_STATE = {
+    defaultValues: {
+        userProfile: '',
+        title: '',
+        firstname: '',
+        lastname: '',
+        mobileno: '',
+        emailId: '',
+        role: '',
+        address: '',
+        jobFunction: '',
+        city: '',
+        country: '',
+        zipcode: '',
+        currency: '',
+        dateFormat: '',
+        langauge: '',
+        timeFormat: '',
+        timezone: '',
+        isDayLight: false,
+        changePassword: {
+            currentpassword: '',
+            newpassword: '',
+            confirmpassword: '',
+        },
+        changeMobileNumber: {
+            currentMobileNumber: '',
+            newMobileNumber: '',
+            otpValue: '',
+        },
+        first: '',
+        second: '',
+        third: '',
+        fourth: '',
+        fifth: '',
+        sixth: '',
+        mobile: '+91',
+        phoneNumber: '',
+        getCountryVal: {},
+        numbers: '',
+        err: null,
+        profilePath: '',
+    },
+    mode: 'onBlur',
+};
+
+// export const title = [
+//     { titleDatalabel: 'Mr.', titleDataid: 1 },
+//     { titleDatalabel: 'Ms.', titleDataid: 2 },
+//     { titleDatalabel: 'Mrs.', titleDataid: 3 },
+// ];
+
+export const buildPayload = (formState) => {
+    const {
+        addressLine,
+        userId,
+        jobFunction,
+        profilePath,
+        zipCode,
+        city,
+        dateFormat,
+        timeFormat,
+        clientId,
+        departmentId,
+        currency,
+        country,
+        langauge,
+        timezone,
+        state,
+        isDayLight,
+    } = formState;
+    return {
+        userId,
+        clientId,
+        departmentId,
+        jobFunctionID: _get(jobFunction, 'jobFunctionID', 0),
+        jobFunctionValue: _get(jobFunction, 'jobFunctionName', ''),
+        profilePath,
+        address: addressLine,
+        zipcode: zipCode,
+        City: city,
+        isDayLight,
+        title: 0,
+        state: _get(state, 'state', state || ''),
+        timeFormatId: _get(timeFormat, 'timeFormatID', 0),
+        dateFormatId: _get(dateFormat, 'dateFormatID', 0),
+        timezoneId: _get(timezone, 'timeZoneID', 0),
+        languageId: _get(langauge, 'languageID', 0),
+        countryId: _get(country, 'countryID', 0),
+        currencyId: _get(currency, 'currencyID', 0),
+    };
+};
+
+export const roles = [
+    // { roleId: 1, roleName: 'Resulticks admin' },
+    // { roleId: 2, roleName: 'Resulticks superuser' },
+    // { roleId: 3, roleName: 'Resulticks User' },
+    { roleId: 4, roleName: 'Admin' },
+    { roleId: 5, roleName: 'Superuser' },
+    { roleId: 6, roleName: 'User' },
+    { roleId: 7, roleName: 'Agency owner' },
+];

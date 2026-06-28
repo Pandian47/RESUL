@@ -1,0 +1,101 @@
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Dependency directories
+node_modules/
+jspm_packages/
+
+# Generated from resul-genie-ui (Typo.js Hunspell); see copyGenieDictionariesPlugin in vite.config.js
+public/dictionaries/
+
+# Build output
+dist/
+build/
+.cache/
+.tmp/
+out/
+coverage/
+
+# Production files
+*.tgz
+
+# Environment variables
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Editor & IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+*.bak
+*.tmp
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Optional: package manager lock files (keep only one)
+# If you use npm:
+# yarn.lock
+# pnpm-lock.yaml
+# bun.lockb
+
+# Test coverage
+coverage/
+*.lcov
+
+# Storybook
+storybook-static/
+*.story.js
+*.stories.js
+*.stories.jsx
+*.stories.tsx
+
+# ESLint / Prettier cache
+.eslintcache
+.prettierignore
+
+# TypeScript (if present)
+*.tsbuildinfo
+
+# Misc
+*.log
+*.pid
+*.seed
+*.pid.lock
+
+# Compiled binary addons (http://nodejs.org/api/addons.html)
+build/Release
+
+# Dependency directory
+# https://www.npmjs.org/doc/misc/npm-faq.html#should-i-check-my-node_modules-folder-into-git
+**/node_modules
+
+#dist folder
+dist
+build
+
+#package-lock.json
+**/package-lock.json
+
+#VSCode metadata
+.vscode
+ 
+src/Pages/AuthenticationModule/Dashboard/index-old.jsx
+
+
+# Snyk Security Extension - AI Rules (auto-generated)
+.github/instructions/snyk_rules.instructions.md
+# Local env or configuration
+.envrc
+.local
+nul

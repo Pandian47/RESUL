@@ -1,0 +1,164 @@
+// Compass utilities
+// @import "compass/css3";
+
+// VARS
+$se-circle-width: 0.09em;
+$se-circle-width-hover: 0.07em;
+
+// colors default
+$se-primary-color: #000000; // czarny
+$se-secondary-color: #dfe8ed; //szary bcg
+$se-bg-color: #ffffff; //srodkowy bezowy 
+
+// colors customized
+$se-primary-color-blue: #0000ff;
+$se-primary-color-span: #3c4761;
+
+$se_positive: #5ba529;
+$se_neutral: #26ade0;
+$se_negative: #ff0005;
+
+$se_sizing: 120px;
+
+// CIRCLE
+// classes 2 extend
+.sentiment-rect-auto {
+	clip: rect(auto, auto, auto, auto);
+}
+
+.sentiment-pie {
+	position: absolute;
+	border: $se-circle-width solid $se-primary-color;
+	width: 1 - (2 * $se-circle-width);
+	height: 1 - (2 * $se-circle-width);
+	clip: rect(0em, 0.5em, 1em, 0em);
+	border-radius: 50%;
+	// @include rotate(0deg);
+    transform: rotate(0deg);
+}
+
+.sentiment-pie-fill {
+	// @include rotate(180deg);
+    transform: rotate(180deg);
+}
+
+// main
+.sentiment-c100 {
+
+	*, *:before, *:after {
+		// @include box-sizing(content-box);
+        box-sizing: content-box;
+	}
+
+	position: relative;
+	font-size: 160px;
+	width: $se_sizing;
+	height: $se_sizing;
+	border-radius: 50%;
+	float: left;
+	margin: 0;
+	background-color: $se-secondary-color;
+
+	// centered value inside circle
+	> span {
+		position: absolute;
+		// width: 100%;
+		z-index: 1;
+		left: 0;
+		top: 0;
+		width: 5em;
+		line-height: 5em;
+		font-size: 0.2em;
+		color: $se-primary-color-span;
+		display: block;
+		text-align: center;
+		white-space: nowrap;
+		// @include transition-property(all);
+		// @include transition-duration(0.2s);
+		// @include transition-timing-function(ease-out);
+        transition-property: all;
+        transition-duration: 0.2s;
+        transition-timing-function: ease-out;
+	}
+
+	// background inside the circle
+	&:after {
+		position: absolute;
+		top: $se-circle-width;
+		left: $se-circle-width;
+		display: block;
+		content: " ";
+		border-radius: 50%;
+		background-color: $se-bg-color;
+		width: 1 - (2 * $se-circle-width);
+		height: 1 - (2 * $se-circle-width);
+		// @include transition-property(all);
+		// @include transition-duration(0.2s);
+		// @include transition-timing-function(ease-in);
+        transition-property: all;
+        transition-duration: 0.2s;
+        transition-timing-function: ease-out;
+
+	}
+
+	// the slice (mask)
+	.sentiment-slice {
+		position: absolute;
+		width: 1em;
+		height: 1em;
+		clip: rect(0em, 1em, 1em, 0.5em);
+	}
+
+	// circle to show the status
+	.sentiment-bar {
+		@extend .sentiment-pie;
+	}
+
+	// loop to create all needed elements automatically
+	@for $j from 51 through 100 {
+		&.sentiment-p#{$j} .sentiment-slice {
+			@extend .sentiment-rect-auto;
+		}
+		&.sentiment-p#{$j} .sentiment-bar:after {
+			@extend .sentiment-pie-fill;
+		}
+		&.sentiment-p#{$j} .sentiment-fill {
+			@extend .sentiment-pie;
+			@extend .sentiment-pie-fill;
+		}
+	}
+
+	// loop to rotate all 100 circles
+	@for $j from 1 through 100 {
+		&.sentiment-p#{$j} .sentiment-bar {
+			// @include rotate((360/100*$j) + deg);
+            transform: rotate(#{$j * 3.6}deg);
+		}
+	}
+
+	// hover styles
+	&:hover {
+		cursor: default;
+		> span {
+			width: 3.33em;
+			line-height: 3.33em;
+			font-size: 0.3em;
+			color: $se-primary-color-span;
+		}
+		&:after {
+			top: $se-circle-width-hover;
+			left: $se-circle-width-hover;
+			width: 1 - (2 * $se-circle-width-hover);
+			height: 1 - (2 * $se-circle-width-hover);
+		}
+	}
+  
+	// positive
+	&.positive {
+		.sentiment-bar, .sentiment-fill { border-color: $se_positive !important;}
+		&:hover {
+			> span { color: $se-primary-color-span;}
+		}
+	}
+
+}

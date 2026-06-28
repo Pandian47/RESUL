@@ -1,0 +1,537 @@
+// Data pipeline CSS starts
+
+.res-pipeline-blk {
+    --sync-history-grid-border: #e2e8f0;
+    position: relative;
+    z-index: 9;
+    margin-top: 37px;
+    .chart-container {
+    width: 100%;
+    background: #fff;
+    /*padding: 20px;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+    margin-bottom: 20px;*/
+    display: flex;
+    flex-direction: column;
+}
+
+.chart-wrapper {
+    display: flex;
+    height: 300px;
+    margin-bottom: 21px;
+
+    .chart-bars-wrap {
+        flex: 1;
+        min-width: 0;
+        position: relative;
+        display: flex;
+        overflow: hidden;
+    }
+
+    // Carousel prev/next sit on chart-wrapper (not chart-bars-wrap) so they align with Y-axis / plot edge (see pipeline bar chart).
+    &.rs-pipeline-bar-chart-carousel--scrollable {
+        position: relative;
+        min-width: 0;
+
+        .rs-pipeline-bar-chart-carousel__control.sync-history-chart-nav {
+            position: absolute;
+            top: 0;
+            bottom: 35px;
+            z-index: 6;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: auto;
+            padding: 0;
+            border: 0;
+            background: transparent;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.2s ease, visibility 0.2s ease;
+            pointer-events: none;
+
+            .carousel-control-prev-icon,
+            .carousel-control-next-icon {
+                position: relative;
+                    display: inline-block;
+                    width: 36px;
+                    height: 36px;
+                    padding: 10px;
+                    border-radius: 50%;
+                    background-color: $white;
+                    border: 1px solid var(--sync-history-grid-border);
+                    box-shadow: 0 2px 8px rgba(15, 23, 42, 0.08);
+                    opacity: 0.95;
+            }
+
+            .carousel-control-prev-icon {
+                left: -14px;
+                background-image: url(Assets/Images/carousel-arrow-left.svg) !important;
+            }
+
+            .carousel-control-next-icon {
+                left: 14px;
+                background-image: url(Assets/Images/carousel-arrow-right.svg) !important;
+            }
+
+            &:hover {
+                .carousel-control-prev-icon,
+                .carousel-control-next-icon {
+                    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.12);
+                }
+            }
+        }
+
+        .carousel-control-prev.rs-pipeline-bar-chart-carousel__control {
+            left: 22px;
+            transform: translateX(-50%);
+        }
+
+        .carousel-control-next.rs-pipeline-bar-chart-carousel__control {
+            right: 0;
+        }
+
+        &:hover .rs-pipeline-bar-chart-carousel__control.sync-history-chart-nav {
+            opacity: 1;
+            visibility: visible;
+            pointer-events: auto;
+        }
+    }
+}
+
+.y-axis-labels {
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding-right: 15px;
+    padding-bottom: 35px;
+    color: #94a3b8;
+    font-size: 11px;
+    height: 100%;
+    box-sizing: border-box;
+
+    span {
+        line-height: 1;
+        transform: translateY(50%);
+
+        &:first-child {
+            transform: translateY(0);
+        }
+
+        // 100
+        &:last-child {
+            transform: translateY(0);
+        }
+
+        // 0
+    }
+}
+
+.react-flow-static-container {
+    background-image: radial-gradient(#c2cfe3 1px, transparent 1px);
+    background-size: 24px 24px;
+    background-position: 0 0;
+    background-color: #fff;
+
+    // .react-flow__node-custom{
+    //     .react-flow__handle{
+    //         &.connectionindicator{
+    //             display: none;
+    //         }
+    //     }
+    // }
+}
+
+.CustomBarChartViewCSS {
+    flex: 1;
+    position: relative;
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-around;
+    border-left: 1px solid #e2e8f0;
+    border-bottom: 1px solid #e2e8f0;
+    height: 100%;
+    padding: 0 10px;
+    margin: 0;
+
+    .grid-lines {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        pointer-events: none;
+        z-index: 0;
+
+        .line {
+            width: 100%;
+            border-top: 1px solid #f1f5f9;
+            height: 0;
+            // 0 line is handled by bottom border of container, but we can keep it for consistency
+        }
+    }
+
+    >.skeleton-bar {
+        width: 23px;
+        margin: 0 2px;
+        border-radius: 2px 2px 0 0;
+        background-color: #e2e8f0;
+        z-index: 1;
+        animation: synchistorySkeletonPulse 1.4s ease-in-out infinite;
+        pointer-events: none;
+        &.no-data {
+            animation: none;
+        }
+    }
+
+    .rs-tooltip-wrapper {
+        z-index: 1;
+        height: 100%;
+        display: flex;
+        flex-direction: column-reverse;
+        width: 23px;
+        margin: 0 2px;
+
+        .tooltip .tooltip-inner {
+            text-transform: capitalize;
+        }
+
+        li {
+            width: 100%;
+            border-radius: 2px 2px 0 0;
+            cursor: pointer;
+            transition: all 0.2s;
+            position: relative;
+            //opacity: 0.3; // Lighter by default as per image style
+
+            &:hover {
+                opacity: 1;
+                transform: scaleY(1.05);
+                transform-origin: bottom;
+            }
+
+            // Colors
+            &.success {
+                background-color: #379904;
+            }
+
+            &.running {
+                background-color: #99cc03;
+            }
+
+            &.failed {
+                background-color: #F44336;
+            }
+
+            &.upstream_failed {
+                background-color: #FF5722;
+            }
+
+            &.skipped {
+                background-color: #9E9E9E;
+            }
+
+            &.up_for_retry {
+                background-color: #FFC107;
+            }
+
+            &.up_for_reschedule {
+                background-color: #9C27B0;
+            }
+
+            &.queued {
+                background-color: #00BCD4;
+            }
+
+            &.scheduled {
+                background-color: #673AB7;
+            }
+
+            &.deferred {
+                background-color: #a3cccc;
+            }
+
+            &.removed {
+                background-color: #795548;
+            }
+
+            &.restarting {
+                background-color: #FF9800;
+            }
+
+            &.none {
+                background-color: #E0E0E0;
+            }
+
+            // Highlight selected/active if needed, for now just hover
+            // If the item.Status is 'success' it's dark green.
+            // The image has mostly light bars.
+            // Maybe we keep opacity 0.3 for all, unless hovered?
+            // Or maybe the 'success' bars are just naturally that color.
+            // Let's stick to opacity 0.3 for now.
+
+            // Override opacity for 'success' if it's the current run?
+            // We don't have 'current run' info here easily, so stick to hover.
+
+            a {
+                display: block;
+                width: 100%;
+                height: 100%;
+
+                span {
+                    position: absolute;
+                    bottom: -32px;
+                    left: 50%;
+                    transform: translateX(-50%);
+                    width: 45px;
+                    text-align: center;
+                    font-size: 10px;
+                    line-height: 1.2;
+                    color: #64748b;
+                }
+            }
+        }
+    }
+}
+
+@keyframes synchistorySkeletonPulse {
+    0% {
+        opacity: 0.55;
+    }
+
+    50% {
+        opacity: 0.9;
+    }
+
+    100% {
+        opacity: 0.55;
+    }
+}
+
+.chart-legend {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 15px;
+    margin: 0 0 0 30px;
+
+    .legend-item {
+        display: flex;
+        align-items: center;
+
+        .legend-color {
+            width: 12px;
+            height: 12px;
+            border-radius: 2px;
+            margin-right: 5px;
+
+            &.success {
+                background-color: #379904;
+            }
+
+            &.running {
+                background-color: #99cc03;
+            }
+
+            &.failed {
+                background-color: #F44336;
+            }
+
+            &.upstream_failed {
+                background-color: #FF5722;
+            }
+
+            &.skipped {
+                background-color: #9E9E9E;
+            }
+
+            &.up_for_retry {
+                background-color: #FFC107;
+            }
+
+            &.up_for_reschedule {
+                background-color: #9C27B0;
+            }
+
+            &.queued {
+                background-color: #00BCD4;
+            }
+
+            &.scheduled {
+                background-color: #673AB7;
+            }
+
+            &.deferred {
+                background-color: #a3cccc;
+            }
+
+            &.removed {
+                background-color: #795548;
+            }
+
+            &.restarting {
+                background-color: #FF9800;
+            }
+
+            &.none {
+                background-color: #E0E0E0;
+            }
+        }
+
+        .legend-label {
+            font-size: 12px;
+            color: #64748b;
+        }
+    }
+}
+
+.chart-legend .legend-item.legend-skeleton {
+    .legend-color {
+        background-color: #e2e8f0;
+        animation: synchistorySkeletonPulse 1.4s ease-in-out infinite;
+    }
+
+    .legend-label {
+        display: inline-block;
+        height: 10px;
+        width: 48px;
+        border-radius: 10px;
+        background-color: #e2e8f0;
+        animation: synchistorySkeletonPulse 1.4s ease-in-out infinite;
+    }
+}
+
+.headBandCSS {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border: 1px solid #c2cfe3;
+    border-radius: 5px;
+    background-color: #fff;
+    padding: 5px 10px;
+    margin: 15px 0 15px;
+
+    h4 {
+        margin: 0;
+        max-width: 190px;
+    }
+
+    li {
+        position: relative;
+
+        &:first-child:before {
+            display: none;
+        }
+
+        &::before {
+            content: '';
+            position: absolute;
+            height: 40px;
+            top: 50%;
+            left: -15px;
+            margin-top: -20px;
+            border-left: solid 1px #c2cfe3;
+        }
+    }
+}
+
+.logListCss {
+    height: 300px;
+    padding: 5px;
+    border: 1px solid #c2cfe3;
+    border-radius: 5px;
+    background-color: #fff;
+
+    li {
+        padding: 15px;
+
+        &:nth-child(odd) {
+            background: #f0f8ff;
+        }
+    }
+}
+
+#jsonGraph {
+    padding: 5px;
+    border: 1px solid #c2cfe3;
+    border-radius: 5px;
+    background-color: #fff;
+}
+
+#jsonGraph iframe {
+    border: 1px solid #c2cfe3;
+    border-radius: 5px;
+    background-color: #fff;
+}
+
+.react-flow__attribution {
+    display: none !important;
+}
+
+.react-flow__minimap {
+    display: none !important;
+    top: 0;
+    bottom: inherit !important;
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    border: 1px solid #e2e8f0;
+    margin-bottom: 20px;
+    margin-right: 20px;
+}
+
+.react-flow__controls {
+    top: 0;
+    right: 0;
+    bottom: inherit !important;
+    left: inherit !important;
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    border: 1px solid #e2e8f0;
+    margin-left: 20px;
+    margin-bottom: 20px;
+    padding: 4px;
+
+    button {
+        background-color: transparent;
+        border: none;
+        border-bottom: 1px solid #e2e8f0;
+        //border-radius: 5px;
+        width: 24px;
+        height: 24px;
+        color: #64748b;
+        transition: all 0.2s;
+
+        &.react-flow__controls-interactive {
+            display: none;
+        }
+
+        &.react-flow__controls-fitview {
+            border-bottom: 0;
+        }
+
+        &:hover {
+            background-color: #f1f5f9;
+            color: #0f172a;
+        }
+
+        &:last-child {
+            border-bottom: none;
+        }
+
+        svg {
+            max-width: 16px;
+            max-height: 16px;
+        }
+    }
+}
+}
+

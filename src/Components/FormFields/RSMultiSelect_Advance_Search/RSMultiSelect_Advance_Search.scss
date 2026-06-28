@@ -1,0 +1,89 @@
+@import 'Styles/abstarct/variables';
+
+.rs-multi-select-new.rs-bootstrap-dropdown {
+    .rs-dropdown .dropdown-menu {
+        &[x-placement='bottom-start'] {
+            &:before {
+                left: auto;
+                right: 12px;
+            }
+        }
+
+        &[x-placement='top-start'] {
+            &:before {
+                left: auto;
+                right: 12px;
+            }
+        }
+
+        &[x-placement='bottom-end'],
+        &[x-placement='top-end'] {
+            &:before {
+                right: 12px;
+                ;
+            }
+        }
+
+        .dropdown-item.bs-dd-item {
+            border-radius: 7px;
+            padding: 5px 10px;
+            cursor: pointer;
+            margin-top: 3px;
+            margin-bottom: 3px;
+
+            &.active {
+                background-color: $tertiary-blue !important;
+
+                .checkbox-wrapper,
+                .checkbox-wrapper label,
+                .checkbox-wrapper .lbl,
+                .checkbox-wrapper .lbl span {
+                   // color: $white !important;
+                }
+            }
+
+            &:hover,
+            &.active:hover {
+                background-color: $tertiary-blue !important;
+                .checkbox-wrapper,
+                .checkbox-wrapper label,
+                .checkbox-wrapper .lbl,
+                .checkbox-wrapper .lbl span {
+                    //color: $white !important;
+                }
+            }
+        }
+
+        .dropdown-item.bs-dd-item:first-child {
+            margin-top: 0;
+        }
+
+        .dropdown-item.bs-dd-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .k-list-filter {
+            padding: 8px 10px 4px;
+
+            .k-searchbox {
+                width: 100%;
+            }
+
+            .k-input-inner {
+                width: 100%;
+                box-sizing: border-box;
+                border: none;
+                background: transparent;
+                padding: 6px 36px 6px 8px;
+                font-size: $font-xs;
+                font-family: $rs-font-regular;
+                color: $secondary-black;
+                outline: none;
+
+                &::placeholder {
+                    color: $secondary-grey;
+                }
+            }
+        }
+    }
+}

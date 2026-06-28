@@ -1,0 +1,62 @@
+// Tooltip
+//.rs-tooltip-wrapper {
+//position: relative;
+.tooltip {
+    cursor: default;
+    pointer-events: none;
+    &.rs-tag-remove-tooltip{
+        z-index: 99999;
+    }
+    z-index: 10010;
+    inset: auto auto 0px 0px;
+    position: absolute;
+    width: max-content;
+    &.show {
+        opacity: 1;
+    }
+    &.toolTipOverlayZindexCSS {
+        z-index: 10003;
+    }
+    // &.bs-tooltip-bottom {
+    //     //inset: 0px auto auto 0px !important;
+    //     //padding-top: 7px;
+    //     //padding-bottom: 0;
+    //     // .tooltip-arrow {
+    //     //     top: 0 !important;
+    //     //     bottom: inherit !important;
+    //     // }
+    // }
+    // .tooltip-arrow {
+    //     bottom: 0 !important;
+    //     &:before {
+    //         border-bottom-color: $tooltip-bg-color;
+    //         border-top-color: $tooltip-bg-color;
+    //     }
+    // }
+    .tooltip-inner {
+        @include color($bg: $tooltip-bg-color);
+        // font-family: $rs-font-light;
+        border-radius: 5px;
+        font-size: 12px;
+        letter-spacing: 0.5px;
+        line-height: normal;
+        padding-bottom: 6px;
+    }
+    &.bs-tooltip-top .tooltip-arrow::before,
+    &.bs-tooltip-auto[data-popper-placement^='top'] .tooltip-arrow::before {
+        border-top-color: $tooltip-bg-color;
+    }
+    &.bs-tooltip-bottom .tooltip-arrow::before,
+    &.bs-tooltip-auto[data-popper-placement^='bottom'] .tooltip-arrow::before {
+        border-bottom-color: $tooltip-bg-color;
+    }
+    &.bs-tooltip-start .tooltip-arrow::before,
+    &.bs-tooltip-auto[data-popper-placement^='left'] .tooltip-arrow::before {
+        border-left-color: $tooltip-bg-color;
+    }
+    &.bs-tooltip-end .tooltip-arrow::before,
+    &.bs-tooltip-auto[data-popper-placement^='right'] .tooltip-arrow::before {
+        border-right-color: $tooltip-bg-color;
+    }
+}
+//}

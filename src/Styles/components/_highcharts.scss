@@ -1,0 +1,194 @@
+.piechart-default-render {
+    margin-top: 0;
+    // .highcharts-label.highcharts-data-label span {
+    //   z-index: -1;
+    // }
+    g.highcharts-label.highcharts-tooltip {
+        opacity: 0 !important;
+    }
+    .highcharts-label.highcharts-tooltip > span {
+        left: -1px !important;
+        top: -1px !important;
+        background: $secondary-black;
+        padding: 3px 9px;
+        border-radius: 4px;
+        hr {
+            margin: 1px -8px 0;
+        }
+    }
+}
+.columnchart-default-render,
+.piechart-default-render {
+    .highcharts-label.highcharts-tooltip > span > span {
+        position: relative;
+        top: -2px;
+        hr {
+            margin: 1px -8px 5px;
+        }
+    }
+}
+.pyramidchart-default-render,
+.barchart-default-render,
+.varpie-default-render,
+.areachart-default-render {
+    .highcharts-label.highcharts-tooltip > span > span {
+        position: relative;
+        top: -3px;
+        hr {
+            margin: 1px -8px 5px;
+        }
+    }
+}
+.piechart-position-render {
+    //   margin-top: 17px;
+}
+// chatrs legend alignment common start
+path.highcharts-grid-line:last-child {
+    display: none;
+}
+path.highcharts-axis-line {
+    // stroke: $quaternary-blue;
+}
+// Area spline x-axis label nudge — prevent first/last date labels clipping at plot edges
+.areaspline-chart,
+.areachart-default-render {
+    g.highcharts-axis-labels.highcharts-xaxis-labels text {
+        &:last-child {
+            transform: translate(-21px, 0);
+        }
+        &:first-child {
+            transform: translate(18px, 0);
+        }
+    }
+}
+
+// Long formatted dates (e.g. "Jun 24, 2026") need extra room on the last tick
+.x-axis-labels-performance {
+    g.highcharts-axis-labels.highcharts-xaxis-labels text {
+        &:last-child {
+            transform: translate(-36px, 0);
+        }
+        &:first-child {
+            transform: translate(18px, 0);
+        }
+    }
+}
+.barchart-axis-lable g.highcharts-axis-labels.highcharts-xaxis-labels text {
+    &:first-child {
+        transform: inherit;
+    }
+}
+.areaspline-x-axis-labels g.highcharts-axis-labels.highcharts-xaxis-labels text {
+    &:first-child {
+        transform: translate(8px, 0);
+    }
+    // &:last-child {
+    //     transform: translate(-11px, 0);
+    // }
+}
+
+// 1. areaspline-x-axis-labels    -  only month
+// 2. x-axis-labels-performance  - month with date & hours
+// chatrs legend alignment common end
+
+.highcharts-link.highcharts-point {
+    &,
+    &.highcharts-point-hover,
+    &.highcharts-point-inactive {
+        opacity: 0.6;
+    }
+}
+// .highcharts-legend-item.highcharts-pie-series {
+//     top: 0 !important;
+// }
+.highcharts-legend-item .sp-legend .sp-label {
+    margin-left: 14px;
+}
+// .sankey-last-col text {
+//     transform: translateX(-20px);
+// }
+.highcharts-subtitle {
+    .percent-value {
+        font-family: $rs-font-medium !important; //'Muktamedium' !important;
+    }
+}
+
+body:has(.portlet-container.portlet-expanded) {
+    overflow: hidden !important;
+}
+
+.bubble-chart-custom {
+    position: relative;
+    width: fit-content;
+    max-width: 100%;
+    margin: 0 auto;
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 70px;
+    ul {
+        display: flex;
+        align-items: center;
+        gap: 0px;
+
+        .bubble-chart-list {
+            width: 160px;
+            height: 160px;
+            position: relative;
+            border-radius: 150px;
+            text-align: center;
+            align-items: center;
+            justify-content: center;
+            display: flex;
+            flex-direction: column;
+            color: #ffffff;
+            margin-left: -30px;
+            &:nth-child(odd) {
+                top: 55px;
+            }
+            &.b-mon {
+                background-color: $monday + eb;
+                z-index: 1;
+            }
+            &.b-tue {
+                background-color: $tuesday + eb;
+            }
+            &.b-wed {
+                background-color: $wednesday + eb;
+                z-index: 1;
+            }
+            &.b-thu {
+                background-color: $thursday + eb;
+            }
+            &.b-fri {
+                background-color: $friday + eb;
+                z-index: 1;
+            }
+            &.b-sat {
+                background-color: $saturday + eb;
+            }
+            &.b-sun {
+                background-color: $sunday + eb;
+            }
+            .b-title {
+                display: flex;
+                align-items: center;
+                color: #ffffff;
+                font-size: 32px;
+                small {
+                    color: #ffffff;
+                    display: inline-block;
+                    position: relative;
+                    top: 2px;
+                    font-size: 19px;
+                }
+            }
+            p {
+                margin-top: -5px;
+            }
+        }
+    }
+}
+
+.varpieChartIcon .icon-rs-social-twitter-medium {
+    color: $primary-black !important;
+}

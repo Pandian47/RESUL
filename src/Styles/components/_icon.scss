@@ -1,0 +1,93 @@
+.res-icon {
+    border-radius: 28px;
+    @extend %animate;
+    position: relative;
+    &,
+    i {
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center;
+    }
+    // &:hover {
+    // background-color: #fff;
+    // box-shadow: 1px 3px 4px -3px #00000069;
+    // }
+    &.inline {
+        display: inline-block !important;
+    }
+    &.res-icon-sm,
+    &.res-icon-default {
+        &,
+        i {
+            // width: 28px;
+            // height: 28px;
+        }
+    }
+    &.res-icon-md {
+        &,
+        i {
+            // width: 26px;
+            // height: 26px;
+        }
+    }
+    &.res-icon-lg {
+        &,
+        i {
+            // width: 50px;
+            // height: 50px;
+        }
+    }
+    &.res-circle {
+        // &:hover {
+        //     background-color: $primary-blue;
+        //     i {
+        //         color: #ffffff;
+        //     }
+        // }
+        i {
+            color: $primary-blue;
+            @extend %animate;
+        }
+    }
+}
+.res-icon-group {
+    display: inline-block;
+    .res-icon {
+        float: left;
+        margin-left: 15px;
+        &.res-icon-default {
+            margin-left: 8px;
+        }
+        &:first-child {
+            margin-left: 0;
+        }
+    }
+}
+
+.headerlist-wrapper {
+    .res-icon-group {
+        .res-icon {
+            &:first-child {
+                margin-left: 15px;
+            }
+        }
+    }
+}
+
+// ICON SIZE ANALYTICS SUMMARY REPORT
+.res-icon-group {
+    &.analytics-icon-group {
+        .res-icon {
+            width: auto;
+            height: auto;
+            // border: 1px solid #c2cfe3;
+            // border-radius: 5px;
+            margin: 0;
+            // margin-right: 4px;
+            i {
+                width: 31px;
+                height: 31px;
+            }
+        }
+    }
+}

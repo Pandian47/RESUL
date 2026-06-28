@@ -1,0 +1,223 @@
+//RSButton
+.rs-button {
+    @include sizing($lh: 24px, $fs: $font-sm);
+    @include br($radius: 5px);
+    @include textalign($ta: center);
+    @include space($padding: 8px 25px);
+    border: 0;
+    outline: 0;
+    margin: 0;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    letter-spacing: 0.5px;
+    display: inline-block;
+    // @extend %animate;
+    &.rbccti-sl-1 {
+        display: inline-block;
+        background-color: $primary-orange;
+        border: 1px solid $primary-orange;
+        color: $white;
+        text-decoration: none !important;
+        &:hover,
+        &:focus,
+        &:target {
+            outline: 1px dashed $white;
+        }
+    }
+    &.rbccti-sl-2 {
+        display: inline-block;
+        background-color: transparent;
+        border: 1px solid transparent;
+        color: $white;
+        text-decoration: underline;
+        border-radius: 0;
+        @include space($padding: 8px 10px);
+        &:hover,
+        &:focus,
+        &:target {
+            outline: 1px dashed $white;
+        }
+    }
+}
+
+//RSButtonPrimary
+.rs-button-primary {
+    @include color($color: $white, $bg: $primary-btn);
+    transition: all 0.3s ease;
+
+    .segment_loader {
+        border: 2px solid rgba($white, 0.35);
+        border-radius: 50%;
+        border-top-color: $white;
+        width: 16px;
+        height: 16px;
+        max-width: 16px;
+        max-height: 16px;
+        padding: 0;
+        flex-shrink: 0;
+        animation: rsButtonSegmentSpin 0.8s linear infinite;
+    }
+
+    &:hover,
+    &:focus,
+    &:target {
+        @include color($bg: $primary-btn-hover);
+        box-shadow: 0 0px 15px $primary-btn-hover;
+    }
+}
+
+.segment_loader {
+    border: 2px solid #d3d3d3;
+    border-radius: 50%;
+    border-top: 2px solid #1da7ee;
+    width: 16px;
+    height: 16px;
+    max-width: 16px;
+    max-height: 16px;
+    padding: 0;
+    flex-shrink: 0;
+    animation: rsButtonSegmentSpin 0.8s linear infinite;
+}
+
+@keyframes rsButtonSegmentSpin {
+    0% {
+        transform: rotate(0deg);
+    }
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+//RSButtonSecondary
+.rs-button-secondary {
+    @include color($color: $secondary-orange, $bg: transparent);
+    @include space($padding: 6px 8px);
+    @include sizing($fs: 18px);
+    transition: all 0.3s ease;
+    text-decoration: none;
+    &:hover,
+    &:focus,
+    &:target {
+        text-decoration: underline;
+    }
+}
+
+//RSTertiaryButton
+.rs-button-tertiary {
+    @include color($color: $white, $bg: $tertiary-btn);
+    transition: all 0.3s ease;
+    font-size: 13px;
+    @include space($padding: 3px 8px);
+
+    &:hover,
+    &:focus,
+    &:target {
+        @include color($bg: $tertiary-btn);
+        box-shadow: 0 0px 15px $tertiary-btn-hover;
+    }
+}
+
+//RSQuaternaryButton
+.rs-button-quaternary {
+    @include color($color: $primary-black, $bg: $quaternary-btn);
+    transition: all 0.3s ease;
+    font-size: 13px;
+    @include space($padding: 3px 8px);
+
+    &:hover,
+    &:focus,
+    &:target {
+        @include color($bg: $quaternary-btn-hover);
+        box-shadow: 0 0px 15px $quaternary-btn-hover;
+    }
+}
+//RSbgsecondaryblue
+.rs-bg-secondary-blue {
+    &:hover {
+    background-color: $secondary_blue !important;
+    box-shadow: 0 0px 15px $secondary_blue !important;
+    }
+}
+
+// .btn-link, .btn-link-small {
+// 	color: $primary-orange  !important;
+// 	text-decoration: none;
+// 	cursor: pointer;
+
+// 	&:hover {
+// 		text-decoration: underline;
+// 	}
+// }
+
+.button-link,
+.rs-button-link-small,
+.rs-button-link,
+.rs-button-green {
+    @include color($color: $primary-orange, $bg: transparent);
+    @include space($padding: 6px 8px);
+    @include sizing($fs: 18px);
+    transition: all 0.3s ease;
+    text-decoration: none;
+    &:hover,
+    &:focus,
+    &:target {
+        text-decoration: underline;
+        cursor: pointer;
+    }
+}
+
+.rs-button-green {
+    color: $primary-btn !important;
+}
+
+.rs-button-link-small {
+    font-size: $font-xxs;
+    padding: 0;
+}
+
+.buttons-holder,
+.modal-footer {
+    @include textalign($ta: right);
+    @include space($mt: var(--pageButtonTopSpace), $mb: 0);
+    @extend .clearfix;
+    .rs-button-wrapper {
+        @include space($margin: 0, $ml: 1rem);
+        &:first-child {
+            @include space($margin: 0);
+        }
+        // .rs-button {
+        //     margin: 0;
+        //     &:first-child {
+        //         margin: 0;
+        //     }
+        // }
+    }
+    // .rs-button {
+    //     @include space($ml: 1rem);
+    //     &:first-child {
+    //         @include space($margin: 0);
+    //     }
+    // }
+}
+.modal-footer {
+    @include space($mt: var(--formGroupBottomSpace), $mb: 0);
+}
+.rs-button-upload {
+    border: 1px dashed $secondary-blue;
+    color: $secondary-black;
+    background-color: $white;
+    padding: 12px 30px;
+    border-radius: 3px;
+    font-size: 16px;
+    line-height: 20px;
+    margin: auto;
+    display: block;
+    width: 100%;
+    span {
+        display: block;
+        padding: 0;
+        font-size: 14px;
+        line-height: 20px;
+        opacity: 0.9;
+    }
+}

@@ -1,0 +1,748 @@
+@use '../../kendoDocsVariables.scss' as *;
+
+@mixin res-datetime-popup-tabs {
+    .k-datetime-buttongroup {
+        padding: 6px 6px 0;
+
+        .k-button-group {
+            gap: 2px;
+
+            .k-button {
+                background-image: none;
+                background-color: $tertiary-grey;
+                border: 0;
+                border-radius: 0;
+                border-top-left-radius: 10px;
+                border-top-right-radius: 10px;
+                box-shadow: none;
+                outline: none;
+                padding: 7px 24px;
+                min-width: 80px;
+                margin: 0;
+
+                .k-button-text {
+                    color: $secondary-black;
+                    text-decoration: none;
+                    font-family: $rs-font-regular;
+                    font-size: 17px;
+                    font-weight: 400;
+                }
+
+                &:hover {
+                    background-color: darken($tertiary-grey, 5%);
+                }
+
+                &.k-selected {
+                    background-color: $secondary-blue;
+                    background-image: none;
+                    overflow: visible;
+                    z-index: 1;
+
+                    .k-button-text {
+                        color: $white;
+                    }
+
+                    &::before {
+                        content: '';
+                        display: block;
+                        position: absolute;
+                        bottom: -6px;
+                        left: 50%;
+                        transform: translateX(-50%);
+                        width: 0;
+                        height: 0;
+                        border-left: 7px solid transparent;
+                        border-right: 7px solid transparent;
+                        border-top: 7px solid $secondary-blue;
+                        background: transparent;
+                        border-radius: 0;
+                        z-index: 2;
+                    }
+
+                    &:hover {
+                        background-color: darken($secondary-blue, 5%);
+                    }
+                }
+            }
+        }
+
+        .k-segmented-control,
+        .k-segmented-control-stretched {
+            background: transparent;
+            border: 0;
+            border-radius: 0;
+            box-shadow: none;
+            overflow: visible;
+            padding: 0;
+            gap: 2px;
+        }
+
+        .k-segmented-control-thumb {
+            display: none;
+        }
+
+        .k-segmented-control-button {
+            background-image: none;
+            background-color: $tertiary-grey;
+            border: 0;
+            border-radius: 0;
+            box-shadow: none;
+            outline: none;
+            padding: 7px 24px;
+            min-width: 80px;
+            text-align: center;
+            position: relative;
+            overflow: visible;
+            color: $secondary-black;
+
+            &:first-of-type {
+                border-top-left-radius: 10px;
+                border-top-right-radius: 0;
+            }
+
+            &:last-of-type {
+                border-top-left-radius: 0;
+                border-top-right-radius: 10px;
+            }
+
+            .k-segmented-control-button-text,
+            .k-button-text {
+                color: $secondary-black;
+                text-decoration: none;
+                font-family: $rs-font-regular;
+                font-size: 17px;
+                font-weight: 400;
+            }
+
+            &:hover {
+                background-color: darken($tertiary-grey, 5%);
+            }
+
+            &.k-selected,
+            &[aria-pressed='true'] {
+                background-color: $secondary-blue;
+                background-image: none;
+                overflow: visible;
+                z-index: 1;
+
+                &:first-of-type {
+                    border-top-left-radius: 10px;
+                    border-top-right-radius: 0;
+                }
+
+                &:last-of-type {
+                    border-top-left-radius: 0;
+                    border-top-right-radius: 10px;
+                }
+
+                .k-segmented-control-button-text,
+                .k-button-text {
+                    color: $white;
+                }
+
+                &::before {
+                    content: '';
+                    display: block;
+                    position: absolute;
+                    bottom: -6px;
+                    left: 50%;
+                    transform: translateX(-50%);
+                    width: 0;
+                    height: 0;
+                    border-left: 7px solid transparent;
+                    border-right: 7px solid transparent;
+                    border-top: 7px solid $secondary-blue;
+                    background: transparent;
+                    border-radius: 0;
+                    z-index: 2;
+                }
+
+                &::after {
+                    display: none;
+                }
+
+                &:hover {
+                    background-color: darken($secondary-blue, 5%);
+                }
+            }
+        }
+    }
+}
+
+@mixin res-datetime-popup-footer-actions {
+
+    .k-datetime-footer.k-actions,
+    .k-datetime-footer.k-actions-stretched,
+    .k-actions.k-actions-stretched:has(.k-time-accept),
+    .k-datetime-footer,
+    .k-actions.k-datetime-footer {
+        display: flex;
+        flex-direction: row;
+        flex-wrap: nowrap;
+        align-items: center;
+        justify-content: flex-end;
+        width: 100%;
+        min-height: 48px;
+        gap: 12px;
+        margin: 0;
+        padding: 10px 12px 10px 0;
+        box-sizing: border-box;
+        background-color: $white;
+        flex: 0 0 auto;
+
+        >.k-button,
+        .k-button {
+            flex: 0 0 auto;
+            flex-grow: 0;
+            width: auto;
+            min-width: auto;
+            max-width: none;
+            margin: 0;
+        }
+
+        >.k-button.k-time-accept,
+        >.k-button.k-button-solid-primary,
+        .k-button.k-time-accept,
+        .k-button.k-button-solid-primary {
+            order: 2;
+            background-color: $primary-btn;
+            background-image: none;
+            border: 0;
+            border-radius: 5px;
+            box-shadow: none;
+            color: $white;
+            padding: 8px 25px;
+
+            .k-button-text {
+                color: $white;
+            }
+        }
+
+        >.k-button.k-time-cancel,
+        .k-button.k-time-cancel {
+            order: 1;
+            background: transparent;
+            background-image: none;
+            border: 0;
+            border-radius: 0;
+            box-shadow: none;
+            color: $secondary-orange;
+            padding: 8px 10px;
+
+            .k-button-text {
+                color: $secondary-orange;
+            }
+        }
+    }
+}
+
+// Calendar colours — header title + selected/today/hover. Shared so they apply
+// on first paint (before JS tags the popup) and after, preventing a red flash.
+@mixin res-datetime-calendar-colors {
+    .k-calendar {
+        .k-link {
+            border-radius: 0;
+        }
+
+        .k-nav-today,
+        .k-calendar-nav-today {
+            color: $primary-blue;
+            text-transform: uppercase;
+        }
+
+        // Hover on a date cell — light quaternary blue
+        .k-calendar-td {
+
+            &:hover .k-link,
+            &.k-hover .k-link {
+                background-color: $primary-blue;
+                color: $white;
+                box-shadow: none;
+            }
+        }
+
+        .k-calendar-td.k-today {
+            background-color: $quaternary-blue;
+            color: $secondary-black;
+        }
+
+        // Selected date — force RESUL primary blue over Kendo's theme primary (red)
+        .k-calendar-td.k-selected,
+        .k-calendar-td[aria-selected='true'] {
+
+            .k-link,
+            .k-calendar-cell-inner {
+                background-color: $primary-blue !important;
+                color: $white !important;
+                box-shadow: none;
+            }
+
+            &:hover,
+            &.k-hover,
+            &:focus,
+            &.k-focus {
+
+                .k-link,
+                .k-calendar-cell-inner {
+                    background-color: $primary-blue !important;
+                    color: $white !important;
+                }
+            }
+        }
+    }
+
+    // Month/year title is a Kendo primary button (defaults to theme red)
+    .k-calendar-infinite .k-calendar-header {
+        .k-calendar-title .k-button-text {
+            color: $primary-black !important;
+        }
+
+        .k-calendar-nav-today .k-button-text {
+            color: $primary-blue !important;
+        }
+    }
+}
+
+// First-paint — portaled popup matches final chrome before JS adds scope classes (prevents tab/footer flash)
+body>.k-animation-container:has(.k-datetime-container) {
+    // width: 295px;
+    // max-width: 295px;
+    // overflow: visible;
+    // z-index: 10003;
+
+    .k-popup,
+    .k-datetime-container {
+        display: flex;
+        flex-direction: column;
+        width: 291px;
+        min-width: 291px;
+        max-width: 291px;
+        overflow: hidden;
+        background-color: $white;
+        border: 1px solid $quaternary-blue;
+        border-radius: var(--globalBorderRadius);
+        // border-top-left-radius: 0;
+        // border-top-right-radius: 0;
+    }
+
+    @include res-datetime-popup-tabs;
+    @include res-datetime-popup-footer-actions;
+    @include res-datetime-calendar-colors;
+}
+
+.#{$res-kendo-datetimepicker-wrapper} {
+    position: relative;
+    width: 100%;
+
+    .validation-message {
+        font-size: $font-xs;
+        padding-right: 15px;
+        padding-bottom: 10px;
+    }
+
+    .k-datetimepicker,
+    .k-picker {
+        position: relative;
+        width: 100%;
+        background: transparent;
+        border: 0;
+        border-radius: 0;
+        box-shadow: none;
+        &.k-focus {
+            border: none;
+            box-shadow: none;
+        }
+
+        &::after {
+            content: '';
+            width: 100%;
+            height: 1px;
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            z-index: 3;
+            border-bottom: 1px solid $secondary-grey;
+        }
+
+        &:focus-within::after {
+            border-bottom-color: $secondary-blue;
+            box-shadow: none;
+        }
+
+        &:focus,
+        &:focus-visible,
+        &:focus-within {
+            box-shadow: none;
+        }
+
+        .k-input,
+        .k-input-inner {
+            border: 0;
+            border-radius: 0;
+            box-shadow: none;
+            background: transparent;
+        }
+
+        .k-input-inner,
+        .k-input input {
+            padding: 0;
+            padding-bottom: 0;
+            height: 30px;
+            color: $secondary-black;
+            font-family: $rs-font-regular;
+            font-size: $font-xsm;
+
+            &::placeholder {
+                color: $secondary-grey;
+            }
+        }
+
+        .k-input-button {
+            background: transparent;
+            border: 0;
+            box-shadow: none;
+            padding: 0;
+            width: auto;
+            min-width: 24px;
+            height: 30px;
+            position: absolute;
+            right: 0;
+            bottom: 0;
+            z-index: 4;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            .k-svg-icon,
+            .k-button-icon,
+            [class*='icon-rs-calendar'] {
+                display: inline-flex;
+                visibility: visible;
+                opacity: 1;
+                position: relative;
+                z-index: 1;
+            }
+        }
+
+        .k-button .k-button-text {
+            text-decoration: none;
+        }
+    }
+
+    &.errorContainer {
+
+        .k-datetimepicker::after,
+        .k-picker::after {
+            border-bottom-color: $primary-red;
+        }
+    }
+}
+
+// .k-animation-container.#{$res-kendo-datetimepicker-popup},
+// .k-animation-container.#{$res-kendo-datetimepicker-popup} .k-popup,
+// .k-animation-container.#{$res-kendo-datetimepicker-popup} .k-datetime-container,
+.k-datetime-container.#{$res-kendo-datetimepicker-popup},
+.k-popup.k-datetime-container.#{$res-kendo-datetimepicker-popup} {
+    margin-left: 0;
+    background-color: $white;
+   // border: 1px solid $quaternary-blue;
+   // border-radius: var(--globalBorderRadius);
+    // border-top-left-radius: 0;
+    // border-top-right-radius: 0;
+    // margin-top: -2px;
+
+    @include res-datetime-popup-tabs;
+
+    .k-datetime-footer,
+    .k-datetime-footer.k-actions,
+    .k-datetime-footer.k-actions-stretched,
+    .k-actions.k-datetime-footer {
+        display: flex;
+        flex-direction: row;
+        flex-wrap: nowrap;
+        align-items: center;
+        justify-content: flex-end;
+        width: 100%;
+        max-width: 100%;
+        gap: 12px;
+        margin-top: 0;
+        padding: 10px 12px 10px 0;
+        overflow: visible;
+        flex-shrink: 0;
+        position: relative;
+        z-index: 5;
+        background-color: $white;
+        text-align: right;
+        box-sizing: border-box;
+
+        >.k-button,
+        .k-button,
+        .k-actions-button-group .k-button {
+            flex: 0 0 auto;
+            flex-grow: 0;
+            width: auto;
+            min-width: auto;
+            max-width: none;
+            margin: 0;
+
+            &.k-time-accept,
+            &.k-button-solid-primary,
+            &.k-button-primary {
+                order: 2;
+                background-image: none;
+                background-color: $primary-btn;
+                border: 0;
+                outline: 0;
+                border-radius: 5px;
+                color: $white;
+                font-family: $rs-font-regular;
+                font-size: $font-sm;
+                line-height: 24px;
+                text-align: center;
+                padding: 8px 25px;
+                cursor: pointer;
+                letter-spacing: $letterSpacing;
+                box-shadow: none;
+
+                .k-button-text {
+                    color: $white;
+                    font-size: $font-sm;
+                    line-height: 24px;
+                    letter-spacing: $letterSpacing;
+                }
+
+                &:hover,
+                &:focus,
+                &:active {
+                    background-color: $primary-btn-hover;
+                    color: $white;
+                    box-shadow: 0 0 15px $primary-btn-hover;
+                }
+            }
+
+            &.k-time-cancel,
+            &:not(.k-time-accept):not(.k-button-solid-primary):not(.k-button-primary) {
+                order: 1;
+                background: transparent;
+                border: 0;
+                outline: 0;
+                border-radius: 0;
+                color: $secondary-orange;
+                padding: 8px 10px;
+                font-family: $rs-font-regular;
+                font-size: $font-sm;
+                line-height: 24px;
+                cursor: pointer;
+                box-shadow: none;
+                text-decoration: none;
+
+                .k-button-text {
+                    color: $secondary-orange;
+                    text-decoration: none;
+                    font-size: $font-sm;
+                    line-height: 24px;
+                }
+
+                &:hover .k-button-text {
+                    text-decoration: underline;
+                }
+            }
+        }
+    }
+
+    @include res-datetime-calendar-colors;
+
+    .k-calendar-view {
+        height: 260px;
+        margin-bottom: 0;
+        margin-top: 0;
+
+        .k-calendar-table {
+            padding: 0;
+            margin: 0;
+            .k-calendar-thead .k-calendar-tr .k-calendar-th {
+                color: $primary-black;
+            }
+        }
+    }
+
+    .k-datetime-calendar-wrap {
+        height: 235px;
+        overflow: hidden;
+    }
+
+    .k-datetime-time-wrap {
+        height: auto;
+        max-height: 280px;
+        overflow: hidden;
+        box-sizing: border-box;
+        padding-bottom: 4px;
+
+        .k-time-header {
+            flex-shrink: 0;
+        }
+
+        .k-title {
+            font-weight: inherit;
+            color: $primary-black;
+        }
+
+        .k-time-list-container {
+            height: 200px;
+            max-height: 200px;
+            overflow: hidden;
+
+            .k-time-list .k-item:hover {
+                color: $primary-blue;
+            }
+        }
+
+        .k-time-list-wrapper {
+            height: 200px;
+            max-height: 200px;
+            overflow: hidden;
+        }
+    }
+
+    .k-calendar-infinite .k-calendar-header {
+        padding: 8px 16px 0 16px;
+    }
+    
+}
+
+// .k-animation-container.#{$res-kendo-datetimepicker-popup},
+// .k-animation-container.kendo-popup-bottom,
+// .k-animation-container.showing-below {
+//     z-index: 10003;
+//     width: 295px;
+//     max-width: 295px;
+//     margin-top: -2px;
+//     overflow: visible;
+// }
+
+.kendo-docs-scheduler-demo,
+.kendo-docs-preview-container {
+    overflow: visible;
+
+    .#{$res-kendo-datetimepicker-wrapper} {
+        overflow: visible;
+    }
+
+    // Footer actions — right-aligned
+    .k-datetime-footer.k-actions-stretched,
+    .k-datetime-footer.k-actions,
+    .k-animation-container .k-datetime-footer {
+        display: flex;
+        flex-direction: row;
+        justify-content: flex-end;
+        align-items: center;
+        width: 100%;
+        text-align: right;
+        gap: 12px;
+        padding: 10px 14px;
+        box-sizing: border-box;
+
+        .k-button {
+            flex: 0 0 auto;
+            flex-grow: 0;
+            width: auto;
+            max-width: none;
+            transition: none;
+        }
+    }
+}
+
+// Portaled popup — global scope (ResTimePicker pattern)
+.#{$res-kendo-datetimepicker-popup} {
+    .k-popup,
+    .k-datetime-container {
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+        max-width: 295px;
+        background-color: $white;
+    }
+
+    .k-datetime-buttongroup {
+        flex: 0 0 auto;
+    }
+
+    .k-datetime-wrap {
+        flex: 1 1 auto;
+        overflow: hidden;
+        min-height: 0;
+    }
+
+    .k-datetime-calendar-wrap,
+    .k-datetime-time-wrap {
+        overflow: hidden;
+    }
+
+    .k-actions,
+    .k-action-buttons,
+    .k-datetime-footer,
+    .k-datetime-footer.k-actions,
+    .k-datetime-footer.k-actions-stretched,
+    .#{$res-kendo-datetimepicker-footer} {
+        flex: 0 0 auto;
+        align-self: stretch;
+        padding: 10px 12px 10px 0;
+        display: flex;
+        flex-direction: row;
+        flex-wrap: nowrap;
+        justify-content: flex-end;
+        align-items: center;
+        width: 100%;
+        max-width: 100%;
+        box-sizing: border-box;
+        gap: 12px;
+        background-color: $white;
+        position: relative;
+        z-index: 10;
+
+        >.k-button,
+        .k-button {
+            flex: 0 0 auto;
+            flex-grow: 0;
+            width: auto;
+            max-width: none;
+            margin: 0;
+        }
+
+        .k-time-accept,
+        .k-button-solid-primary {
+            order: 2;
+            background-color: $primary-btn;
+            border: 0;
+            border-radius: 5px;
+            color: $white;
+            padding: 8px 25px;
+            box-shadow: none;
+            transition: background-color 0.25s ease, box-shadow 0.25s ease;
+
+            .k-button-text {
+                color: $white;
+            }
+
+            &:hover,
+            &:focus {
+                background-color: $primary-btn-hover;
+                box-shadow: 0 0 12px $primary-btn-hover;
+            }
+        }
+
+        .k-time-cancel,
+        .k-button:not(.k-time-accept):not(.k-button-solid-primary) {
+            order: 1;
+            background: transparent;
+            border: 0;
+            color: $secondary-orange;
+            padding: 8px 10px;
+            box-shadow: none;
+
+            .k-button-text {
+                color: $secondary-orange;
+            }
+        }
+    }
+}

@@ -1,0 +1,1123 @@
+{
+  "components": [
+    {
+      "id": "fe404a06-26d9-4e7a-a27f-79b5047440c7",
+      "type": "block",
+      "position": {
+        "x": 272.20001220703125,
+        "y": 0
+      },
+      "size": {
+        "width": 1880,
+        "height": 1040
+      },
+      "content": null,
+      "style": {
+        "fontFamily": "Arial, sans-serif",
+        "fontSize": 16,
+        "lineHeight": 1.5,
+        "color": "#000000",
+        "backgroundColor": "transparent"
+      },
+      "subType": "layout-1",
+      "zIndex": 1,
+      "rotation": 0,
+      "locked": false,
+      "blocks": {
+        "fe404a06-26d9-4e7a-a27f-79b5047440c7-0": [
+          {
+            "id": "371aada7-e884-4022-af00-0e438506a830",
+            "type": "imageText",
+            "position": {
+              "x": 0,
+              "y": 20
+            },
+            "size": {
+              "width": 600,
+              "height": "auto"
+            },
+            "content": {
+              "text": "This text will appear alongside your image. You can customize the layout, styling, and content to match your needs.",
+              "imageUrl": "https://tinypng.com/static/images/boat.png",
+              "imageAlt": ""
+            },
+            "style": {
+              "enableContent": false,
+              "wrapperLayout": "image-left",
+              "imageWidth": 580,
+              "imageHeight": "auto",
+              "objectFit": "contain",
+              "maintainAspectRatio": false,
+              "imageAlign": "center",
+              "imageBorderRadius": 0,
+              "fontFamily": "Arial, sans-serif",
+              "fontSize": 16,
+              "lineHeight": 1.5,
+              "textColor": "#000000",
+              "titleColor": "#000000",
+              "textAlign": "left",
+              "backgroundColor": "transparent",
+              "paddingControl": {
+                "all": 10,
+                "top": 10,
+                "right": 10,
+                "bottom": 10,
+                "left": 10,
+                "isCustomPadding": false
+              },
+              "customBorder": false
+            },
+            "subType": "",
+            "parentId": "fe404a06-26d9-4e7a-a27f-79b5047440c7",
+            "columnIndex": 0,
+            "zIndex": 0,
+            "rotation": 0,
+            "locked": false
+          }
+        ]
+      }
+    },
+    {
+      "id": "758f1c6b-ded2-45b1-8606-9e3f7631325d",
+      "type": "block",
+      "position": {
+        "x": 272.20001220703125,
+        "y": 120
+      },
+      "size": {
+        "width": 1880,
+        "height": 1040
+      },
+      "content": null,
+      "style": {
+        "fontFamily": "Arial, sans-serif",
+        "fontSize": 16,
+        "lineHeight": 1.5,
+        "color": "#000000",
+        "backgroundColor": "transparent"
+      },
+      "subType": "layout-1",
+      "zIndex": 2,
+      "rotation": 0,
+      "locked": false,
+      "blocks": {
+        "758f1c6b-ded2-45b1-8606-9e3f7631325d-0": [
+          {
+            "id": "42a03188-030c-4f8d-b00f-ac748f08c115",
+            "type": "text",
+            "position": {
+              "x": 0,
+              "y": 20
+            },
+            "size": {
+              "width": 600,
+              "height": "auto"
+            },
+            "content": "Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s",
+            "style": {
+              "fontFamily": "Arial, sans-serif",
+              "fontSize": 14,
+              "lineHeight": 1.5,
+              "color": "#000000",
+              "backgroundColor": "transparent",
+              "textAlign": "center",
+              "paddingControl": {
+                "all": 10,
+                "top": 10,
+                "right": 10,
+                "bottom": 10,
+                "left": 10,
+                "isCustomPadding": false
+              }
+            },
+            "subType": "",
+            "parentId": "758f1c6b-ded2-45b1-8606-9e3f7631325d",
+            "columnIndex": 0,
+            "zIndex": 0,
+            "rotation": 0,
+            "locked": false
+          }
+        ]
+      }
+    },
+    {
+      "id": "58f10756-117d-4ac7-a198-98a428fc74b5",
+      "type": "block",
+      "position": {
+        "x": 272.20001220703125,
+        "y": 240
+      },
+      "size": {
+        "width": 1880,
+        "height": 1040
+      },
+      "content": null,
+      "style": {
+        "fontFamily": "Arial, sans-serif",
+        "fontSize": 16,
+        "lineHeight": 1.5,
+        "color": "#000000",
+        "backgroundColor": "transparent"
+      },
+      "subType": "layout-3",
+      "zIndex": 3,
+      "rotation": 0,
+      "locked": false,
+      "blocks": {
+        "58f10756-117d-4ac7-a198-98a428fc74b5-0": [
+          {
+            "id": "e2d924ea-11a7-4b89-ac28-be5f286362ea",
+            "type": "imageText",
+            "position": {
+              "x": -200,
+              "y": 20
+            },
+            "size": {
+              "width": 600,
+              "height": "auto"
+            },
+            "content": {
+              "text": "This text will appear alongside your image. You can customize the layout, styling, and content to match your needs.",
+              "imageUrl": "https://tinypng.com/static/images/boat.png",
+              "imageAlt": ""
+            },
+            "style": {
+              "enableContent": false,
+              "wrapperLayout": "image-left",
+              "imageWidth": 180,
+              "imageHeight": "auto",
+              "objectFit": "contain",
+              "maintainAspectRatio": false,
+              "imageAlign": "center",
+              "imageBorderRadius": 0,
+              "fontFamily": "Arial, sans-serif",
+              "fontSize": 16,
+              "lineHeight": 1.5,
+              "textColor": "#000000",
+              "titleColor": "#000000",
+              "textAlign": "left",
+              "backgroundColor": "transparent",
+              "paddingControl": {
+                "all": 10,
+                "top": 10,
+                "right": 10,
+                "bottom": 10,
+                "left": 10,
+                "isCustomPadding": false
+              },
+              "customBorder": false
+            },
+            "subType": "",
+            "parentId": "58f10756-117d-4ac7-a198-98a428fc74b5",
+            "columnIndex": 0,
+            "zIndex": 0,
+            "rotation": 0,
+            "locked": false
+          }
+        ],
+        "58f10756-117d-4ac7-a198-98a428fc74b5-1": [
+          {
+            "id": "b4ebcce6-c7be-46e3-998e-7bfb0500f8a8",
+            "type": "imageText",
+            "position": {
+              "x": -200,
+              "y": 20
+            },
+            "size": {
+              "width": 600,
+              "height": "auto"
+            },
+            "content": {
+              "text": "This text will appear alongside your image. You can customize the layout, styling, and content to match your needs.",
+              "imageUrl": "https://tinypng.com/static/images/boat.png",
+              "imageAlt": ""
+            },
+            "style": {
+              "enableContent": false,
+              "wrapperLayout": "image-left",
+              "imageWidth": 180,
+              "imageHeight": "auto",
+              "objectFit": "contain",
+              "maintainAspectRatio": false,
+              "imageAlign": "center",
+              "imageBorderRadius": 0,
+              "fontFamily": "Arial, sans-serif",
+              "fontSize": 16,
+              "lineHeight": 1.5,
+              "textColor": "#000000",
+              "titleColor": "#000000",
+              "textAlign": "left",
+              "backgroundColor": "transparent",
+              "paddingControl": {
+                "all": 10,
+                "top": 10,
+                "right": 10,
+                "bottom": 10,
+                "left": 10,
+                "isCustomPadding": false
+              },
+              "customBorder": false
+            },
+            "subType": "",
+            "parentId": "58f10756-117d-4ac7-a198-98a428fc74b5",
+            "columnIndex": 1,
+            "zIndex": 0,
+            "rotation": 0,
+            "locked": false
+          }
+        ],
+        "58f10756-117d-4ac7-a198-98a428fc74b5-2": [
+          {
+            "id": "86e40185-2034-4a52-b309-22439b78df76",
+            "type": "imageText",
+            "position": {
+              "x": -200,
+              "y": 20
+            },
+            "size": {
+              "width": 600,
+              "height": "auto"
+            },
+            "content": {
+              "text": "This text will appear alongside your image. You can customize the layout, styling, and content to match your needs.",
+              "imageUrl": "https://tinypng.com/static/images/boat.png",
+              "imageAlt": ""
+            },
+            "style": {
+              "enableContent": false,
+              "wrapperLayout": "image-left",
+              "imageWidth": 180,
+              "imageHeight": "auto",
+              "objectFit": "contain",
+              "maintainAspectRatio": false,
+              "imageAlign": "center",
+              "imageBorderRadius": 0,
+              "fontFamily": "Arial, sans-serif",
+              "fontSize": 16,
+              "lineHeight": 1.5,
+              "textColor": "#000000",
+              "titleColor": "#000000",
+              "textAlign": "left",
+              "backgroundColor": "transparent",
+              "paddingControl": {
+                "all": 10,
+                "top": 10,
+                "right": 10,
+                "bottom": 10,
+                "left": 10,
+                "isCustomPadding": false
+              },
+              "customBorder": false
+            },
+            "subType": "",
+            "parentId": "58f10756-117d-4ac7-a198-98a428fc74b5",
+            "columnIndex": 2,
+            "zIndex": 0,
+            "rotation": 0,
+            "locked": false
+          }
+        ]
+      }
+    },
+    {
+      "id": "e7a27f1a-d0b4-4b5a-b11e-ef97bcfcbd74",
+      "type": "block",
+      "position": {
+        "x": 272.20001220703125,
+        "y": 360
+      },
+      "size": {
+        "width": 1880,
+        "height": 1040
+      },
+      "content": null,
+      "style": {
+        "fontFamily": "Arial, sans-serif",
+        "fontSize": 16,
+        "lineHeight": 1.5,
+        "color": "#000000",
+        "backgroundColor": "transparent"
+      },
+      "subType": "layout-3",
+      "zIndex": 4,
+      "rotation": 0,
+      "locked": false,
+      "blocks": {
+        "e7a27f1a-d0b4-4b5a-b11e-ef97bcfcbd74-0": [
+          {
+            "id": "79d7c0ac-adf0-4110-bda5-c7ac02d96097",
+            "type": "text",
+            "position": {
+              "x": -200,
+              "y": 20
+            },
+            "size": {
+              "width": 600,
+              "height": "auto"
+            },
+            "content": "Lorem Ipsum is simply dummy text of the printing and typesetting industry.",
+            "style": {
+              "fontFamily": "Arial, sans-serif",
+              "fontSize": 14,
+              "lineHeight": 1.5,
+              "color": "#000000",
+              "backgroundColor": "transparent",
+              "textAlign": "left",
+              "paddingControl": {
+                "all": 10,
+                "top": 10,
+                "right": 10,
+                "bottom": 10,
+                "left": 10,
+                "isCustomPadding": false
+              }
+            },
+            "subType": "",
+            "parentId": "e7a27f1a-d0b4-4b5a-b11e-ef97bcfcbd74",
+            "columnIndex": 0,
+            "zIndex": 0,
+            "rotation": 0,
+            "locked": false
+          }
+        ],
+        "e7a27f1a-d0b4-4b5a-b11e-ef97bcfcbd74-1": [
+          {
+            "id": "cb2414d7-dced-4ba4-aeba-b4219c1df8a4",
+            "type": "text",
+            "position": {
+              "x": -200,
+              "y": 20
+            },
+            "size": {
+              "width": 600,
+              "height": "auto"
+            },
+            "content": "Lorem Ipsum is simply dummy text of the printing and typesetting industry.",
+            "style": {
+              "fontFamily": "Arial, sans-serif",
+              "fontSize": 14,
+              "lineHeight": 1.5,
+              "color": "#000000",
+              "backgroundColor": "transparent",
+              "textAlign": "left",
+              "paddingControl": {
+                "all": 10,
+                "top": 10,
+                "right": 10,
+                "bottom": 10,
+                "left": 10,
+                "isCustomPadding": false
+              }
+            },
+            "subType": "",
+            "parentId": "e7a27f1a-d0b4-4b5a-b11e-ef97bcfcbd74",
+            "columnIndex": 1,
+            "zIndex": 0,
+            "rotation": 0,
+            "locked": false
+          }
+        ],
+        "e7a27f1a-d0b4-4b5a-b11e-ef97bcfcbd74-2": [
+          {
+            "id": "e8292223-353f-46c2-9306-5eef80d4827c",
+            "type": "text",
+            "position": {
+              "x": -200,
+              "y": 20
+            },
+            "size": {
+              "width": 600,
+              "height": "auto"
+            },
+            "content": "Lorem Ipsum is simply dummy text of the printing and typesetting industry.",
+            "style": {
+              "fontFamily": "Arial, sans-serif",
+              "fontSize": 14,
+              "lineHeight": 1.5,
+              "color": "#000000",
+              "backgroundColor": "transparent",
+              "textAlign": "left",
+              "paddingControl": {
+                "all": 10,
+                "top": 10,
+                "right": 10,
+                "bottom": 10,
+                "left": 10,
+                "isCustomPadding": false
+              }
+            },
+            "subType": "",
+            "parentId": "e7a27f1a-d0b4-4b5a-b11e-ef97bcfcbd74",
+            "columnIndex": 2,
+            "zIndex": 0,
+            "rotation": 0,
+            "locked": false
+          }
+        ]
+      }
+    },
+    {
+      "id": "36b0bbdc-7e6b-4898-a688-cfe851fbbc91",
+      "type": "block",
+      "position": {
+        "x": 272.20001220703125,
+        "y": 480
+      },
+      "size": {
+        "width": 1880,
+        "height": 1040
+      },
+      "content": null,
+      "style": {
+        "fontFamily": "Arial, sans-serif",
+        "fontSize": 16,
+        "lineHeight": 1.5,
+        "color": "#000000",
+        "backgroundColor": "#dedede"
+      },
+      "subType": "layout-1",
+      "zIndex": 5,
+      "rotation": 0,
+      "locked": false,
+      "blocks": {
+        "36b0bbdc-7e6b-4898-a688-cfe851fbbc91-0": [
+          {
+            "id": "38011be4-73f2-4f32-b7f0-a5915ead7a9e",
+            "type": "text",
+            "position": {
+              "x": 0,
+              "y": 20
+            },
+            "size": {
+              "width": 600,
+              "height": "auto"
+            },
+            "content": "Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s",
+            "style": {
+              "fontFamily": "Arial, sans-serif",
+              "fontSize": 14,
+              "lineHeight": 1.5,
+              "color": "#000000",
+              "backgroundColor": "transparent",
+              "textAlign": "center",
+              "paddingControl": {
+                "all": 10,
+                "top": 10,
+                "right": 10,
+                "bottom": 10,
+                "left": 10,
+                "isCustomPadding": false
+              }
+            },
+            "subType": "",
+            "parentId": "36b0bbdc-7e6b-4898-a688-cfe851fbbc91",
+            "columnIndex": 0,
+            "zIndex": 0,
+            "rotation": 0,
+            "locked": false
+          }
+        ]
+      }
+    },
+    {
+      "id": "aa89b3bc-c84c-4be2-acc9-94d122aa8016",
+      "type": "block",
+      "position": {
+        "x": 272.20001220703125,
+        "y": 600
+      },
+      "size": {
+        "width": 1880,
+        "height": 1040
+      },
+      "content": null,
+      "style": {
+        "fontFamily": "Arial, sans-serif",
+        "fontSize": 16,
+        "lineHeight": 1.5,
+        "color": "#000000",
+        "backgroundColor": "#dedede"
+      },
+      "subType": "layout-4",
+      "zIndex": 6,
+      "rotation": 0,
+      "locked": false,
+      "blocks": {
+        "aa89b3bc-c84c-4be2-acc9-94d122aa8016-0": [
+          {
+            "id": "c3244a66-a062-4fb0-a4ab-4a8e2545fb59",
+            "type": "imageText",
+            "position": {
+              "x": -225,
+              "y": 20
+            },
+            "size": {
+              "width": 600,
+              "height": "auto"
+            },
+            "content": {
+              "text": "This text will appear alongside your image. You can customize the layout, styling, and content to match your needs.",
+              "imageUrl": "https://tinypng.com/static/images/boat.png",
+              "imageAlt": ""
+            },
+            "style": {
+              "enableContent": false,
+              "wrapperLayout": "image-left",
+              "imageWidth": 180,
+              "imageHeight": "auto",
+              "objectFit": "contain",
+              "maintainAspectRatio": false,
+              "imageAlign": "center",
+              "imageBorderRadius": 0,
+              "fontFamily": "Arial, sans-serif",
+              "fontSize": 16,
+              "lineHeight": 1.5,
+              "textColor": "#000000",
+              "titleColor": "#000000",
+              "textAlign": "left",
+              "backgroundColor": "transparent",
+              "paddingControl": {
+                "all": 10,
+                "top": 10,
+                "right": 10,
+                "bottom": 10,
+                "left": 10,
+                "isCustomPadding": false
+              },
+              "customBorder": false
+            },
+            "subType": "",
+            "parentId": "aa89b3bc-c84c-4be2-acc9-94d122aa8016",
+            "columnIndex": 0,
+            "zIndex": 0,
+            "rotation": 0,
+            "locked": false
+          }
+        ],
+        "aa89b3bc-c84c-4be2-acc9-94d122aa8016-1": [
+          {
+            "id": "d935fa5a-0cf8-40bb-96db-4932b33b3e9f",
+            "type": "imageText",
+            "position": {
+              "x": -205,
+              "y": 40
+            },
+            "size": {
+              "width": 600,
+              "height": "auto"
+            },
+            "content": {
+              "text": "This text will appear alongside your image. You can customize the layout, styling, and content to match your needs.",
+              "imageUrl": "https://tinypng.com/static/images/boat.png",
+              "imageAlt": ""
+            },
+            "style": {
+              "enableContent": false,
+              "wrapperLayout": "image-left",
+              "imageWidth": 180,
+              "imageHeight": "auto",
+              "objectFit": "contain",
+              "maintainAspectRatio": false,
+              "imageAlign": "center",
+              "imageBorderRadius": 0,
+              "fontFamily": "Arial, sans-serif",
+              "fontSize": 16,
+              "lineHeight": 1.5,
+              "textColor": "#000000",
+              "titleColor": "#000000",
+              "textAlign": "left",
+              "backgroundColor": "transparent",
+              "paddingControl": {
+                "all": 10,
+                "top": 10,
+                "right": 10,
+                "bottom": 10,
+                "left": 10,
+                "isCustomPadding": false
+              },
+              "customBorder": false
+            },
+            "subType": "",
+            "parentId": "aa89b3bc-c84c-4be2-acc9-94d122aa8016",
+            "columnIndex": 1,
+            "zIndex": 0,
+            "rotation": 0,
+            "locked": false
+          }
+        ],
+        "aa89b3bc-c84c-4be2-acc9-94d122aa8016-2": [
+          {
+            "id": "db1479fb-eedc-4478-9d3c-c94b7f4eeb0e",
+            "type": "imageText",
+            "position": {
+              "x": -225,
+              "y": 20
+            },
+            "size": {
+              "width": 600,
+              "height": "auto"
+            },
+            "content": {
+              "text": "This text will appear alongside your image. You can customize the layout, styling, and content to match your needs.",
+              "imageUrl": "https://tinypng.com/static/images/boat.png",
+              "imageAlt": ""
+            },
+            "style": {
+              "enableContent": false,
+              "wrapperLayout": "image-left",
+              "imageWidth": 180,
+              "imageHeight": "auto",
+              "objectFit": "contain",
+              "maintainAspectRatio": false,
+              "imageAlign": "center",
+              "imageBorderRadius": 0,
+              "fontFamily": "Arial, sans-serif",
+              "fontSize": 16,
+              "lineHeight": 1.5,
+              "textColor": "#000000",
+              "titleColor": "#000000",
+              "textAlign": "left",
+              "backgroundColor": "transparent",
+              "paddingControl": {
+                "all": 10,
+                "top": 10,
+                "right": 10,
+                "bottom": 10,
+                "left": 10,
+                "isCustomPadding": false
+              },
+              "customBorder": false
+            },
+            "subType": "",
+            "parentId": "aa89b3bc-c84c-4be2-acc9-94d122aa8016",
+            "columnIndex": 2,
+            "zIndex": 0,
+            "rotation": 0,
+            "locked": false
+          }
+        ],
+        "aa89b3bc-c84c-4be2-acc9-94d122aa8016-3": [
+          {
+            "id": "0d2b7751-25f5-4651-a088-6e7828bbfd52",
+            "type": "imageText",
+            "position": {
+              "x": -225,
+              "y": 20
+            },
+            "size": {
+              "width": 600,
+              "height": "auto"
+            },
+            "content": {
+              "text": "This text will appear alongside your image. You can customize the layout, styling, and content to match your needs.",
+              "imageUrl": "https://tinypng.com/static/images/boat.png",
+              "imageAlt": ""
+            },
+            "style": {
+              "enableContent": false,
+              "wrapperLayout": "image-left",
+              "imageWidth": 180,
+              "imageHeight": "auto",
+              "objectFit": "contain",
+              "maintainAspectRatio": false,
+              "imageAlign": "center",
+              "imageBorderRadius": 0,
+              "fontFamily": "Arial, sans-serif",
+              "fontSize": 16,
+              "lineHeight": 1.5,
+              "textColor": "#000000",
+              "titleColor": "#000000",
+              "textAlign": "left",
+              "backgroundColor": "transparent",
+              "paddingControl": {
+                "all": 10,
+                "top": 10,
+                "right": 10,
+                "bottom": 10,
+                "left": 10,
+                "isCustomPadding": false
+              },
+              "customBorder": false
+            },
+            "subType": "",
+            "parentId": "aa89b3bc-c84c-4be2-acc9-94d122aa8016",
+            "columnIndex": 3,
+            "zIndex": 0,
+            "rotation": 0,
+            "locked": false
+          }
+        ]
+      }
+    },
+    {
+      "id": "762f3115-e69d-44b7-9591-59430b66a3d9",
+      "type": "block",
+      "position": {
+        "x": 272.20001220703125,
+        "y": 720
+      },
+      "size": {
+        "width": 1880,
+        "height": 1040
+      },
+      "content": null,
+      "style": {
+        "fontFamily": "Arial, sans-serif",
+        "fontSize": 16,
+        "lineHeight": 1.5,
+        "color": "#000000",
+        "backgroundColor": "#dedede"
+      },
+      "subType": "layout-1",
+      "zIndex": 7,
+      "rotation": 0,
+      "locked": false,
+      "blocks": {
+        "762f3115-e69d-44b7-9591-59430b66a3d9-0": [
+          {
+            "id": "027e888f-7e49-49de-84ff-9a0154d982ea",
+            "type": "text",
+            "position": {
+              "x": 0,
+              "y": 20
+            },
+            "size": {
+              "width": 600,
+              "height": "auto"
+            },
+            "content": "Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s",
+            "style": {
+              "fontFamily": "Arial, sans-serif",
+              "fontSize": 14,
+              "lineHeight": 1.5,
+              "color": "#000000",
+              "backgroundColor": "transparent",
+              "textAlign": "center",
+              "paddingControl": {
+                "all": 10,
+                "top": 10,
+                "right": 10,
+                "bottom": 10,
+                "left": 10,
+                "isCustomPadding": false
+              }
+            },
+            "subType": "",
+            "parentId": "762f3115-e69d-44b7-9591-59430b66a3d9",
+            "columnIndex": 0,
+            "zIndex": 0,
+            "rotation": 0,
+            "locked": false
+          }
+        ]
+      }
+    },
+    {
+      "id": "76dcc9a1-fe3f-4faa-9f58-918bcd3c6a32",
+      "type": "block",
+      "position": {
+        "x": 272.20001220703125,
+        "y": 840
+      },
+      "size": {
+        "width": 1880,
+        "height": 1040
+      },
+      "content": null,
+      "style": {
+        "fontFamily": "Arial, sans-serif",
+        "fontSize": 16,
+        "lineHeight": 1.5,
+        "color": "#000000",
+        "backgroundColor": "#dedede"
+      },
+      "subType": "layout-1",
+      "zIndex": 8,
+      "rotation": 0,
+      "locked": false,
+      "blocks": {
+        "76dcc9a1-fe3f-4faa-9f58-918bcd3c6a32-0": [
+          {
+            "id": "07e07c1a-e0e6-434e-bbe9-7c429b229482",
+            "type": "button",
+            "position": {
+              "x": 200,
+              "y": 20
+            },
+            "size": {
+              "width": 200,
+              "height": 40
+            },
+            "content": "Button",
+            "style": {
+              "backgroundColor": "#ffffff",
+              "buttonTextColor": "#ffffff",
+              "buttonColor": "#0000ff",
+              "paddingControl": {
+                "all": 10,
+                "top": 10,
+                "right": 20,
+                "bottom": 10,
+                "left": 20,
+                "isCustomPadding": true
+              },
+              "containerPadding": {
+                "all": 10,
+                "top": 10,
+                "right": 10,
+                "bottom": 10,
+                "left": 10,
+                "isCustomPadding": false
+              },
+              "textAlign": "center",
+              "fontSize": 16,
+              "width": 200,
+              "textDecoration": "none",
+              "border": "none",
+              "iconPosition": "left"
+            },
+            "subType": "",
+            "parentId": "76dcc9a1-fe3f-4faa-9f58-918bcd3c6a32",
+            "columnIndex": 0,
+            "zIndex": 0,
+            "rotation": 0,
+            "locked": false
+          }
+        ]
+      }
+    },
+    {
+      "id": "705ff321-6caa-4a7f-9994-0217ffafe807",
+      "type": "block",
+      "position": {
+        "x": 272.20001220703125,
+        "y": 960
+      },
+      "size": {
+        "width": 1880,
+        "height": 1040
+      },
+      "content": null,
+      "style": {
+        "fontFamily": "Arial, sans-serif",
+        "fontSize": 16,
+        "lineHeight": 1.5,
+        "color": "#000000",
+        "backgroundColor": "#999999"
+      },
+      "subType": "layout-1",
+      "zIndex": 11,
+      "rotation": 0,
+      "locked": false,
+      "blocks": {
+        "705ff321-6caa-4a7f-9994-0217ffafe807-0": [
+          {
+            "id": "e5a56b26-8d01-49b8-8423-173a16da533e",
+            "type": "social",
+            "position": {
+              "x": 0,
+              "y": 20
+            },
+            "size": {
+              "width": 600,
+              "height": 40
+            },
+            "content": {
+              "links": {
+                "facebook": {
+                  "0": "h",
+                  "1": "t",
+                  "2": "t",
+                  "3": "p",
+                  "4": "s",
+                  "5": ":",
+                  "6": "/",
+                  "7": "/",
+                  "8": "f",
+                  "9": "a",
+                  "10": "c",
+                  "11": "e",
+                  "12": "b",
+                  "13": "o",
+                  "14": "o",
+                  "15": "k",
+                  "16": ".",
+                  "17": "c",
+                  "18": "o",
+                  "19": "m",
+                  "url": "https://www.facebook.com"
+                },
+                "x": {
+                  "0": "h",
+                  "1": "t",
+                  "2": "t",
+                  "3": "p",
+                  "4": "s",
+                  "5": ":",
+                  "6": "/",
+                  "7": "/",
+                  "8": "t",
+                  "9": "w",
+                  "10": "i",
+                  "11": "t",
+                  "12": "t",
+                  "13": "e",
+                  "14": "r",
+                  "15": ".",
+                  "16": "c",
+                  "17": "o",
+                  "18": "m",
+                  "url": "https://www.x.com"
+                },
+                "instagram": {
+                  "0": "h",
+                  "1": "t",
+                  "2": "t",
+                  "3": "p",
+                  "4": "s",
+                  "5": ":",
+                  "6": "/",
+                  "7": "/",
+                  "8": "i",
+                  "9": "n",
+                  "10": "s",
+                  "11": "t",
+                  "12": "a",
+                  "13": "g",
+                  "14": "r",
+                  "15": "a",
+                  "16": "m",
+                  "17": ".",
+                  "18": "c",
+                  "19": "o",
+                  "20": "m",
+                  "url": "https://www.instagram.com"
+                },
+                "linkedin": {
+                  "0": "h",
+                  "1": "t",
+                  "2": "t",
+                  "3": "p",
+                  "4": "s",
+                  "5": ":",
+                  "6": "/",
+                  "7": "/",
+                  "8": "l",
+                  "9": "i",
+                  "10": "n",
+                  "11": "k",
+                  "12": "e",
+                  "13": "d",
+                  "14": "i",
+                  "15": "n",
+                  "16": ".",
+                  "17": "c",
+                  "18": "o",
+                  "19": "m",
+                  "url": "https://www.linkedin.com"
+                }
+              }
+            },
+            "style": {
+              "iconSize": 24,
+              "iconColor": "#666666",
+              "spacing": 16,
+              "alignment": "center",
+              "paddingControl": {
+                "all": 10,
+                "top": 10,
+                "right": 10,
+                "bottom": 10,
+                "left": 10,
+                "isCustomPadding": false
+              },
+              "socialValid": true
+            },
+            "subType": "",
+            "parentId": "705ff321-6caa-4a7f-9994-0217ffafe807",
+            "columnIndex": 0,
+            "zIndex": 0,
+            "rotation": 0,
+            "locked": false
+          }
+        ]
+      }
+    },
+    {
+      "id": "45454c48-f12d-43cd-8813-7a16c0cec07d",
+      "type": "block",
+      "position": {
+        "x": 272.20001220703125,
+        "y": 1080
+      },
+      "size": {
+        "width": 1880,
+        "height": 1040
+      },
+      "content": null,
+      "style": {
+        "fontFamily": "Arial, sans-serif",
+        "fontSize": 16,
+        "lineHeight": 1.5,
+        "color": "#000000",
+        "backgroundColor": "#999999"
+      },
+      "subType": "layout-1",
+      "zIndex": 10,
+      "rotation": 0,
+      "locked": false,
+      "blocks": {
+        "45454c48-f12d-43cd-8813-7a16c0cec07d-0": [
+          {
+            "id": "d463e9a4-013d-4b9e-8f14-da37e3c1c967",
+            "type": "text",
+            "position": {
+              "x": 0,
+              "y": 20
+            },
+            "size": {
+              "width": 600,
+              "height": "auto"
+            },
+            "content": "<font color=\"#ffffff\">Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s</font>",
+            "style": {
+              "fontFamily": "Arial, sans-serif",
+              "fontSize": 14,
+              "lineHeight": 1.5,
+              "color": "#ffffff",
+              "backgroundColor": "transparent",
+              "textAlign": "center",
+              "paddingControl": {
+                "all": 10,
+                "top": 0,
+                "right": 10,
+                "bottom": 10,
+                "left": 10,
+                "isCustomPadding": true
+              }
+            },
+            "subType": "",
+            "parentId": "45454c48-f12d-43cd-8813-7a16c0cec07d",
+            "columnIndex": 0,
+            "zIndex": 0,
+            "rotation": 0,
+            "locked": false
+          }
+        ]
+      }
+    }
+  ],
+  "settings": {
+    "layout": "web",
+    "backgroundColor": "#ffffff",
+    "showGrid": true,
+    "gridSize": 15,
+    "snapToGrid": false,
+    "enableGuides": true,
+    "width": 1920,
+    "height": 1080,
+    "style": {
+      
+    }
+  }
+}

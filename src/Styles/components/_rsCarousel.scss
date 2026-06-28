@@ -1,0 +1,52 @@
+// Simple Carousel Styles for WhatsApp Text Editor
+.carousel-simple {
+    position: relative;
+    
+    .carousel-inner {
+        overflow: hidden;
+    }
+
+    .carousel-item {
+        transition: transform 0.6s ease-in-out;
+    }
+
+
+    // Show controls on carousel hover
+    &:hover {
+        .carousel-control-prev,
+        .carousel-control-next {
+            opacity: 1 !important;
+        }
+    }
+}
+
+// WhatsApp specific carousel wrapper
+.whatsapp-bubble-receive-wrapper {
+    &.carousel-simple {
+        position: relative;
+        
+        .carousel-control-prev,
+        .carousel-control-next {
+            visibility: visible !important;
+            opacity: 0 !important;
+            transition: opacity 0.3s ease !important;
+            width: 40px !important;
+            height: 40px !important;
+            border-radius: 50% !important;
+            top: 30% !important;
+            transform: translateY(-50%) !important;
+            z-index: 10 !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+        }
+        
+        &:hover {
+            .carousel-control-prev,
+            .carousel-control-next {
+                opacity: 1 !important;
+                visibility: visible !important;
+            }
+        }
+    }
+}

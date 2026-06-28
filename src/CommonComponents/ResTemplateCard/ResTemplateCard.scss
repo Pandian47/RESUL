@@ -1,0 +1,958 @@
+// ============================================================================
+// ResTemplateCard — layout driven by CSS custom properties (--rtc-*).
+// Sizing / padding / preview scale are set on the root via buildTemplateCardCssVars().
+// Self-contained: imports theme tokens + scrollbar placeholder (no global @extend targets).
+// ============================================================================
+
+@import '../../Styles/abstarct/variables';
+@import '../../Styles/abstarct/mixins';
+
+// Local aliases — match global utility names used in this file
+$rtc-primary-box-shadow: 0 0 5px 0 rgb(0 0 0 / 5%), 0 0 5px 0 rgb(0 0 0 / 5%);
+
+// Scrollbar placeholder (from Styles/base/_general.scss %css-scrollbar — inlined for component-scoped compile)
+%rtc-css-scrollbar {
+    overflow-y: auto !important;
+    overflow-x: hidden;
+    @-moz-document url-prefix() {
+        scrollbar-color: $secondary-grey $tertiary-grey;
+    }
+    @-moz-document url-prefix() {
+        scrollbar-width: thin;
+    }
+    &::-webkit-scrollbar-track {
+        display: none;
+        background: transparent;
+    }
+    &::-webkit-scrollbar {
+        width: 5px;
+        height: 5px;
+        background-color: transparent;
+        border-radius: 3px;
+        transition: 0.3s ease all;
+    }
+    &::-webkit-scrollbar-thumb {
+        background-color: transparent;
+        border-radius: 100px;
+        -webkit-border-radius: 100px;
+        -moz-border-radius: 100px;
+        cursor: pointer;
+    }
+    &:hover {
+        &::-webkit-scrollbar-thumb {
+            background-color: $secondary-grey;
+            border-radius: 3px;
+        }
+    }
+}
+
+// col 3 → 300px, col 4 → 400px (mirrors resTemplateCardUtils.js)
+$res-template-card-heights: (
+    3: 400px,
+    4: 400px,
+);
+
+.res-template-card,
+.gallery-list {
+    // Set on root via buildTemplateCardCssVars(col); col-3 fallback when var missing
+    --rtc-col: 3;
+    --rtc-card-height: 400px;
+    --rtc-card-min-height: 0px;
+    --rtc-card-padding: 19px;
+    --rtc-card-margin-bottom: 0px;
+    --rtc-header-gap: 10px;
+    --rtc-title-gap: 8px;
+    --rtc-accent-display: block;
+    --rtc-menu-offset: -8px;
+    --rtc-preview-scale: 0.4;
+    --rtc-preview-iframe-width: 250%;
+    --rtc-preview-iframe-height: 700px;
+    --rtc-preview-comm-scale: 0.5;
+    --rtc-preview-comm-size: 200%;
+    --rtc-offer-thumb-size: 165px;
+    --rtc-border-radius: var(--globalBorderRadius);
+    --rtc-info-trigger-bottom: 13px;
+    --rtc-info-trigger-right: 10px;
+    --rtc-info-popup-gap: clamp(8px, 2vh, 14px);
+    --rtc-info-popup-section-gap: clamp(10px, 2.5vh, 18px);
+
+    box-shadow: $rtc-primary-box-shadow !important;
+    @include bor($width: 1px, $color: $quaternary-blue);
+    @include br($radius: var(--rtc-border-radius));
+    @include color($bg: $white);
+    box-sizing: border-box;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    height: var(--rtc-card-height);
+    min-height: var(--rtc-card-min-height);
+    padding: var(--rtc-card-padding);
+    margin-bottom: var(--rtc-card-margin-bottom, 0);
+    overflow: hidden;
+
+    // Column modifiers — height from col prop (inline --rtc-* vars take precedence)
+    @each $col, $height in $res-template-card-heights {
+        &.res-template-card--col-#{$col} {
+            --rtc-col: #{$col};
+            --rtc-card-height: #{$height};
+        }
+    }
+
+    &::before {
+        content: '';
+        display: var(--rtc-accent-display);
+        position: absolute;
+        bottom: 2px;
+        left: 1%;
+        right: 1%;
+        width: 98%;
+        height: 5px;
+        background-color: $secondary-grey;
+        border-bottom-left-radius: var(--rtc-border-radius);
+        border-bottom-right-radius: var(--rtc-border-radius);
+    }
+
+    &--no-status-accent {
+        &::before {
+            display: none;
+        }
+
+        --rtc-info-trigger-bottom: 8px;
+    }
+
+    &--no-box-shadow,
+    &.no-box-shadow {
+        box-shadow: none !important;
+    }
+
+    &.skeleton::before {
+        background-color: $tertiary-grey;
+    }
+
+    &.standard::before { background-color: $all-audience; }
+    &.alerted::before { background-color: $alert; }
+    &.drafted::before { background-color: $draft; }
+    &.inprogress::before { background-color: $inprogress; }
+    &.scheduled::before { background-color: $scheduled; }
+    &.completed::before { background-color: $completed; }
+    &.notused::before { background-color: $scheduled; }
+    &.used::before { background-color: $completed; }
+
+    // Variant modifiers — only toggles behaviour, not fixed dimensions
+    &--communication,
+    &.email-template-grid {
+        text-align: center;
+
+        &::before {
+            content: unset;
+        }
+
+        .res-template-card__img img,
+        .gl-img img {
+            border-radius: var(--rtc-border-radius);
+        }
+    }
+
+    &.full-overlay .res-template-card__body .res-template-card__interaction {
+        position: absolute;
+        inset: var(--rtc-card-padding);
+        z-index: 3;
+    }
+
+    &.offer {
+        --rtc-title-gap: 10px;
+    }
+
+    // -------------------------------------------------------------------------
+    // Header
+    // -------------------------------------------------------------------------
+    &__header,
+    .gl-top {
+        flex-shrink: 0;
+        display: flex;
+        flex-direction: column;
+        min-width: 0;
+        font-size: $font-xs;
+        color: $primary-grey;
+        margin: 0 0 var(--rtc-header-gap);
+        padding: 0;
+    }
+
+    &__header-row {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 8px;
+        min-width: 0;
+        width: 100%;
+        position: relative;
+        z-index: 10;
+        flex-shrink: 0;
+    }
+
+    &__header-meta,
+    .gl-top .flex-left {
+        flex: 1;
+        min-width: 0;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        line-height: 1;
+        margin: 0;
+        padding: 0;
+
+        .rctcb-by-text,
+        .rct-date {
+            display: inline;
+            white-space: nowrap;
+            line-height: 1;
+        }
+
+        .rct-cb .rctcb-by-date {
+            display: inline;
+            font-style: italic;
+            line-height: 1;
+        }
+
+        .res-template-card__header-meta-text,
+        .k-truncate-cell-inline {
+            display: block;
+            min-width: 0;
+            width: 100%;
+        }
+    }
+
+    &__header-actions {
+        flex-shrink: 0;
+        display: flex;
+        align-items: flex-start;
+        justify-content: flex-end;
+        margin: 0 0 0 auto;
+        padding: 0;
+        position: relative;
+        z-index: 11;
+
+        .rs-bootstrap-dropdown.rs-bootstrap-dropdown-with-icon {
+            margin-right: var(--rtc-menu-offset);
+
+            .rs-dropdown {
+                .dropdown-toggle {
+                    height: auto;
+                    min-height: 0;
+                    padding: 0;
+                    line-height: 1;
+                    display: inline-flex;
+                    align-items: flex-start;
+                    justify-content: flex-end;
+                }
+
+                .rs-dropdown-title {
+                    line-height: 1;
+                    display: inline-flex;
+                    align-items: flex-start;
+                }
+
+                &.no_caret .dropdown-toggle {
+                    padding: 0;
+                }
+
+                &.show .dropdown-menu,
+                .dropdown-menu.show {
+                    z-index: 30;
+                }
+            }
+
+            .dropdown-menu {
+                margin-top: 5px;
+            }
+        }
+    }
+
+    &__title,
+    .rsg-campaign-name {
+        flex-shrink: 0;
+        min-width: 0;
+        width: 100%;
+        font-size: $font-xsm;
+        color: $secondary-black;
+        line-height: 1.4;
+        margin: 0 0 var(--rtc-title-gap);
+        padding-right:11px;
+
+        p,
+        div {
+            margin: 0;
+        }
+
+        .k-truncate-cell-inline,
+        .res-template-card__title-text {
+            display: block;
+            min-width: 0;
+            width: 100%;
+        }
+    }
+
+    // -------------------------------------------------------------------------
+    // Body + preview (flex-fill; no fixed height)
+    // -------------------------------------------------------------------------
+    &__body,
+    .gl-body {
+        flex: 1;
+        min-height: 0;
+        display: flex;
+        flex-direction: column;
+        position: relative;
+        color: $primary-grey;
+        border: 1px solid $quaternary-blue;
+        border-radius: var(--rtc-border-radius);
+        overflow: hidden;
+        text-align: center;
+
+        .rs-social-post-live-preview-wrapper {
+            max-height: 100%;
+            min-height: 0;
+            flex: 1 1 auto;
+            height: auto;
+        }
+
+        .rs-social-post-live-preview-wrapper .social-post-content {
+            height: 100%;
+            max-height: 100%;
+            min-height: 0;
+            width: 100%;
+        }
+    }
+
+    &__interaction {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        pointer-events: none;
+        z-index: 2;
+    }
+
+    &__preview-scroll,
+    .gl-img-scroll-container {
+        flex: 1;
+        min-height: 0;
+        width: 100%;
+        overflow: hidden;
+        position: relative;
+
+        &:has(.gallery-preview) {
+            display: flex;
+            flex-direction: column;
+            min-height: 0;
+
+            > .non-scrollable {
+                flex: 1 1 auto;
+                min-height: 0;
+                display: flex;
+                flex-direction: column;
+            }
+
+            .gallery-preview {
+                flex: 1 1 auto;
+                min-height: 0;
+                display: flex;
+                flex-direction: column;
+                overflow: hidden;
+            }
+        }
+
+        &.css-scrollbar,
+        &--scrollable {
+            @extend %rtc-css-scrollbar;
+            overflow-y: auto;
+            overflow-x: hidden;
+        }
+    }
+
+    &__img,
+    .gl-img {
+        flex: 1;
+        min-height: 0;
+        width: 100%;
+        overflow: hidden;
+        position: relative;
+
+        img {
+            display: block;
+            width: 100%;
+            height: auto;
+            object-fit: contain;
+        }
+
+        &.iframe-container {
+            overflow: hidden;
+            position: relative;
+        }
+
+        &.scrollable img {
+            width: 100%;
+            height: auto;
+            object-fit: unset;
+        }
+
+        &.non-scrollable {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            img {
+                max-height: 100%;
+                max-width: 100%;
+                object-fit: contain;
+            }
+        }
+    }
+
+    &__preview-iframe,
+    .email-preview-iframe {
+        width: var(--rtc-preview-iframe-width);
+        height: var(--rtc-preview-iframe-height);
+        overflow: hidden;
+        position: relative;
+        transform-origin: 0 0;
+        transform: scale(var(--rtc-preview-scale));
+        border: none;
+    }
+
+    &__preview--scaled {
+        flex: 1;
+        min-height: 0;
+        width: 100%;
+        overflow: hidden;
+        position: relative;
+    }
+
+    &__preview-iframe--communication {
+        width: var(--rtc-preview-comm-size);
+        height: var(--rtc-preview-comm-size);
+        transform: scale(var(--rtc-preview-comm-scale));
+        transform-origin: 0 0;
+        border: none;
+        pointer-events: none;
+    }
+
+    &__preview-blocker {
+        position: absolute;
+        inset: 0;
+        cursor: pointer;
+    }
+
+    &__preview-image--communication {
+        flex: 1;
+        min-height: 0;
+        width: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+        box-sizing: border-box;
+
+        img {
+            max-width: 100%;
+            max-height: 100%;
+            width: auto;
+            height: auto;
+            object-fit: contain;
+            display: block;
+        }
+    }
+
+    &__preview-empty {
+        flex: 1;
+        min-height: 0;
+        width: 100%;
+        background: $tertiary-blue;
+    }
+
+    // Hover overlay — centred in body via flex (no fixed top/left px)
+    &__overlay,
+    .overlay {
+        position: absolute;
+        inset: 0;
+        background: rgba(255, 255, 255, 0);
+        transition: background 0.5s ease, opacity 0.5s ease;
+    }
+
+    &__actions,
+    .template-buttons-section {
+        position: relative;
+        z-index: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 15px;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+        pointer-events: auto;
+
+        .button {
+            width: auto;
+            padding: 8px 25px;
+            letter-spacing: 0.5px;
+            text-align: center;
+            color: white;
+            background: $secondary_blue;
+            border-radius: var(--rtc-border-radius);
+            cursor: pointer;
+            font-size: 19px;
+            line-height: 24px;
+            text-decoration: none;
+
+            &:hover {
+                background: $secondary_blue;
+                box-shadow: 0 0 15px $secondary_blue;
+            }
+        }
+    }
+
+    &:not(:has(.dropdown.show)):hover {
+        &.email-template-grid,
+        &--communication {
+            border-color: $primary-blue;
+        }
+
+        .res-template-card__overlay,
+        .overlay {
+            background-color: #fff;
+            opacity: 0.9;
+        }
+
+        .res-template-card__actions,
+        .template-buttons-section {
+            opacity: 1;
+        }
+    }
+
+    // Three-dot menu open — keep Select overlay hidden so dropdown stays readable
+    &:has(.dropdown.show) {
+        .res-template-card__interaction {
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+        }
+    }
+
+    &__footer,
+    .gl-bottom {
+        position: absolute;
+        z-index: 3;
+        line-height: 0;
+    }
+
+    &__info-trigger,
+    .gl-bottom.p5 {
+        bottom: var(--rtc-info-trigger-bottom);
+        right: var(--rtc-info-trigger-right);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 2px;
+        margin: 0;
+        cursor: pointer;
+    }
+
+    // -------------------------------------------------------------------------
+    // Skeleton
+    // -------------------------------------------------------------------------
+    &.skeleton {
+        margin-bottom: 0;
+
+        .gl-top {
+            margin-bottom: 0;
+        }
+
+        .res-template-card__skeleton-bar {
+            border-radius: var(--rtc-border-radius);
+        }
+
+        .res-template-card__skeleton-menu {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            gap: 3px;
+            flex-shrink: 0;
+            margin-right: var(--rtc-menu-offset);
+        }
+
+        .res-template-card__skeleton-preview {
+            flex: 1;
+            min-height: 0;
+            width: 100%;
+            border-radius: var(--rtc-border-radius);
+            background-color: #e2e7ee;
+            border: 1px solid #e2e7ee;
+            overflow: hidden;
+            position: relative;
+            transform: translateZ(0);
+
+            &--loading::after {
+                content: '';
+                position: absolute;
+                inset: 0;
+                left: -100%;
+                width: 100%;
+                background-image: linear-gradient(90deg, transparent, #eef2f9, transparent);
+                animation: res-template-card-shimmer 2s infinite;
+            }
+        }
+
+        .res-template-card__empty--full {
+            flex: 1;
+            min-height: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: var(--rtc-card-padding);
+            color: $primary-grey;
+            font-size: $font-sm;
+            text-align: center;
+        }
+
+        .res-template-card__skeleton-accent {
+            position: absolute;
+            bottom: 2px;
+            left: 1%;
+            right: 1%;
+            width: 98%;
+            height: 5px;
+            background-color: $tertiary-grey;
+            border-radius: 0 0 var(--rtc-border-radius) var(--rtc-border-radius);
+            overflow: hidden;
+
+            &::after {
+                content: '';
+                position: absolute;
+                inset: 0;
+                left: -100%;
+                width: 100%;
+                background-image: linear-gradient(90deg, transparent, #eef2f9, transparent);
+                animation: res-template-card-shimmer 2s infinite;
+            }
+        }
+
+        .res-template-card__empty {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            color: $primary-grey;
+            font-size: $font-sm;
+        }
+
+        &.no-data-available {
+            .res-template-card__skeleton-preview--loading::after,
+            .res-template-card__skeleton-accent::after {
+                content: none;
+                animation: none;
+            }
+        }
+    }
+
+    // Legacy channel / listing embeds inside body
+    &.listing-preview-scroll .rs-preview-content {
+        .rspc-top-info {
+            pointer-events: none;
+        }
+
+        .rspc-content .rspcc-block-sms {
+            max-height: 100%;
+            @extend %rtc-css-scrollbar;
+
+            .gallery_whatsapp {
+                max-height: unset;
+
+                &::before {
+                    display: none;
+                }
+            }
+        }
+    }
+
+    .whatsapp-bg-wrapper .rspc-bottom-info {
+        top: 0;
+    }
+
+    .glb-text {
+        max-width: 100%;
+        word-break: break-word;
+    }
+
+    .gaugeslider-wrapper {
+        flex: 1;
+        min-height: 0;
+        display: flex;
+        flex-direction: column;
+
+        .carousel-inner {
+            flex: 1;
+            min-height: 0;
+            height: 100%;
+        }
+
+        .carousel-item {
+            flex-direction: column;
+            min-height: 0;
+            height: 100%;
+
+            // Do not set display on all items — breaks Bootstrap slide visibility
+            &.active,
+            &.carousel-item-next,
+            &.carousel-item-prev {
+                display: flex;
+            }
+        }
+
+        .carousel-control-prev,
+        .carousel-control-next {
+            height: 20px;
+            top: 50%;
+            width: 28px;
+        }
+
+        .carousel-indicators {
+            bottom: 0px;
+            margin-bottom: 0;
+        }
+    }
+
+    &__carousel {
+        flex: 1;
+        min-height: 0;
+        width: 100%;
+    }
+
+    &__carousel-slide {
+        display: flex;
+        flex-direction: column;
+        min-height: 0;
+        flex: 1;
+        height: 100%;
+        text-align: left;
+
+        &--html {
+            flex: 1;
+            min-height: 0;
+        }
+    }
+
+    &__carousel-slide-image {
+        flex: 1 1 auto;
+        min-height: 0;
+        max-height: 58%;
+
+        .gl-img {
+            height: 100%;
+            min-height: 110px;
+
+            img {
+                width: 100%;
+                height: 100%;
+                min-height: 110px;
+                object-fit: cover;
+                object-position: center top;
+            }
+        }
+    }
+
+    &__carousel-slide-text,
+    &__carousel-slide--text-only {
+        flex: 1 1 auto;
+        min-height: 0;
+        max-height: 100%;
+        overflow-y: auto;
+        padding: 10px 12px;
+        font-size: $font-xxs;
+        line-height: 1.45;
+        color: $secondary-black;
+        background-color: #fff8e1;
+        border-top: 1px solid $quaternary-blue;
+        text-align: left;
+        @extend %rtc-css-scrollbar;
+
+        p {
+            margin: 0;
+        }
+    }
+
+    &__carousel-slide--text-only {
+        background-color: $tertiary-blue;
+        border-top: none;
+    }
+
+    &--info-open {
+        .carousel-indicators,
+        .carousel-control-prev,
+        .carousel-control-next {
+            display: none;
+        }
+    }
+
+    &__info-panel {
+        pointer-events: auto;
+    }
+
+    .rs-gallery-popup {
+        position: absolute;
+        inset: var(--rtc-card-padding);
+        display: flex;
+        flex-direction: column;
+        min-height: 0;
+        background-color: $tertiary-blue;
+        border: 1px solid $quaternary-blue;
+        border-radius: var(--rtc-border-radius);
+        text-align: center;
+        z-index: 10;
+        overflow: hidden;
+        box-sizing: border-box;
+
+        .rsgp-content {
+            position: relative;
+            flex: 1;
+            min-height: 0;
+            display: flex;
+            flex-direction: column;
+            margin: 0;
+            padding: calc(var(--rtc-card-padding) + 14px) var(--rtc-card-padding) var(--rtc-card-padding);
+            overflow-y: auto;
+            @extend %rtc-css-scrollbar;
+            box-sizing: border-box;
+
+            .rsgpc-top,
+            .rsgpc-bottom {
+                list-style: none;
+                padding: 0;
+                margin: 0;
+            }
+
+            .rsgpc-top {
+                flex-shrink: 0;
+                display: flex;
+                flex-direction: column;
+                gap: var(--rtc-info-popup-section-gap);
+                padding-bottom: var(--rtc-info-popup-section-gap);
+                border-bottom: 1px solid $quaternary-blue;
+                margin-bottom: var(--rtc-info-popup-gap);
+
+                li {
+                    margin: 0;
+
+                    .top-label {
+                        display: block;
+                        line-height: 1.35;
+                    }
+
+                    .top-desc {
+                        line-height: 1.4;
+                    }
+                }
+            }
+
+            .rsgpc-bottom {
+                flex: 1;
+                min-height: 0;
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+                gap: var(--rtc-info-popup-gap);
+
+                li {
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    flex-wrap: wrap;
+                    margin: 0;
+                    line-height: 1.4;
+
+                    .bottom-label,
+                    .bottom-desc {
+                        line-height: inherit;
+                    }
+
+                    .bottom-desc {
+                        margin-left: 5px;
+                    }
+                }
+            }
+
+            .rsgpc-close-icon {
+                position: absolute;
+                top: 8px;
+                right: 8px;
+                z-index: 2;
+                line-height: 0;
+                padding: 4px;
+                margin: 0;
+            }
+        }
+    }
+
+    .rcs-bubble-receive-wrapper {
+        top: 15px;
+        left: 0;
+        width: 100%;
+        padding: 10px;
+
+        .carousel-control-prev,
+        .carousel-control-next,
+        .carousel-indicators {
+            display: none;
+        }
+    }
+
+    .mobilepush_frame_wrapper .rswch-content .rsbcs-text {
+        font-size: $font-xxs;
+    }
+
+    &.alert {
+        display: block;
+
+        p {
+            font-size: unset;
+        }
+    }
+
+    @keyframes res-template-card-shimmer {
+        0% { left: -100%; }
+        100% { left: 100%; }
+    }
+}
+
+// Parent grid contexts — layout only; card height comes from `col` prop
+.gallery-list.offer .gl-top,
+.res-template-card.offer .res-template-card__header {
+    .flex-row {
+        margin-top: 3px;
+    }
+}
+
+.create-offer-grid-view {
+    .res-template-card,
+    .gallery-list {
+        .rctcb-by-text {
+            width: 100%;
+        }
+
+        .res-template-card__img,
+        .gl-img {
+            width: var(--rtc-offer-thumb-size);
+            height: var(--rtc-offer-thumb-size);
+            overflow: hidden;
+            margin: 0 auto;
+
+            img {
+                width: 100%;
+                height: 100%;
+                object-fit: cover;
+                object-position: center;
+            }
+        }
+    }
+}

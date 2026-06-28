@@ -1,0 +1,42 @@
+// ResNoDataAvailable — tokens come from the shared KendoDocs variables file
+@use '../../kendoDocsVariables.scss' as *;
+
+$nodata-bg: #fdfdfd;
+$nodata-text: #585858;
+$nodata-shadow: 0 0 5px 0 rgb(0 0 0 / 5%), 0 0 5px 0 rgb(0 0 0 / 5%);
+
+.res-nodata-bar {
+    z-index: 2;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: $nodata-bg;
+    color: $nodata-text;
+    padding: 8px 10px;
+    box-shadow: $nodata-shadow;
+    width: 100%;
+    box-sizing: border-box;
+
+    &__icon {
+        color: $primary-orange;
+        flex-shrink: 0;
+    }
+
+    p {
+        display: flex;
+        align-items: center;
+        margin: 0;
+        white-space: pre;
+        font-size: $font-xsm;
+        font-family: $rs-font-regular;
+        position: relative;
+    }
+}
+
+// Kendo list popup empty state (portaled) — ResKendoDropdown & ResMultiSelect
+.k-animation-container 
+.k-child-animation-container .k-popup{
+    .res-nodata-bar {
+        min-height: 170px ;
+    }
+}

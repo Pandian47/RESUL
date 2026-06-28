@@ -1,0 +1,143 @@
+.analyticsListingTrendComparisonPageCSS {
+    .report-buttongrp {
+        button {
+            border: 1px solid $white;
+        }
+        button:active {
+            border: 1px solid $white;
+        }
+        .activebtn {
+            background-color: $primary-blue;
+            color: $white;
+            border-radius: none;
+        }
+        .btnbefore::before {
+            border-left: 7px solid transparent;
+            border-right: 7px solid transparent;
+            content: '';
+            display: block;
+            position: absolute;
+            bottom: -10px;
+            left: 50%;
+            margin-left: -7px;
+            border-top: 10px solid $primary-blue;
+        }
+    }
+    .reportdrop {
+        background-color: $tertiary-blue;
+        margin: 0 auto 20px;
+        display: block;
+        width: 285px;
+        padding: 5px;
+        border-radius: $theme-radius-size-sm;
+        height: auto;
+        overflow: hidden;
+        position: relative;
+        border: 1px solid #c2cfe3;
+
+/* [Kendo disabled]
+        .rs-kendo-dropdown {
+            min-width: 70px;
+        }
+*/
+    }
+
+    .note-accordion:before {
+        top: -6px;
+        right: 66px;
+    }
+
+    .trendComparison-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        // margin-bottom: 10px;
+        .rs-list-group-horizontal {
+            & > li {
+                margin-left: 15px;
+                align-items: center;
+                // background: $secondary-blue;
+                // padding: 5px;
+                // border-radius: 5px;
+                .dropdown-toggle {
+                    height: auto;
+                }
+            }
+        }
+    }
+    .columnCenterDivider,
+    .columnCenterDividerThird.active {
+        position: relative;
+        // padding: 19px;
+        &:before {
+            content: '';
+            display: block;
+            width: 1px;
+            position: absolute;
+            margin: -20px 0 0 -24px;
+            left: 42%;
+            top: 0;
+            bottom: 0;
+            z-index: 1;
+            background: $quaternary-blue;
+        }
+        &:after {
+            content: 'vs';
+            position: absolute;
+            margin: -10px 0 0 -35px;
+            left: 42%;
+            top: 50%;
+            width: 25px;
+            height: 25px;
+            border-radius: 100%;
+            line-height: 18px;
+            padding: 2px 0;
+            text-align: center;
+            z-index: 2;
+            background-color: $white;
+            border: 1px solid $quaternary-blue;
+        }
+    }
+    .columnCenterDividerThird.active {
+        $thirdSet: 70%;
+        &:before {
+            left: $thirdSet;
+        }
+        &:after {
+            left: $thirdSet;
+        }
+    }
+    .dropdown-item {
+        i {
+            color: $primary-blue;
+        }
+        &:hover {
+            i {
+                color: $white;
+            }
+        }
+    }
+    .insights-comparision{
+        background-color: $primary-red;
+    }
+}
+.trendReportDropdownListContainer {
+    & [title='Other campaigns'] {
+        pointer-events: none;
+        border-top: 1px solid $quaternary-blue;
+        color: $secondary-grey;
+    }
+    & [title='Golden campaign'] {
+        pointer-events: none;
+        border-top: 1px solid $quaternary-blue;
+        color: $secondary-grey;
+        position: relative;
+        &::after {
+            content: '\2605';
+            font-size: $font-xs;
+            color: $sms;
+            position: absolute;
+            right: 5px;
+        }
+    }
+}

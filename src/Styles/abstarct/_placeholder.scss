@@ -1,0 +1,36 @@
+%css-scrollbar {
+    @-moz-document url-prefix() {
+        scrollbar-color: $secondary-grey $tertiary-grey;
+    }
+
+    @-moz-document url-prefix() {
+        scrollbar-width: thin;
+    }
+
+    &::-webkit-scrollbar-track {
+        display: none;
+        background: transparent;
+    }
+
+    &::-webkit-scrollbar {
+        width: 5px;
+        height: 5px;
+        background-color: transparent;
+        border-radius: 3px;
+    }
+
+    &::-webkit-scrollbar-thumb {
+        background-color: transparent;
+        border-radius: 100px;
+        -webkit-border-radius: 100px;
+        -moz-border-radius: 100px;
+        cursor: pointer;
+    }
+
+    &:hover {
+        &::-webkit-scrollbar-thumb {
+            background-color: $secondary-grey;
+            border-radius: 3px;
+        }
+    }
+}

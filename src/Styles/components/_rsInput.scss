@@ -1,0 +1,980 @@
+//react-phone-input-2 Style import
+@import 'react-phone-input-2/lib/bootstrap.css';
+
+::placeholder {
+    /* Chrome, Firefox, Opera, Safari 10.1+ */
+    // font-style: normal;
+    color: $primary-grey;
+    opacity: 1;
+    /* Firefox */
+    font-style: normal;
+    // font-family: $rs-font-light;
+}
+
+:-ms-input-placeholder {
+    /* Internet Explorer 10-11 */
+    color: $primary-grey;
+}
+
+::-ms-input-placeholder {
+    /* Microsoft Edge */
+    color: $primary-grey;
+}
+
+.rs-popover-enabled {
+    label {
+        margin-right: 0;
+    }
+
+    // i {
+    //     cursor: pointer;
+    //     position: relative;
+    //     top: 2px;
+    //     margin-left: 3px;
+    //     margin-right: 15px;
+    //     font-size: 18px;
+    // }
+}
+
+input.checkbox[type='checkbox']:checked~.lbl:before,
+input.checkbox-sm[type='checkbox']:checked~.lbl:before {
+    /*background-image: url(#{$image}/checkbox-active.svg);
+    background-position: -1px -1px;*/
+    // content: '\2714';
+    // color: $primary-green;
+    // line-height: 15px;
+    // font-size: 15px;
+    // text-align: center;
+    // display: inline-block;
+}
+
+input.radio[type='radio']:checked~.lbl:before {
+    // background-position: -28px 4px;
+    // content: '\2022';
+    // display: inline-block;
+    // color: $primary-green;
+    // line-height: 12px;
+    // font-size: 21px;
+    // text-align: center;
+    background-image: url(#{$image}/radioGreen.svg);
+    background-position: center;
+    background-size: 7px 7px;
+    background-repeat: no-repeat;
+}
+
+// input.checkbox[type='checkbox']:disabled ~ .lbl:before,
+// input.checkbox.disabled[type='checkbox'] ~ .lbl:before,
+// input.checkbox-sm[type='checkbox']:disabled ~ .lbl:before,
+// input.checkbox-sm.disabled[type='checkbox'] ~ .lbl:before,
+// input.radio[type='radio']:disabled ~ .lbl:before,
+// input.radio.disabled[type='radio'] ~ .lbl:before {
+//     background-color: $quaternary-grey;
+//     border-color: $quaternary-grey;
+//     border: 1px solid $secondary-grey;
+// }
+
+.rs-radio-wrapper input[type="radio"]:disabled,
+.rs-radio-wrapper input.radio[type="radio"]:disabled,
+.radio-wrapper label:has(input[type="radio"]:disabled),
+.radio-wrapper label:has(input.radio[type="radio"]:disabled),
+.rs-radio-wrapper input[type="radio"]:disabled ~ .lbl,
+.rs-radio-wrapper input.radio[type="radio"]:disabled ~ .lbl,
+.rs-radio-wrapper input[type="radio"]:disabled ~ .lbl::before,
+.rs-radio-wrapper input.radio[type="radio"]:disabled ~ .lbl::before {
+    cursor: not-allowed !important;
+}
+
+input[type='radio']~.lbl:before,
+input.radio[type='radio']~.lbl:before {
+    border-radius: 50px;
+    // border: 1px solid $primary-grey;
+    background-position: 10px 10px;
+    height: 15px;
+    min-width: 15px;
+}
+
+// New theme
+.rs-input-group-wrapper {
+    position: relative;
+
+    .input-group-prepend {
+        position: absolute;
+        bottom: 0;
+        width: 60px;
+
+        span {
+            background-color: transparent;
+            border-radius: 0;
+            border: 0;
+            position: relative;
+            display: block;
+            padding: 5px 0;
+            text-align: left;
+
+            &:before {
+                content: '';
+                position: absolute;
+                right: 0;
+                bottom: 0;
+                height: 9px;
+                border-right: 1px solid $secondary-grey;
+            }
+        }
+    }
+
+    .rs-input-wrapper {
+        input {
+            padding-left: 75px;
+        }
+    }
+}
+
+.rs-input-group {
+    .input-group-prepend {
+        .input-group-text {
+            min-width: 60px;
+            padding: 0 0 0 6px;
+            height: 32px;
+            font-size: $font-xsm;
+            font-weight: normal;
+            border-top-left-radius: 0;
+            border-bottom-left-radius: 0;
+            border-top-right-radius: 0;
+            border-bottom-right-radius: 0;
+            line-height: 1;
+            border-color: $secondary-grey;
+            background-color: $quaternary-grey;
+        }
+    }
+
+    input {
+        height: 32px;
+        padding-left: 8px;
+        border-top-left-radius: 0;
+        border-bottom-left-radius: 0;
+        border-top-right-radius: 0;
+        border-bottom-right-radius: 0;
+        border-color: $secondary-grey;
+        box-shadow: none !important;
+
+        &:focus {
+            border-color: $secondary-grey;
+            border-bottom-color: $secondary-blue;
+        }
+    }
+}
+
+// [ResInput] password meter — see KendoDocs CommonComponents/ResInput/resInput.scss
+// .rs-input-wrapper {
+//     .password-strength-meter {
+//         //height: 0.1rem;
+//         height: 2px;
+//         position: absolute;
+//         width: 100%;
+//
+//         // bottom: -1px;
+//         &:before {
+//             content: '';
+//             height: 100%;
+//             display: block;
+//             transition: width 0.2s;
+//         }
+//     }
+// }
+//
+// .password-strength-meter.bg20::before {
+//     background-color: $draft;
+//     width: 20%;
+// }
+//
+// .password-strength-meter.bg40::before {
+//     background-color: $alert;
+//     width: 40%;
+// }
+//
+// .password-strength-meter.bg60::before {
+//     background-color: $scheduled;
+//     width: 60%;
+// }
+//
+// .password-strength-meter.bg80::before {
+//     background-color: $inprogress;
+//     width: 80%;
+// }
+//
+// .password-strength-meter.bg100::before {
+//     background-color: $completed;
+//     width: 100%;
+// }
+
+.rs-textarea-wrapper {
+    &.form-floating {
+        .form-control {
+            @extend .css-scrollbar;
+            resize: none;
+            padding: 10px !important;
+            color: $primary-black !important;
+            border: 1px solid $secondary-grey;
+            z-index: 1;
+            font-size: $font-xsm;
+            outline: none;
+            box-shadow: none;
+            width: 100%;
+            height: 100%;
+            resize: none;
+            border-radius: var(--borderRadiusTabDropMenu);
+        }
+        .border-bottom-required{
+                &::before{
+                left: 5px;
+                bottom: 1px;
+                }
+            }
+
+        &>label {
+            font-size: $font-xsm;
+            width: 100%;
+            opacity: 1;
+            padding: 5px 0 0 10px;
+            color: $secondary-grey;
+            transition: ease-in-out, transform 0.4s ease-in-out, -webkit-transform 0.4s ease-in-out;
+        }
+
+        &.rstw-multiline-placeholder {
+            &>label {
+                white-space: initial;
+                line-height: 18px;
+            }
+        }
+
+        textarea.form-control:focus {
+
+            &:focus,
+            &:target {
+                border-color: $secondary-blue;
+            }
+
+            &+label {
+                &::after {
+                    background: transparent;
+                }
+            }
+        }
+    }
+}
+
+// .rs-textarea-component-wrapper {
+//     @extend .box-design;
+//     @extend .no-box-shadow;
+//     @extend .no-padding;
+//     .rstcw-top-icons {
+//         border-top-left-radius: 5px;
+//         border-top-right-radius: 5px;
+//         background-color: $tertiary-blue;
+//         border: 0;
+//         border-bottom: 1px solid $quaternary-blue;
+//         padding: 5px 10px;
+//         height: 42px;
+//         @extend .clearfix;
+//         ul {
+//             display: flex;
+//             align-items: center;
+//             li {
+//                 line-height: 14px;
+//                 margin-left: 5px;
+//                 padding: 0;
+//                 width: 30px;
+//                 height: 30px;
+//                 display: flex;
+//                 align-items: center;
+//                 justify-content: center;
+//                 &:first-child {
+//                     margin-left: 0;
+//                 }
+//                 &:hover {
+//                     background-color: $quaternary-blue;
+//                 }
+//                 i {
+//                     color: $primary-black !important;
+//                 }
+//                 .color-secondary-blue {
+//                     // color: $primary-grey !important;
+//                 }
+//                 .rs-emoji-picker {
+//                     margin-top: -17px;
+//                 }
+//             }
+//         }
+//         .rs-bootstrap-dropdown {
+//             .rs-dropdown {
+//                 .dropdown-toggle {
+//                     height: initial;
+//                     padding: 0;
+//                     i {
+//                         color: $primary-black;
+//                     }
+//                 }
+//             }
+//         }
+//     }
+//     .rs-textarea-wrapper {
+//         &.form-floating {
+//             textarea.form-control {
+//                 border: none;
+//                 min-height: 200px;
+//             }
+//         }
+//     }
+//     .validation-message {
+//         margin-top: -60px;
+//         background: transparent;
+//     }
+// }
+.rs-textarea-component-wrapper {
+    @extend .box-design;
+    @extend .no-box-shadow;
+    @extend .no-padding;
+
+    .rstcw-top-icons {
+        border-top-left-radius: var(--globalBorderRadius);
+        border-top-right-radius: var(--globalBorderRadius);
+        background-color: $tertiary-blue;
+        border: 0;
+        border-bottom: 1px solid $quaternary-blue;
+        padding: 0 10px;
+        height: 35px;
+        @extend .clearfix;
+
+        ul {
+            display: flex;
+            align-items: center;
+
+            li {
+                line-height: 14px;
+                margin: 0;
+                padding: 0;
+                width: 40px;
+                height: 34px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                border-right: 1px solid $quaternary-blue;
+
+                .rs-tooltip-wrapper {
+                    padding: 0 5px !important;
+                }
+
+                &:first-child {
+                    margin-left: -10px;
+                    border-top-left-radius: var(--globalBorderRadius);
+                }
+
+                &:hover {
+                    background-color: $white;
+
+                    i {
+                        color: $primary-blue !important;
+                    }
+                }
+
+                i {
+                    color: $primary-black !important;
+                }
+
+                .v1-search-dropdown-icon {
+                    i {
+                        color: $secondary-grey !important;
+                    }
+                }
+
+                // Overrides li i above: smart link dropdown footer lives inside toolbar li but must stay blue / white-on-hover
+                .dropdown-menu .dropdown-footer .dropdown-footer-btn i {
+                    color: $primary-blue !important;
+                }
+
+                .dropdown-menu .dropdown-footer .dropdown-footer-btn:hover i {
+                    color: $white !important;
+                }
+
+                .color-secondary-blue {
+                    // color: $primary-grey !important;
+                }
+
+                .rs-emoji-picker {
+                    &.rs-emoji-picker-below {
+                        & em-emoji-picker::before {
+                            top: -4px !important;
+                        }
+                    }
+
+                    // margin-top: 6px;
+                    //                 &::before {
+                    //                     position: absolute;
+                    // content: "";
+                    // width: 9px;
+                    // height: 9px;
+                    // background-color: #ffffff;
+                    // -webkit-transform: rotate(45deg);
+                    // transform: rotate(45deg);
+                    // border: 1px solid #c2cfe3;
+                    // border-right: none;
+                    // border-bottom: none;
+                    // top: -6px;
+                    // left: 10px;
+                    //                 }
+                }
+
+                .k-button {
+                    &:hover {
+                        .k-button-text {
+                            text-decoration: none !important;
+                        }
+                    }
+                }
+            }
+        }
+
+        .rs-bootstrap-dropdown {
+            .rs-dropdown {
+                .dropdown-toggle {
+                    height: initial;
+                    padding: 0;
+
+                    i {
+                        color: $primary-black;
+                    }
+                }
+
+                // &.show {
+                //     background-color: $secondary-blue;
+                //     color: $white;
+                // }
+            }
+        }
+    }
+
+    .rs-textarea-wrapper {
+        &.form-floating {
+            textarea.form-control {
+                border: none;
+                border-bottom-left-radius: var(--globalBorderRadius);
+                border-bottom-right-radius: var(--globalBorderRadius);
+                min-height: 250px;
+
+                &.social-post-editor {
+                    min-height: 413px;
+                }
+
+                &.push-textarea-editor {
+                    min-height: 277px;
+                }
+            }
+        }
+    }
+
+    .validation-message {
+        margin-top: -54px;
+        background: transparent;
+    }
+
+    &.preview-mobile-editor {
+        .rs-textarea-editor {
+
+            &.whatsapp,
+            &.sms {
+                .validation-message {
+                    margin-top: -72px;
+                    background: transparent;
+                    left: 92px;
+                }
+            }
+        }
+    }
+}
+
+.form-floating>.form-control:focus~label,
+.form-floating>.form-control:not(:placeholder-shown)~label,
+.form-floating>.form-control-plaintext~label,
+.form-floating>.form-select~label {
+    opacity: 1;
+    font-size: 11px;
+    transform: scale(1) translateY(-25px) translateX(-10px);
+    height: auto;
+}
+
+.form-floating.rstw-multiline-placeholder>.form-control:not(:placeholder-shown)~label {
+    transform: scale(1) translateY(-30px) translateX(-10px);
+}
+
+.login-panel .rs-input-group-wrapper .rs-input-placeholder-wrapper {
+
+    input,
+    input[disabled],
+    input[readonly],
+    input[required] {
+        &:placeholder-shown {
+            &+label {
+                left: 75px;
+            }
+        }
+    }
+}
+
+.rs-phone-input {
+    position: relative;
+
+    .react-tel-input {
+        @include sizing($ff: $rs-font-regular, $fs: $font-xsm);
+        position: relative;
+
+        //margin-top: -7px;
+        .special-label {
+            display: block;
+            top: -16px;
+            left: 0;
+            padding: 0;
+            background: transparent;
+            font-size: $font-xxs !important;
+
+            span {
+                color: $secondary-grey;
+                margin-left: 60px;
+
+                .required {
+                    color: $primary-red !important;
+                }
+            }
+        }
+
+        .flag-dropdown {
+            .selected-flag {
+                padding: 0;
+
+                //padding-left: 0;
+                //top: -6px;
+                .arrow {
+                    left: 34px;
+                    margin-top: 0;
+                    border-left: 6px solid transparent;
+                    border-right: 6px solid transparent;
+                    border-top: 7px solid $secondary-grey;
+                }
+
+                .up {
+                    border-top: none;
+                    border-bottom: 7px solid $secondary-grey;
+                }
+            }
+        }
+
+        input.form-control {
+            width: 100%;
+            border-radius: 0;
+            background: none !important;
+            border: 0;
+            padding: 13px 13px 13px 60px;
+            border-bottom: 1px solid $secondary-grey;
+
+            &:focus {
+                border-color: $secondary-blue;
+                box-shadow: none;
+            }
+
+            &.open {
+                border-color: $secondary-blue;
+            }
+        }
+    }
+}
+
+.rs-phone-input-wrapper-2 {
+    position: relative;
+
+    .rs-phone-input {
+        position: absolute;
+        bottom: 15px;
+    }
+
+    .rs-input-wrapper {
+        input {
+            text-indent: 56px;
+        }
+
+        label {
+            margin-left: 56px;
+        }
+    }
+
+    .rsp-error {
+        position: absolute;
+        top: -20px;
+        left: 56px;
+        font-size: 12px;
+        background: $white;
+        z-index: 2;
+        color: $primary-red !important;
+    }
+}
+
+.rs-picture {
+    //@include sizing($wh: 135px);
+    padding: 0;
+    position: relative;
+    display: grid;
+    justify-content: center;
+    align-items: center;
+    justify-items: center;
+
+    figure {
+        //background-color: $secondary-grey;
+        background-color: $white;
+        border: 1px solid $tertiary-grey;
+        margin: 0;
+        padding: 0;
+        border-radius: 50%;
+        overflow: hidden;
+        text-align: center;
+        @include sizing($wh: 135px);
+        align-items: center;
+        display: flex;
+        justify-content: center;
+    }
+
+    .picture-choose-file {
+        @include sizing($wh: 135px);
+        position: absolute;
+
+        //right: 0;
+        //top: -135px;
+        //cursor: pointer;
+        input {
+            @include sizing($wh: 25px);
+            position: absolute;
+            // bottom: 2px;
+            // right: 4px;
+            top: 0;
+            right: 0;
+            z-index: 1;
+            opacity: 0;
+            text-indent: -9999px;
+        }
+
+        .info {
+            position: absolute;
+            bottom: 0;
+            left: 105px;
+            z-index: 0;
+            cursor: pointer;
+
+            i {
+                background-color: $white;
+                border: 1px solid $white;
+                border-radius: 50%;
+            }
+
+            .pcf-label {
+                display: none;
+            }
+
+            .pcf-remove-icon {
+                margin-left: -23px;
+                position: absolute;
+                left: -77px;
+                z-index: 2;
+            }
+
+            .add-icon {
+                color: $primary-blue;
+            }
+
+            .edit-icon {
+                color: $primary-blue;
+                margin-top: -2px;
+            }
+
+            .remove-icon {
+                color: $secondary-blue;
+            }
+        }
+    }
+
+    &.required,
+    &.optional {
+        .picture-choose-file {
+            &:before {
+                position: absolute;
+                content: '*';
+                right: 27px;
+                top: 0;
+                z-index: 9;
+                color: $primary-red;
+                font-size: $font-sm;
+            }
+
+            &.valid-image:before {
+                content: '';
+            }
+        }
+    }
+
+    .validation-message {
+        width: 100%;
+    }
+}
+
+.react-tel-input {
+    .flag-dropdown {
+        z-index: 99;
+
+        &.open {
+            z-index: 100;
+        }
+
+        .selected-flag {
+            &::before {
+                border: none;
+            }
+
+            &:focus {
+                &::before {
+                    border: none;
+                    box-shadow: none;
+                }
+            }
+
+            &.open {
+                &::before {
+                    border: none;
+                    box-shadow: none;
+                }
+            }
+        }
+
+        .country-list {
+            @extend .box-design;
+            @extend .primary-box-shadow;
+            padding: 0 !important;
+            border-radius: 0 0 var(--globalBorderRadius) var(--globalBorderRadius) !important;
+            margin: 0;
+            max-height: 201px;
+            width: 285px;
+            @extend %css-scrollbar;
+
+            .flag {
+                margin-top: 0;
+                left: 9px;
+                top: 5px;
+            }
+
+            .country {
+                padding: 3px 5px 3px 46px;
+                line-height: 1.8em;
+                min-height: 1.8em;
+
+                &.highlight {
+                    background-color: $secondary-blue;
+                    color: $white;
+
+                    .dial-code {
+                        color: $white;
+                    }
+                }
+
+                &:hover {
+                    background-color: $secondary-blue;
+                    color: $white;
+
+                    .dial-code {
+                        color: $white;
+                    }
+                }
+            }
+        }
+    }
+}
+
+.rs-textarea-wrapper {
+    textarea {
+        border-radius: 0;
+    }
+}
+
+.rs-input-wrapper {
+    &.rs-input-bg {
+        input {
+            border-bottom: 1px solid #ffffff;
+        }
+
+        input,
+        input::placeholder,
+        input+label,
+        input[disabled]+label,
+        input[readonly]+label,
+        input[required]+label {
+            color: #fff;
+        }
+    }
+}
+
+.rs-textarea-editor {
+    height: 250px;
+    max-height: 250px;
+    @extend .css-scrollbar-y;
+    padding: 10px;
+
+    &.sms {
+        height: 314px;
+        max-height: 314px;
+
+        textarea.form-control {
+            padding: 0 !important;
+        }
+    }
+
+    &.mms {
+        height: 314px;
+        max-height: 314px;
+
+        textarea.form-control {
+            padding: 0 !important;
+        }
+    }
+
+    &.whatsapp {
+        height: 314px;
+        max-height: 314px;
+
+        textarea.form-control {
+            padding: 0 !important;
+        }
+    }
+
+    &.line {
+        height: 314px;
+        max-height: 314px;
+
+        textarea.form-control {
+            padding: 0 !important;
+        }
+    }
+
+    &.viber {
+        height: 314px;
+        max-height: 314px;
+
+        textarea.form-control {
+            padding: 0 !important;
+        }
+    }
+}
+
+input[type='range']::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    border: 1px solid #e95e57;
+    height: 32px;
+    width: 32px;
+    border-radius: 50%;
+    background: white;
+    margin-top: -14px;
+}
+
+// Color Picker Input Styles
+.rs-colorpicker-input-wrapper {
+    &.input-colorpicker-icon {
+
+        input,
+        input[disabled],
+        input[readonly],
+        input[required] {
+            // padding-right: 40px;
+        }
+    }
+
+    .rs-colorpicker-icon-wrapper {
+        position: absolute;
+        right: 0;
+        bottom: 5px;
+        z-index: 10;
+        pointer-events: auto;
+
+        .rs-colorpicker-input-picker {
+            .rs-builder-colorpicker-container {
+                margin: 0;
+
+                .rs-colorpicker-wrapper {
+                    position: relative;
+
+                    i {
+                        cursor: pointer;
+                        position: relative;
+                        pointer-events: auto;
+
+                        &::after {
+                            content: '';
+                            width: 20px;
+                            height: 5px;
+                            background: var(--editorbgcolor, #ffffff);
+                            position: absolute;
+                            top: 19px;
+                            left: 2px;
+                            border: 1px solid $primary-black;
+                            pointer-events: none;
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+// Bootstrap dropdown search icon ui start
+.v1-search-dropdown-container {
+    .dropdown-menu.show {
+        padding: 0 !important;
+        min-width: 200px;
+
+        .form-control:focus {
+            padding: 0 !important;
+        }
+
+        .v1-dropdown-nodata {
+            min-height: 140px;
+
+        }
+
+        .v1-dropdown-data {
+            >div:last-child>a:last-child {
+                border-bottom-left-radius: var(--globalBorderRadius);
+                border-bottom-right-radius: var(--globalBorderRadius);
+            }
+
+            a {
+                border-radius: 0;
+                padding-top: 6px;
+                padding-left: 8px;
+                padding-right: 8px;
+            }
+        }
+
+    }
+    .v1-search-dropdown-icon {
+        margin: 0 10px;
+        padding: 4px 0;
+
+        input {
+            padding: 0;
+        }
+
+    }
+
+}
+
+.k-editor .k-toolbar .k-button-group .rs-bootstrap-dropdown .rs-dropdown.show {
+    .v1-search-dropdown-icon {
+        i {
+            color: $secondary-grey !important;
+        }
+    }
+}
+
+// Bootstrap dropdown search icon ui end

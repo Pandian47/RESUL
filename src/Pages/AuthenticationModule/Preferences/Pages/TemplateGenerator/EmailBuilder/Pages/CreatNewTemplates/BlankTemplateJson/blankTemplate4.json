@@ -1,0 +1,14 @@
+{
+  "components": [],
+  "settings": {
+    "layout": "web",
+    "backgroundColor": "#ffffff",
+    "showGrid": true,
+    "gridSize": 15,
+    "snapToGrid": false,
+    "enableGuides": true,
+    "width": 1920,
+    "height": 1080,
+    "style": {}
+  }
+}

@@ -1,0 +1,70 @@
+.popover {
+    border-radius: 5px 5px 3px 5px;
+    --bs-popover-max-width: 250px;
+    font-family:$rs-font-regular;
+    @include color($bg: $tooltip-bg-color);
+    &.modalOverlayZindexCSS {
+        z-index: 10003;
+    }
+    &.rs-popover-right {
+        .popover-arrow {
+            &:after {
+                border-top-color: transparent;
+                border-right-color: $tooltip-bg-color;
+            }
+        }
+    }
+    .popover-arrow {
+        bottom: -9.2px;
+
+        &:before {
+            border-top-color: transparent;
+        }
+        &:after {
+            border-top-color: $tooltip-bg-color;
+        }
+    }
+    .popover-body {
+        // font-family: $rs-font-light;
+        color: $white;
+        padding: 7px;
+        font-size: 12px;
+        letter-spacing: 0.5px;
+        max-width: 250px !important;
+        border-radius: 5px;
+        text-align: left;
+        small {
+            display: block;
+        }
+    }
+}
+// Detail analytics page, expand-grid and overview - eye small pophover img style
+.expand-grid-pophover-img,
+.small-pophover-img {
+    @extend .secondary-box-shadow;
+    background-color: $white;
+    border-color: $quaternary-blue;
+    .popover-arrow {
+        &:before {
+            @include Dropdownuparrow();
+        }
+        &:after {
+            display: none;
+        }
+    }
+    .popover-body {
+        padding: 5px;
+    }
+}
+.expand-grid-pophover-img .popover-arrow {
+    &:before {
+        @include abs-position($top: 3px, $left: -5px);
+        transform: rotate(137deg);
+    }
+}
+.small-pophover-img .popover-arrow {
+    &:before {
+        @include abs-position($top: 3px, $left: 3px);
+        transform: rotate(314deg);
+    }
+}

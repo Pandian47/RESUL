@@ -1,0 +1,27 @@
+.element-builder-hover {
+  border: none;
+}
+
+.element-builder-hover:hover {
+  border: 1px solid #0b7cc1;
+}
+
+.selected {
+  border: 3px dashed #1671aa;
+}
+
+.viewComponents {
+  border: 1px dashed rgba(170, 170, 170, 0.7);
+}
+
+[contenteditable] {
+  outline: 0px solid transparent;
+}
+
+.icon-hover {
+  background-color: none;
+}
+
+.icon-hover:hover {
+  background-color: #004fdf;
+}/*# sourceMappingURL=LandingPageBuilder.css.map */

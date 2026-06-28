@@ -1,0 +1,585 @@
+// ResDateRangePicker — tokens from kendoDocsPrefix.scss ($res-prefix)
+@use '../../kendoDocsVariables.scss' as *;
+
+// Popup open animation — mirrors the MultiSelect popup's slide-down + fade
+@keyframes res-daterange-popup-in {
+    from {
+        opacity: 0;
+        transform: translateY(-6px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.active-cell-props {
+    background-color: $secondary_blue;
+    border-radius: 0;
+}
+
+.active-cell-radius-left {
+    border-top-left-radius: 50%;
+    border-bottom-left-radius: 50%;
+}
+
+.active-cell-radius-right {
+    border-top-right-radius: 50%;
+    border-bottom-right-radius: 50%;
+}
+
+.#{$res-daterange-picker} .date-title,
+.#{$res-daterange-picker} .date-title .#{$res-dt-calendar-text},
+.#{$res-daterange-picker} .date-title .#{$res-dt-calendar-icon},
+.#{$res-daterange-picker} .date-title .#{$res-dt-arrow-icon} {
+    height: 32px;
+    display: flex;
+    align-items: center;
+}
+
+.#{$res-daterange-picker} {
+    float: right;
+    position: relative;
+   .k-datetimepicker {
+    &:focus,
+    &:focus-visible,
+    &:focus-within {
+        box-shadow: none;
+    }
+}
+    .date-range-dropdown.open {
+        z-index: 111;
+    }
+
+    &.open .date-title {
+        pointer-events: none;
+    }
+
+    .date-title {
+        &:hover {
+            cursor: pointer;
+
+            span {
+                color: $secondary-blue;
+
+                &.#{$res-dt-arrow-icon} {
+                    &:before {
+                        border-top-color: $secondary-blue;
+                    }
+                }
+            }
+        }
+
+        span {
+            display: inline-block;
+            font-size: $font-sm;
+            color: $secondary-black;
+        }
+
+        .#{$res-dt-calendar-text} {
+            padding-right: 18px;
+        }
+
+        i.icon-rs-calendar-medium {
+            margin-right: 8px;
+            top: -1px;
+            position: relative;
+        }
+
+        i.icon-dropdown-small {
+            font-size: $font-xsm;
+            color: $secondary-grey;
+        }
+
+        .#{$res-dt-calendar-icon} {
+            position: relative;
+        }
+
+        .#{$res-dt-arrow-icon} {
+            position: absolute;
+            right: 0;
+            top: 1px;
+        }
+    }
+
+    .date-range-dropdown {
+        box-shadow: none;
+        border-radius: var(--globalBorderRadius);
+        position: absolute;
+        z-index: 15;
+        background-color: $white;
+        right: -11px;
+        border: 1px solid transparent;
+        opacity: 0;
+        visibility: hidden;
+        width: 150px;
+        height: 223px;
+        padding: 5px;
+        overflow: visible;
+        clip-path: inset(0 0 100% 0 round var(--globalBorderRadius));
+        transform: translateY(-4px) scaleY(0.96);
+        transform-origin: top center;
+        pointer-events: none;
+        transition:
+            opacity 60ms ease-out,
+            transform 180ms cubic-bezier(0.4, 0, 1, 1),
+            clip-path 220ms cubic-bezier(0.4, 0, 1, 1),
+            visibility 0ms linear calc(240ms + var(--rs-dropdown-item-count, 5) * 22ms),
+            width 180ms cubic-bezier(0.4, 0, 1, 1),
+            height 180ms cubic-bezier(0.4, 0, 1, 1),
+            padding 180ms cubic-bezier(0.4, 0, 1, 1);
+        will-change: opacity, transform, clip-path, width, height;
+
+        &:before {
+            position: absolute;
+            content: '';
+            width: 8px;
+            height: 8px;
+            background-color: $white;
+            transform: rotate(45deg);
+            border: 1px solid $quaternary-blue;
+            border-right: none;
+            border-bottom: none;
+            opacity: 0;
+            visibility: hidden;
+            transition: none;
+        }
+
+        &.open {
+            visibility: visible;
+            opacity: 1;
+            height: 223px;
+            width: 150px;
+            padding: 5px;
+            border: 1px solid $quaternary-blue;
+            box-shadow: 0 0 5px 0 rgb(0 0 0 / 5%), 0 0 5px 0 rgb(0 0 0 / 5%);
+            clip-path: inset(-8px 0 0 0 round var(--globalBorderRadius));
+            transform: translateY(0) scaleY(1);
+            transform-origin: top center;
+            pointer-events: auto;
+            transition:
+                opacity 120ms ease-out,
+                transform 260ms cubic-bezier(0.16, 1, 0.3, 1),
+                clip-path 300ms cubic-bezier(0.16, 1, 0.3, 1),
+                visibility 0ms,
+                width 260ms cubic-bezier(0.16, 1, 0.3, 1),
+                height 260ms cubic-bezier(0.16, 1, 0.3, 1),
+                padding 260ms cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        &.open:before {
+            opacity: 1;
+            visibility: visible;
+            transition-delay: 20ms;
+        }
+
+        .date-range-box {
+            position: relative;
+            width: 100%;
+            height: 213px;
+            overflow: hidden;
+            transition: height 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+
+            .#{$res-daterangepicker-content} {
+                position: absolute;
+                opacity: 0;
+                transform: translateX(20px);
+                pointer-events: none;
+                transition: opacity 0.12s ease-out, transform 0.12s ease-out;
+            }
+
+            .#{$res-daterangepicker-list-view} {
+                position: absolute;
+                text-align: left;
+                right: 0;
+                background-color: #ffffff;
+                li {
+                    width: 100%;
+                    font-size: $font-xsm;
+                    margin: 0 0 5px 0;
+                    padding: 5px 15px;
+                    border-radius: 5px;
+                    opacity: 0;
+                    filter: blur(1px);
+                    transform: translateY(-7px);
+                    transition:
+                        opacity 180ms ease,
+                        filter 180ms ease,
+                        transform 220ms cubic-bezier(0.16, 1, 0.3, 1),
+                        background-color 160ms ease,
+                        color 160ms ease;
+                    transition-delay: calc(
+                        (var(--rs-dropdown-item-count, 5) - var(--rs-dropdown-item-index, 0) - 1) * 22ms
+                    );
+                    will-change: opacity, filter, transform;
+
+                    &.active {
+                        color: $white;
+                        background-color: $secondary-blue;
+                        transition:
+                            opacity 180ms ease,
+                            filter 180ms ease,
+                            transform 220ms cubic-bezier(0.16, 1, 0.3, 1),
+                            background-color 160ms ease,
+                            color 160ms ease;
+                    }
+
+                    &:hover {
+                        background-color: $secondary-blue;
+                        color: $white;
+                        cursor: pointer;
+                    }
+                }
+            }
+
+            .date-input-view {
+                li {
+                    width: 50%;
+                    float: left;
+                    margin-right: 8px;
+                    margin-bottom: 8px;
+
+                    &:last-child {
+                        margin-right: 0;
+                    }
+
+                    div {
+                        font-size: $font-xs;
+                        color: $secondary-black;
+                    }
+
+                    input {
+                        background-color: $tertiary-grey;
+                        height: 33px;
+                        font-size: $font-xs;
+                        padding: 0 6px;
+                    }
+                }
+            }
+
+            .k-daterangepicker {
+                visibility: hidden;
+            }
+
+            .#{$res-daterangepicker-buttons} {
+                visibility: hidden;
+            }
+        }
+
+        .#{$res-daterangepicker-buttons} {
+            position: absolute;
+            bottom: 0;
+            right: 0;
+            min-width: 200px;
+            text-align: right;
+            opacity: 0;
+            transform: translateX(15px);
+            pointer-events: none;
+            visibility: hidden;
+            transition: opacity 0.12s ease-out, transform 0.12s ease-out, visibility 0.12s ease-out;
+
+            .rs-button-primary {
+                margin-left: 15px;
+            }
+             .rs-button-link {
+                margin-left: 15px;
+            }
+        }
+
+        &.calendar-box {
+            width: 590px;
+            height: 350px;
+            // padding: 10px;
+            // margin-right: -4px;
+            z-index: 10002;
+            transition:
+                right 0.2s ease,
+                left 0.2s ease,
+                margin-right 0.2s ease,
+                margin-left 0.2s ease,
+                width 0.28s cubic-bezier(0.16, 1, 0.3, 1),
+                height 0.28s cubic-bezier(0.16, 1, 0.3, 1),
+                padding 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+
+            .k-button-md {
+                padding: 0;
+            }
+
+            .k-daterangepicker {
+                visibility: visible;
+ 
+                .k-floating-label-container {
+                    .k-floating-label {
+                        top: -6px;
+                    }
+                }
+            }
+
+            .#{$res-daterangepicker-buttons} {
+                opacity: 1;
+                transform: translateX(0);
+                pointer-events: auto;
+                visibility: visible;
+                transition: opacity 0.25s ease-out 0.18s, transform 0.25s cubic-bezier(0.16, 1, 0.3, 1) 0.18s, visibility 0s linear 0.18s;
+            }
+
+            .date-range-box {
+                height: 330px;
+                transition: height 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+
+                .#{$res-daterangepicker-content} {
+                    position: absolute;
+                    height: 330px;
+                    opacity: 1;
+                    transform: translateX(0);
+                    pointer-events: auto;
+                    transition: opacity 0.25s ease-out 0.14s, transform 0.25s cubic-bezier(0.16, 1, 0.3, 1) 0.14s;
+
+                    .k-animation-container {
+                        &.#{$res-kendo-daterange-picker-wrapper} {
+                            // Kendo sets inline top/left on the popup container
+                            top: 0 !important;
+                            left: 0 !important;
+                            .k-daterangepicker-popup{
+                                padding-left: 8px;
+                            }
+                            .k-popup {
+                                margin: 0;
+                                border: 0;
+                                width: 430px;
+                                box-shadow: none;
+
+                                .k-calendar-header {
+                                    padding: 0;
+                                    
+                                    .k-calendar-title {
+                                        font-family: $rs-font-regular;
+                                        font-size: $font-xsm;
+                                        color: $black !important;
+                                    }
+                                    .k-button-text {
+                                        color: $primary-blue !important;
+                                    }
+                                }
+
+                                .k-calendar-view {
+                                    margin-top: 10px;
+                                    padding: 0 8px 0 0;
+
+                                    .k-calendar-table {
+                                        border: 1px solid $quaternary-blue;
+                                        border-radius: var(--globalBorderRadius);
+                                        padding: 5px;
+                                        margin: 0;
+                                        .k-calendar-tbody .k-calendar-td .k-link {
+                                            border-radius: 0;
+                                        }
+                                        thead th {
+                                            border-bottom: 1px solid $quaternary-blue;
+                                        }
+
+                                        tbody tr:first-child td {
+                                            border-top: 2px solid $white;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    .#{$res-kendo-input-from-date-wrapper},
+                    .#{$res-kendo-input-to-date-wrapper} {
+                        position: absolute;
+                        bottom: 10px;
+                        left: 10px;
+                        pointer-events: none;
+
+                        .k-floating-label-container {
+                            width: 160px;
+                            padding-top: 5px;
+
+                            .k-floating-label {
+                                top: -5px;
+                                left: 0;
+                                font-size: 11px;
+                                color: $primary-grey;
+                                pointer-events: none;
+                            }
+                        }
+
+                        .k-dateinput {
+                            width: 160px;
+                            border: none;
+                            margin-bottom: -15px;
+                            border-radius: 5px;
+                            background-color: $white;
+
+                            .k-input-inner {
+                                width: 100%;
+                                height: auto;
+                                padding: 6px 0;
+                                color: $secondary-black;
+                                font-size: $font-xs;
+                            }
+                        }
+                    }
+
+                    .#{$res-kendo-input-to-date-wrapper} {
+                        left: 226px;
+                    }
+                }
+            }
+        }
+
+        &.open .date-range-box .#{$res-daterangepicker-list-view} li {
+            opacity: 1;
+            filter: blur(0);
+            transform: translateY(0);
+            transition-delay: calc(18ms + var(--rs-dropdown-item-index, 0) * 36ms);
+        }
+    }
+}
+
+.#{$res-daterange-picker} .k-calendar {
+    .k-range-start,
+    .k-range-end,
+    .k-range-mid {
+        background-color: $tertiary-blue;
+        color: $primary-grey;
+    }
+
+    .k-calendar-td {
+        border-bottom: 2px solid $white;
+
+        &.k-disabled {
+            background-color: white;
+        }
+
+        &.k-selected {
+            .k-calendar-cell-inner,
+            .k-link {
+                background-color: $secondary-blue;
+                border-radius: 0;
+            }
+
+            &:hover,
+            &.k-hover {
+                .k-calendar-cell-inner,
+                .k-link {
+                    background-color: $secondary-blue;
+                    border-radius: 0;
+                }
+            }
+        }
+    }
+
+    .k-range-split-start:after,
+    .k-range-split-end:after {
+        display: none;
+    }
+}
+
+.#{$res-daterange-picker} .k-floating-label-container .k-floating-label {
+    color: $primary-grey;
+}
+
+.#{$res-daterange-picker} .k-calendar-infinite .k-calendar-header {
+    margin-right: 11px;
+}
+
+.#{$res-daterange-picker} .k-calendar-infinite .k-calendar-view .k-calendar-content {
+    position: relative;
+    height: 180px;
+}
+
+.#{$res-daterange-picker} .date-range-dropdown.open:before {
+    top: -4px;
+    right: 12px;
+}
+
+
+
+.#{$res-daterange-picker} .date-range-dropdown.open.calendar-box-right {
+    right: auto;
+    left: 0;
+    margin-right: 0;
+    margin-left: -4px;
+    transition: right 0.2s ease, left 0.2s ease, margin-right 0.2s ease, margin-left 0.2s ease;
+
+    &:before {
+        right: auto;
+        left: 16px;
+        transition: right 0.2s ease, left 0.2s ease;
+    }
+}
+
+.group:hover .group-hover-visible {
+    visibility: visible;
+    opacity: 1;
+}
+
+.group-hidden {
+    visibility: hidden;
+    opacity: 0;
+}
+
+.#{$res-dt-arrow-icon}:before {
+    content: '';
+    position: relative;
+    width: 0;
+    height: 0;
+    border-left: 6px solid transparent;
+    border-right: 6px solid transparent;
+    border-top: 7px solid $secondary-grey;
+}
+
+.splite_ab_bg {
+    .#{$res-daterange-picker} .date-title span,
+    .#{$res-daterange-picker} .date-title:hover span,
+    .#{$res-daterange-picker} .date-title span:hover,
+    .#{$res-daterange-picker} .date-title .#{$res-dt-calendar-icon} i,
+    .#{$res-daterange-picker} .date-title:hover .#{$res-dt-calendar-icon} i {
+        color: $white;
+    }
+
+    .#{$res-daterange-picker} {
+        .date-range-dropdown.open {
+            top: 62px;
+        }
+    }
+
+    .#{$res-dt-arrow-icon}:before,
+    .#{$res-daterange-picker} .date-title:hover span.#{$res-dt-arrow-icon}:before {
+        border-top-color: $white;
+    }
+
+    .#{$res-daterange-picker} .date-title,
+    .#{$res-daterange-picker} .date-title .#{$res-dt-calendar-text},
+    .#{$res-daterange-picker} .date-title .#{$res-dt-calendar-icon},
+    .#{$res-daterange-picker} .date-title .#{$res-dt-arrow-icon} {
+        height: 55px;
+    }
+}
+
+.Commuanalysis {
+    .#{$res-daterange-picker} {
+        .date-range-dropdown {
+            min-height: 217px;
+
+            .date-range-box .#{$res-daterangepicker-list-view} li {
+                padding: 2px 16px;
+            }
+        }
+    }
+}
+
+.download-page-setup-detail {
+    .#{$res-daterange-picker} {
+        .#{$res-dt-calendar-text} {
+            position: relative;
+            top: 3px;
+        }
+    }
+}
+

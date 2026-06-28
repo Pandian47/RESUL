@@ -1,0 +1,163 @@
+import { HorizontalSkeleton } from 'Components/Skeleton/Skeleton';
+import { bubbleChartOptions } from 'Constants/Charts';
+import { AUDIENCE_BEHAVIOR, GAIN_INSIGNTS_AUDIENCE } from 'Constants/GlobalConstant/Placeholders';
+import { menu_dot_medium } from 'Constants/GlobalConstant/Glyphicons';
+import { useEffect, useState } from 'react';
+import BootstrapDropdown from 'Components/FormFields/RSBootstrapdown';
+import { getWeekName } from 'Utils/modules/communicationChannels';
+
+import { useSelector } from 'react-redux';
+const AudienceBehavior = () => {
+    const [channels, setChannels] = useState('Reach');
+    const [audienceBehaviourData, setAudienceBehaviourData] = useState([]);
+    const { overView } = useSelector(({ aa360ViewReducer }) => aa360ViewReducer);
+    const tempData = [];
+    let audienceBehaviourTempData = [];
+    useEffect(() => {
+        if (channels === 'Reach') {
+            audienceBehaviourTempData = overView?.reachPropensity?.split('|');
+        } else if (channels === 'Engagement') {
+            audienceBehaviourTempData = overView?.engPropensity?.split('|');
+        } else if (channels === 'Conversion') {
+            audienceBehaviourTempData = overView?.convPropensity?.split('|');
+        }
+        {
+            audienceBehaviourTempData?.map((item, index) => {
+                const weekValue = getWeekName(item?.split(':')[0]);
+                if (parseFloat(item?.split(':')[1]) > 0) {
+                    tempData.push({
+                        name: weekValue?.label,
+                        className: weekValue?.short,
+                        value: parseFloat(item?.split(':')[1]).toFixed(2),
+                    });
+                }
+            });
+            setAudienceBehaviourData(tempData);
+        }
+    }, [channels, overView]);
+    // console.log('audienceBehaviourData: ', audienceBehaviourData);
+
+    const ch_data = bubbleChartOptions({
+        series: audienceBehaviourData,
+        packedbubble: {
+            minSize: '110px',
+            maxSize: '140px',
+            layoutAlgorithm: {
+                gravitationalConstant: 0.01,
+            },
+        },
+    });
+    const getSizeBasedOnValue = (value, sortedValues) => {
+        const minSize = 100;
+        const maxSize = 160;
+        sortedValues.sort((a, b) => a - b);
+        const position = sortedValues.indexOf(value);
+        const size = minSize + position * 10;
+
+        return Math.min(Math.max(size, minSize), maxSize);
+    };
+    return (
+        <div className="portlet-container portlet-md areaspline-x-axis-labels">
+            <div className="portlet-header">
+                <h4>{AUDIENCE_BEHAVIOR}</h4>
+                <div className="float-end">
+                    <BootstrapDropdown
+                        data={['Reach', 'Engagement', 'Conversion']}
+                        flatIcon
+                        defaultItem={<i className={`${menu_dot_medium} icon-md`} id="rs_AudienceBehavior_menu" />}
+                        showUpdate={true}
+                        className="no_caret"
+                        alignRight
+                        onSelect={(channel) => setChannels(channel)}
+                        isActive
+                        isCustomDefaultIcon
+                    />
+                </div>
+            </div>
+            {/* <p className="mb15">{GAIN_INSIGNTS_AUDIENCE}</p> */}
+            <div className="portlet-body bubble-audience-behaviour-del">
+                {/* <RSHighchartsContainer
+                    options={ch_data}
+                    isError={!!ch_data && ch_data?.series?.length !== 0 ? false : true}
+                /> */}
+                {!overView?.loading && audienceBehaviourData?.length === 0 ? (
+                    <>
+                        <HorizontalSkeleton isError={true} height={29.5}/>
+                    </>
+                ) : (
+                    <div className="bubble-chart-custom">
+                        <ul>
+                            {audienceBehaviourData.map((channel, index) => {
+                                const sortedValues = audienceBehaviourData.map((channel) => parseFloat(channel.value));
+                                const value = parseFloat(channel.value);
+                                const size = getSizeBasedOnValue(value, sortedValues);
+                                return (
+                                    <li
+                                        key={index}
+                                        className={`bubble-chart-list b-${channel.className}`}
+                                        style={{
+                                            width: `${size}px`,
+                                            height: `${size}px`,
+                                        }}
+                                    >
+                                        <h2 className="b-title">
+                                            {/* {Math.round(channel.value)} */}
+                                            {value}
+                                            <small>%</small>
+                                        </h2>
+                                        <p className="text-capitalize"> {channel.className}</p>
+                                    </li>
+                                );
+                            })}
+                            {/* <li className="bubble-chart-list b-mon">
+                                <h2 className="b-title">
+                                    6<small>%</small>
+                                </h2>
+                                <p>Mon</p>
+                            </li>
+                            <li className="bubble-chart-list b-tue">
+                                <h2 className="b-title">
+                                    8<small>%</small>
+                                </h2>
+                                <p>Tue</p>
+                            </li>
+                            <li className="bubble-chart-list b-wed">
+                                <h2 className="b-title">
+                                    6<small>%</small>
+                                </h2>
+                                <p>Wed</p>
+                            </li>
+                            <li className="bubble-chart-list b-thu">
+                                <h2 className="b-title">
+                                    3<small>%</small>
+                                </h2>
+                                <p>Thu</p>
+                            </li>
+                            <li className="bubble-chart-list b-fri">
+                                <h2 className="b-title">
+                                    5<small>%</small>
+                                </h2>
+                                <p>Fri</p>
+                            </li>
+                            <li className="bubble-chart-list b-sat">
+                                <h2 className="b-title">
+                                    38<small>%</small>
+                                </h2>
+                                <p>Sat</p>
+                            </li>
+                            <li className="bubble-chart-list b-sun">
+                                <h2 className="b-title">
+                                    31<small>%</small>
+                                </h2>
+                                <p>Sun</p>
+                            </li> */}
+                        </ul>
+                    </div>
+                )}
+                {/* <RSHighchartsContainer options={ch_data} /> */}
+            </div>
+        </div>
+    );
+};
+
+export default AudienceBehavior;

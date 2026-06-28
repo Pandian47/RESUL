@@ -1,0 +1,400 @@
+{
+    "components": [
+        {
+            "id": "ec63372d-6577-4966-96a4-c7bc6600d4c7",
+            "type": "imageText",
+            "position": {
+                "x": 1104.09375,
+                "y": 0
+            },
+            "size": {
+                "width": 600,
+                "height": "auto"
+            },
+            "content": {
+                "text": "<p style=\"margin: 0; padding: 0;\">This text will appear alongside your image. You can customize the layout, styling, and content to match your needs.</p>",
+                "imageUrl": "",
+                "imageAlt": ""
+            },
+            "style": {
+                "fontFamily": "Arial, sans-serif",
+                "enableContent": false,
+                "wrapperLayout": "image-left",
+                "imageWidth": 180,
+                "imageHeight": "auto",
+                "objectFit": "contain",
+                "maintainAspectRatio": false,
+                "imageAlign": "center",
+                "imageBorderRadius": 0,
+                "fontSize": 11,
+                "lineHeight": 1.5,
+                "letterSpacing": 0,
+                "textColor": "#000000",
+                "titleColor": "#000000",
+                "textAlign": "left",
+                "backgroundColor": "transparent",
+                "paddingControl": {
+                    "all": 10,
+                    "top": 10,
+                    "right": 10,
+                    "bottom": 10,
+                    "left": 10,
+                    "isCustomPadding": false
+                },
+                "customBorder": false,
+                "containerBackgroundColor": "transparent"
+            },
+            "subType": "",
+            "parentId": "",
+            "columnIndex": 0,
+            "zIndex": 1,
+            "rotation": 0,
+            "locked": false,
+            "rowId": "row-1",
+            "order": 0,
+            "blocks": {}
+        },
+        {
+            "id": "d810fb28-a51f-449d-825a-3a5c14702bf3",
+            "type": "imageText",
+            "position": {
+                "x": 1104.09375,
+                "y": 120
+            },
+            "size": {
+                "width": 600,
+                "height": "auto"
+            },
+            "content": {
+                "text": "<p style=\"margin: 0; padding: 0;\">Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since.</p>",
+                "imageUrl": "",
+                "imageAlt": ""
+            },
+            "style": {
+                "fontFamily": "Arial, sans-serif",
+                "enableContent": true,
+                "wrapperLayout": "image-right",
+                "imageWidth": 180,
+                "imageHeight": "auto",
+                "objectFit": "contain",
+                "maintainAspectRatio": false,
+                "imageAlign": "center",
+                "imageBorderRadius": 0,
+                "fontSize": 11,
+                "lineHeight": 1.5,
+                "letterSpacing": 0,
+                "textColor": "#000000",
+                "titleColor": "#000000",
+                "textAlign": "left",
+                "backgroundColor": "transparent",
+                "paddingControl": {
+                    "all": 10,
+                    "top": 10,
+                    "right": 10,
+                    "bottom": 10,
+                    "left": 10,
+                    "isCustomPadding": false
+                },
+                "customBorder": false,
+                "containerBackgroundColor": "transparent"
+            },
+            "subType": "",
+            "parentId": "",
+            "columnIndex": 0,
+            "zIndex": 2,
+            "rotation": 0,
+            "locked": false,
+            "rowId": "row-1",
+            "order": 1,
+            "blocks": {}
+        },
+        {
+            "id": "5e2d7ba4-f367-47ff-be57-834ed277c6b8",
+            "type": "imageText",
+            "position": {
+                "x": 1104.09375,
+                "y": 240
+            },
+            "size": {
+                "width": 600,
+                "height": "auto"
+            },
+            "content": {
+                "text": "<p style=\"margin: 0; padding: 0;\">Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since.</p>",
+                "imageUrl": "",
+                "imageAlt": ""
+            },
+            "style": {
+                "fontFamily": "Arial, sans-serif",
+                "enableContent": true,
+                "wrapperLayout": "image-left",
+                "imageWidth": 180,
+                "imageHeight": "auto",
+                "objectFit": "contain",
+                "maintainAspectRatio": false,
+                "imageAlign": "center",
+                "imageBorderRadius": 0,
+                "fontSize": 11,
+                "lineHeight": 1.5,
+                "letterSpacing": 0,
+                "textColor": "#000000",
+                "titleColor": "#000000",
+                "textAlign": "left",
+                "backgroundColor": "transparent",
+                "paddingControl": {
+                    "all": 10,
+                    "top": 10,
+                    "right": 10,
+                    "bottom": 10,
+                    "left": 10,
+                    "isCustomPadding": false
+                },
+                "customBorder": false,
+                "containerBackgroundColor": "transparent"
+            },
+            "subType": "",
+            "parentId": "",
+            "columnIndex": 0,
+            "zIndex": 3,
+            "rotation": 0,
+            "locked": false,
+            "rowId": "row-1",
+            "order": 2,
+            "blocks": {}
+        },
+        {
+            "id": "8ceb9339-db42-4f6d-ab41-bba588eb9f13",
+            "type": "block",
+            "position": {
+                "x": 1104.09375,
+                "y": 360
+            },
+            "size": {
+                "width": 600,
+                "height": "auto"
+            },
+            "content": null,
+            "style": {
+                "fontFamily": "Arial, sans-serif",
+                "fontSize": 11,
+                "lineHeight": 1.5,
+                "color": "#000000",
+                "backgroundColor": "transparent",
+                "containerBackgroundColor": "transparent"
+            },
+            "subType": "layout-2",
+            "parentId": "",
+            "columnIndex": 0,
+            "zIndex": 4,
+            "rotation": 0,
+            "locked": false,
+            "rowId": "row-1",
+            "order": 3,
+            "blocks": {
+                "8ceb9339-db42-4f6d-ab41-bba588eb9f13-0": [
+                    {
+                        "id": "0402a3bd-d241-4536-9dbf-59844fec1f2f",
+                        "type": "text",
+                        "position": {
+                            "x": 20,
+                            "y": 20
+                        },
+                        "size": {
+                            "width": 600,
+                            "height": "auto"
+                        },
+                        "content": "<p style=\"text-align: center; margin: 0px; padding: 0px;\"><span style=\"color: rgb(12, 138, 255);\">Forward to Friend</span></p>",
+                        "style": {
+                            "fontFamily": "Arial, sans-serif",
+                            "fontSize": 11,
+                            "lineHeight": 1.5,
+                            "color": "#000000",
+                            "backgroundColor": "transparent",
+                            "textAlign": "left",
+                            "containerBackgroundColor": "transparent",
+                            "contentBackgroundColor": "transparent",
+                            "paddingControl": {
+                                "all": 10,
+                                "top": 10,
+                                "right": 10,
+                                "bottom": 10,
+                                "left": 10,
+                                "isCustomPadding": false
+                            }
+                        },
+                        "subType": "",
+                        "parentId": "8ceb9339-db42-4f6d-ab41-bba588eb9f13",
+                        "columnIndex": 0,
+                        "zIndex": 0,
+                        "rotation": 0,
+                        "locked": false,
+                        "order": 0
+                    }
+                ],
+                "8ceb9339-db42-4f6d-ab41-bba588eb9f13-1": [
+                    {
+                        "id": "d6fa34f8-9190-43e4-8090-4ee0a23cc4d1",
+                        "type": "text",
+                        "position": {
+                            "x": 20,
+                            "y": 20
+                        },
+                        "size": {
+                            "width": 600,
+                            "height": "auto"
+                        },
+                        "content": "<p style=\"text-align: center; margin: 0px; padding: 0px;\"><span style=\"color: rgb(12, 138, 255);\">Unsubscribe</span></p>",
+                        "style": {
+                            "fontFamily": "Arial, sans-serif",
+                            "fontSize": 11,
+                            "lineHeight": 1.5,
+                            "color": "#000000",
+                            "backgroundColor": "transparent",
+                            "textAlign": "left",
+                            "containerBackgroundColor": "transparent",
+                            "contentBackgroundColor": "transparent",
+                            "paddingControl": {
+                                "all": 10,
+                                "top": 10,
+                                "right": 10,
+                                "bottom": 10,
+                                "left": 10,
+                                "isCustomPadding": false
+                            }
+                        },
+                        "subType": "",
+                        "parentId": "8ceb9339-db42-4f6d-ab41-bba588eb9f13",
+                        "columnIndex": 1,
+                        "zIndex": 0,
+                        "rotation": 0,
+                        "locked": false,
+                        "order": 0
+                    }
+                ]
+            }
+        },
+        {
+            "id": "d66b6120-8d73-420a-8209-a504736d7777",
+            "type": "text",
+            "position": {
+                "x": 1104.09375,
+                "y": 480
+            },
+            "size": {
+                "width": 600,
+                "height": "auto"
+            },
+            "content": "<p style=\"margin: 0; padding: 0;\">Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since.</p>",
+            "style": {
+                "fontFamily": "Arial, sans-serif",
+                "fontSize": 11,
+                "lineHeight": 1.5,
+                "color": "#000000",
+                "backgroundColor": "transparent",
+                "textAlign": "left",
+                "containerBackgroundColor": "transparent",
+                "contentBackgroundColor": "transparent",
+                "paddingControl": {
+                    "all": 10,
+                    "top": 10,
+                    "right": 10,
+                    "bottom": 10,
+                    "left": 10,
+                    "isCustomPadding": false
+                }
+            },
+            "subType": "",
+            "parentId": "",
+            "columnIndex": 0,
+            "zIndex": 5,
+            "rotation": 0,
+            "locked": false,
+            "rowId": "row-1",
+            "order": 4,
+            "blocks": {}
+        },
+        {
+            "id": "de5ebdfe-798d-46a0-a8d6-b3b9f53c318d",
+            "type": "social",
+            "position": {
+                "x": 1097.4375,
+                "y": 600
+            },
+            "size": {
+                "width": 600,
+                "height": 40
+            },
+            "content": {
+                "links": {
+                    "instagram": {
+                        "url": "https://www.instagram.com",
+                        "title": "Instagram"
+                    },
+                    "x": {
+                        "url": "https://www.x.com",
+                        "title": "X(Twitter)"
+                    },
+                    "facebook": {
+                        "url": "https://www.facebook.com",
+                        "title": "Facebook"
+                    },
+                    "youtube": {
+                        "url": "https://www.youtube.com",
+                        "title": "YouTube"
+                    }
+                }
+            },
+            "style": {
+                "backgroundColor": "transparent",
+                "iconSize": 24,
+                "iconColor": "#666666",
+                "spacing": 16,
+                "alignment": "center",
+                "paddingControl": {
+                    "all": 10,
+                    "top": 10,
+                    "right": 10,
+                    "bottom": 10,
+                    "left": 10,
+                    "isCustomPadding": false
+                },
+                "iconStyle": 7,
+                "socialValid": true
+            },
+            "subType": "",
+            "parentId": "",
+            "columnIndex": 0,
+            "zIndex": 6,
+            "rotation": 0,
+            "locked": false,
+            "rowId": "row-1",
+            "order": 5,
+            "blocks": {}
+        }
+    ],
+    "settings": {
+        "layout": "web",
+        "backgroundColor": "#ffffff",
+        "showGrid": true,
+        "gridSize": 15,
+        "snapToGrid": false,
+        "enableGuides": true,
+        "width": 1920,
+        "height": 1080,
+        "style": {
+            "emptyCanvas": false,
+            "emptyContentValid": true,
+            "backgroundColor": "#ffffff"
+        }
+    },
+    "rows": [
+        {
+            "id": "row-1",
+            "order": 0,
+            "components": [],
+            "paddingTop": 20,
+            "paddingBottom": 20
+        }
+    ],
+    "FilePath": ""
+}

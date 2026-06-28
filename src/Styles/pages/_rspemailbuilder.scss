@@ -1,0 +1,114 @@
+/* Common style start */
+html.rsp-email-builder-theme {
+    font-size: 1rem;
+    body {
+        overflow: hidden !important;
+    }
+    /* Footer start */
+    footer.rs-page-footer-wrapper {
+        ul.copyright,
+        .powered-by {
+            display: none;
+        }
+        .footer-borders-container {
+            position: absolute;
+            height: 7px;
+            width: 100%;
+            overflow: hidden;
+            bottom: 0;
+            margin: 0 !important;
+            padding: 0 !important;
+            list-style-type: none !important;
+            li {
+                margin: 0 !important;
+            }
+        }
+    }
+    /* Footer end */
+    ul.rsp-header-band.email-footer-header {
+        li:nth-child(3) {
+            width: unset;
+        }
+    }
+}
+
+html.rsp-email-builder-theme ul.rsp-header-band {
+    margin-bottom: 0 !important;
+}
+.rsp-email-main-container #rsp-header-icon-properties #rsp-save-button-container .header-menu.menu-send {
+    display: none;
+}
+
+.NetworkConnection-BG {
+    h1 {
+        font-size: 32px !important;
+    }
+}
+.bg-opacity-30 {
+    opacity: 0.3;
+}
+
+.rsp-color-picker .rsp-color-drag-picker-wrapper .flex.flex-row.items-center {
+    flex-wrap: nowrap;
+}
+.rsp-create-sidebar-portal .rsp-color-picker .rs-tooltip-wrapper .rsp-tooltip-content {
+    display: none;
+}
+.rsp-snippet-container {
+    padding: 15px;
+}
+.rsp-button-group-dropdown .rsp-button-save,
+.rsp-button-send,
+.rsp-button-primary {
+    line-height: 24px !important;
+}
+
+// temp
+button.absolute.right-\[36px\].top-\[2px\].transform {
+    top: 17px;
+}
+.flex.justify-center.pt-4.pb-3.amp-modal-label {
+    padding: 1px 0 0 !important;
+}
+
+@keyframes waterfallItemFall {
+    0% {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.rsp-dropdown-animate {
+    opacity: 0;
+    visibility: hidden;
+    clip-path: inset(0 0 100% 0);
+    transform: translateY(-8px);
+    transition:
+        opacity 0.2s ease,
+        visibility 0.2s ease,
+        clip-path 0.4s cubic-bezier(0.4, 0, 0.2, 1),
+        transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    pointer-events: none;
+    backdrop-filter: blur(8px);
+    background-color: #ffffff;
+
+    &.is-open {
+        opacity: 1;
+        visibility: visible;
+        clip-path: inset(-10px 0 0 0);
+        transform: translateY(0);
+        pointer-events: auto;
+
+        // Cascade effects for items inside
+        &>*:not(.rsp-canvas-menu-caret) {
+            opacity: 0;
+            transform: translateY(-20px);
+            animation: waterfallItemFall 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+            animation-delay: calc(var(--item-index, 0) * 0.04s);
+        }
+    }
+}

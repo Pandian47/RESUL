@@ -1,0 +1,32 @@
+const initialState = {
+    isLoginValid: false,
+    isInvoice: false,
+    token: null,
+    authKey: null,
+    ispaymentEnable: false,
+    isPaymentAuthCode: false,
+    isLicenseKey: false,
+    isValidLicenseKey: false,
+    showFlag: false,
+    isOtpValid: false,
+    accessToken: null,
+    otpMessage: '',
+    loginEmail: '',
+    loginPwd: '',
+    hashval: '',
+    userAgent: '',
+    ipAddress: '',
+    countryCode:'',
+    countryName:'',
+    isForgot: false,
+    isAgency: false,
+    sessionId: null,
+    isForgotPwd: false,
+    forgotEmail : '',
+    prefix: '',
+    qrCode: null,
+    otpToken: null,
+    isAuthQrScan: false
+};
+
+export default initialState;

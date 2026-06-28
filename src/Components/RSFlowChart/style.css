@@ -1,0 +1,58 @@
+/* .pathConversion .react-flow__container {
+    transform: translate(22px, 5px) scale(0.8) !important;
+} */
+.pathConversion .react-flow__node-customNode {
+    width: 140px !important;
+    height: 65px !important;
+    background: #b8b8b8;
+    padding: 10px;
+    position: absolute;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    font-size: 17px;
+    line-height:21px;
+    color: #fff;
+}
+.pathConversion .react-flow__node-customNode.RootNode {
+    background: #40abaf !important;
+}
+.pathConversion .react-flow__node-customNode.TargetNode {
+    background: #fe5758 !important;
+}
+.pathConversion .react-flow__node-customNode.ChildNode {
+    background: #99cc03 !important;
+}
+.pathConversion .react-flow__node-customNode.ChildNode.defatultEle {
+    background: #b8b8b8 !important;
+}
+.pathConversion .reTargetNode {
+    transform: scale(1, -1) !important;
+}
+
+.pathConversion .reactFlowContainer {
+    transform: rotate(180deg) scaleX(-1);
+}
+.pathConversion .reactFlowContainer .rsFlowChartControlsContainer{
+    display: flex;
+    position: absolute;
+    bottom:-34px;
+    margin: 0;
+}
+.pathConversion .reactFlowContainer .rsFlowChartControlsContainer .react-flow__controls-button{
+    border:0;
+    padding:5px;
+    width: 24px;
+    height: 24px;
+    margin-right: 5px;
+    border-radius: 5px;
+    background-color: #f0f8ff;
+}
+.pathConversion .reactFlowContainer .rsFlowChartControlsContainer .react-flow__controls-button .rs-tooltip-wrapper{line-height:0;}
+.pathConversion .reactFlowContainer .rsFlowChartControlsContainer .rsFlowChartControlsFitWindow{margin-right:0;}
+.pathConversion .react-flow__edgelabel-renderer{pointer-events:all;}
+.pathConversion .react-flow__panel.react-flow__controls {
+    transform: rotate(180deg) scaleX(-1);
+    box-shadow: none !important;
+}

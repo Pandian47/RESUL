@@ -1,0 +1,380 @@
+@use '../../kendoDocsVariables.scss' as *;
+
+.#{$res-kendo-datepicker-wrapper} {
+    position: relative;
+
+    .k-animation-container {
+        overflow: visible;
+    }
+    .k-input.k-datepicker.k-focus{
+        border: none;
+        box-shadow: none;
+    }
+    // Floating label (driven by the `label` prop on DatePicker)
+    .k-floating-label-container {
+        width: 100%;
+        padding: 0;
+        &.k-empty {
+            .k-floating-label {
+                left: 0;
+                max-width: 100%;
+                font-size: $font-xxs;
+                color: $secondary-grey;
+            }
+        }
+
+        // Empty + unfocused: label rests on the input line like a placeholder
+        &.k-empty > .k-floating-label {
+            top: 4px;
+            font-size: $font-xsm;
+        }
+
+        // Filled or focused: label floats above the field
+        > .k-floating-label,
+        &.k-focus > .k-floating-label {
+            top: -17px;
+            font-size: $font-xxs;
+        }
+        &.k-focus.k-empty > .k-floating-label {
+            top: 4px;
+            font-size: $font-xxs;
+        }
+    }
+
+    .k-datepicker {
+        border: none;
+
+        // Required indicator — short red segment at the bottom-left of the field
+        &.required::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            bottom: 4px;
+            width: 15px;
+            height: 1px;
+            border-bottom: 3px solid $primary-red;
+            z-index: 4;
+        }
+
+        &.required.k-focus::before,
+        &.required:focus-within::before {
+            display: none;
+        }
+
+        &:after {
+            content: '';
+            width: 100%;
+            height: 1px;
+            position: absolute;
+            bottom: 5px;
+            z-index: 3;
+            border-bottom: 1px solid $secondary-grey;
+        }
+
+        &:focus {
+            &::before {
+                display: none;
+            }
+
+            &:after {
+                border-color: $secondary-blue;
+            }
+        }
+
+        &.k-input {
+            .k-input-inner {
+                padding: 0;
+            }
+
+            input {
+                padding: 0;
+                height: 35px;
+                color: $secondary-grey;
+                font-size: $font-xsm;
+            }
+        }
+
+        .k-button .k-button-text {
+            text-decoration: none;
+        }
+
+        &.k-disabled,
+        &[aria-disabled='true'] {
+            cursor: not-allowed;
+
+            .k-input-inner,
+            input,
+            .k-input-button,
+            .k-button,
+            .rs-timepicker-toggle-icon {
+                cursor: not-allowed;
+            }
+        }
+
+        // Calendar toggle button — drop the default left divider/border
+        .k-input-button,
+        .k-button.k-input-button {
+            border: 0;
+            border-left: 0;
+            background: transparent;
+            box-shadow: none;
+        }
+    }
+
+    &:has(.k-datepicker.k-disabled),
+    &:has(.k-datepicker[aria-disabled='true']) {
+        cursor: not-allowed;
+    }
+
+    .rskdw-label-placeholder {
+        position: absolute;
+        top: -17px;
+        font-size: $font-xxs;
+        color: $primary-grey;
+    }
+
+    &.errorContainer {
+        .k-floating-label-container .k-floating-label {
+            color: $primary-red;
+        }
+
+        .k-datepicker {
+            &:after {
+                border-color: $primary-red;
+            }
+            &.k-focus {
+                border: none;
+                box-shadow: none;
+            }
+        }
+
+        .validation-message {
+            font-size: $font-xsm;
+            padding-right: 15px;
+            padding-bottom: 5px;
+            top: 0;
+            width: 90%;
+        }
+    }
+}
+
+// Scope the popup offset to the DatePicker's portaled calendar popup only
+.k-animation-container.rsDatePicketPopupCSS,
+.k-animation-container.k-calendar-container,
+.k-animation-container.res-datepicker-popup {
+    margin-top: -7px;
+
+    .k-popup {
+        border: 1px solid $quaternary-blue;
+        margin-top: -3px;
+        background: $white;
+
+        .k-calendar-navigation {
+            width: 4em;
+            color: $primary-grey;
+            background-color: $tertiary-blue;
+            box-shadow: inset -1px 0 $quaternary-blue;
+
+            &:before,
+            &:after {
+                box-shadow: none;
+            }
+
+            .k-calendar-navigation-highlight {
+                border-color: $quaternary-blue;
+                color: $secondary-black;
+                
+            }
+
+            .k-content ul,
+            .k-calendar-content ul {
+                width: 4em;
+            }
+        }
+
+        .k-calendar-view {
+            padding: 0 10px;
+
+            &:after {
+                box-shadow: none;
+            }
+
+            .k-calendar-header {
+                margin-left: 0;
+                margin-right: 0;
+            }
+        }
+    }
+}
+
+.k-calendar {
+    .k-calendar-caption,
+    .k-meta-header,
+    .k-month-header {
+        font-family: $rs-font-semi-bold;
+        font-weight: normal;
+        color: $primary-black;
+    }
+
+    .k-calendar-navigation {
+        li {
+            &:hover {
+                color: $primary-blue !important;
+            }
+
+            .k-calendar-navigation-marker {
+                font-family: $rs-font-semi-bold;
+                font-weight: normal;
+            }
+        }
+    }
+
+    .k-calendar-header {
+        .k-calendar-title,
+        .k-title {
+            font-family: $rs-font-semi-bold;
+            font-weight: normal;
+            color: $primary-blue;
+        }
+
+        // Month/year title is a Kendo primary button — force its text to primary blue
+        .k-calendar-title .k-button-text {
+            color: $primary-blue !important;
+        }
+
+        .k-button::before {
+            outline: none;
+            background-color: transparent;
+        }
+    }
+
+    .k-calendar-td {
+        border-radius: 0;
+
+        &:hover,
+        &:focus {
+            .k-link {
+                border-radius: 0;
+                background-color: $primary-blue !important;
+                color: $white !important;
+                box-shadow: none;
+            }
+        }
+
+        &.k-today {
+            background-color: $quaternary-blue;
+            color: $secondary-black;
+            font-weight: inherit;
+
+            .k-link {
+                color: $secondary-black;
+            }
+
+            &:hover {
+                background-color: $secondary-blue;
+                color: $white;
+
+                .k-link {
+                    background-color: $secondary-blue !important;
+                    color: $white !important;
+                    border-radius: 0;
+                }
+            }
+        }
+
+        &.k-selected,
+        &[aria-selected='true'] {
+            .k-calendar-cell-inner,
+            .k-link {
+                background-color: $primary-blue !important;
+                color: $white !important;
+                border-radius: 0;
+                box-shadow: none;
+            }
+
+            &:hover,
+            &.k-hover,
+            &:focus,
+            &.k-focus {
+                .k-calendar-cell-inner,
+                .k-link {
+                    background-color: $primary-blue !important;
+                    color: $white !important;
+                }
+            }
+        }
+    }
+}
+
+.k-calendar .k-nav-today:hover,
+.k-calendar .k-nav-today.k-hover,
+.k-calendar .k-nav-today:focus,
+.k-calendar .k-nav-today.k-focus,
+.k-calendar .k-calendar-nav-today:hover,
+.k-calendar .k-calendar-nav-today.k-hover,
+.k-calendar .k-calendar-nav-today:focus,
+.k-calendar .k-calendar-nav-today.k-focus,
+.k-calendar .k-nav-today,
+.k-calendar .k-calendar-nav-today {
+    color: $primary-blue !important;
+
+    .k-button-text {
+        color: $primary-blue !important;
+    }
+}
+
+.k-calendar .k-nav .k-svg-icon > svg {
+    color: $primary-grey;
+}
+
+// Modal hosts — calendar popup appended to .rsmd-content (see resolveKendoPopupAppendTo)
+.rs-modal .rsmd-content,
+.rs-modal .modal-content,
+.modal.show .rsmd-content,
+.modal.show .modal-content {
+    position: relative;
+    overflow: visible !important;
+
+    > .k-animation-container,
+    > .k-animation-container.k-calendar-container {
+        overflow: visible !important;
+        z-index: 1101 !important;
+
+        .k-child-animation-container,
+        .k-popup {
+            overflow: visible !important;
+        }
+
+        // Shell width is set in JS to match the trigger input — keep inner popup contained
+        &.k-calendar-container,
+        &:has(.res-datepicker-popup) {
+            .k-popup {
+                width: 100% !important;
+                max-width: 100% !important;
+                min-width: 0 !important;
+                box-sizing: border-box;
+                overflow-x: auto;
+            }
+
+            .k-calendar {
+                width: 100% !important;
+                max-width: 100% !important;
+                min-width: 0 !important;
+                box-sizing: border-box;
+            }
+        }
+    }
+}
+
+.rs-modal .rsmdc-body,
+.rs-modal .modal-body,
+.modal.show .modal-body {
+    overflow: visible;
+}
+
+.rs-modal .k-animation-container,
+.rs-modal.show .k-animation-container,
+[role='dialog'] .k-animation-container {
+    overflow: visible !important;
+    z-index: 1101 !important;
+}

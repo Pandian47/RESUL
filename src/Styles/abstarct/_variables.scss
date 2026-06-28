@@ -1,0 +1,415 @@
+$image: '../Assets/Images/';
+// Font folder
+$fontFolder: '../Styles/fonts/';
+
+$fontName: 'Mukta';
+
+// ::Font family::
+$rs-font-thin: '#{$fontName}Thin', sans-serif;
+$rs-font-light: '#{$fontName}Light', sans-serif;
+$rs-font-regular: '#{$fontName}Regular';
+$rs-font-medium: '#{$fontName}Medium', sans-serif;
+$rs-font-semi-bold: '#{$fontName}SemiBold', sans-serif;
+$rs-font-bold: '#{$fontName}Bold', sans-serif;
+$emoji-font: EmojiMart, 'Segoe UI Emoji', 'Segoe UI Symbol', 'Segoe UI', 'Apple Color Emoji', 'Twemoji Mozilla',
+    'Noto Color Emoji', 'Android Emoji';
+
+$ff: font-family;
+
+$theme-space: 10px;
+
+// ::Icon size::
+$icon-xs: 15px;
+$icon-smd: 21px;
+$icon-md: 24px;
+$icon-lg: 32px;
+$icon-xl: 45px;
+$icon-xxl: 50px;
+
+// ::Font size::
+$font-xxs: 11px;
+$font-xs: 15px;
+$font-xsm: 17px;
+$font-sm: 19px;
+$font-smd: 21px;
+$font-md: 23px;
+$font-lg: 32px;
+$font-xl: 42px;
+$font-xxl: 54px;
+
+// ::Font size::
+$letterSpacing: 0.5px;
+
+//Colors
+$body-bg-color: #f5f7fc; // Background color
+$head-band-color: #00006e;
+$mobile-footer-band-color: #0008a1;
+$tooltip-bg-color: #333333; //#170180bf;
+
+$primary-blue: #0000ff; //Main Heading, Tab, border-top line,icons, save btn, text box active lines
+$secondary_blue: #0043ff; //#0000ff; // #004fdf; //Table heading tab Tab, border-top line, text box active lines, Reach bg
+$tertiary-blue: #f0f8ff; //Odd/Even bg color
+$quaternary-blue: #c2cfe3; // box border color
+$border-color: #aebed6; // table border color
+
+$primary-black: #111111; //Heading text
+$secondary-black: #333333; //Sub heading text, Tooltip Bg
+
+$primary-grey: #666666; //Place holder, grey text
+$secondary-grey: #999999; //Borderlines, check box, Bg fill, Switch deactive
+$tertiary-grey: #e9e9e9; //Breadcrumbs, tab, section lines,
+$quaternary-grey: #f4f4f4; // input disabled Inactive bg
+
+$primary-orange: #fc6a00; //Cancel btn, Engagement bg
+$secondary-orange: #fd8f40; //Crown icon color
+$tertiary-orange: #ffb900; //Logo thunder
+$quaternary-orange: #fd2d32; // Menu active
+
+$primary-red: #ff3939; //Remove
+$secondary-red: #ffebeb; //Exclusion bg color
+$tertiary-red: #ffede1; //Planner sunday bg color
+
+$primary-green: #5ba529; //Successful text, Switch active
+$secondary-green: #99cc03; //Successful text, Switch active, Conversion bg
+
+$primary-btn: #005534; //Submit btn
+$primary-btn-hover: #026c43; //Submit btn hover
+
+$tertiary-btn: $secondary_blue; //Submit btn
+$tertiary-btn-hover: $primary-blue; //Submit btn hover
+
+$quaternary-btn: $tertiary-grey; //Submit btn
+$quaternary-btn-hover: $quaternary-grey; //Submit btn hover
+
+$mutliSelect-chip-color: #cce9ff;
+
+$white: #ffffff;
+$black: #000000;
+
+$blue-heavy: #0584c3;
+$blue-dark: #0892d5;
+$blue-medium: #26ade0;
+$blue-light: #5ac3e9;
+$blue-lighter: #0540d3;
+
+$green-dark: #51a33c;
+$green-medium: #90c830;
+$green-light: #aed237;
+
+$orange-dark: #f25e0e;
+$orange-medium: #f58332;
+$orange-light: #f9a263;
+
+$yellow-dark: #ddb219;
+$yellow-medium: #e5c553;
+$yellow-light: #ecd47b;
+
+$red-heavy-dark: #ad2513;
+$red-dark: #c22f1d;
+$red-medium: #f05455;
+$red-light: #f17576;
+
+$blue-green-dark: #008288;
+$blue-green-medium: #35a8ad;
+$blue-green-light: #69bec1;
+
+$grey-dark: #b8b6b7;
+$grey-medium: #d1d3dc;
+$grey-light: #e8e7e9;
+$periwinkleGrey: #d4e2f0;
+
+$pink-dark: #c32c8f;
+$pink-medium: #d1569e;
+$pink-light: #d982b7;
+
+$purple-dark: #7e3896;
+$purple-medium: #9b5faa;
+$purple-light: #b180bb;
+
+//Communication status color
+$draft: #b8b8b8;
+$scheduled: #f58332;
+$inprogress: #26ade0;
+$play: #99cc03;
+$completed: #379904;
+$multi-status: #9b5faa;
+$pause: #a3cccc;
+$alert: #e5c553;
+$stop: #ef4c4e;
+$archive: #999999;
+$extraction: #69bec1;
+$reject: $red-medium;
+
+//Audience list
+$all-audience: #22354f;
+$seed-list: #35a8ad;
+$ad-hoc-list: #70c0c3;
+$match-list: #b786ce;
+$suppression: #ea5cb4;
+$auto-cluster: #804097;
+
+//Channel / Touch points colors
+$email: #ff7415;
+$sms: #e5bc38;
+$web-push: #6db734;
+$mobile-push: #99cc03;
+$whatsapp: #25d366;
+$vms: #1877f2;
+$call-center: #b180bb;
+$line: #00c300;
+$qr-code: #444444;
+$rcs-message: #f26b21;
+$obd: #14171a;
+$facebook: #2d65f6;
+$twitter: #1d9bf0;
+$linkedin: #0077b5;
+$pulse: #a51ad3;
+$insta: #ea3376;
+$youtube: #dd2c28;
+$paid-media: #4285f4;
+$amazon-ads: #ff9900;
+$forms: #d982b7;
+$ivr: #0077b5;
+$web-hooks: #1b2d66;
+$alexa: #00a7ce;
+$google-home: #4285f4;
+$direct-mail: #EA4335;
+$true-caller: #1da1f2;
+$ott: #111111;
+$wearables: #657786;
+$ev: #34a853;
+$crm: #1877f2;
+$chatbot: #999999;
+$shortcode: #14171a;
+$missed-call: #e60023;
+$opt-in-campaign: #34a853;
+$google-ads: #4285F4;
+$facebook-ads: #37579f;
+$x-ads: #1da1f2;
+$linkedin-ads:#0a66c2;
+$snapchat: #fffc00;
+$fb-msngr: #0084FF;
+$insta-msngr: #E4405F;
+$telegram-msngr: #0088CC;
+$digipop: #14171A;
+$tiktok: #010101;
+$wechat: #07C160;
+$landing-page: #804097;
+$pinterest: #e72b1c;
+$notification: #248e3d;
+$webhook: #1b2d66;
+$orm: #c6911a;
+$social-media: #ef4c4e;
+$web-analytics: #2db4e7;
+$social-post: #028185;
+$webinar: #d765aa;
+$video: #ee2222;
+$voice: #9447a8;
+$twitter-ads: #1da1f2;
+
+//Primary attributes colors
+$age: #d982b7;
+$gender: #8921f7;
+$male: #00acde;
+$female: #c72079;
+$company: #f9c532;
+$location: #c2c630;
+$city: #ddb219;
+$zip-code: #2a79c2;
+$country: #79b244;
+$website: #ba4d02;
+$others: #cccccc;
+
+//Source colors
+$list-audience: #2a79c2;
+$dynamic-audience: #b26aae;
+
+//Day colors
+$monday: #0955ff;
+$tuesday: #f05455;
+$wednesday: #92c92e;
+$thursday: #e7c753;
+$friday: #68bfc2;
+$saturday: #999999;
+$sunday: #f68430;
+
+//Sentiment colors:
+$positive: #5ba529;
+$neutral: #26ade0;
+$negative: #ff0005;
+$negativeRGBSubtle: rgb(255 0 5/ 8%);
+
+// Footer color
+$footerColor1: #0000ff;
+$footerColor2: #7f04b2;
+$footerColor3: #9e131e;
+$footerColor4: #b78200;
+$footerColor5: #005f35;
+
+// License type colors
+$startup: #6d6e71;
+$pro: #fd992f;
+$enterprise: #0c8aff;
+
+// Campaign status colors:
+$reach: #0955ff;
+$engagement: #f68430;
+$conversion: #92c92e;
+
+// Audience conversion colors
+$known: #4285f4;
+$unknown: #999999;
+$identified: #35a8ad;
+$converted: #92c92e;
+
+// Highchart meter colors
+$gauge-0: #ff2c26;
+$gauge-25: #ff731e;
+$gauge-50: #f0c63d;
+$gauge-75: #92e326;
+$gauge-100: #51c000;
+
+//State colors
+$up-for-schedule: #26ade0;
+$up-for-reschedule: #0892d5;
+$queued: #99cc03;
+$running: #65b526;
+$restarting: #20bab2;
+$up-for-retry: #008288;
+$success: #379904;
+$skipped: #a3cccc;
+$deferred: #ff9700;
+$removed: #ff5500;
+$fail: #ff3939;
+$upstream-failed: #e52020;
+$none: #e0e0e0;
+
+
+
+// CHART COMMON COLOR'S
+$chartColor01: #19b3e2;
+$chartColor02: #8ecc16;
+$chartColor03: #f98638;
+$chartColor04: #f9c532;
+$chartColor05: #ff4d4d;
+$chartColor06: #16b5b5;
+$chartColor07: #ea1a9b;
+$chartColor08: #a51ad3;
+$chartColor09: #b5b1b5;
+
+// A/B split colors
+$splitA: #002bc6;
+$splitB: #db0010;
+$splitC: #419127;
+$splitD: #e8a000;
+
+// OS colors
+$fire-os: #FF9900;
+$android-tv: #4285F4;
+$android: #3DDC84;
+$ios: #007AFF;
+$tvos: #555555;
+
+$versium: #9d85c252;
+
+$theme-radius-size-sm: var(--globalBorderRadius);
+
+:root {
+    --sp-space-sm: 10px;
+    --sp-space-md: 21px;
+    --sp-gapSpace: 10px;
+    --sp-portlet-gap: 12.75px;
+
+    --globalSpace: 24px;
+    --formGroupBottomSpace: 41px;
+    --pageButtonTopSpace: 21px;
+    --gridbottomSpace: 25px;
+    --modalBodyTopSpaceTable: 19px;
+    --sliderthumbColor: #3bbf10;
+    --sentimentColor: #5ba529;
+    // --editorbgcolor: #000;
+    --globalBorderRadius: 10px;
+    --borderRadiusTabDropMenu: 7px;
+    --preferencesPrefCardSpace: 21px;
+    --brandform-image-height: 83vh;
+    --mobilefield-image-height: 84vh;
+    --webfieldtrack-image-height: 85vh;
+    --brandform-grid-height: 180px;
+    --th-primary-color: $primary-blue;
+    --brandform-mobile-image-height: 200px;
+    --brandform-mobile-leftview-height: 84vh;
+    --mobilefield-leftview-height: 87vh;
+    --webfieldtrack-form-view-height: 78vh;
+    --brandform-mobile-device-height: 498px;
+    --brandform-mobile-eventtrack-grid: 142px;
+    --brandform-mobile-eventtrack-grid-error: 85px;
+    --popupmodalbodyspace: 30px;
+    --popupmodal-lastchaild-input-space: 10px;
+    --click-off-opacity: 0.5;
+    --boxDesignBodySpace: 19px;
+}
+.sp-mb-space-sm { margin-bottom: var(--sp-space-sm) !important; }
+.sp-mt-space-sm { margin-top: var(--sp-space-sm) !important; }
+
+.sp-mb-space-md { margin-bottom: var(--sp-space-md) !important; }
+.sp-mt-space-md { margin-top: var(--sp-space-md) !important; }
+
+@media only screen and (min-width: 1367px) and (-webkit-min-device-pixel-ratio: 1) {
+    :root {
+        --globalSpace: 30px;
+        --formGroupBottomSpace: 41px;
+        --preferencesPrefCardSpace: 45px;
+        --brandform-grid-height: 500px;
+        --webfieldtrack-grid-height: 500px;
+        --webfieldtrack-form-view-height: 86vh;
+        --brandform-image-height: 88vh;
+        --mobilefield-image-height: 89vh;
+        --webfieldtrack-image-height: 90vh;
+        --brandform-mobile-image-height: 400px;
+        --brandform-mobile-leftview-height: 91vh;
+        --mobilefield-leftview-height: 93vh;
+        --brandform-mobile-device-height: 801px;
+        --brandform-mobile-eventtrack-grid: 300px;
+        --brandform-mobile-eventtrack-grid-error: 300px;
+    }
+}
+@media screen and (max-width: 1367px) {
+    .login-container {
+        --formGroupBottomSpace: 29px;
+        .loginTabs ul.rs-chart-tab li.tabDefault span {
+            padding: 15px 19px;
+        }
+        .login-panel {
+            --globalSpace: 19px;
+        }
+        .login-info-container {
+            margin-top: 19px;
+        }
+    }
+}
+
+@media only screen and (min-width: 1440px) and (max-width: 1600px) {
+    :root {
+        --brandform-image-height: 83vh;
+        --mobilefield-image-height: 84vh;
+        --webfieldtrack-image-height: 85vh;
+        --brandform-mobile-leftview-height: 85vh;
+        --mobilefield-leftview-height: 90vh;
+        --webfieldtrack-grid-height: 200px;
+    }
+}
+
+@media only screen and (width: 1280px) and (height: 559px) {
+    :root {
+        --brandform-grid-height: 112px;
+        --webfieldtrack-grid-height: 110px;
+        --webfieldtrack-form-view-height: 75vh;
+    }
+}
+@media only screen and (max-width: 1280px) and (min-height: 580px) and (max-height: 610px) {
+    :root {
+        --brandform-grid-height: 145px;
+        --brandform-image-height: 82vh;
+        --brandform-mobile-eventtrack-grid: 110px;
+    }
+}

@@ -1,0 +1,40 @@
+.email-builder {
+    .rowComponent {
+        padding: 5% 10%;
+        min-height: 200px;
+    }
+    .workbook {
+        padding: 0% 10%;
+    }
+    .ebformfield {
+        display: grid;
+        border: 2px dashed #2995f0;
+        &:hover {
+            border: 1px dashed #2995f0;
+        }
+
+        & .moveIcon {
+            position: absolute;
+            opacity: 0;
+            left: -20px;
+        }
+        &:hover .moveIcon {
+            opacity: 1;
+        }
+
+        .elementActionIconsShow {
+            display: flex;
+            bottom: 30px;
+            position: absolute;
+            right: 0;
+            background-color: blue;
+            align-items: center;
+            padding: 5px 5px;
+            border-radius: 5px;
+        }
+
+        .elementActionIconsHide {
+            display: none;
+        }
+    }
+}

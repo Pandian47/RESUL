@@ -1,0 +1,220 @@
+// ============================================================================
+// ResTooltip — rs-tooltip-wrapper alias + MDC workflow edge popup (white card)
+// Mirrors src/Styles/pages/_mdcPage.scss .mdc-edge-timer-block tooltip rules
+// ============================================================================
+
+@import 'Styles/abstarct/variables';
+
+.rs-tooltip-wrapper,
+.res-tooltip-wrapper {
+    display: inline-block;
+    max-width: 100%;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+}
+
+.rs-tooltip-child-wrapper,
+.res-tooltip-child-wrapper {
+    display: inline-flex;
+    align-items: center;
+    position: relative;
+}
+
+.res-tooltip-overlay.tooltip {
+    --res-tooltip-enter-x: 0;
+    --res-tooltip-enter-y: 10px;
+    --res-tooltip-origin: center bottom;
+
+    &.fade {
+        transition: opacity 180ms ease;
+    }
+
+    .tooltip-inner,
+    .tooltip-arrow {
+        transform-origin: var(--res-tooltip-origin);
+        will-change: opacity, transform;
+    }
+
+    &.res-tooltip-exiting {
+        .tooltip-arrow {
+            animation: res-tooltip-fade-out 140ms ease both;
+        }
+
+        .tooltip-inner {
+            animation: res-tooltip-scale-out 160ms ease both;
+        }
+    }
+
+    &.show:not(.res-tooltip-unmeasured) {
+        .tooltip-arrow {
+            animation: res-tooltip-fade-in 140ms ease both;
+        }
+
+        .tooltip-inner {
+            animation: res-tooltip-scale-in 180ms cubic-bezier(0.2, 0.85, 0.25, 1) both;
+        }
+    }
+
+    &.bs-tooltip-bottom,
+    &[data-popper-placement^='bottom'] {
+        --res-tooltip-enter-y: -10px;
+        --res-tooltip-origin: center top;
+    }
+
+    &.bs-tooltip-start,
+    &[data-popper-placement^='left'] {
+        --res-tooltip-enter-x: 10px;
+        --res-tooltip-enter-y: 0;
+        --res-tooltip-origin: right center;
+    }
+
+    &.bs-tooltip-end,
+    &[data-popper-placement^='right'] {
+        --res-tooltip-enter-x: -10px;
+        --res-tooltip-enter-y: 0;
+        --res-tooltip-origin: left center;
+    }
+}
+
+@keyframes res-tooltip-fade-in {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes res-tooltip-scale-in {
+    from {
+        opacity: 0;
+        transform: translate3d(var(--res-tooltip-enter-x), var(--res-tooltip-enter-y), 0) scale(0.98);
+    }
+
+    to {
+        opacity: 1;
+        transform: translate3d(0, 0, 0) scale(1);
+    }
+}
+
+@keyframes res-tooltip-fade-out {
+    from {
+        opacity: 1;
+    }
+
+    to {
+        opacity: 0;
+    }
+}
+
+@keyframes res-tooltip-scale-out {
+    from {
+        opacity: 1;
+        transform: translate3d(0, 0, 0) scale(1);
+    }
+
+    to {
+        opacity: 0;
+        transform: translate3d(var(--res-tooltip-enter-x), var(--res-tooltip-enter-y), 0) scale(0.98);
+    }
+}
+
+// Clock / blast-count trigger — white circular hit target on the edge line
+.mdc-edge-timer-block,
+.mdc-edge-blastcount-block {
+    .rs-tooltip-wrapper,
+    .res-tooltip-wrapper {
+        line-height: 0;
+        background-color: $white;
+        border-radius: 100%;
+    }
+}
+
+// MDC schedule popup — white card, gray title, black detail lines (production UI)
+.res-mdc-tooltip-overlay.tooltip,
+.mdc-edge-timer-block .tooltip,
+.mdc-edge-blastcount-block .tooltip {
+    opacity: 1 !important;
+    pointer-events: none;
+
+    .tooltip-arrow {
+        &::before {
+            position: absolute;
+            content: '';
+            width: 9px;
+            height: 9px;
+            left: 50%;
+            top: -5px;
+            margin-left: -4px;
+            background-color: $white;
+            transform: rotate(225deg);
+            border: 1px solid $quaternary-blue;
+            border-right: none;
+            border-bottom: none;
+        }
+    }
+
+    &.bs-tooltip-top .tooltip-arrow::before,
+    &.bs-tooltip-auto[data-popper-placement^='top'] .tooltip-arrow::before {
+        border-top-color: transparent;
+    }
+
+    .tooltip-inner {
+        font-family: $rs-font-regular;
+        font-size: $font-xs;
+        line-height: $font-sm;
+        color: $secondary-grey;
+        background: $white;
+        border: 1px solid $quaternary-blue;
+        border-radius: 5px;
+        box-shadow: 0 0 5px 0 rgba(0, 0, 0, 0.05), 0 0 5px 0 rgba(0, 0, 0, 0.05) !important;
+        max-width: none;
+        text-align: left;
+    }
+
+    .RS-MDC-Tooltip-UI,
+    .res-mdc-tooltip-ui {
+        display: flex;
+        align-items: flex-start;
+        flex-direction: column;
+        min-width: 120px;
+
+        .RSpopupHeading,
+        .res-popup-heading {
+            font-family: $rs-font-regular;
+            font-size: $font-xs;
+            line-height: $font-sm;
+            color: $secondary-grey;
+            margin-bottom: 2px;
+        }
+
+        .RSpopupSubHeading,
+        .res-popup-subheading,
+        .RSpopupDate,
+        .res-popup-date {
+            font-family: $rs-font-light;
+            font-size: $font-xxs;
+            line-height: $font-xs;
+            color: $primary-black;
+        }
+    }
+}
+
+.res-tooltip-unmeasured.tooltip {
+    opacity: 0 !important;
+    visibility: hidden;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .res-tooltip-overlay.tooltip {
+        .tooltip-inner,
+        .tooltip-arrow {
+            animation: none;
+            transform: none;
+        }
+    }
+}

@@ -1,0 +1,802 @@
+.info-section {
+  margin-bottom: 30px;
+
+  &:last-child {
+    margin-bottom: 0;
+  }
+}
+
+.geo-fence-info {
+  .geo-fence-info__intro {
+    margin-bottom: 0;
+    padding: 1.35rem 1.4rem;
+    background-color: rgba($tertiary-blue, 0.42);
+    border: 1px solid rgba($quaternary-blue, 0.75);
+    border-radius: var(--globalBorderRadius);
+    box-shadow: 0 1px 3px rgba($secondary-black, 0.04);
+  }
+
+  .geo-fence-info__intro .info-section {
+    padding-bottom: 1.125rem;
+    margin-bottom: 1.125rem;
+    border-bottom: 1px solid rgba($quaternary-blue, 0.85);
+
+    &:last-child {
+      padding-bottom: 0;
+      margin-bottom: 0;
+      border-bottom: none;
+    }
+  }
+
+  .geo-fence-info__platform {
+    margin: 2rem 0 0;
+    padding: 0;
+  }
+
+  .platform-grid-wrap {
+    position: relative;
+    margin: 0;
+    padding: 0 0 1.35rem;
+    background: linear-gradient(
+      180deg,
+      rgba($tertiary-blue, 0.28) 0%,
+      rgba($white, 0.92) 100%
+    );
+    border: 1px solid rgba($quaternary-blue, 0.9);
+    border-radius: var(--globalBorderRadius);
+    box-shadow: 0 1px 2px rgba($secondary-black, 0.04);
+    overflow: hidden;
+
+    @media (min-width: 768px) {
+      &::after {
+        content: '';
+        position: absolute;
+        left: 50%;
+        top: 0;
+        bottom: 0;
+        width: 1px;
+        transform: translateX(-50%);
+        background-color: rgba($quaternary-blue, 0.85);
+        pointer-events: none;
+        z-index: 1;
+      }
+    }
+
+    @media (max-width: 767.98px) {
+      padding-bottom: 1.25rem;
+    }
+  }
+
+  .info-section {
+    margin-bottom: 1.75rem;
+
+    &:last-child {
+      margin-bottom: 0;
+    }
+  }
+
+  /* All section headings: same size and color for a uniform look. */
+  .geo-fence-info__heading,
+  .platform-grid__title,
+  .platform-grid__mind-heading {
+    font-size: $font-sm;
+    font-family: $rs-font-semi-bold;
+    font-weight: inherit;
+    color: $secondary-black;
+    line-height: 1.38;
+  }
+
+  .geo-fence-info__heading {
+    margin: 0 0 0.55rem;
+    padding: 0;
+    background: transparent;
+
+    &.geo-fence-info__heading--platform {
+      margin-top: 0;
+      margin-bottom: 0.45rem;
+    }
+  }
+
+  .geo-fence-info__content {
+    margin: 0;
+    color: $secondary-black;
+    max-width: 68ch;
+    line-height: 1.6;
+  }
+
+  .geo-fence-info__list {
+    margin: 0.5rem 0 0;
+    padding-left: 1.25rem;
+
+    li {
+      margin-bottom: 0.35rem;
+      line-height: 1.45;
+
+      &:last-child {
+        margin-bottom: 0;
+      }
+    }
+  }
+
+  /* Side-by-side on desktop with aligned “Things to keep in mind” row; stacked per OS on mobile. */
+  .platform-grid {
+    display: grid;
+    margin-top: 0;
+    gap: 0.75rem 1.25rem;
+
+    @media (max-width: 767.98px) {
+      grid-template-columns: 1fr;
+      grid-template-areas:
+        'ios-title'
+        'ios-specs'
+        'ios-mind'
+        'android-title'
+        'android-specs'
+        'android-mind';
+    }
+
+    @media (min-width: 768px) {
+      grid-template-columns: 1fr 1fr;
+      grid-template-areas:
+        'ios-title android-title'
+        'ios-specs android-specs'
+        'ios-mind android-mind';
+      column-gap: 0;
+      row-gap: 1.125rem;
+      align-items: start;
+    }
+  }
+
+  .platform-grid__title {
+    margin: 0;
+    padding: 0.65rem 1.25rem 0.55rem;
+    border-bottom: 1px solid $quaternary-blue;
+    min-width: 0;
+
+    @media (max-width: 767.98px) {
+      padding-left: 1rem;
+      padding-right: 1rem;
+    }
+
+    &--ios {
+      grid-area: ios-title;
+      background-color: rgba($ios, 0.12);
+    }
+
+    &--android {
+      grid-area: android-title;
+      background-color: rgba($android, 0.12);
+    }
+  }
+
+  .platform-grid__specs {
+    min-width: 0;
+    padding: 0.35rem 1.25rem 0;
+
+    @media (max-width: 767.98px) {
+      padding-left: 1rem;
+      padding-right: 1rem;
+    }
+
+    @media (min-width: 768px) {
+      &--ios {
+        padding: 0.35rem 1.5rem 0 1.25rem;
+      }
+
+      &--android {
+        padding: 0.35rem 1.25rem 0 1.5rem;
+      }
+    }
+
+    &--ios {
+      grid-area: ios-specs;
+    }
+
+    &--android {
+      grid-area: android-specs;
+    }
+
+    .platform-card__specs {
+      margin: 0;
+      padding: 0;
+    }
+
+    .platform-card__spec-row {
+      display: grid;
+      gap: 0.125rem 0.75rem;
+      margin-bottom: 0.75rem;
+
+      &:last-child {
+        margin-bottom: 0;
+      }
+
+      @media (min-width: 480px) {
+        grid-template-columns: minmax(6rem, 34%) 1fr;
+        align-items: start;
+        gap: 0.35rem 1rem;
+      }
+
+      dt {
+        margin: 0;
+        font-family: $rs-font-semi-bold;
+        font-size: $font-xsm;
+        color: $black;
+        line-height: 1.4;
+      }
+
+      dd {
+        margin: 0;
+        font-size: $font-xsm;
+        line-height: 1.5;
+        color: $secondary-black;
+      }
+
+      &--note dd {
+        line-height: 1.45;
+      }
+    }
+  }
+
+  .platform-grid__mind {
+    padding: 1rem 1.125rem;
+    border-radius: calc(var(--globalBorderRadius) - 2px);
+    background-color: rgba($tertiary-blue, 0.55);
+    border: none;
+    box-shadow: none;
+    align-self: stretch;
+    min-width: 0;
+
+    @media (max-width: 767.98px) {
+      margin-left: 1rem;
+      margin-right: 1rem;
+    }
+
+    &--ios {
+      grid-area: ios-mind;
+
+      @media (min-width: 768px) {
+        margin-left: 1.25rem;
+        margin-right: 1.5rem;
+      }
+    }
+
+    &--android {
+      grid-area: android-mind;
+
+      @media (min-width: 768px) {
+        margin-left: 1.5rem;
+        margin-right: 1.25rem;
+      }
+    }
+
+    .platform-grid__mind-heading {
+      margin: 0 0 0.75rem;
+      padding: 0;
+    }
+
+    ul.failure-list {
+      margin: 0;
+      padding: 0;
+      list-style: none;
+
+      li.geo-fence-info__failure-line {
+        position: relative;
+        margin-bottom: 0.8rem;
+        padding-left: 0.875rem;
+        line-height: 1.55;
+        font-size: $font-xsm;
+        color: $secondary-black;
+
+        @media (max-width: 575.98px) {
+          padding-left: 1rem;
+          margin-bottom: 0.95rem;
+        }
+
+        &::before {
+          content: '';
+          position: absolute;
+          left: 0;
+          top: 0.55em;
+          width: 4px;
+          height: 4px;
+          border-radius: 50%;
+          background-color: $secondary-grey;
+        }
+
+        &:last-child {
+          margin-bottom: 0;
+        }
+      }
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .platform-grid-wrap,
+    .geo-fence-info__intro,
+    .platform-grid__mind {
+      transition: none !important;
+    }
+  }
+}
+
+.rs-modal.geo-fence-info-modal {
+  @media (min-width: 576px) and (max-width: 991.98px) {
+    .modal-dialog.rsm-dialog {
+      max-width: min(800px, calc(100vw - 2rem));
+      margin-left: auto;
+      margin-right: auto;
+    }
+  }
+
+  .geo-fence-info-body.rsmdc-body.css-scrollbar {
+    @media (max-width: 575.98px) {
+      padding-left: 1rem;
+      padding-right: 1rem;
+      max-height: calc(100dvh - 9rem);
+    }
+  }
+
+  .rsmdc-footer.geo-fence-info-footer {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    padding-top: 0.5rem;
+    @media (max-width: 575.98px) {
+      justify-content: stretch;
+
+      .geo-fence-info__ok {
+        width: 100%;
+        text-align: center;
+        min-height: 3rem;
+      }
+    }
+  }
+}
+
+.platform-block {
+  display: flex;
+  flex-direction: column;
+  gap: 30px;
+  margin-top: 12px;
+
+  .platform-card {
+    ul.failure-list {
+      li {
+        margin-bottom: 15px;
+
+        &:last-child {
+          margin-bottom: 0;
+        }
+      }
+    }
+  }
+
+}
+
+.platform-card {
+  // background: $tertiary-blue;
+  padding: 30px;
+  border-radius: var(--globalBorderRadius);
+  position: relative;
+  border: solid 1px $quaternary-blue;
+
+  ul.Region-file-upload-content {
+    li {
+      margin-bottom: 10px;
+      line-height: 1.25;
+      &:last-child {
+        margin-bottom: 0;
+      }
+    }
+
+  }
+}
+.Geofencing_grid_wrapper{
+  .rsgdv-plain{
+    table{
+      table-layout: inherit !important;
+    }
+  }
+
+}
+
+/* Upload regions modal — layout & file-format panel (drag-drop component UI unchanged) */
+.region-upload {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+
+  @media (max-width: 575.98px) {
+    gap: 1.25rem;
+  }
+
+  &__section {
+    margin: 0;
+    padding: 0;
+
+    &--download {
+      padding-bottom: 1.25rem;
+      border-bottom: 1px solid rgba($quaternary-blue, 0.85);
+    }
+
+    &--upload {
+      padding-bottom: 0;
+    }
+  }
+
+  &__section-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    margin-bottom: 0.5rem;
+  }
+
+  &__heading {
+    margin: 0 0 0.55rem;
+    padding: 0;
+    font-size: $font-sm;
+    font-family: $rs-font-semi-bold;
+    color: $secondary-black;
+    line-height: 1.35;
+  }
+
+  &__icon-btn {
+    flex-shrink: 0;
+    padding: 0.25rem;
+    margin: 0;
+    border: none;
+    background: transparent;
+    border-radius: var(--globalBorderRadius);
+    cursor: pointer;
+    line-height: 0;
+
+    &:focus-visible {
+      outline: 2px solid $primary-blue;
+      outline-offset: 2px;
+    }
+  }
+
+  &__text {
+    margin: 0;
+    font-size: $font-xsm;
+    line-height: 1.55;
+    color: $secondary-black;
+    max-width: 72ch;
+
+    &--spaced {
+      margin-bottom: 30px;
+
+      @media (max-width: 575.98px) {
+        margin-bottom: 0.875rem;
+      }
+    }
+  }
+
+  &__alert {
+    margin-top: 0.75rem;
+  }
+
+  /* Matches “Failure cases”–style info blocks: pale panel, bold title, disc list */
+  &__format {
+    margin: 0;
+    padding: 1.15rem 1.25rem 1.2rem;
+    background-color: rgba($tertiary-blue, 0.55);
+    border-radius: var(--globalBorderRadius);
+
+    @media (max-width: 575.98px) {
+      padding: 1rem 1.1rem 1.05rem;
+    }
+  }
+
+  &__format-title {
+    margin: 0 0 0.65rem;
+    padding: 0;
+    font-size: $font-sm;
+    font-family: $rs-font-semi-bold;
+    color: #333333;
+    line-height: 1.35;
+  }
+
+  &__format-list {
+    margin: 0;
+    padding: 0 0 0 1.15rem;
+    list-style-type: disc;
+  }
+
+  &__format-bullet {
+    margin: 0 0 0.5rem;
+    padding: 0;
+    padding-inline-start: 0.15rem;
+    font-size: $font-xsm;
+    line-height: 1.5;
+    color: #4a4a4a;
+
+    &::marker {
+      color: #9aa3ad;
+    }
+
+    &:last-child {
+      margin-bottom: 0;
+    }
+  }
+
+  &__format-label {
+    font-family: $rs-font-semi-bold;
+    color: #333333;
+  }
+
+  &__format-value {
+    color: #4a4a4a;
+  }
+
+  &__footer-actions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    align-items: center;
+    width: 100%;
+  }
+}
+
+/* Add region modal — map + form layout */
+.add-region {
+  &__body-inner {
+    max-width: 100%;
+  }
+
+  &__alert {
+    position: relative;
+    margin-bottom: 1rem;
+
+    &--error {
+      position: relative;
+    }
+  }
+
+  &__row {
+    margin-left: -0.4rem;
+    margin-right: -0.4rem;
+
+    > [class*='col'] {
+      padding-left: 0.4rem;
+      padding-right: 0.4rem;
+    }
+
+    @media (max-width: 767.98px) {
+      margin-left: -0.3rem;
+      margin-right: -0.3rem;
+
+      > [class*='col'] {
+        padding-left: 0.3rem;
+        padding-right: 0.3rem;
+
+        &:not(:last-child) {
+          margin-bottom: 0.85rem;
+        }
+      }
+    }
+  }
+
+  &__map-wrap {
+    height: 545px;
+    width: 100%;
+    border: 1px solid rgba($quaternary-blue, 0.85);
+    border-radius: var(--globalBorderRadius);
+    background: $white;
+    box-shadow: 0 1px 3px rgba($secondary-black, 0.06);
+    overflow: hidden;
+
+    @media (max-width: 767.98px) {
+      height: min(52vh, 400px);
+      min-height: 260px;
+    }
+  }
+
+  &__map-placeholder {
+    height: 100%;
+    min-height: 545px;
+    background: rgba($tertiary-blue, 0.35);
+
+    @media (max-width: 767.98px) {
+      min-height: min(52vh, 400px);
+    }
+  }
+
+  &__map-loading {
+    padding: 1.5rem;
+    text-align: center;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    font-size: $font-xsm;
+    color: $secondary-black;
+    background: rgba($tertiary-blue, 0.25);
+  }
+
+  &__form-panel {
+    padding: 0.75rem 0.9rem 0.85rem;
+    min-height: 100%;
+    border-radius: var(--globalBorderRadius);
+    border: 1px solid rgba($quaternary-blue, 0.75);
+    background: $white;
+    box-shadow: 0 1px 3px rgba($secondary-black, 0.05);
+
+    @media (max-width: 767.98px) {
+      padding: 0.65rem 0.8rem 0.8rem;
+    }
+
+    .form-group {
+      margin-bottom: 0.75rem;
+    }
+  }
+
+  &__header-upload {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.35rem;
+    margin: 0;
+    border: none;
+    background: transparent;
+    border-radius: var(--globalBorderRadius);
+    cursor: pointer;
+    line-height: 0;
+
+    &:focus-visible {
+      outline: 2px solid $primary-blue;
+      outline-offset: 2px;
+    }
+  }
+
+  &__suggestions {
+    position: absolute;
+    z-index: 20;
+    width: 100%;
+    max-height: 220px;
+    overflow-y: auto;
+    margin-top: 2px;
+    box-shadow: 0 4px 14px rgba($secondary-black, 0.12);
+    border-radius: var(--globalBorderRadius);
+    border: 1px solid rgba($quaternary-blue, 0.6);
+
+    .list-group-item {
+      font-size: $font-xsm;
+    }
+  }
+
+  &__suggestion-item {
+    cursor: pointer;
+  }
+
+  &__grid {
+    margin-top: 1.35rem;
+    padding-top: 1.15rem;
+    border-top: 1px solid rgba($quaternary-blue, 0.55);
+  }
+
+  &__grid-title {
+    margin: 0 0 0.75rem;
+    padding: 0;
+    font-size: $font-md;
+    font-family: $rs-font-semi-bold;
+    color: $secondary-black;
+  }
+
+  &__confirm {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 1rem;
+  }
+}
+
+.add-region__maps-help {
+  padding: 1.25rem 1.35rem;
+  text-align: left;
+  max-width: 540px;
+  margin: 0 auto;
+  color: #333;
+  height: 100%;
+  overflow: auto;
+  font-size: $font-xsm;
+  line-height: 1.5;
+
+  p {
+    margin-bottom: 0.65rem;
+  }
+
+  ul {
+    margin: 0;
+    padding-left: 1.1rem;
+  }
+
+  li {
+    margin-bottom: 0.35rem;
+  }
+
+  code {
+    font-size: $font-xxs;
+    word-break: break-word;
+  }
+
+  .add-region__maps-help-title {
+    color: $primary-red;
+    font-family: $rs-font-semi-bold;
+    margin-bottom: 0.75rem;
+    font-size: $font-sm;
+  }
+}
+
+.add-region__info-window {
+  padding: 0.35rem 0.15rem 0.15rem;
+  max-width: 220px;
+  font-size: $font-xxs;
+  line-height: 1.45;
+
+  strong {
+    font-family: $rs-font-semi-bold;
+  }
+
+  .add-region__info-window-hint {
+    color: $primary-blue;
+    font-size: 11px;
+  }
+}
+
+.rs-modal.add-region-modal {
+  .rsmdc-body.bg-tertiary-blue.css-scrollbar {
+    @media (max-width: 575.98px) {
+      padding-left: 0.85rem;
+      padding-right: 0.85rem;
+    }
+  }
+
+  .modal-header .modal-header-right-content {
+    margin-right: 0.5rem;
+    display: flex;
+    align-items: center;
+  }
+}
+
+.rs-modal.region-upload-modal {
+  @media (min-width: 576px) and (max-width: 991.98px) {
+    .modal-dialog.rsm-dialog {
+      max-width: min(800px, calc(100vw - 2rem));
+      margin-left: auto;
+      margin-right: auto;
+    }
+  }
+
+  .region-upload-body.rsmdc-body.css-scrollbar {
+    @media (max-width: 575.98px) {
+      padding-left: 1rem;
+      padding-right: 1rem;
+      max-height: calc(100dvh - 9rem);
+    }
+  }
+
+  .rsmdc-footer.region-upload-footer {
+    display: flex;
+    justify-content: flex-end;
+    width: 100%;
+
+    .region-upload__footer-actions {
+      justify-content: flex-end;
+    }
+
+    @media (max-width: 575.98px) {
+      .region-upload__footer-actions {
+        flex-direction: column-reverse;
+        align-items: stretch;
+        gap: 0.5rem;
+
+        button {
+          width: 100%;
+          justify-content: center;
+        }
+      }
+    }
+  }
+}

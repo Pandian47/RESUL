@@ -1,0 +1,35 @@
+{
+    "existingUser": "Existing user",
+    "newUser": "New user",
+    "email": "Email address",
+    "password": "Password",
+    "rememberMe": "Remember me",
+    "forgotPassword": "Forgot password",
+    "captchaCode": "Captcha",
+    "proceed": "Proceed",
+    "login": "Login",
+    "signIn": "Sign in",
+    "send": "Send",
+    "requestNewPassword": "Request a new password",
+    "enterotp": "One-time password verification",
+    "choose2FA": "Choose MFA method",
+    "emailOTPSetup": "Email OTP setup",
+    "authenticatorSetup": "Authenticator app setup",
+    "enterYourRegisteredEmail": "Registered business email address",
+    "newPasswordMessage": "New password will be sent to the above email address",
+
+    "loginPage": {
+        "loginDropdownItems": {
+            "resul": "RESUL",
+            "adfs": "ADFS",
+            "ldap": "LDAP"
+        },
+        "disablePluginText": "Kindly disable all third party plugins installed in your browser and close additional browser tabs (if any) for a better browsing experience and to avoid network latency."
+    },
+
+    "preferences": {
+        "myProfile": {
+            "firstName": "First name"
+        }
+    }
+}

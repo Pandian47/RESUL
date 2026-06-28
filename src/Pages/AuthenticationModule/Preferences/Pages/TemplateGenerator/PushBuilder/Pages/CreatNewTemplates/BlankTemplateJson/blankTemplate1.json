@@ -1,0 +1,231 @@
+{
+  "components": [
+    {
+      "id": "7e8d9387-05a3-453b-bbc4-00826dbc0b4a",
+      "type": "imageText",
+      "position": {
+        "x": 272.20001220703125,
+        "y": 0
+      },
+      "size": {
+        "width": 200,
+        "height": 100
+      },
+      "content": {
+        "text": "This text will appear alongside your image. You can customize the layout, styling, and content to match your needs.",
+        "imageUrl": "https://tinypng.com/static/images/boat.png",
+        "imageAlt": ""
+      },
+      "style": {
+        "enableContent": false,
+        "wrapperLayout": "image-left",
+        "imageWidth": 580,
+        "imageHeight": "auto",
+        "objectFit": "contain",
+        "maintainAspectRatio": false,
+        "imageAlign": "center",
+        "imageBorderRadius": 0,
+        "fontFamily": "Arial, sans-serif",
+        "fontSize": 16,
+        "lineHeight": 1.5,
+        "textColor": "#000000",
+        "titleColor": "#000000",
+        "textAlign": "left",
+        "backgroundColor": "transparent",
+        "paddingControl": {
+          "all": 10,
+          "top": 10,
+          "right": 10,
+          "bottom": 10,
+          "left": 10,
+          "isCustomPadding": false
+        },
+        "customBorder": false
+      },
+      "subType": "",
+      "zIndex": 1,
+      "rotation": 0,
+      "locked": false,
+      "blocks": {
+        
+      }
+    },
+    {
+      "id": "38adebd5-d491-4daa-98e8-1bf07b9fdb9c",
+      "type": "text",
+      "position": {
+        "x": 272.20001220703125,
+        "y": 120
+      },
+      "size": {
+        "width": 300,
+        "height": 35
+      },
+      "content": "Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.",
+      "style": {
+        "fontFamily": "Arial, sans-serif",
+        "fontSize": 14,
+        "lineHeight": 1.5,
+        "color": "#000000",
+        "backgroundColor": "transparent",
+        "textAlign": "left",
+        "paddingControl": {
+          "all": 10,
+          "top": 10,
+          "right": 10,
+          "bottom": 10,
+          "left": 10,
+          "isCustomPadding": false
+        }
+      },
+      "subType": "",
+      "zIndex": 2,
+      "rotation": 0,
+      "locked": false,
+      "blocks": {
+        
+      }
+    },
+    {
+      "id": "5048c436-fc31-4a58-b965-f3fa5684f5ab",
+      "type": "social",
+      "position": {
+        "x": 272.20001220703125,
+        "y": 240
+      },
+      "size": {
+        "width": 200,
+        "height": 100
+      },
+      "content": {
+        "links": {
+          "facebook": {
+            "0": "h",
+            "1": "t",
+            "2": "t",
+            "3": "p",
+            "4": "s",
+            "5": ":",
+            "6": "/",
+            "7": "/",
+            "8": "f",
+            "9": "a",
+            "10": "c",
+            "11": "e",
+            "12": "b",
+            "13": "o",
+            "14": "o",
+            "15": "k",
+            "16": ".",
+            "17": "c",
+            "18": "o",
+            "19": "m",
+            "url": "http://facebook.com"
+          },
+          "x": {
+            "0": "h",
+            "1": "t",
+            "2": "t",
+            "3": "p",
+            "4": "s",
+            "5": ":",
+            "6": "/",
+            "7": "/",
+            "8": "t",
+            "9": "w",
+            "10": "i",
+            "11": "t",
+            "12": "t",
+            "13": "e",
+            "14": "r",
+            "15": ".",
+            "16": "c",
+            "17": "o",
+            "18": "m",
+            "url": "http://x.com"
+          },
+          "instagram": {
+            "0": "h",
+            "1": "t",
+            "2": "t",
+            "3": "p",
+            "4": "s",
+            "5": ":",
+            "6": "/",
+            "7": "/",
+            "8": "i",
+            "9": "n",
+            "10": "s",
+            "11": "t",
+            "12": "a",
+            "13": "g",
+            "14": "r",
+            "15": "a",
+            "16": "m",
+            "17": ".",
+            "18": "c",
+            "19": "o",
+            "20": "m",
+            "url": "http://instagram.com"
+          },
+          "linkedin": {
+            "0": "h",
+            "1": "t",
+            "2": "t",
+            "3": "p",
+            "4": "s",
+            "5": ":",
+            "6": "/",
+            "7": "/",
+            "8": "l",
+            "9": "i",
+            "10": "n",
+            "11": "k",
+            "12": "e",
+            "13": "d",
+            "14": "i",
+            "15": "n",
+            "16": ".",
+            "17": "c",
+            "18": "o",
+            "19": "m",
+            "url": "http://linkedin.com"
+          }
+        }
+      },
+      "style": {
+        "iconSize": 24,
+        "iconColor": "#666666",
+        "spacing": 16,
+        "alignment": "center",
+        "paddingControl": {
+          "all": 10,
+          "top": 10,
+          "right": 10,
+          "bottom": 10,
+          "left": 10,
+          "isCustomPadding": false
+        },
+        "socialValid": true,
+        "iconStyle": 1
+      },
+      "subType": "",
+      "zIndex": 3,
+      "rotation": 0,
+      "locked": false,
+      "blocks": {
+        
+      }
+    }
+  ],
+  "settings": {
+    "layout": "web",
+    "backgroundColor": "#ffffff",
+    "showGrid": true,
+    "gridSize": 15,
+    "snapToGrid": false,
+    "enableGuides": true,
+    "width": 1920,
+    "height": 1080
+  }
+}

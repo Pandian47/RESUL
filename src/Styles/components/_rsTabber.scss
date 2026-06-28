@@ -1,0 +1,1196 @@
+// @charset 'utf-8';
+// @use 'sass:string';
+
+// .rs-tabs-with-heading {
+//     h4 {
+//         margin-top: 35px;
+//         margin-bottom: 0;
+//     }
+//     h3 {
+//         margin-top: 35px;
+//         font-family: $rs-font-medium;
+//     }
+// }
+
+// ul.rs-chart-tab.tab-icon li.tabDefault {
+//     padding: 0 8px;
+//     &.active {
+//         &:before,
+//         &:after {
+//             z-index: 1;
+//         }
+//         &:after {
+//             border-left: 4px solid $primary-black;
+//             border-right: 4px solid $primary-black;
+//             content: '';
+//             display: block;
+//             left: 50%;
+//             margin-left: -4px;
+//             position: absolute;
+//             border-bottom: 5px solid $white;
+//             border-top: none;
+//             bottom: -6px;
+//         }
+//         &:before {
+//             border-left: 5px solid $primary-black;
+//             border-right: 5px solid $primary-black;
+//             content: '';
+//             display: block;
+//             left: 50%;
+//             margin-left: -5px;
+//             position: absolute;
+//             bottom: -5px;
+//             border-bottom: 6px solid $primary-red;
+//             border-top: none;
+//             top: inherit;
+//         }
+//     }
+//     .arrowBar:before {
+//         content: '';
+//         display: block;
+//         position: absolute;
+//         left: -2%;
+//         top: 35%;
+//         margin-top: -7px;
+//         height: 15px;
+//         border-left: 1px solid $primary-red;
+//         //$secondary-grey;
+//     }
+//     &:first-child {
+//         padding-left: 8px;
+//         .arrowBar:before {
+//             content: inherit;
+//         }
+//     }
+//     &:last-child {
+//         padding-right: 8px;
+//     }
+// }
+// ul.rs-chart-tab.rs-chart-tab2.addtab {
+//     //  @include flexbox();
+//     li.tabDefault {
+//         width: 206px;
+//         .tab-text-vt {
+//             display: inline-block;
+//             width: 100%;
+//             .remove-btn {
+//                 top: 8px;
+//             }
+//         }
+//         span {
+//             width: 100%;
+//         }
+//     }
+// }
+// .rs-chart-tab.addtab li.tabDefault:last-child {
+//     margin-right: 0;
+// }
+// .rs-chart-tab.tabCount5 li.tabDefault span {
+//     width: 209px;
+// }
+
+// // tab animate
+// .rs-chart-tab.mini.animate-tab {
+//     position: relative;
+//     li.tabDefault {
+//         &:first-child {
+//             padding-left: 0;
+//         }
+//         &:last-child {
+//             padding-right: 0;
+//         }
+//         &.active span {
+//             border-bottom: 0;
+//             &:before,
+//             &:after {
+//                 content: inherit;
+//             }
+//         }
+//         &.active ~ .animate-key {
+//             bottom: 0;
+//             display: block;
+//             transition: all 0.3s ease;
+//         }
+//         &:nth-child(1).active ~ .animate-key {
+//             --x: 0%;
+//             --w: 99px;
+//         }
+//         &:nth-child(2).active ~ .animate-key {
+//             --x: 181%;
+//             --w: 71px;
+//         }
+//     }
+//     .animate-key {
+//         position: absolute;
+//         height: 1px;
+//         width: var(--w);
+//         transition: transform 0.4s cubic-bezier(0.2, 0.64, 0.48, 1.12), opacity 0.4s ease, color 0.4s ease;
+//         // transform: translateX(var(--x));
+//         // -webkit-backface-visibility: hidden;
+//         &:before,
+//         &:after {
+//             content: '';
+//             display: inline-block;
+//             left: 50%;
+//             position: absolute;
+//         }
+//         &:before {
+//             border-left: 5px solid transparent;
+//             border-right: 5px solid transparent;
+//             bottom: -5px;
+//             margin-left: -5px;
+//         }
+//         &:after {
+//             border-left: 4px solid transparent;
+//             border-right: 4px solid transparent;
+//             bottom: -4px;
+//             margin-left: -4px;
+//             border-top: 5px solid $white;
+//         }
+//     }
+// }
+
+// .rs-tabs,
+// .res-tabs-2 {
+//     //margin: 4px 0 0 0;
+//     margin: 0;
+//     padding: 0;
+//     .tabDefault {
+//         background-color: $tertiary-grey;
+//         //border-right: 3px solid $white; // Commented for tabs display on plain bg (body bg)
+//         text-align: center;
+//         position: relative;
+//         // padding: 6px;
+//         padding: 2px 6px;
+//         cursor: pointer;
+//         @include css3-prefix(transition, all 0.3s ease);
+//         border-top-left-radius: var(--globalBorderRadius);
+//         border-top-right-radius: var(--globalBorderRadius);
+//         &:last-child {
+//             border-right: 0;
+//         }
+//         // &:hover {
+//         //     background-color: $tertiary-grey;
+//         // }
+//         &.active {
+//             background-color: $secondary-blue;
+//             cursor: default;
+//             span {
+//                 color: $white;
+//                 // font-family: $rs-font-semi-bold;
+//             }
+//             &:before {
+//                 border-left: 7px solid transparent;
+//                 border-right: 7px solid transparent;
+//                 content: '';
+//                 display: block;
+//                 @include abs-position($position: absolute, $left: 50%, $bottom: -10px);
+//                 margin-left: -7px;
+//                 border-top: 10px solid $secondary-blue;
+//             }
+//         }
+//         span {
+//             font-size: $font-sm;
+//             line-height: 37px;
+//         }
+//     }
+//     &.rst-left-space {
+//         .tabDefault {
+//             border-left: 3px solid $body-bg-color;
+//             border-top-left-radius: var(--globalBorderRadius);
+//             &:first-child {
+//                 border-left: none;
+//             }
+//         }
+//     }
+//     &.rst-right-align {
+//         justify-content: flex-end;
+//         .tabDefault {
+//             margin: 0 0 0 30px;
+//             &:first-child {
+//                 margin-left: 0;
+//             }
+//             &:last-child {
+//                 padding-right: 0;
+//             }
+//         }
+//     }
+//     &.detail-tabs {
+//         width: 100%;
+//         display: flex;
+//         background-color: #e9e9e9;
+//     }
+//     &.detail-tabs li.tabDefault {
+//         width: auto;
+//         padding: 0 20px;
+//         border-radius: 0;
+//         margin-right: 0px;
+//     }
+//     &.rs-tabs-icons-round {
+//         display: flex;
+//         justify-content: space-around;
+//         .tabDefault {
+//             background-color: $white;
+//             border: 3px solid $tertiary-grey;
+//             border-radius: 50%;
+//             width: 70px;
+//             height: 70px;
+//             display: flex;
+//             align-items: center;
+//             justify-content: center;
+//             &.active {
+//                 border-color: $tertiary-grey;
+//                 background-color: $secondary-blue;
+//                 &:before {
+//                     display: none;
+//                 }
+//                 i {
+//                     color: $white !important;
+//                 }
+//             }
+//             i {
+//                 font-size: 41px !important;
+//             }
+//         }
+//     }
+//     &.rs-tabs-auto-width {
+//         .tabDefault {
+//             width: auto;
+//             margin-right: 3px;
+//             &:last-child {
+//                 margin-right: 0;
+//             }
+//         }
+//     }
+// }
+// .pageSub_tab {
+//     .tabDefault {
+//         span {
+//             font-size: $font-sm;
+//         }
+//     }
+// }
+// .res-tabs-2 {
+//     margin-top: 0;
+//     .tabDefault {
+//         border-bottom: 1px solid transparent;
+//         &.active {
+//             background-color: $tertiary-grey;
+//             color: $secondary-blue;
+//             border-bottom-color: $secondary-blue;
+//             span {
+//                 color: $secondary-blue;
+//             }
+//         }
+//     }
+// }
+
+// .rs-content-tabs {
+//     @extend .clearfix;
+//     li.tabDefault {
+//         text-align: center;
+//         @include flexbox($dir: column);
+//         line-height: 19px;
+//         vertical-align: middle;
+//         float: left;
+//         // color: inherit;
+//         min-width: 185px;
+//         position: relative;
+//         padding: 11px 19px;
+//         border-top-left-radius: 15px;
+//         border-top-right-radius: 15px;
+//         background-color: $white;
+//         margin-left: 7px;
+//         color: $secondary-black;
+//         //box-shadow: rgb(0 0 0 / 30%) 0 1px 4px -1px;
+//         &:hover {
+//             cursor: pointer;
+//         }
+//         &:first-child {
+//             margin-left: 0;
+//         }
+//         .rs-tooltip-wrapper {
+//             display: flex;
+//             flex-direction: column;
+//         }
+//         .list-view {
+//             padding: 17px 0;
+//             &:hover {
+//                 cursor: pointer;
+//             }
+//         }
+
+//         &.active {
+//             @extend .tabArrow-2;
+//             i {
+//                 color: $white !important;
+//             }
+//         }
+
+//         i {
+//             font-size: 52px;
+//             color: $secondary-black;
+//             margin-bottom: 10px;
+//         }
+//     }
+
+//     &.rs-tab-horizontal {
+//         display: inline-block;
+//         width: 100%;
+//         background-color: $tertiary-grey;
+
+//         li.tabDefault {
+//             height: 85px;
+//             // width: 102px;
+//             padding-left: 10px;
+//             padding-right: 10px;
+//             border-right: 3px solid $white;
+//         }
+//     }
+//     &.dm-tabs {
+//         li.tabDefault {
+//             //@extend .box-design;
+//             border: 1px solid $quaternary-blue;
+//             border-bottom-color: $quaternary-blue !important;
+//         }
+//         &.no-border-bottom {
+//             li.tabDefault {
+//                 border-bottom: 0 !important;
+//             }
+//         }
+//     }
+// }
+
+// .rs-sub-tabs {
+//     @extend .clearfix;
+//     li.tabDefault {
+//         text-align: center;
+//         @include flexbox($dir: column);
+//         line-height: 19px;
+//         vertical-align: middle;
+//         justify-content: center;
+//         float: left;
+//         // color: inherit;
+//         min-width: 113px;
+//         position: relative;
+//         padding: 11px 19px;
+//         border-top-left-radius: var(--borderRadiusTabDropMenu);
+//         border-top-right-radius: var(--borderRadiusTabDropMenu);
+//         background-color: $white;
+//         margin-left: 7px;
+//         color: $secondary-black;
+//         &:hover {
+//             cursor: pointer;
+//         }
+//         &:first-child {
+//             margin-left: 0;
+//         }
+
+//         .list-view {
+//             padding: 17px 0;
+//             &:hover {
+//                 cursor: pointer;
+//             }
+//         }
+
+//         &.active {
+//             @extend .tabArrow-sub;
+//             i {
+//                 color: $white !important;
+//             }
+//         }
+
+//         i {
+//             color: $secondary-black;
+//             margin-bottom: 5px;
+//         }
+//     }
+// }
+
+// .tab-vertical-content {
+//     width: 100%;
+//     padding: 20px 40px;
+// }
+// .tabs-vertical {
+//     min-width: 110px;
+//     background-color: $tertiary-grey;
+// }
+
+// .vertical-tabs {
+//     li {
+//         height: 115px;
+//         @include flexbox($y: center, $x: center, $dir: column);
+//         &:hover {
+//             cursor: pointer;
+//         }
+//         &:last-child {
+//             border-bottom: 0;
+//         }
+//         i {
+//             margin-bottom: 5px;
+//             color: $primary-blue;
+//         }
+//         &.active {
+//             @extend .default-border-radius-trlb;
+//             background-color: $secondary-blue;
+//             color: $white;
+//             i {
+//                 color: $white;
+//             }
+//         }
+//         div {
+//             text-align: center;
+//             @include flexbox($dir: column);
+//         }
+//         span {
+//             display: inline-block;
+//             text-align: center;
+//         }
+//     }
+// }
+
+// .rs-vertical-tabs-wrapper {
+//     //display: flex;
+//     position: relative;
+//     @extend .clearfix;
+
+//     .rsv-tabs-list {
+//         @extend .box-design;
+//         @extend .primary-box-shadow;
+//         margin-right: 10px;
+//         padding: 5px !important;
+//         float: left;
+//         width: 150px;
+//         &.vertical-tabs {
+//             li {
+//                 border-bottom: 1px solid $tertiary-grey;
+//                 position: relative;
+//                 &.active {
+//                     @extend .tabArrow-right-big;
+//                     background-color: $primary-blue !important;
+//                     &:after {
+//                         border-left-color: $primary-blue !important;
+//                     }
+//                 }
+//                 span {
+//                     font-size: $font-xsm;
+//                     line-height: 21px;
+//                 }
+//                 &:last-child {
+//                     border-bottom: none;
+//                 }
+//             }
+//         }
+//     }
+
+//     /* Vertical RSTabbar channel pane (Mail / Messaging / Notifications) — class is tabs-content */
+//     > .tabs-content {
+//         @include sizing($w: calc(100% - 160px));
+//         @extend .clearfix;
+//         float: left;
+//         box-sizing: border-box;
+//     }
+
+//     /* Icon sub-tabs sit inside the channel column — full width of that column */
+//     .rs-cc-sub-tabs {
+//         width: 100%;
+//         max-width: 100%;
+//         @extend .clearfix;
+//         float: left;
+//         position: relative;
+//         z-index: 101;
+//         box-sizing: border-box;
+//         li {
+//             height: 85px;
+//         }
+//     }
+
+//     /* Panel below horizontal icon sub-tabs (SMTP, SMS, Web, …) */
+//     .rs-cc-sub-tabs + .tabs-content {
+//         width: 100%;
+//         max-width: 100%;
+//         @extend .clearfix;
+//         float: left;
+//         clear: both;
+//         box-sizing: border-box;
+
+//         /* Nested panel (SMS › Vendor row, Notification › Web | Lifetime cap) — stay in column */
+//         .rsv-tabs-content {
+//             width: 100%;
+//             max-width: 100%;
+//             float: none;
+//             clear: both;
+//             box-sizing: border-box;
+//         }
+
+//         .box-design.bd-top-border {
+//             width: 100%;
+//             box-sizing: border-box;
+//         }
+
+//         .tabs-right-align.pageSub_tab {
+//             position: relative;
+//             width: 100%;
+//             box-sizing: border-box;
+
+//             .rs-tabs.row {
+//                 display: flex;
+//                 flex-wrap: nowrap;
+//                 justify-content: flex-end;
+//                 align-items: center;
+//                 width: 100%;
+//                 margin: 0;
+//                 float: none;
+//             }
+
+//             .tabs-content {
+//                 width: 100%;
+//                 max-width: 100%;
+//                 float: none;
+//                 clear: both;
+//                 box-sizing: border-box;
+//             }
+//         }
+//     }
+// }
+// // .rsv-tabs-content {
+// //     [role=presentation] {
+// //         &::before {
+// //             top:0 !important;
+// //         }
+// //     }
+// // }
+// // .portlet-box-theme {
+// //     padding: 30px;
+// //     background-color: $tertiary-grey;
+// //     border: 1px solid $secondary-grey;
+// //     border-top-color: $primary-blue;
+// //     display: inline-block;
+// //     width: 100%;
+// //     &.pb-2 {
+// //         padding: 14px;
+// //         background-color: $white;
+// //     }
+// // }
+// // Invoice page css start
+// .portlet-box-theme {
+//     padding: 5px;
+//     background-color: $white;
+//     // border: 1px solid $quaternary-blue;
+//     border-radius: $theme-radius-size-sm;
+// }
+// .invoice-new {
+//     th,
+//     td {
+//         &:first-child,
+//         &:nth-child(2),
+//         &:nth-child(3),
+//         &.invoice-border {
+//             border: solid 1px $tertiary-grey;
+//         }
+//     }
+//     th {
+//         &:first-child {
+//             border-top-left-radius: $theme-radius-size-sm;
+//             border: 0;
+//         }
+//         &:last-child {
+//             border-top-right-radius: $theme-radius-size-sm;
+//         }
+//     }
+//     .list-account::before {
+//         content: '';
+//         position: absolute;
+//         top: 27%;
+//         left: -15px;
+//         width: 1px;
+//         height: 65%;
+//         background: $grey-dark;
+//         -webkit-transform: translateY(-10%);
+//         -moz-transform: translateY(-10%);
+//         -ms-transform: translateY(-10%);
+//         -o-transform: translateY(-10%);
+//         transform: translateY(-10%);
+//     }
+// }
+// // Invoice page css end
+
+// .rs-content-tabs-2 {
+//     @extend .clearfix;
+//     li.tabDefault {
+//         text-align: center;
+//         @include flexbox($dir: column);
+//         line-height: 19px;
+//         vertical-align: middle;
+//         float: left;
+//         // color: inherit;
+//         position: relative;
+//         padding: 8px 15px;
+//         border-top-left-radius: var(--globalBorderRadius);
+//         border-top-right-radius: var(--globalBorderRadius);
+//         background-color: $tertiary-grey;
+//         border: 0;
+//         border-left: 1px solid $white;
+//         color: $secondary-black;
+//         font-size: $font-xsm;
+//         &:hover {
+//             background-color: $tertiary-grey;
+//             cursor: pointer;
+//         }
+//         &:first-child {
+//             margin-left: 0;
+//         }
+//         &.active {
+//             @extend .tabArrow;
+//         }
+//     }
+//     &.rct-ra {
+//         li {
+//             &.active {
+//                 &:first-child {
+//                     &:before {
+//                         display: none;
+//                     }
+//                 }
+//             }
+//         }
+//     }
+// }
+
+// .res-content-tabs-split {
+//     @extend .clearfix;
+//     background-color: $tertiary-grey;
+//     border-radius: 0;
+//     // padding-top: 5px;
+//     margin-bottom: 5px;
+//     // display: flex;
+//     padding-left: 111px;
+//     justify-content: center;
+//     margin-left: -19px;
+//     margin-right: -19px;
+//     li.tabDefault {
+//         text-align: center;
+//         display: flex;
+//         justify-content: center;
+//         align-items: center;
+//         float: left;
+//         position: relative;
+//         padding: 10px 19px;
+//         border-radius: var( --borderRadiusTabDropMenu);
+//         // border-top-left-radius: 5px;
+//         // border-top-right-radius: 5px;
+//         background-color: $white;
+//         // border-bottom: 2px solid $tertiary-grey;
+//         margin-left: 10px;
+//         // margin-bottom: 5px;
+//         // margin-top: 5px;
+//         color: $secondary-black;
+//         font-size: $font-xsm;
+//         &:hover {
+//             cursor: pointer;
+//         }
+//         &:first-child {
+//             margin-left: 0;
+//         }
+//         &.active {
+//             //@extend .tabArrow;
+//             @include color($bg: $white, $color: $secondary-blue);
+//             border-color: $white;
+//             //@extend .primary-box-shadow;
+//             // border-bottom: 5px solid $white;
+//             margin-bottom: 0;
+//             border-bottom-left-radius: 0;
+//             border-bottom-right-radius: 0;
+//             @extend .no-box-shadow;
+//             &::after {
+//                 content: '';
+//                 position: absolute;
+//                 bottom: -10px;
+//                 width: 100%;
+//                 border-bottom: solid 11px $white;
+//             }
+//             // &::after {
+//             //     content: '';
+//             //     position: absolute;
+//             //     bottom: -5px;
+//             //     width: 100%;
+//             //     border-bottom: solid 1px $secondary-blue;
+//             // }
+//             // &::before {
+//             //     content: '';
+//             //     display: block;
+//             //     position: absolute;
+//             //     bottom: -15px;
+//             //     left: 50%;
+//             //     margin-left: -7px;
+//             //     border-left: 7px solid transparent;
+//             //     border-right: 7px solid transparent;
+//             //     border-top: 10px solid $secondary-blue;
+//             // }
+//             // .tab-label {
+//             //     font-family: $rs-font-semi-bold;
+//             // }
+//         }
+//         &.tab-add {
+//             cursor: default;
+//             background: $white;
+//             // width: 40px;
+//             position: relative;
+//             // top: 6px;
+//             // height: 34px;
+//         }
+//         .tab-remove {
+//             /*position: absolute;
+//             right: 5px;
+//             display: flex;*/
+//             display: inline-block;
+//             line-height: 0;
+//             margin-left: 5px;
+//         }
+//     }
+//     .rs-tabs-refresh {
+//         margin-top: 12px;
+//     }
+// }
+
+// .no-scroll-rs-content-tabs, .smartLinkModal-CSS {
+//     .res-content-tabs-split {
+//         padding: 10px 10px 0 10px ;
+//         justify-content: start;
+//         li {
+//             &.tabDefault {
+//                 margin-bottom: 10px;
+//             }
+//         }
+//     }
+// }
+// .no-scroll-rs-content-tabs {
+//         .res-content-tabs-split  {
+//             padding-left: 110px;
+//         }
+
+// }
+
+// .rsctf-closed {
+//     li.tabDefault {
+//         border-bottom-color: $tertiary-grey !important;
+//         border-radius: var(--globalBorderRadius);
+//         margin-bottom: 3px;
+//     }
+// }
+
+// .rs-flat-tabs {
+//     background-color: $tertiary-grey;
+//     border-top-left-radius: var(--globalBorderRadius);
+//     border-top-right-radius:var(--globalBorderRadius);
+//     padding-top: 5px;
+//     margin-bottom: 5px;
+//     .rs-content-tabs-flat {
+//         @extend .clearfix;
+//         li.tabDefault {
+//             text-align: center;
+//             //@include flexbox($dir: column);
+//             display: flex;
+//             justify-content: center;
+//             align-items: center;
+//             // line-height: 19px;
+//             // vertical-align: middle;
+//             float: left;
+//             position: relative;
+//             padding: 11px 19px;
+//             border-top-left-radius: var(--borderRadiusTabDropMenu);
+//             border-top-right-radius: var(--borderRadiusTabDropMenu);
+//             background-color: $white;
+//             border-bottom: 2px solid $tertiary-grey;
+//             margin-left: 5px;
+//             color: $secondary-black;
+//             &:hover {
+//                 cursor: pointer;
+//             }
+//             &:first-child {
+//                 margin-left: 0;
+//             }
+//             &.active {
+//                 border-bottom-color: $white;
+//                 border-bottom-width: 5px;
+//                 i {
+//                     color: $primary-blue;
+//                 }
+//                 span {
+//                     color: $primary-blue;
+//                 }
+//             }
+//             i {
+//                 color: $primary-grey;
+//             }
+//             span {
+//                 color: $primary-grey;
+//                 font-size: $font-xsm;
+//                 margin-left: 5px;
+//             }
+//         }
+//     }
+//     .tstwh-label {
+//         width: 165px;
+//         h4 {
+//             margin-top: 14px !important;
+//         }
+//         h3 {
+//             margin-top: 14px !important;
+//         }
+//     }
+//     .rs-tabs-refresh {
+//         margin-top: 14px;
+//     }
+// }
+
+// .Emailcontenttab{
+//     .tstwh-label {
+//        margin-left: 15px !important;
+//     }
+// }
+
+// // RSTabSlide TabLabelEditor (FormFields RSInput + inline actions)
+// .tab-label-editor-root {
+//     min-width: 140px;
+//     width: auto;
+//     margin: 0;
+// }
+
+// .tab-label-editor-input-inner {
+//     position: relative;
+
+//     .tab-label-editor-rsinput.rs-input-wrapper input.form-control {
+//         padding-right: 52px;
+//     }
+
+//     // Floating-label RSInput (isNewTheme): align save/cancel with the input row
+//     .tab-label-editor-rsinput.rs-input-placeholder-wrapper ~ .tab-label-editor-actions {
+//         top: 22px;
+//     }
+
+//     .tab-label-editor-actions {
+//         position: absolute;
+//         top: 10px;
+//         right: 0;
+//         z-index: 2;
+//         gap: 8px;
+//         justify-content: flex-end;
+//     }
+// }
+
+// //Tab Transparent
+// .rs-tabs {
+//     .tabTransparent {
+//         background-color: transparent;
+//         //@include space($mr: 30px, $pl: 8px, $pr: 8px, $pb: 1px);
+//         @include space($mr: 30px, $pl: 0, $pr: 0);
+//         width: auto;
+//         color: $primary-grey;
+//         line-height: 20px;
+//         padding-bottom: 1px;
+//         border-bottom: 1px solid transparent;
+//         span,
+//         .tab-label {
+//             line-height: 19px;
+//         }
+//         &.active {
+//             background-color: transparent;
+//             border-bottom: solid 1px $secondary-blue;
+//             span {
+//                 color: $secondary-blue;
+//             }
+//         }
+//         &:last-child {
+//             margin-right: 0;
+//         }
+//     }
+// }
+
+// .tabs-right-align {
+//     .rs-tabs {
+//         justify-content: flex-end;
+//         li {
+//             //margin-right: 0;
+//             //margin-left: 30px;
+//         }
+//     }
+// }
+
+// // Campaign creation tabs closed (No tab selection) styles
+// .rs-camp-tabs-holder {
+//     .rs-tabs-closed-wrapper {
+//         display: flex;
+//         justify-content: center;
+//         align-items: center;
+//         @include sizing($h: calc(100vh - 236px));
+//         .rs-camp-tabs-big {
+//             .ctabs-big-label {
+//                 margin-bottom: 70px;
+//                 text-align: center;
+//                 h3 {
+//                     margin: 0;
+//                 }
+//             }
+//             .rs-tabs-refresh {
+//                 display: none;
+//             }
+//         }
+//         .rsctf-closed {
+//             display: flex;
+//             justify-content: center;
+//             .tabDefault {
+//                 @extend .primary-box-shadow;
+//                 margin: 0 0 0 30px;
+//                 @include sizing($w: 177px, $h: 150px);
+//                 display: flex;
+//                 justify-content: center;
+//                 align-items: center;
+//                 padding: 0;
+//                 &:first-child {
+//                     margin-left: 0;
+//                 }
+//                 .rs-tooltip-wrapper {
+//                     display: flex;
+//                     flex-direction: column;
+//                     i {
+//                         margin-bottom: 15px;
+//                     }
+//                     span {
+//                         font-size: $font-sm;
+//                     }
+//                 }
+//             }
+//         }
+//     }
+// }
+
+// // Kendo scheduler tabs
+// /* [Kendo disabled]
+// .k-scheduler {
+//     @extend .box-design;
+//     @extend .no-box-shadow;
+//     padding: 10px !important;
+//     min-height: 675px;
+//     .k-scheduler-views-wrapper {
+//         .k-button-group {
+//             margin-top: -10px;
+//             .k-button {
+//                 background-color: transparent;
+//                 border: none;
+//                 padding: 0 10px !important;
+//                 margin-left: 10px !important;
+//                 position: relative;
+//                 .k-button-text {
+//                     font-size: $font-sm;
+//                     color: $quaternary-blue;
+//                 }
+//                 &:first-child {
+//                     margin-left: 0 !important;
+//                 }
+//                 &.k-selected {
+//                     border-bottom: 1px solid $white;
+//                     &:after {
+//                         display: block;
+//                         opacity: 1;
+//                         content: '';
+//                         position: absolute;
+//                         top: initial;
+//                         right: 0;
+//                         bottom: -8px;
+//                         left: 0;
+//                         margin: 0 auto;
+//                         width: 0;
+//                         height: 0;
+//                         border-top: 8px solid $white;
+//                         border-left: 7px solid transparent;
+//                         border-right: 7px solid transparent;
+//                     }
+//                     .k-button-text {
+//                         color: $white;
+//                     }
+//                 }
+//             }
+//         }
+//     }
+//     .k-scheduler-toolbar {
+//         background-color: $secondary-blue;
+//         border-top-left-radius: var(--globalBorderRadius);
+//         border-top-right-radius: var(--globalBorderRadius);
+//         margin-bottom: 10px;
+//         color: $white;
+//         .k-button {
+//             color: $white;
+//         }
+//         .k-i-calendar {
+//             display: block;
+//             color: $white !important;
+//         }
+//         .k-toolbar-item {
+//             .k-scheduler-navigation {
+//                 .k-button {
+//                     background-color: transparent !important;
+//                     border: 0 !important;
+//                 }
+//             }
+//         }
+//     }
+//     .k-scheduler-footer {
+//         display: none !important;
+//     }
+//     .k-button {
+//         box-shadow: none !important;
+//         outline: none !important;
+//     }
+//     .k-scheduler-layout {
+//         @extend .css-scrollbar;
+//         .k-scheduler-head {
+//             display: none !important;
+//         }
+//         .k-scheduler-body {
+//             .k-scheduler-content {
+//                 .k-scheduler-datecolumn {
+//                     display: none;
+//                 }
+//                 .k-group-content {
+//                     .k-scheduler-row {
+//                         background-image: none;
+//                         border: 1px solid rgba(0, 0, 0, 0.08);
+//                         margin-bottom: 10px;
+//                         color: $primary-black;
+//                         .k-scheduler-cell {
+//                             display: block;
+//                             padding: 0;
+//                             &.k-scheduler-timecolumn {
+//                                 display: none;
+//                             }
+//                             .rs-scheduler-content-wrapper {
+//                                 display: table;
+//                                 width: 100%;
+//                                 .rsscw-time {
+//                                     display: table-cell;
+//                                     vertical-align: middle;
+//                                     width: 7%;
+//                                     text-align: center;
+//                                     font-size: $font-sm;
+//                                     padding: 10px;
+//                                     background-color: $primary-blue;
+//                                     color: $white;
+//                                 }
+//                                 .rsscw-post {
+//                                     white-space: initial;
+//                                     display: table-cell;
+//                                     vertical-align: middle;
+//                                     padding: 5px 5px 5px 15px;
+//                                     width: 80%;
+//                                     .rsscwp-title {
+//                                         margin: 0 0 0 0;
+//                                     }
+//                                     .rsscwp-description {
+//                                         line-height: 18px;
+//                                         color: $primary-grey;
+//                                     }
+//                                 }
+//                                 .rsscw-icons {
+//                                     display: table-cell;
+//                                     vertical-align: middle;
+//                                     text-align: right;
+//                                     padding: 5px;
+//                                     i {
+//                                         margin-left: 5px;
+//                                         color: $primary-blue;
+//                                         &:first-child {
+//                                             margin-left: 0;
+//                                         }
+//                                     }
+//                                 }
+//                             }
+//                         }
+//                         &:nth-child(odd) {
+//                             background-color: $white;
+//                         }
+//                         &:nth-child(even) {
+//                             background-color: $tertiary-blue;
+//                         }
+//                     }
+//                     .k-scheduler-cell {
+//                         border: 0;
+//                     }
+//                 }
+//             }
+//             .k-group-horizontal {
+//             }
+//         }
+//     }
+//     .k-scheduler-monthview {
+//         .k-scheduler-body {
+//             .k-scheduler-row {
+//                 .k-scheduler-cell {
+//                     .k-scheduler-row {
+//                         .k-scheduler-cell {
+//                             border-color: $tertiary-grey;
+//                             font-size: $font-sm;
+//                             color: $primary-grey;
+//                             &:first-child {
+//                                 border-left: 1px solid $tertiary-grey;
+//                             }
+//                         }
+//                         &:first-child {
+//                             .k-scheduler-cell {
+//                                 border-top: 1px solid $tertiary-grey;
+//                             }
+//                         }
+//                     }
+//                 }
+//             }
+//             .k-event {
+//                 background-color: $secondary-blue;
+//                 .k-event-template {
+//                     white-space: nowrap;
+//                     max-width: 100%;
+//                     text-overflow: ellipsis;
+//                     overflow: hidden;
+//                     text-align: left;
+//                     padding-left: 0;
+//                 }
+//             }
+//         }
+//     }
+// }
+// */
+
+// /* [Kendo disabled]
+// .k-scheduler-layout-flex .k-scheduler-cell.k-heading-cell {
+//     font-weight: normal;
+// }
+// */
+// .rs-tabs .tabTransparent::after {
+//     content: '';
+//     position: absolute;
+//     right: -17px;
+//     height: 15px;
+//     width: 1px;
+//     background: $secondary-grey;
+//     top: 50%;
+//     transform: translateY(-50%);
+// }
+// .rs-tabs .tabTransparent:last-child::after {
+//     content: inherit !important;
+// }
+
+// // .rs-list-group-horizontal,
+// // .rsv-tabs-content,
+// // .pc-my-profile,
+// // .rs-box,
+// // .communication-create,
+// // .rsmd-content{}
+// /* [Kendo disabled]
+// .rs-kendo-dropdownmenu-wrapper {
+//     .k-dropdownlist .k-icon-button .k-icon.k-i-caret-alt-down:before {
+//         top: 2px;
+//     }
+//     .rs-kendo-multi-dropdownmenu-wrapper .rskmd-arrow:before {
+//         top: 2px;
+//     }
+// }
+// */

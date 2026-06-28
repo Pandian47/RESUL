@@ -1,0 +1,58 @@
+const OfferManagementGrid = [
+    {
+        offerName: 'Super sale offer',
+        offerCodeType: 'Unique',
+        linkedCommunication: 'Acquisition',
+        offerType: 'EMI',
+        offerCode: '6/100',
+        startDate: 'Jan 5, 2023',
+        expiryDate: 'Jan 10, 2023',
+    },
+    {
+        offerName: 'Special offer',
+        offerCodeType: 'Common',
+        linkedCommunication: 'Awareness',
+        offerType: 'Cash back',
+        offerCode: '12/100',
+        startDate: 'Jan 11, 2023',
+        expiryDate: 'Jan 25, 2023',
+    },
+    {
+        offerName: 'Wonder text offer',
+        offerCodeType: 'Common',
+        linkedCommunication: 'Greetings',
+        offerType: 'Discount',
+        offerCode: '31/100',
+        startDate: 'Feb 2, 2023',
+        expiryDate: 'Feb 15, 2023',
+    },
+    {
+        offerName: 'Mid season sale offer',
+        offerCodeType: 'Unique',
+        linkedCommunication: 'Promotion',
+        offerType: 'Loyalty',
+        offerCode: '22/100',
+        startDate: 'Feb 4, 2023',
+        expiryDate: 'Feb 10, 2023',
+    },
+    {
+        offerName: 'Valentines day offer',
+        offerCodeType: 'Unique',
+        linkedCommunication: 'Acquisition',
+        offerType: 'New product launch',
+        offerCode: '45/100',
+        startDate: 'Feb 19, 2023',
+        expiryDate: 'Feb 26, 2023',
+    },
+    {
+        offerName: 'Flat offer',
+        offerCodeType: 'Common',
+        linkedCommunication: 'Greetings',
+        offerType: 'Referral',
+        offerCode: '68/100',
+        startDate: 'Jan 6, 2023',
+        expiryDate: 'Jan 5, 2024',
+    },
+];
+
+export { OfferManagementGrid };

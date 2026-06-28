@@ -1,0 +1,397 @@
+@use '../../../../Styles/abstarct/global' as *;
+
+*:hover {
+    scrollbar-color: $secondary-grey;
+}
+
+$res-listbox-arrow-icon: url('../../../../Assets/Images/arrow.svg');
+
+.reskendolist-wrapper {
+    &:focus,
+    &:focus-visible {
+        outline: none;
+    }
+
+    .k-listbox,
+    .k-list,
+    .attribute-right-empty-host,
+    .attribute-right-empty-dropzone {
+        &:focus,
+        &:focus-visible,
+        &:focus-within {
+            outline: none;
+        }
+    }
+
+    .k-listbox .k-list .k-list-content .k-list-item {
+        &.k-focus {
+            outline: none;
+        }
+    }
+
+    .k-list-scroller {
+        .k-list .k-list-content {
+            .k-list-ul .k-list-item {
+                &.k-focus {
+                    box-shadow: none;
+                }
+            }
+        }
+    }
+
+    .multiClm .k-listbox .k-list .k-list-content .k-list-item {
+        &.fallBackNameCSS {
+            display: block;
+
+            small {
+                font-style: italic;
+            }
+
+            &:hover,
+            &.k-selected {
+                small {
+                    color: $white;
+                }
+
+                .fallBackNameInput {
+                    input {
+                        color: $white;
+
+                        &::placeholder {
+                            color: $white;
+                        }
+                    }
+
+                    .fallBackNameRemove {
+                        i {
+                            color: $white;
+                        }
+                    }
+                }
+
+                .fallBackNameSubmit {
+                    button {
+                        i {
+                            color: $white;
+                        }
+                    }
+                }
+            }
+
+            .fallBackNameInput {
+                position: relative;
+                width: 100%;
+
+                input {
+                    border-bottom: 1px solid $quaternary-blue;
+                    font-size: 12px;
+                    line-height: 18px;
+                    font-style: italic;
+
+                    &::placeholder {
+                        font-style: italic;
+                    }
+                }
+
+                .fallBackNameRemove {
+                    position: absolute;
+                    top: 0;
+                    right: 0;
+                    height: 26px;
+                    z-index: 9;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+
+                    i {
+                        color: $primary-red;
+                    }
+                }
+
+                span.text-danger {
+                    background-color: $white;
+                    margin-top: 2px;
+                    display: block;
+                    padding: 0 5px;
+                    font-size: 15px;
+                }
+            }
+
+            .fallBackNameLoader,
+            .fallBackNameSubmit {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                padding: 0 0 0 10px;
+
+                button {
+                    background: transparent;
+
+                    i {
+                        color: $primary-blue;
+                    }
+                }
+            }
+        }
+    }
+
+    .multiClm {
+        width: 45%;
+        position: relative;
+
+        &.multiLftClm {
+            float: left;
+        }
+
+        &.multiRghtClm {
+            float: right;
+        }
+
+        .k-button:disabled,
+        .k-button.k-disabled {
+            opacity: 0.2;
+        }
+
+        .rs-search-filter {
+            position: absolute;
+            top: 0;
+            right: 0;
+
+            &.active {
+                width: 100%;
+                background: $white;
+
+                .searchInput {
+                    padding-right: 64px;
+                }
+
+                &.dataExchange_rs-search_attribute {
+                    width: calc(100% - 30px);
+                }
+            }
+
+            .rs-search-close {
+                top: 0;
+                bottom: 0;
+                right: 38px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+        }
+
+        .attributeDropdown {
+            position: absolute;
+            top: 0;
+            right: 0;
+        }
+
+        .attribute-right-empty-host {
+            position: relative;
+            height: 203px;
+            width: 100%;
+        }
+
+        .res-kendo-right-empty-overlay,
+        .res-kendo-left-empty-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            height: 203px;
+            width: 100%;
+            z-index: 1;
+            background-color: $white;
+            pointer-events: none;
+            box-sizing: border-box;
+            border-radius: var(--borderRadiusTabDropMenu);
+
+            @include bor($width: 1px, $color: $quaternary-blue);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            .nodata-bar {
+                position: static;
+                top: auto;
+                left: auto;
+                transform: none;
+            }
+
+            * {
+                pointer-events: none;
+            }
+        }
+
+        .res-kendo-listbox-nodata-wrapper {
+            height: 203px;
+            width: 100%;
+            background-color: $white;
+            box-sizing: border-box;
+            border-radius: var(--borderRadiusTabDropMenu);
+            @include bor($width: 1px, $color: $quaternary-blue);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .position-relative:has(> .res-kendo-left-empty-overlay),
+        .position-relative:has(> .res-kendo-right-empty-overlay) {
+            .k-listbox .k-list {
+                border-color: transparent;
+            }
+        }
+
+        .attribute-right-empty-dropzone {
+            height: 100%;
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-sizing: border-box;
+           border-radius: var(--borderRadiusTabDropMenu);
+
+            transition: background-color 0.15s ease;
+
+            .nodata-bar {
+                pointer-events: none;
+            }
+
+            &.is-drag-over {
+                background-color: rgba($secondary-blue, 0.08);
+            }
+        }
+
+        .k-listbox {
+            height: 203px;
+            width: 100%;
+            border-radius: var(--borderRadiusTabDropMenu);
+
+            .k-list-scroller {
+                border: none;
+
+                .k-list,
+                .k-list-content,
+                ul.k-list-ul {
+                    pointer-events: auto;
+                }
+
+                li.k-list-item {
+                    pointer-events: auto;
+                }
+            }
+
+            .k-list {
+                @include bor($width: 1px, $color: $quaternary-blue);
+                @include br($radius: 5px);
+                @include color($bg: $white);
+
+                .k-list-content {
+                    @extend %css-scrollbar;
+
+                    .k-list-item {
+                        font-size: $font-xsm;
+                        line-height: 18px;
+                        padding: 10px;
+                        border-top: 1px solid $white;
+                        border-radius: unset;
+
+                        &:first-child {
+                            border: none;
+                        }
+
+                        &:nth-child(odd) {
+                            background-color: $white;
+                        }
+
+                        &:nth-child(even) {
+                            background-color: $tertiary-blue;
+                        }
+
+                        &:hover,
+                        &.k-selected,
+                        &.k-selected.k-list-optionlabel {
+                            color: $white !important;
+                            background-color: $secondary-blue !important;
+
+                            span,
+                            small,
+                            p,
+                            .k-list-item-text {
+                                color: $white !important;
+                            }
+
+                            i {
+                                color: $white !important;
+                            }
+
+                            .dropval-header {
+                                color: $white !important;
+                            }
+                        }
+
+                    }
+                }
+            }
+        }
+
+        .k-listbox-actions {
+            margin-left: 0;
+            position: absolute;
+            top: 26%;
+            right: -15%;
+            gap: 15px;
+
+            li+li {
+                margin-top: 15px;
+            }
+
+            .k-icon-button {
+                padding: 0;
+                border: 0;
+                background-color: transparent !important;
+                background-image: none !important;
+                box-shadow: none !important;
+
+                &.k-disabled,
+                &:disabled {
+                    cursor: not-allowed;
+                    pointer-events: auto;
+
+                    .k-button-icon {
+                        cursor: not-allowed;
+                    }
+                }
+
+                .k-button-icon {
+                    background: $res-listbox-arrow-icon no-repeat;
+                    width: 24px;
+                    height: 24px;
+                    border: 0;
+
+                    &::before {
+                        display: none;
+                    }
+
+                    svg {
+                        display: none !important;
+                    }
+
+                    &.k-svg-i-chevron-right {
+                        background-position: 0 0;
+                    }
+
+                    &.k-svg-i-chevron-left {
+                        background-position: 0 -34px;
+                    }
+                }
+            }
+        }
+    }
+
+    &.show_left {
+        .multiClm .k-listbox-actions {
+            left: -14%;
+            right: auto;
+        }
+    }
+}

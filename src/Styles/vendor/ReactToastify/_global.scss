@@ -1,0 +1,12 @@
+.Toastify__toast-container--top-right {
+    top: 90px !important;
+}
+
+// Force progress bar to drain right → left.
+// Anchor: left:0, transform-origin:left → scaleX(1→0) shrinks the RIGHT edge inward = right-to-left ✓
+.Toastify__progress-bar,
+.Toastify__progress-bar--animated {
+    left: 0 !important;
+    right: unset !important;
+    transform-origin: left !important;
+}

@@ -1,0 +1,1042 @@
+// ResMultiSelect — tokens come from the shared KendoDocs variables file
+@use '../../kendoDocsVariables.scss' as *;
+
+$res-ms-popup-z: 1101;
+
+$res-ms-zoom-icon: url('../../../../Assets/Images/svg/rs-zoom-medium.svg');
+$res-ms-chip-remove-icon: url('../../../../Assets/Images/svg/rs-circle-minus-fill-mini.svg');
+
+@mixin res-ms-scrollbar {
+    overflow-y: auto;
+    overflow-x: hidden;
+
+    &::-webkit-scrollbar-track {
+        display: none;
+        background: transparent;
+    }
+
+    &::-webkit-scrollbar {
+        width: 5px;
+        height: 5px;
+        background-color: transparent;
+        border-radius: 3px;
+    }
+
+    &::-webkit-scrollbar-thumb {
+        background-color: transparent;
+        border-radius: 100px;
+        cursor: pointer;
+    }
+
+    &:hover {
+        &::-webkit-scrollbar-thumb {
+            background-color: $secondary-grey;
+            border-radius: 3px;
+        }
+    }
+}
+
+// Default chip multiselect — hide already-selected rows in the popup list.
+@mixin res-ms-list-item-styles {
+
+    .k-list-item {
+        font-size: $font-xsm;
+        padding: 3px 5px;
+        box-shadow: none;
+        word-break: break-all;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        overflow: hidden;
+        display: flow;
+        border-radius: 0;
+        transition: 0.3s all ease;
+
+        &:hover:not(.click-off):not(.k-disabled),
+        &.k-hover:not(.click-off):not(.k-disabled),
+        &.k-focus:not(.click-off):not(.k-disabled) {
+            background-color: $secondary-blue;
+            color: $white;
+            border-radius: 0;
+
+            i,
+            p,
+            .text-primary-blue,
+            .color-primary-blue {
+                color: $white !important;
+            }
+        }
+
+        &.k-selected,
+        &[aria-selected='true'] {
+            display: none !important;
+
+            p {
+                color: $primary-black;
+            }
+        }
+
+        &.click-off,
+        &.k-disabled {
+            opacity: var(--click-off-opacity, 0.5);
+            cursor: not-allowed;
+            pointer-events: none;
+
+            &:hover,
+            &.k-hover,
+            &.k-focus {
+                background-color: transparent;
+                color: $primary-grey;
+                border-radius: 0;
+
+                i,
+                p {
+                    color: $primary-grey;
+                }
+            }
+        }
+    }
+}
+.res-kendo-ms-checkbox-footer {
+    padding: 10px;
+    display: flex;
+    justify-content: end;
+    gap: 15px;
+    align-items: center;
+    margin-top: 10px;
+}
+@mixin res-ms-popup-list-filter {
+    .k-list-header {
+        padding: 0;
+        margin: 0;
+        border: 0;
+        background: $white;
+        overflow: visible;
+        padding: 10px;
+    }
+
+    .k-list-header .#{$res-ms-prefix}-list-filter,
+    .#{$res-ms-prefix}-list-filter {
+        background: $white;
+        border: none;
+        border-radius: 5px 5px 0 0;
+        padding: 8px 10px 0;
+        box-sizing: border-box;
+
+        .#{$res-ms-prefix}-list-filter-field {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            border: none;
+            border-bottom: 1px solid $quaternary-blue;
+            padding-bottom: 8px;
+
+            input {
+                flex: 1 1 auto;
+                min-width: 0;
+                border: 0;
+                outline: none;
+                padding: 0;
+                font-size: $font-xsm;
+                font-family: $rs-font-regular;
+                background: transparent;
+                color: $primary-black;
+            }
+
+            i {
+                flex-shrink: 0;
+            }
+        }
+    }
+}
+
+@mixin res-ms-list-footer-styles {
+    background-color: $white;
+    border-top: 1px solid $quaternary-blue;
+    border-radius: 0 0 5px 5px;
+    overflow: hidden;
+
+    .res-kendo-ms-footer-add-new,
+    .tsh-icon-with-label,
+    .#{$res-dd-prefix}-footer-add-new,
+    .rs-kendo-footer-add-new {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 5px 10px;
+        font-size: $font-xsm;
+        cursor: pointer;
+        box-sizing: border-box;
+        transition: 0.3s all ease;
+
+        i {
+            color: $primary-blue;
+            transition: 0.3s all ease;
+        }
+
+        &:hover {
+            background-color: $secondary-blue;
+            color: $white;
+
+            span,
+            i,
+            .text-primary-blue,
+            .color-primary-blue {
+                color: $white !important;
+                transition: 0.3s all ease;
+            }
+        }
+    }
+
+    .#{$res-dd-prefix}-footer-add-new,
+    .rs-kendo-footer-add-new {
+        padding: 8px 10px;
+    }
+}
+
+// Floating label — scoped to multiselect wrapper
+.#{$res-ms-wrapper} {
+    position: relative;
+    width: 100%;
+    
+    .k-floating-label-container {
+        padding: 0;
+        width: 100%;
+
+        .#{$res-ms-prefix} {
+            border: none;
+
+            &+.k-floating-label,
+            &+.k-label {
+                // Kendo sets inline left/top during label animation
+                left: 0 !important;
+                color: $secondary-grey;
+                font-size: $font-xxs;
+                top: -17px !important;
+            }
+        }
+
+        &:focus-within .#{$res-ms-prefix} .k-floating-label,
+        &:focus-within .#{$res-ms-prefix} .k-label {
+            top: 0;
+        }
+    }
+
+    .#{$res-ms-prefix}-required+.k-floating-label,
+    .#{$res-ms-prefix}-required+.k-label {
+        padding-right: 10px;
+
+        &:after {
+            content: '*';
+            position: absolute;
+            right: 0;
+            color: $primary-red;
+            font-family: $rs-font-bold;
+            display: none;
+        }
+    }
+
+    // .k-input.k-multiselect.k-input-solid,
+    .k-multiselect.k-input-solid {
+        background-color: transparent;
+
+        .k-input-values .k-input-inner {
+            border: 0;
+            padding: 0;
+        }
+    }
+
+    // Let chips + typed text wrap onto multiple lines within the field
+    .k-multiselect .k-input-values,
+    .k-input-values {
+        flex-wrap: wrap;
+        overflow: visible;
+    }
+
+    // Keep the search input chromeless and let it flow next to the chips.
+    // It only wraps to its own line when there isn't enough room left on the
+    // current row; `min-width` keeps the typing area usable so letters stay visible.
+    .k-multiselect .k-input-inner,
+    .k-input-values .k-input-inner {
+        background-color: transparent !important;
+        border: none !important;
+        padding: 0 14px 0 0 !important;
+        flex: 1 1 60px;
+        min-width: 60px;
+        max-width: 100%;
+        margin: 0 !important;
+    }
+
+    @keyframes res-ms-spin {
+        0% {
+            transform: rotate(0deg);
+        }
+
+        100% {
+            transform: rotate(360deg);
+        }
+    }
+
+    &--loading {
+
+        // Global `.k-disabled { opacity: … }` — keep field readable while loading.
+        .k-floating-label-container .k-multiselect.k-disabled,
+        .k-multiselect.k-disabled,
+        .k-multiselect.k-input-solid.k-disabled,
+        .#{$res-ms-prefix}.k-disabled,
+        .#{$res-ms-prefix}.#{$res-ms-prefix}-loading {
+            opacity: 1 !important;
+            background: transparent;
+            background-color: transparent;
+            background-image: none;
+
+            .k-input-values,
+            .k-input-inner {
+                opacity: 1;
+                background: transparent;
+                background-color: transparent;
+            }
+        }
+
+        .k-multiselect .k-clear-value,
+        .k-input-values .k-clear-value,
+        .k-input-values>.k-clear-value {
+            display: none !important;
+            visibility: hidden;
+            opacity: 0;
+            pointer-events: none;
+            width: 0;
+            min-width: 0;
+            height: 0;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+        }
+
+        .k-input.k-input-solid.#{$res-ms-prefix} .k-input-values,
+        .k-multiselect .k-input-values {
+            padding-right: 38px;
+        }
+
+        .k-input-values .k-input-inner {
+            padding-right: 38px !important;
+        }
+    }
+
+    .k-multiselect.k-disabled:not(.#{$res-ms-prefix}-loading),
+    .k-multiselect.k-input-solid.k-disabled:not(.#{$res-ms-prefix}-loading),
+    .#{$res-ms-prefix}.k-disabled:not(.#{$res-ms-prefix}-loading),
+    .#{$res-ms-prefix}.#{$res-ms-prefix}-disabled-nodata {
+        background: transparent;
+        background-color: transparent;
+
+        .k-input-values {
+            background: transparent;
+            background-color: transparent;
+        }
+    }
+
+    .#{$res-ms-field} {
+        position: relative;
+        width: 100%;
+
+        .res-inputIcon-wrapper {
+            position: absolute;
+            right: 21px;
+            bottom: 6px;
+            top: auto;
+            padding: 0;
+            z-index: 6;
+            line-height: 0;
+
+            .segment-loader {
+                position: relative;
+                bottom: 0;
+                border: 2px solid #d3d3d3;
+                border-top: 2px solid #1da7ee;
+                border-radius: 50%;
+                width: 16px;
+                height: 16px;
+                max-width: 16px;
+                max-height: 16px;
+                padding: 0;
+                animation: res-ms-spin 0.9s linear infinite;
+            }
+        }
+
+        .#{$res-ms-prefix}-arrow {
+            position: absolute;
+            bottom: 9px;
+            right: 0;
+            display: flex;
+            cursor: pointer;
+            z-index: 4;
+            pointer-events: none;
+
+            &:before {
+                content: '';
+                position: relative;
+                width: 0;
+                height: 0;
+                border-left: 6px solid transparent;
+                border-right: 6px solid transparent;
+                border-top: 7px solid $secondary-grey;
+            }
+        }
+
+    }
+
+    .k-floating-label-container {
+        &.k-empty:not(:focus-within)>.k-floating-label,
+        &.k-empty:not(:focus-within)>.k-label {
+            top: 0 !important;
+            font-size: 17px;
+        }
+        &:not(.k-empty)>.k-floating-label,
+        &:not(.k-empty)>.k-label,
+        &.k-focus>.k-floating-label,
+        &.k-focus>.k-label,
+        &:focus-within>.k-floating-label,
+        &:focus-within>.k-label {
+            top: -17px !important;
+            font-size: $font-xxs;
+        }
+    }
+
+    &--filtering {
+        .k-floating-label-container.k-empty:not(:focus-within)>.k-floating-label,
+        .k-floating-label-container.k-empty:not(:focus-within)>.k-label,
+        .k-floating-label-container>.k-floating-label,
+        .k-floating-label-container>.k-label,
+        .k-floating-label-container .#{$res-ms-prefix}+.k-floating-label,
+        .k-floating-label-container .#{$res-ms-prefix}+.k-label {
+            top: -17px !important;
+            font-size: $font-xxs;
+        }
+    }
+
+    .#{$res-ms-meta} {
+        min-height: 16px;
+
+        small {
+            color: $secondary-grey;
+            font-family: $rs-font-regular;
+            line-height: 1.4;
+        }
+
+        i {
+            cursor: pointer;
+        }
+    }
+
+    .k-input.k-input-solid.#{$res-ms-prefix} {
+        .k-input-values {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            min-height: 30px;
+            gap: 5px 2px;
+            cursor: pointer;
+            // Bottom padding keeps the last wrapped row of chips/typed text
+            // clear of the underline drawn by `.k-multiselect::after`.
+            padding: 0 0 6px;
+            margin: 0;
+
+            .k-input-inner {
+                flex: 1 1 auto;
+                min-width: 10px;
+                max-width: none;
+                padding-left: 0;
+                line-height: 1.4;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                white-space: nowrap;
+            }
+        }
+    }
+
+    .k-multiselect {
+        position: relative;
+        overflow: visible;
+
+        &.k-input {
+            border: none;
+            box-shadow: none;
+            background-color: transparent;
+        }
+
+        &.k-input:focus-within {
+            box-shadow: none;
+        }
+
+        .k-clear-value {
+            display: none !important;
+            position: absolute;
+            right: 17px;
+            bottom: 8px;
+            top: auto;
+            align-self: unset;
+            transform: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            height: auto;
+            padding: 0;
+            margin: 0;
+            line-height: 1;
+            color: $primary-red;
+            opacity: 1;
+            z-index: 5;
+            cursor: pointer;
+
+            .k-icon,
+            .k-svg-icon,
+            .k-svg-i-x,
+            .k-i-x {
+                color: $primary-red;
+            }
+
+            svg {
+                fill: currentColor;
+            }
+        }
+
+        &::after {
+            border-bottom: 1px solid $secondary-grey;
+            content: '';
+            width: 100%;
+            height: 1px;
+            position: absolute;
+            bottom: 0;
+            z-index: 3;
+            pointer-events: none;
+        }
+
+        &.#{$res-ms-prefix}-required::before {
+            content: '';
+            width: 15px;
+            height: 1px;
+            border-bottom: 3px solid $primary-red;
+            position: absolute;
+            left: 0;
+            bottom: -2px;
+            z-index: 4;
+            pointer-events: none;
+        }
+
+        &.k-focus {
+            &::after {
+                border-color: $secondary-blue;
+            }
+
+            &.#{$res-ms-prefix}-required::before {
+                display: none;
+            }
+        }
+    }
+
+    .k-disabled .k-input-inner {
+        display: inline-block;
+    }
+
+    .k-input.k-multiselect {
+        .k-input-values {
+            padding: 0;
+
+            .k-chip {
+                border: 0;
+                border-radius: 0;
+                background-image: none;
+                background-color: $tertiary-blue;
+                color: $secondary-black;
+                font-size: $font-xs;
+                padding: 4px 0;
+                margin-right: 1px;
+                max-width: 250px;
+
+                &:hover {
+                    background-color: $tertiary-grey;
+                }
+
+                .k-chip-content {
+                    padding: 0;
+                    margin: 0;
+                    min-width: 0;
+                    display: flex;
+                    flex-flow: row nowrap;
+                    align-items: center;
+                    overflow: hidden;
+                    flex: 1 1 auto;
+                    max-width: 100%;
+
+                    &:first-child {
+                        margin-inline-start: 4px;
+                    }
+                }
+
+                .k-chip-label,
+                .#{$res-ms-custom-tag} {
+                    overflow: hidden;
+                    text-overflow: ellipsis;
+                    white-space: nowrap;
+                    max-width: 100%;
+                    display: inline-block;
+                }
+
+                &:has(.#{$res-ms-custom-tag}) .k-chip-label {
+                    display: none;
+                }
+
+                .k-chip-actions {
+                    flex-shrink: 0;
+
+                    .k-chip-remove-action {
+
+                        .k-icon,
+                        .k-svg-icon {
+                            color: $primary-red;
+                            font-size: $icon-xs;
+                            width: auto;
+                            height: auto;
+
+                            svg {
+                                display: none;
+                            }
+
+                            &.icon-rs-circle-minus-fill-mini::before,
+                            &::before {
+                                content: '';
+                                position: relative;
+                                display: inline-block;
+                                background-image: $res-ms-chip-remove-icon;
+                                background-repeat: no-repeat;
+                                background-size: contain;
+                                width: 15px;
+                                height: 15px;
+                            }
+                        }
+                    }
+                }
+
+            }
+        }
+    }
+
+    // hideSelectedChips — input chips only; popup checked rows must stay visible.
+    &.#{$res-ms-prefix}-hide-chips {
+
+        .k-input.k-input-solid.#{$res-ms-prefix} .k-input-values,
+        .k-multiselect .k-input-values {
+            min-height: 0;
+            gap: 0;
+            padding-bottom: 0;
+        }
+
+        .k-input-values {
+            .k-chip {
+                display: none !important;
+            }
+
+            .k-input-inner {
+                flex: 1 1 auto !important;
+                min-width: 0 !important;
+                max-width: 100% !important;
+                padding-right: 14px;
+            }
+        }
+
+        // Hidden chips still mark the field non-empty in Kendo — keep label on the baseline when idle.
+        .k-floating-label-container {
+            &:not(:focus-within):not(.k-focus) {
+                >.k-floating-label,
+                >.k-label,
+                .#{$res-ms-prefix}+.k-floating-label,
+                .#{$res-ms-prefix}+.k-label {
+                    top: 0 !important;
+                    font-size: 17px;
+                }
+            }
+            &:focus-within,
+            &.k-focus {
+
+                >.k-floating-label,
+                >.k-label,
+                .#{$res-ms-prefix}+.k-floating-label,
+                .#{$res-ms-prefix}+.k-label {
+                    top: -17px !important;
+                    font-size: $font-xxs;
+                }
+            }
+        }
+
+        
+    }
+}
+
+.errorContainer.#{$res-ms-wrapper} { // res-kendo-ms-menu-wrapper
+    .k-floating-label-container {
+
+        .k-floating-label,
+        .k-label,
+        .#{$res-ms-prefix}+.k-floating-label,
+        .#{$res-ms-prefix}+.k-label {
+            color: $primary-red;
+        }
+
+        .k-multiselect::after {
+            border-color: $primary-red;
+        }
+    }
+}
+
+
+// DROPDOWN KENDO
+.k-animation-container {
+    .k-popup {
+
+        &.#{$res-ms-prefix} { // res-kendo-ms
+            // hideSelectedChips + checkbox — portaled popup must keep checked rows visible.
+            &-hide-chips.#{$res-ms-prefix}--checkbox {
+                .k-list-content .k-list-ul {
+
+                    li.k-list-item,
+
+                    &.k-selected,
+                    &[aria-selected='true'] {
+                        display: block !important;
+                        visibility: visible !important;
+
+                        .#{$res-ms-prefix}-checkbox-item-inner,
+                        
+                        .checkbox-wrapper,
+                        .checkbox-wrapper label,
+                        .checkbox-wrapper .lbl,
+                        .checkbox-wrapper .lbl span {
+                            display: inline-flex;
+                            visibility: visible;
+                            max-width: 100%;
+                        }
+                    }
+
+                }
+            }
+            // hideSelectedChips + default variant — portaled popup must keep selected rows visible.
+            &-hide-chips:not(.#{$res-ms-prefix}--checkbox) {
+                .k-list-content .k-list-ul {
+
+                    .k-list-item,
+                    >li {
+                        &.k-selected,
+                        &[aria-selected='true'] {
+                            display: block !important;
+                            visibility: visible !important;
+                            box-shadow: none;
+                            background-color: $tertiary-blue;
+                        }
+                    }
+                }
+            }
+        }
+        
+        &.#{$res-ms-list-popup} { // res-kendo-ms-list-popup
+            @include res-ms-popup-list-filter;
+
+            &:not(.#{$res-ms-prefix}--checkbox), // res-kendo-ms
+            &.k-list-container:not(.k-menu-popup):not(.#{$res-ms-prefix}--checkbox) { // res-kendo-ms--checkbox
+                position: relative;
+                border: 1px solid $quaternary-blue;
+                border-radius: 5px;
+                background-color: $white;
+                margin-top: 0;
+                padding: 0;
+                // box-shadow: none;
+                box-shadow: 0 2px 4px #00000008, 0 4px 5px #0000000a;
+                overflow: hidden;
+                &.k-slide-up-enter {
+                    margin-top: 0;
+                }
+
+                @include res-ms-popup-list-filter;
+
+                .k-list-filter {
+                    background: $white;
+                    border: none;
+                    border-radius: 5px;
+                    padding: 8px 10px 0;
+
+                    .k-searchbox {
+                        border: none;
+                        border-bottom: 1px solid $quaternary-blue;
+                        border-radius: 0;
+                        box-shadow: none;
+                        padding-bottom: 8px;
+
+                        &.k-input,
+                        &.k-input-md,
+                        &.k-input-solid {
+                            border: none;
+                            border-bottom: 1px solid $quaternary-blue;
+                            border-radius: 0;
+                            box-shadow: none;
+                        }
+
+                        &.k-input-md .k-input-inner {
+                            padding-left: 0;
+                            padding-right: 0;
+                            border: none;
+                            box-shadow: none;
+                            outline: none;
+                        }
+
+                        .k-i-search {
+                            order: 2;
+                            font-size: $icon-md;
+                            color: $secondary-blue;
+
+                            &::before {
+                                content: '';
+                                width: 24px;
+                                height: 24px;
+                                background: $res-ms-zoom-icon no-repeat;
+                            }
+                        }
+                    }
+                }
+
+                .k-list {
+                    border: 0;
+                    box-shadow: none;
+                    padding: 0;
+                    position: relative;
+
+                    .k-list-content {
+                        max-height: 219px !important;
+                        @include res-ms-scrollbar;
+
+                        .k-list-ul {
+                            @include res-ms-list-item-styles;
+
+                            li.k-list-item {
+                                padding: 5px 9px;
+
+                                &.k-focus {
+                                    background-color: $white !important;
+                                    color: $primary-black !important;
+                                    box-shadow: none;
+                                    outline: none;
+
+                                    &:hover,
+                                    &.k-hover {
+                                        background-color: $secondary-blue !important;
+                                        color: $white !important;
+
+                                        i,
+                                        p,
+                                        .text-primary-blue,
+                                        .color-primary-blue {
+                                            color: $white !important;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+
+                .k-list-footer {
+                    @include res-ms-list-footer-styles;
+                }
+            }
+
+            // Checkbox variant — tertiary-blue hover/active + css-scrollbar + label ellipsis
+            &.#{$res-ms-prefix}--checkbox,
+            &.k-list-container.#{$res-ms-prefix}--checkbox {
+                position: relative;
+                border: 1px solid $quaternary-blue;
+                border-radius: 5px;
+                background-color: $white;
+                margin-top: 0;
+                padding: 0;
+                box-shadow: 0 2px 4px #00000008, 0 4px 5px #0000000a;
+                overflow: hidden;
+
+                &.k-slide-up-enter {
+                    margin-top: 0;
+                }
+
+                @include res-ms-popup-list-filter;
+
+                .k-list-filter {
+                    background: $white;
+                    border: none;
+                    border-radius: 5px;
+                    padding: 8px 10px 0;
+
+                    .k-searchbox {
+                        border: none;
+                        border-bottom: 1px solid $quaternary-blue;
+                        border-radius: 0;
+                        box-shadow: none;
+                        padding-bottom: 8px;
+
+                        &.k-input,
+                        &.k-input-md,
+                        &.k-input-solid {
+                            border: none;
+                            border-bottom: 1px solid $quaternary-blue;
+                            border-radius: 0;
+                            box-shadow: none;
+                        }
+
+                        &.k-input-md .k-input-inner {
+                            padding-left: 0;
+                            padding-right: 0;
+                            border: none;
+                            box-shadow: none;
+                            outline: none;
+                        }
+
+                        .k-i-search {
+                            order: 2;
+                            font-size: $icon-md;
+                            color: $secondary-blue;
+
+                            &::before {
+                                content: '';
+                                width: 24px;
+                                height: 24px;
+                                background: $res-ms-zoom-icon no-repeat;
+                            }
+                        }
+                    }
+                }
+
+                .k-list {
+                    border: 0;
+                    box-shadow: none;
+                    padding: 0;
+                    position: relative;
+
+                    .k-list-content {
+                        max-height: 219px !important;
+                        overflow-y: auto;
+                        overflow-x: hidden;
+                        @extend %css-scrollbar;
+
+                        .k-list-ul {
+
+                            .k-list-item,
+                            >li {
+                                padding: 10px;
+                                border-radius: 0;
+                                box-shadow: none;
+                                transition: 0.3s all ease;
+                                overflow: hidden;
+                                min-width: 0;
+                                max-width: 100%;
+
+                                .#{$res-ms-prefix}-checkbox-item-inner {
+                                    min-width: 0;
+                                    max-width: 100%;
+                                    overflow: hidden;
+                                }
+
+                                .checkbox-wrapper {
+                                    min-width: 0;
+                                    max-width: 100%;
+                                    overflow: hidden;
+
+                                    label {
+                                        min-width: 0;
+                                        max-width: 100%;
+                                        overflow: hidden;
+                                        margin-right: 0;
+                                    }
+
+                                    .lbl {
+                                        min-width: 0;
+                                        flex: 1 1 auto;
+                                        overflow: hidden;
+
+                                        > span:not(.res-checkbox-icon) {
+                                            overflow: hidden;
+                                            text-overflow: ellipsis;
+                                            white-space: nowrap;
+                                            min-width: 0;
+                                            flex: 1 1 auto;
+                                            display: block;
+                                        }
+                                    }
+                                }
+
+                                &:hover:not(.click-off):not(.k-disabled),
+                                &.k-hover:not(.click-off):not(.k-disabled) {
+                                    background-color: $tertiary-blue !important;
+                                    color: $primary-black !important;
+                                }
+
+                                &.k-focus:not(.click-off):not(.k-disabled) {
+                                    background-color: $white !important;
+                                    color: $primary-black !important;
+                                    box-shadow: none;
+                                    outline: none;
+
+                                    &:hover,
+                                    &.k-hover {
+                                        background-color: $tertiary-blue !important;
+                                        color: $primary-black !important;
+                                    }
+                                }
+
+                                &.k-selected,
+                                &[aria-selected='true'] {
+                                    display: block !important;
+                                    visibility: visible !important;
+                                    box-shadow: none;
+
+                                    &:hover,
+                                    &.k-hover,
+                                    &.k-focus {
+                                        background-color: $tertiary-blue !important;
+                                        color: $primary-black !important;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+
+                .k-list-footer {
+                    @include res-ms-list-footer-styles;
+                }
+            }
+
+            &.k-list-container .k-list .k-custom-item {
+                display: none !important;
+            }
+
+            // Portaled default chip multiselect — hide already-selected rows (wrapper-scoped rule misses body portal).
+            &.k-list-container:not(.#{$res-ms-prefix}--checkbox) {
+                .k-list .k-list-content .k-list-ul {
+                    @include res-ms-list-item-styles;
+                }
+            }
+        }
+    }
+}
+
+
+// RSModal / dialog — portaled list popups must not be clipped (Kendo sets overflow:hidden inline)
+.rs-modal .k-animation-container,
+.rs-modal.show .k-animation-container,
+[role='dialog'] .k-animation-container,
+.rs-modal .rsmd-content>.k-animation-container,
+.rs-modal .modal-content>.k-animation-container,
+[role='dialog'] .modal-body>.k-animation-container {
+    overflow: visible !important;
+    z-index: 1101 !important;
+
+    .k-child-animation-container,
+    .k-popup.#{$res-ms-list-popup}.k-list-container {
+        overflow: visible !important;
+    }
+}

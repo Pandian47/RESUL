@@ -1,0 +1,68 @@
+.fcm-guidelines-modal {
+  padding: 20px 0;
+
+  .fcm-carousel-container {
+    .fcm-carousel {
+      text-align: center;
+      margin-bottom: 30px;
+
+      .fcm-image {
+        width: 100%;
+        max-height: 500px;
+        object-fit: contain;
+        border: 1px solid #e0e0e0;
+        border-radius: 8px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        background-color: #f8f9fa;
+        padding: 10px;
+        margin-bottom: 20px;
+      }
+
+      .fcm-step-info {
+        .fcm-step-title {
+          margin-top: 15px;
+          font-size: 20px;
+          font-weight: 600;
+          color: #0e68b4;
+          margin-bottom: 10px;
+        }
+
+        .fcm-step-desc {
+          margin-top: 8px;
+          font-size: 16px;
+          color: #666;
+          line-height: 1.6;
+        }
+      }
+    }
+
+    .fcm-nav {
+      margin-top: 30px;
+      padding-top: 20px;
+      border-top: 1px solid #e0e0e0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 20px;
+
+      .fcm-btn {
+        min-width: 120px;
+        
+        &:disabled {
+          opacity: 0.5;
+          cursor: not-allowed;
+        }
+      }
+
+      .fcm-indicator {
+        font-size: 16px;
+        color: #666;
+        font-weight: 500;
+        background-color: #f5f5f5;
+        padding: 8px 16px;
+        border-radius: 20px;
+        flex-shrink: 0;
+      }
+    }
+  }
+}

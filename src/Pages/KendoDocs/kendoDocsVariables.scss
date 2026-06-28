@@ -1,0 +1,116 @@
+// KendoDocs shared SCSS variables — design tokens + forwarded prefix API.
+// Prefix: kendoDocsPrefix.scss ($res-prefix) — sync with kendoDocsPrefix.config.js (RES_PREFIX).
+@forward 'kendoDocsPrefix';
+@use 'kendoDocsPrefix' as *;
+
+// ::Font family::
+$fontName: 'Mukta';
+$rs-font-thin: '#{$fontName}Thin', sans-serif;
+$rs-font-light: '#{$fontName}Light', sans-serif;
+$rs-font-regular: '#{$fontName}Regular';
+$rs-font-medium: '#{$fontName}Medium', sans-serif;
+$rs-font-semi-bold: '#{$fontName}SemiBold', sans-serif;
+$rs-font-bold: '#{$fontName}Bold', sans-serif;
+
+// ::Icon size::
+$icon-xs: 15px;
+$icon-smd: 21px;
+$icon-md: 24px;
+$icon-lg: 32px;
+$icon-xl: 45px;
+$icon-xxl: 50px;
+
+// ::Font size::
+$font-xxs: 11px;
+$font-xs: 15px;
+$font-xsm: 17px;
+$font-sm: 19px;
+$font-smd: 21px;
+$font-md: 23px;
+$font-lg: 32px;
+$font-xl: 42px;
+$font-xxl: 54px;
+
+$letterSpacing: 0.5px;
+
+// Colors
+$body-bg-color: #f5f7fc;
+$head-band-color: #00006e;
+$tooltip-bg-color: #333333;
+
+$primary-blue: #0000ff;
+$secondary_blue: #0043ff;
+$secondary-blue: #0043ff;
+$tertiary-blue: #f0f8ff;
+$quaternary-blue: #c2cfe3;
+$border-color: #aebed6;
+
+$primary-black: #111111;
+$secondary-black: #333333;
+
+$primary-grey: #666666;
+$secondary-grey: #999999;
+$tertiary-grey: #e9e9e9;
+$quaternary-grey: #f4f4f4;
+
+$primary-orange: #fc6a00;
+$secondary-orange: #fd8f40;
+$tertiary-orange: #ffb900;
+$quaternary-orange: #fd2d32;
+
+$primary-red: #ff3939;
+$secondary-red: #ffebeb;
+$tertiary-red: #ffede1;
+
+$primary-green: #5ba529;
+$secondary-green: #99cc03;
+
+$primary-btn: #005534;
+$primary-btn-hover: #026c43;
+
+$mutliSelect-chip-color: #cce9ff;
+
+$white: #ffffff;
+$black: #000000;
+
+$grey-dark: #b8b6b7;
+$grey-medium: #d1d3dc;
+$grey-light: #e8e7e9;
+
+// Scrollbar — mirrored from Styles/abstarct/_placeholder.scss (%css-scrollbar)
+%css-scrollbar {
+    @-moz-document url-prefix() {
+        scrollbar-color: $secondary-grey $tertiary-grey;
+    }
+
+    @-moz-document url-prefix() {
+        scrollbar-width: thin;
+    }
+
+    &::-webkit-scrollbar-track {
+        display: none;
+        background: transparent;
+    }
+
+    &::-webkit-scrollbar {
+        width: 5px;
+        height: 5px;
+        background-color: transparent;
+        border-radius: 3px;
+    }
+
+    &::-webkit-scrollbar-thumb {
+        background-color: transparent;
+        border-radius: 100px;
+        -webkit-border-radius: 100px;
+        -moz-border-radius: 100px;
+        cursor: pointer;
+    }
+
+    &:hover {
+        &::-webkit-scrollbar-thumb {
+            background-color: $secondary-grey;
+            border-radius: 3px;
+        }
+    }
+}

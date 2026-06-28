@@ -1,0 +1,54 @@
+$list3: regular;
+$list5: bold;
+
+@include font-face('#{$fontName}#{$list3}', '#{$fontFolder}#{$fontName}/#{$fontName}#{$list3}');
+@include font-face('#{$fontName}#{$list5}', '#{$fontFolder}#{$fontName}/#{$fontName}#{$list5}');
+
+.font-medium {
+    #{$ff}: $rs-font-medium;
+}
+.font-regular {
+    #{$ff}: $rs-font-regular;
+}
+.font-semi-bold {
+    #{$ff}: $rs-font-semi-bold;
+}
+.font-bold {
+    #{$ff}: $rs-font-bold;
+}
+// Icons sizes
+.icon-xs,
+.icon-mini {
+    font-size: $icon-xs !important;
+} // 15px
+.icon-md {
+    font-size: $icon-md !important;
+} // 24px
+.icon-lg {
+    font-size: $icon-lg !important;
+} // 32px
+.icon-xl {
+    font-size: $icon-xl !important;
+} // 45px
+.icon-xxl {
+    font-size: $icon-xxl !important;
+} // 50px
+
+
+// Icons sizes
+.icon-xs,
+.icon-mini {
+    font-size: $icon-xs !important;
+} // 15px
+.icon-md {
+    font-size: $icon-md !important;
+} // 24px
+.icon-lg {
+    font-size: $icon-lg !important;
+} // 32px
+.icon-xl {
+    font-size: $icon-xl !important;
+} // 45px
+.icon-xxl {
+    font-size: $icon-xxl !important;
+} // 50px

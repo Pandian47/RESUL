@@ -1,0 +1,1219 @@
+// ResKendoDropdown — tokens come from the shared KendoDocs variables file
+@use '../../kendoDocsVariables.scss' as *;
+
+$res-dd-zoom-icon: url('../../../../Assets/Images/svg/rs-zoom-medium.svg');
+
+// List popup open — transform only (opacity caused a flash when classes applied after open)
+@keyframes res-dd-popup-in {
+    from {
+        transform: translateY(-6px);
+    }
+
+    to {
+        transform: translateY(0);
+    }
+}
+
+@keyframes res-dd-popup-in-top {
+    from {
+        transform: translateY(6px);
+    }
+
+    to {
+        transform: translateY(0);
+    }
+}
+
+@mixin res-dd-dropdown-up-arrow {
+    position: absolute;
+    content: '';
+    width: 8px;
+    height: 8px;
+    background-color: $white;
+    transform: rotate(45deg);
+    border: 1px solid $quaternary-blue;
+    border-right: none;
+    border-bottom: none;
+    pointer-events: none;
+    z-index: 2;
+}
+
+@mixin res-dd-dropdown-down-arrow {
+    position: absolute;
+    content: '';
+    width: 8px;
+    height: 8px;
+    background-color: $white;
+    transform: rotate(225deg);
+    border: 1px solid $quaternary-blue;
+    border-right: none;
+    border-bottom: none;
+    pointer-events: none;
+    z-index: 2;
+}
+
+@mixin res-dd-scrollbar {
+    overflow-y: auto;
+    overflow-x: hidden;
+
+    &::-webkit-scrollbar-track {
+        display: none;
+        background: transparent;
+    }
+
+    &::-webkit-scrollbar {
+        width: 5px;
+        height: 5px;
+        background-color: transparent;
+        border-radius: 3px;
+    }
+
+    &::-webkit-scrollbar-thumb {
+        background-color: transparent;
+        border-radius: 100px;
+        cursor: pointer;
+    }
+
+    &:hover {
+        &::-webkit-scrollbar-thumb {
+            background-color: $secondary-grey;
+            border-radius: 3px;
+        }
+    }
+}
+
+@mixin res-dd-box-design {
+    box-shadow: 0 0 5px 0 rgb(0 0 0 / 5%), 0 0 5px 0 rgb(0 0 0 / 5%);
+    border: 1px solid $quaternary-blue;
+    border-radius: var(--globalBorderRadius, 5px);
+    background-color: $white;
+}
+
+@mixin res-dd-secondary-box-shadow {
+    box-shadow: 5px 5px 5px -5px rgb(0 0 0 / 10%), 5px 5px 5px -5px rgb(0 0 0 / 10%);
+}
+
+// Kendo list popup: .k-list-ul > .k-list-item.k-selected (portal is outside wrapper)
+@mixin res-dd-list-item-styles {
+
+    .k-list-item,
+    li.k-list-item,
+    >li {
+        font-size: $font-xsm;
+        padding: 10px;
+        box-shadow: none;
+        display: block;
+        max-width: 100%;
+        min-width: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        word-break: normal;
+        overflow-wrap: normal;
+        border-radius: 0;
+        transition: 0.3s all ease;
+
+        .list-item,
+        .k-list-item-text {
+            display: block;
+            max-width: 100%;
+            min-width: 0;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            word-break: normal;
+            overflow-wrap: normal;
+        }
+
+        .#{$res-dd-value-rows} {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            line-height: 1.3;
+            min-width: 0;
+            max-width: 100%;
+            overflow: hidden;
+
+            .#{$res-dd-sublabel} {
+                overflow: hidden;
+                text-overflow: ellipsis;
+                white-space: nowrap;
+            }
+
+            .list-item {
+                overflow: hidden;
+                text-overflow: ellipsis;
+                white-space: nowrap;
+            }
+        }
+
+        &.k-focus {
+            background-color: $white;
+            color: $primary-black;
+
+            &:hover {
+                background-color: $primary-blue;
+                ;
+                color: $white;
+                ;
+
+                i,
+                p,
+                .#{$res-dd-sublabel},
+                .text-primary-blue,
+                .color-primary-blue {
+                    color: $white !important;
+                }
+            }
+        }
+
+        &:hover,
+        &.k-hover {
+            background-color: $secondary-blue;
+            color: $white;
+            border-radius: 0;
+
+            i,
+            p,
+            .#{$res-dd-sublabel},
+            .text-primary-blue,
+            .color-primary-blue {
+                color: $white !important;
+            }
+        }
+
+        // k-focus is auto-applied by Kendo to the first item on open.
+        // Only suppress the highlight when the item is not being hovered,
+        // so the blue hover still works on the focused (first) item.
+        &.k-focus:not(:hover):not(.k-hover) {
+            background-color: transparent;
+            color: inherit;
+            box-shadow: none;
+            outline: none;
+        }
+
+        &.k-text-disabled,
+        &.k-disabled,
+        &[aria-disabled='true'] {
+            opacity: unset;
+            pointer-events: none;
+            cursor: not-allowed;
+
+            &:hover,
+            &.k-hover {
+                background-color: transparent;
+                color: inherit;
+
+                i,
+                p,
+                .#{$res-dd-sublabel} {
+                    color: inherit;
+                }
+            }
+        }
+
+        // Kendo theme keeps selected rows visible; hide them in the popup list.
+        &.k-selected,
+        &[aria-selected='true'] {
+            display: none !important;
+        }
+    }
+}
+
+
+// INPUT UI - OPEN
+
+.errorContainer .#{$res-dd-wrapper} .k-floating-label-container .k-floating-label {
+    color: $primary-red;
+}
+
+// General Kendo Dropdown Styles — scoped to ResKendoDropdown wrapper
+// $res-dd-wrapper: res-kendo-class('dd', 'menu-wrapper');
+.#{$res-dd-wrapper} {
+
+    // Field chrome — underline, value spacing, caret alignment
+    position: relative;
+    width: 100%;
+    overflow: visible;
+    >.k-animation-container {
+        width: 100% !important;
+        min-width: 0 !important;
+        max-width: 100% !important;
+        box-sizing: border-box;
+
+        .k-child-animation-container,
+        .k-popup {
+            width: 100% !important;
+            min-width: 0 !important;
+            max-width: 100% !important;
+            box-sizing: border-box;
+        }
+    }
+
+    .k-floating-label-container {
+        width: 100%;
+        font-family: $rs-font-regular;
+        padding: 0;
+        position: relative;
+        overflow: visible;
+
+        .k-dropdownlist+.k-floating-label {
+            // Kendo sets inline left during label animation
+            left: 0;
+            color: $secondary-grey;
+            font-size: $font-xxs;
+            top: -14px;
+            display: block;
+            min-width: 0;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        &.k-empty {
+            .k-floating-label {
+                font-size: $font-xsm;
+                left: 0;
+                top: 4px;
+                right: 24px;
+                width: auto;
+                max-width: calc(100% - 24px);
+            }
+        }
+
+        &.k-focus {
+            &.k-empty {
+                &:focus-within .k-floating-label {
+                    font-size: $font-xsm;
+                }
+
+                .k-floating-label {
+                    top: 4px;
+                    right: 24px;
+                    max-width: calc(100% - 24px);
+                }
+            }
+
+            &:focus-within .k-floating-label {
+                font-size: $font-xxs;
+            }
+        }
+
+        &.k-floating-label,
+        &.k-focus>.k-floating-label {
+            top: -14px;
+        }
+
+        .k-floating-label {
+            left: 0;
+            right: 0;
+            width: auto;
+            max-width: 100%;
+            min-width: 0;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            font-size: $font-xxs;
+            box-sizing: border-box;
+        }
+
+        .#{$res-dd-floating-label-text} {
+            display: block;
+            width: 100%;
+            min-width: 0;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        &.focus-visible {
+            border: none;
+            background-color: transparent;
+        }
+    }
+
+    .k-dropdownlist .k-icon-button .k-icon.k-i-caret-alt-down:before,
+    .k-dropdownlist .k-icon-button .k-icon.k-svg-i-chevron-down:before,
+    .rs-dt-arrow-icon:before {
+        content: '';
+        position: relative;
+        width: 0;
+        height: 0;
+        border-left: 6px solid transparent;
+        border-right: 6px solid transparent;
+        border-top: 7px solid $secondary-grey;
+    }
+
+    .k-dropdownlist .k-icon-button .k-icon.k-svg-i-chevron-down svg {
+        display: none;
+    }
+
+    .#{$res-dd-prefix} {
+        min-width: 80px;
+        border: none;
+    }
+
+    // Wrapper append only — avoids fighting Kendo inline positioning for body/modal portals
+
+    .res-inputIcon-wrapper {
+        position: absolute;
+        right: 21px;
+        bottom: 6px;
+        padding: 0;
+        z-index: 6;
+        line-height: 0;
+
+        .segment-loader {
+            border: 2px solid #d3d3d3;
+            border-top: 2px solid #1da7ee;
+            border-radius: 50%;
+            width: 16px;
+            height: 16px;
+            max-width: 16px;
+            max-height: 16px;
+            padding: 0;
+            animation: res-dd-spin 0.9s linear infinite;
+        }
+    }
+
+    @keyframes res-dd-spin {
+        0% {
+            transform: rotate(0deg);
+        }
+
+        100% {
+            transform: rotate(360deg);
+        }
+    }
+
+    .k-dropdownlist {
+        position: relative;
+        display: flex;
+        align-items: flex-end;
+        overflow: visible;
+        background: none;
+        border-radius: 0;
+        box-shadow: none;
+        border: 0;
+        width: 100%;
+        line-height: normal;
+        min-height: 30px;
+
+        &::after {
+            content: '';
+            position: absolute;
+            left: 0;
+            bottom: 0;
+            width: 100%;
+            height: 1px;
+            border-bottom: 1px solid $secondary-grey;
+            z-index: 3;
+            pointer-events: none;
+        }
+
+        &:hover {
+            border: none;
+            background-color: transparent;
+        }
+
+        &.k-focus {
+            box-shadow: none;
+
+        }
+
+        &.k-focus,
+        &:focus-within {
+            &::after {
+                border-bottom-color: $secondary-blue;
+                box-shadow: none;
+            }
+        }
+
+        &.#{$res-dd-prefix}-required {
+            &::before {
+                content: '';
+                width: 15px;
+                height: 1px;
+                position: absolute;
+                left: 0;
+                bottom: 0;
+                z-index: 4;
+                pointer-events: none;
+                border-bottom: 3px solid $primary-red;
+                transform: translateY(70%);
+            }
+
+            &.k-focus,
+            &:focus-within {
+                &::before {
+                    display: none;
+                }
+            }
+        }
+
+        .k-input-inner {
+            flex: 1 1 auto;
+            min-width: 0;
+            padding: 0;
+            padding-right: 4px;
+
+            .k-input-value-text {
+                font-size: $font-xsm;
+                position: relative;
+                top: 0;
+            }
+        }
+
+        .k-input-button,
+        .k-button.k-input-button,
+        .k-icon-button {
+            position: relative;
+            flex: 0 0 16px;
+            align-self: flex-end;
+            width: 16px;
+            min-width: 16px;
+            height: auto;
+            padding: 0;
+            margin: 0 0 4px;
+            justify-content: flex-end;
+            background: transparent;
+            border: none;
+            box-shadow: none;
+
+            .k-icon.k-i-caret-alt-down::before,
+            .k-icon.k-svg-i-chevron-down::before {
+                top: 2px;
+            }
+        }
+
+        &.k-disabled {
+            cursor: not-allowed;
+            opacity: unset;
+
+            .k-input-value-text,
+            .k-text-disabled {
+                cursor: not-allowed;
+            }
+        }
+    }
+
+    &.#{$res-dd-prefix}-right-align {
+
+        .k-dropdownlist,
+        .k-picker {
+            .k-input-inner {
+
+                .k-input-value-text,
+                & {
+                    text-align: right;
+                }
+            }
+
+            .k-input-button,
+            .k-button.k-input-button {
+                width: 16px;
+            }
+        }
+    }
+
+    &.#{$res-dd-prefix}-no-bottom-border {
+
+        .k-dropdownlist,
+        .k-picker {
+            border: 0;
+
+            &::after {
+                display: none;
+            }
+        }
+    }
+
+    .#{$res-dd-prefix}-required {
+        &+.k-floating-label {
+            padding-right: 10px;
+
+            &::after {
+                content: '*';
+                position: absolute;
+                right: 0;
+                color: $primary-red;
+                font-family: $rs-font-bold;
+                display: none;
+            }
+        }
+    }
+
+    &.errorContainer {
+        .k-floating-label-container .k-floating-label {
+            color: $primary-red;
+        }
+
+        .k-dropdownlist,
+        .k-picker {
+            &::after {
+                border-bottom-color: $primary-red;
+            }
+        }
+    }
+
+    // Secondary text shown inside the floating label, e.g. "Channel <sub>Batch & triggered</sub>"
+    .#{$res-dd-sub-floating-label} {
+        background: $tertiary-grey;
+        font-size: 10px;
+        color: $black;
+        padding: 1px 4px;
+        border-radius: 3px;
+        font-weight: inherit;
+        text-align: center;
+    }
+
+    .#{$res-dd-state-sublabel} {
+        .k-floating-label-container {
+            .k-dropdownlist {
+                .k-icon-button .k-icon.k-i-caret-alt-down {
+                    &::before {
+                        top: unset;
+                        bottom: -2px;
+                        position: absolute;
+                    }
+                }
+
+                .k-input-inner .#{$res-dd-value-rows} span:nth-child(2) {
+                    font-size: 17px;
+                }
+            }
+        }
+
+        &.#{$res-dd-wrapper} .k-floating-label-container>.k-floating-label {
+            top: -14px;
+        }
+
+        .#{$res-dd-value-rows} {
+            margin-bottom: 4px;
+            transition: 0.3s ease all;
+        }
+    }
+}
+
+
+.#{$res-dd-wrapper} .k-input-inner .#{$res-dd-value-rows} {
+    white-space: normal;
+    line-height: 1.3;
+}
+
+
+// ANIMATION DROPDOWN UI - OPEN
+@mixin res-ms-list-footer-styles {
+    background-color: $white;
+    border-top: 1px solid $quaternary-blue;
+
+    .#{$res-ms-prefix}-footer-add-new,
+    .rs-kendo-footer-add-new {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 8px 10px;
+        font-size: $font-xsm;
+        cursor: pointer;
+        box-sizing: border-box;
+
+        &:hover {
+            background-color: $secondary-blue;
+            color: $white;
+
+            i,
+            span,
+            .text-primary-blue,
+            .color-primary-blue {
+                color: $white !important;
+            }
+        }
+    }
+}
+
+// --- Animation container (Kendo portal popup) ---
+.k-animation-container {
+    // Must sit above grid rows, modals, and other Kendo popups
+    z-index: 1101 !important;
+    max-width: 100%;
+    min-width: 0;
+
+    .k-child-animation-container {
+        .k-list-container {
+            overflow: visible;
+
+            &.k-popup.#{$res-dd-list-popup} {
+                padding: 0;
+            }
+        }
+
+        &.k-popup.#{$res-dd-list-popup}:not(.k-menu-popup) {
+            position: relative;
+        }
+    }
+
+    .k-popup.#{$res-dd-list-popup} {
+        position: relative;
+        border: 1px solid $quaternary-blue;
+        border-radius: 5px;
+        background-color: $white;
+        margin-top: 0;
+        margin-top: 0;
+        padding: 0;
+        overflow: hidden;
+        box-shadow: 0 2px 4px #00000008, 0 4px 5px #0000000a;
+
+        .#{$res-dd-sublabel} {
+            color: $secondary-grey;
+            font-style: normal;
+            display: block;
+            line-height: 1.1;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 100%;
+            transition: 0.3s ease all;
+        }
+
+        &.kendo-list-footer-popup .k-list {
+            border-radius: 0;
+        }
+
+        .k-list-filter {
+            background: $white;
+            border: none;
+            border-radius: 5px;
+            padding: 8px 10px 0;
+            margin-bottom: 8px;
+
+            .k-searchbox {
+                padding-bottom: 5px;
+
+                &.k-input,
+                &.k-input-md,
+                &.k-input-solid {
+                    border: none;
+                    border-bottom: 1px solid $quaternary-blue !important;
+                    border-radius: 0;
+                    box-shadow: none;
+                }
+
+                &.k-input-md .k-input-inner {
+                    padding-left: 0;
+                    padding-right: 0;
+                    border: none;
+                    box-shadow: none;
+                    outline: none;
+                }
+
+                .k-i-search {
+                    order: 2;
+                    font-size: $icon-md;
+                    color: $secondary-blue;
+
+                    &::before {
+                        content: '';
+                        width: 24px;
+                        height: 24px;
+                        background: $res-dd-zoom-icon no-repeat;
+                    }
+                }
+            }
+        }
+
+        .k-list {
+            border: 0;
+            box-shadow: none;
+            border-radius: 0;
+            border-radius: 0 0 5px 5px;
+
+            .k-list-content {
+                max-height: 219px !important;
+                max-width: 100%;
+                min-width: 0;
+                overflow-x: hidden;
+                @include res-dd-scrollbar;
+
+                .k-list-ul {
+                    min-width: 0;
+                    max-width: 100%;
+
+                    .k-list-item,
+                    li {
+                        .list-item {
+                            line-height: 1;
+
+                            .k-list-item-text {
+                                display: block;
+                                max-width: 100%;
+                                min-width: 0;
+                                overflow: hidden;
+                                text-overflow: ellipsis;
+                                white-space: nowrap;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        // Dropdown list popup only — multiselect uses k-list-container on the same node.
+        .k-list .k-list-content .k-list-ul {
+            @include res-dd-list-item-styles;
+        }
+
+        .k-list-footer {
+            background-color: $white;
+            border-top: 1px solid $quaternary-blue;
+            border-radius: 0 0 5px 5px;
+            overflow: hidden;
+
+            .tsh-icon-with-label,
+            .#{$res-dd-prefix}-footer-add-new,
+            .rs-kendo-footer-add-new {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                padding: 5px 10px;
+                font-size: $font-xsm;
+                cursor: pointer;
+                box-sizing: border-box;
+                transition: 0.3s all ease;
+
+                i {
+                    color: $primary-blue;
+                    transition: 0.3s all ease;
+                }
+
+                &:hover {
+                    background-color: $secondary-blue;
+                    color: $white;
+
+                    span,
+                    i,
+                    .text-primary-blue,
+                    .color-primary-blue {
+                        color: $white !important;
+                        transition: 0.3s all ease;
+                    }
+                }
+            }
+
+            .#{$res-dd-prefix}-footer-add-new,
+            .rs-kendo-footer-add-new {
+                padding: 8px 10px;
+            }
+        }
+
+        &.k-slide-up-enter {
+            margin-top: 0;
+        }
+    }
+
+    .k-popup.#{$res-dd-list-popup} {
+
+        .k-list.k-list-md,
+        .k-list {
+            .k-list-content .k-list-ul {
+                @include res-dd-list-item-styles;
+            }
+        }
+    }
+
+    .k-popup.#{$res-dd-list-popup}.k-menu-popup.addImportAudienceDropdownContainer {
+        padding: 0;
+        min-width: 40px;
+
+        &.k-child-animation-container::before {
+            @include res-dd-dropdown-up-arrow;
+            top: 1px;
+            left: 6px;
+        }
+
+        ul.k-menu-group .k-menu-item .k-link {
+            padding: 10px;
+            font-size: 24px;
+        }
+    }
+
+    // Portaled list popup — search + empty state + open animation
+    .k-popup.#{$res-dd-list-popup} {
+        transform-origin: top center;
+
+        // &.k-slide-up-enter,
+        // &.k-slide-down-enter {
+        //     // animation: res-dd-popup-in 160ms cubic-bezier(0.16, 1, 0.3, 1) both;
+        // }
+
+        .k-list-filter {
+
+            .k-searchbox,
+            .k-input.k-searchbox {
+                border: none;
+            }
+
+            .k-input-inner {
+                border: none;
+                box-shadow: none;
+                outline: none;
+                margin-right: 33px;
+                font-size: 17px;
+            }
+
+            input.k-input-inner::placeholder {
+                color: #666666;
+            }
+        }
+
+        .k-list-content .k-list-ul {
+            gap: 0;
+
+            .k-list-item:hover,
+            .k-list-item.k-hover {
+                border-radius: 0;
+            }
+        }
+    }
+}
+
+
+// Popup border tip — enabled via isShowBordertip (applies res-kendo-dd-bordertip on animation container)
+.k-animation-container.#{$res-dd-bordertip} {
+    overflow: visible !important;
+
+    .k-child-animation-container {
+        overflow: visible !important;
+    }
+
+    &.showing-below {
+
+        .k-popup,
+        .k-popup.k-list-container {
+            overflow: visible !important;
+            margin-top: 4px;
+            position: relative;
+
+            &::before {
+                @include res-dd-dropdown-up-arrow;
+                top: -5px;
+                left: 50%;
+                margin-left: -4px;
+            }
+        }
+    }
+
+    &.showing-top {
+
+        .k-popup,
+        .k-popup.k-list-container {
+            overflow: visible !important;
+            margin-bottom: 4px;
+            position: relative;
+
+            &::before {
+                @include res-dd-dropdown-down-arrow;
+                bottom: -5px;
+                left: 50%;
+                margin-left: -4px;
+            }
+        }
+    }
+
+    // Narrow icon-only popups (e.g. play / pause / stop listing control)
+    .k-popup.listing-play-pause-dropdown {
+        width: 48px !important;
+        min-width: 48px !important;
+        max-width: 48px !important;
+
+        .k-list .k-list-content .k-list-ul {
+
+            .k-list-item,
+            li {
+                padding: 6px 0;
+                text-align: center;
+                justify-content: center;
+
+                .rs-tooltip-wrapper {
+                    line-height: 0;
+                }
+            }
+        }
+    }
+}
+
+// Wrapper flag — keeps portaled popup unclipped for border tip hosts
+.#{$res-dd-wrapper}.#{$res-dd-bordertip} {
+    overflow: visible;
+}
+
+
+// RSModal / dialog / grid — list popups must not be clipped (Kendo sets overflow:hidden inline)
+.rs-modal .k-animation-container,
+.rs-modal.show .k-animation-container,
+[role='dialog'] .k-animation-container,
+.rs-modal .rsmd-content>.k-animation-container,
+.rs-modal .modal-content>.k-animation-container,
+[role='dialog'] .modal-body>.k-animation-container {
+    overflow: visible !important;
+    z-index: 1101 !important;
+
+    .k-child-animation-container,
+    .k-popup.k-list-container.#{$res-dd-list-popup} {
+        overflow: visible !important;
+    }
+}
+
+// RSModal — popup appends to .rsmd-content (direct child), not inside the overflow:hidden height wrapper
+.rs-modal .rsmd-content,
+.rs-modal .modal-content,
+.modal.show .rsmd-content,
+.modal.show .modal-content {
+    position: relative;
+    overflow: visible !important;
+
+    >.k-animation-container {
+        overflow: visible !important;
+        z-index: 1101 !important;
+        animation: none !important;
+        transform: none !important;
+
+        &,
+        .k-child-animation-container,
+        .k-popup {
+            animation: none !important;
+            transform: none !important;
+        }
+
+        .k-child-animation-container,
+        .k-popup.#{$res-dd-list-popup},
+        .k-popup.k-list-container.#{$res-dd-list-popup},
+        .k-popup {
+            overflow: visible !important;
+        }
+    }
+}
+
+.rs-modal .k-animation-container,
+.rs-modal.show .k-animation-container,
+[role='dialog'] .k-animation-container {
+    overflow: visible !important;
+    z-index: 1101 !important;
+    animation: none !important;
+    transform: none !important;
+}
+
+.rs-modal .rsmdc-body,
+.rs-modal .modal-body,
+.modal.show .modal-body {
+    overflow: visible;
+}
+
+.k-grid td .#{$res-dd-wrapper},
+.rs-modal .k-grid td .#{$res-dd-wrapper} {
+    overflow: visible;
+    position: relative;
+}
+
+// Add Import Audience mapping grid — header dropdown label + duplicate-error UI
+.addImportAudienceMapAttributes {
+    .addImportAudienceDropdown {
+        .#{$res-dd-wrapper}.add-import-audience-header-dd {
+            &:not(.add-import-audience-header-dd--duplicate-error) {
+                .k-floating-label-container {
+
+                    .k-dropdownlist+.k-floating-label,
+                    .k-picker+.k-floating-label,
+                    >.k-label,
+                    >.k-floating-label,
+                    &.k-empty>.k-label,
+                    &.k-empty>.k-floating-label,
+                    &.k-focus>.k-label,
+                    &.k-focus>.k-floating-label,
+                    &:focus-within>.k-label,
+                    &:focus-within>.k-floating-label {
+                        color: $white !important;
+                        -webkit-text-fill-color: $white;
+                    }
+                }
+            }
+
+            &.add-import-audience-header-dd--duplicate-error {
+                .k-floating-label-container {
+
+                    .k-dropdownlist+.k-floating-label,
+                    .k-picker+.k-floating-label,
+                    >.k-label,
+                    >.k-floating-label,
+                    &.k-empty>.k-label,
+                    &.k-empty>.k-floating-label,
+                    &.k-focus>.k-label,
+                    &.k-focus>.k-floating-label,
+                    &:focus-within>.k-label,
+                    &:focus-within>.k-floating-label {
+                        color: $primary-red !important;
+                        -webkit-text-fill-color: $primary-red;
+                        background-color: $white;
+                        left: 0 !important;
+                        right: 24px;
+                        width: auto;
+                        max-width: calc(100% - 24px);
+                        padding: 5px;
+                        border-radius: 2px;
+                        white-space: nowrap;
+                        overflow: hidden;
+                        text-overflow: ellipsis;
+                        font-size: $font-xxs;
+                        top: 4px;
+                        margin-top: -2px;
+                        box-sizing: border-box;
+                    }
+
+                    .#{$res-dd-floating-label-text},
+                    .add-import-audience-header-dd__error-message {
+                        display: block;
+                        width: 100%;
+                        min-width: 0;
+                        overflow: hidden;
+                        text-overflow: ellipsis;
+                        white-space: nowrap;
+                    }
+                }
+
+                .k-dropdownlist,
+                .k-picker {
+                    color: $primary-red;
+                    background: transparent !important;
+                    border: 0 !important;
+                    box-shadow: none !important;
+
+                    &::after {
+                        border-bottom-color: $white !important;
+                    }
+
+                    .k-input-inner,
+                    .k-input-value-text,
+                    .k-input-inner .k-input-value-text {
+                        color: $primary-red !important;
+                    }
+
+                    .k-input-button,
+                    .k-button.k-input-button,
+                    .k-icon-button {
+                        background: transparent !important;
+                        box-shadow: none !important;
+
+                        .k-icon.k-i-caret-alt-down::before,
+                        .k-icon.k-svg-i-chevron-down::before,
+                        .rs-dt-arrow-icon::before {
+                            border-top-color: $white !important;
+                            color: $white;
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    // Header hover reveals remove control — keep duplicate-error label inside dropdown bounds
+    .k-grid-header tr th:hover {
+        .addImportAudienceDropdown {
+            .#{$res-dd-wrapper}.add-import-audience-header-dd--duplicate-error {
+                .k-floating-label-container {
+
+                    .k-dropdownlist+.k-floating-label,
+                    .k-picker+.k-floating-label,
+                    >.k-label,
+                    >.k-floating-label,
+                    &.k-empty>.k-label,
+                    &.k-empty>.k-floating-label,
+                    &.k-focus>.k-label,
+                    &.k-focus>.k-floating-label,
+                    &:focus-within>.k-label,
+                    &:focus-within>.k-floating-label {
+                        left: 0 !important;
+                        right: 24px;
+                        max-width: calc(100% - 24px);
+                    }
+                }
+            }
+        }
+    }
+}
+
+// MDC canvas header — template list popup
+// DOM: .k-animation-container > .k-child-animation-container > .k-popup.mdc-template-list
+.k-animation-container:has(.k-popup.mdc-template-list) {
+    min-width: 230px !important;
+    width: auto !important;
+    max-width: none !important;
+    overflow: visible !important;
+    margin-left: -190px;
+    margin-top: 8px;
+
+    &::before {
+        @include res-dd-dropdown-up-arrow;
+        top: -5px;
+        right: 13px;
+        border-color: #c2cfe3;
+    }
+
+    .k-child-animation-container {
+        min-width: 200px !important;
+        width: auto !important;
+        max-width: none !important;
+        overflow: visible;
+    }
+}
+
+.#{$res-dd-wrapper} > .k-animation-container:has(.k-popup.mdc-template-list) {
+    min-width: 230px !important;
+    width: auto !important;
+    max-width: none !important;
+
+    .k-child-animation-container,
+    .k-popup.mdc-template-list {
+        min-width: 230px !important;
+        width: 230px !important;
+        max-width: none !important;
+    }
+}
+
+.k-popup.#{$res-dd-list-popup}.mdc-template-list {
+    min-width: 230px !important;
+    width: 230px !important;
+    max-width: none !important;
+    border: 1px solid #c2cfe3;
+    border-radius: 5px;
+    box-shadow: 0 0 5px 0 rgba(0, 0, 0, 0.05), 0 0 5px 0 rgba(0, 0, 0, 0.05) !important;
+
+    .k-list-filter {
+        background: $white;
+        border-radius: 5px 5px 0 0;
+        padding: 10px 10px 0;
+        margin-bottom: 0;
+
+        .k-searchbox {
+            border-bottom: 1px solid #c2cfe3;
+            padding-bottom: 5px;
+        }
+    }
+
+    .k-list {
+        border: 0 !important;
+        box-shadow: none !important;
+        border-radius: 0 !important;
+
+        .k-list-content {
+            max-height: 222px !important;
+
+            .k-list-ul .k-list-item {
+                padding: 5px 10px;
+            }
+        }
+    }
+
+    .k-list-footer {
+        background-color: $white;
+        border-top: 1px solid #c2cfe3;
+    }
+}

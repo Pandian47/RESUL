@@ -1,0 +1,453 @@
+{
+    "components": [
+        {
+            "id": "ab7e4bd4-a6f9-43a0-8f17-6c92173196f3",
+            "type": "block",
+            "position": { "x": 272.20001220703125, "y": 0 },
+            "size": { "width": 1880, "height": 1040 },
+            "content": null,
+            "style": {
+                "fontFamily": "Arial, sans-serif",
+                "fontSize": 11,
+                "lineHeight": 1.5,
+                "color": "#000000",
+                "backgroundColor": "transparent",
+                "columnWidths": [600],
+                "columnGap": 0
+            },
+            "subType": "layout-1",
+            "zIndex": 1,
+            "rotation": 0,
+            "locked": false,
+            "order": 0,
+            "blocks": {
+                "ab7e4bd4-a6f9-43a0-8f17-6c92173196f3-0": [
+                    {
+                        "id": "c0555677-a07d-425e-91f3-02edc119d76d",
+                        "type": "imageText",
+                        "position": { "x": 0, "y": 20 },
+                        "size": { "width": 600, "height": "auto" },
+                        "content": {
+                            "text": "This text will appear alongside your image. You can customize the layout, styling, and content to match your needs.",
+                            "imageUrl": "https://runwiz.resul.io//Uploads/wtK/1/ebuilder/261125143912401_28600x175.jpg",
+                            "imageAlt": ""
+                        },
+                        "style": {
+                            "enableContent": false,
+                            "wrapperLayout": "image-left",
+                            "imageWidth": 600,
+                            "imageHeight": "auto",
+                            "objectFit": "contain",
+                            "maintainAspectRatio": false,
+                            "imageAlign": "center",
+                            "imageBorderRadius": 0,
+                            "fontFamily": "Arial, sans-serif",
+                            "fontSize": 11,
+                            "lineHeight": 1.5,
+                            "textColor": "#000000",
+                            "titleColor": "#000000",
+                            "textAlign": "left",
+                            "backgroundColor": "transparent",
+                            "paddingControl": {
+                                "all": 10,
+                                "top": 10,
+                                "right": 10,
+                                "bottom": 10,
+                                "left": 10,
+                                "isCustomPadding": false
+                            },
+                            "customBorder": false,
+                            "userWidth": false,
+                            "borderRadiusControl": {
+                                "all": 20,
+                                "topLeft": 20,
+                                "topRight": 20,
+                                "bottomRight": 20,
+                                "bottomLeft": 20,
+                                "isCustomRadius": false
+                            }
+                        },
+                        "subType": "",
+                        "parentId": "ab7e4bd4-a6f9-43a0-8f17-6c92173196f3",
+                        "columnIndex": 0,
+                        "zIndex": 0,
+                        "rotation": 0,
+                        "locked": false
+                    }
+                ]
+            },
+            "rowId": "row-1"
+        },
+        {
+            "id": "299a9386-48a2-461c-9f5b-f9de0ed0d1b5",
+            "type": "block",
+            "position": { "x": 272.20001220703125, "y": 120 },
+            "size": { "width": 1880, "height": 1040 },
+            "content": null,
+            "style": {
+                "fontFamily": "Arial, sans-serif",
+                "fontSize": 11,
+                "lineHeight": 1.5,
+                "color": "#000000",
+                "backgroundColor": "transparent",
+                "responsive": true
+            },
+            "subType": "layout-2",
+            "zIndex": 2,
+            "rotation": 0,
+            "locked": false,
+            "order": 1,
+            "blocks": {
+                "299a9386-48a2-461c-9f5b-f9de0ed0d1b5-0": [
+                    {
+                        "id": "5f097177-63ab-4344-bea2-35b4f5b2ec43",
+                        "type": "imageText",
+                        "position": { "x": -150, "y": 20 },
+                        "size": { "width": 600, "height": "auto" },
+                        "content": {
+                            "text": "This text will appear alongside your image. You can customize the layout, styling, and content to match your needs.",
+                            "imageUrl": "https://runwiz.resul.io//Uploads/wtK/1/ebuilder/261125143912246_27280x150_2.jpg",
+                            "imageAlt": ""
+                        },
+                        "style": {
+                            "enableContent": false,
+                            "wrapperLayout": "image-left",
+                            "imageWidth": 280,
+                            "imageHeight": "auto",
+                            "objectFit": "contain",
+                            "maintainAspectRatio": false,
+                            "imageAlign": "center",
+                            "imageBorderRadius": 0,
+                            "fontFamily": "Arial, sans-serif",
+                            "fontSize": 11,
+                            "lineHeight": 1.5,
+                            "textColor": "#000000",
+                            "titleColor": "#000000",
+                            "textAlign": "left",
+                            "backgroundColor": "transparent",
+                            "paddingControl": {
+                                "all": 10,
+                                "top": 10,
+                                "right": 10,
+                                "bottom": 10,
+                                "left": 10,
+                                "isCustomPadding": false
+                            },
+                            "customBorder": false,
+                            "userWidth": false,
+                            "borderRadiusControl": {
+                                "all": 10,
+                                "topLeft": 10,
+                                "topRight": 10,
+                                "bottomRight": 10,
+                                "bottomLeft": 10,
+                                "isCustomRadius": false
+                            }
+                        },
+                        "subType": "",
+                        "parentId": "299a9386-48a2-461c-9f5b-f9de0ed0d1b5",
+                        "columnIndex": 0,
+                        "zIndex": 0,
+                        "rotation": 0,
+                        "locked": false
+                    }
+                ],
+                "299a9386-48a2-461c-9f5b-f9de0ed0d1b5-1": [
+                    {
+                        "id": "71d44237-02a1-4d5a-9fd5-2c4b5bbca951",
+                        "type": "text",
+                        "position": { "x": -150, "y": 20 },
+                        "size": { "width": 600, "height": "auto" },
+                        "content": "Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book.",
+                        "style": {
+                            "fontFamily": "Arial, sans-serif",
+                            "fontSize": 11,
+                            "lineHeight": 1.5,
+                            "color": "#000000",
+                            "backgroundColor": "transparent",
+                            "textAlign": "justify",
+                            "paddingControl": {
+                                "all": 10,
+                                "top": 10,
+                                "right": 10,
+                                "bottom": 10,
+                                "left": 10,
+                                "isCustomPadding": false
+                            }
+                        },
+                        "subType": "",
+                        "parentId": "299a9386-48a2-461c-9f5b-f9de0ed0d1b5",
+                        "columnIndex": 1,
+                        "zIndex": 0,
+                        "rotation": 0,
+                        "locked": false
+                    }
+                ]
+            },
+            "rowId": "row-1"
+        },
+        {
+            "id": "75429860-6656-4ec8-9dab-8529ab2d22cc",
+            "type": "block",
+            "position": { "x": 292.20001220703125, "y": 140 },
+            "size": { "width": 1880, "height": 1040 },
+            "content": null,
+            "style": {
+                "fontFamily": "Arial, sans-serif",
+                "fontSize": 11,
+                "lineHeight": 1.5,
+                "color": "#000000",
+                "backgroundColor": "transparent",
+                "responsive": true
+            },
+            "subType": "layout-2",
+            "zIndex": 4,
+            "rotation": 0,
+            "locked": false,
+            "order": 2,
+            "blocks": {
+                "75429860-6656-4ec8-9dab-8529ab2d22cc-0": [
+                    {
+                        "id": "d9ee3b66-8d67-4632-9483-312f6a25e65f",
+                        "type": "imageText",
+                        "position": { "x": -150, "y": 20 },
+                        "size": { "width": 600, "height": "auto" },
+                        "content": {
+                            "text": "This text will appear alongside your image. You can customize the layout, styling, and content to match your needs.",
+                            "imageUrl": "https://runwiz.resul.io//Uploads/Pp0/1/ebuilder/041225085211547_0280x150.jpg",
+                            "imageAlt": ""
+                        },
+                        "style": {
+                            "enableContent": false,
+                            "wrapperLayout": "image-left",
+                            "imageWidth": 280,
+                            "imageHeight": "auto",
+                            "objectFit": "contain",
+                            "maintainAspectRatio": false,
+                            "imageAlign": "center",
+                            "imageBorderRadius": 0,
+                            "fontFamily": "Arial, sans-serif",
+                            "fontSize": 11,
+                            "lineHeight": 1.5,
+                            "textColor": "#000000",
+                            "titleColor": "#000000",
+                            "textAlign": "left",
+                            "backgroundColor": "transparent",
+                            "paddingControl": {
+                                "all": 10,
+                                "top": 10,
+                                "right": 10,
+                                "bottom": 10,
+                                "left": 10,
+                                "isCustomPadding": false
+                            },
+                            "customBorder": false,
+                            "userWidth": false,
+                            "borderRadiusControl": {
+                                "all": 10,
+                                "topLeft": 10,
+                                "topRight": 10,
+                                "bottomRight": 10,
+                                "bottomLeft": 10,
+                                "isCustomRadius": false
+                            }
+                        },
+                        "subType": "",
+                        "parentId": "75429860-6656-4ec8-9dab-8529ab2d22cc",
+                        "columnIndex": 0,
+                        "zIndex": 0,
+                        "rotation": 0,
+                        "locked": false
+                    }
+                ],
+                "75429860-6656-4ec8-9dab-8529ab2d22cc-1": [
+                    {
+                        "id": "dfc57c66-1deb-431f-9c83-2291cb7d8f81",
+                        "type": "text",
+                        "position": { "x": -150, "y": 20 },
+                        "size": { "width": 600, "height": "auto" },
+                        "content": "Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book.",
+                        "style": {
+                            "fontFamily": "Arial, sans-serif",
+                            "fontSize": 11,
+                            "lineHeight": 1.5,
+                            "color": "#000000",
+                            "backgroundColor": "transparent",
+                            "textAlign": "justify",
+                            "paddingControl": {
+                                "all": 10,
+                                "top": 10,
+                                "right": 10,
+                                "bottom": 10,
+                                "left": 10,
+                                "isCustomPadding": false
+                            }
+                        },
+                        "subType": "",
+                        "parentId": "75429860-6656-4ec8-9dab-8529ab2d22cc",
+                        "columnIndex": 1,
+                        "zIndex": 0,
+                        "rotation": 0,
+                        "locked": false
+                    }
+                ]
+            },
+            "rowId": "row-1"
+        },
+        {
+            "id": "7ea3450d-a23d-4198-a8f8-bd71424cf98c",
+            "type": "social",
+            "position": { "x": 272.20001220703125, "y": 240 },
+            "size": { "width": 200, "height": 100 },
+            "content": {
+                "links": {
+                    "facebook": {
+                        "0": "h",
+                        "1": "t",
+                        "2": "t",
+                        "3": "p",
+                        "4": "s",
+                        "5": ":",
+                        "6": "/",
+                        "7": "/",
+                        "8": "f",
+                        "9": "a",
+                        "10": "c",
+                        "11": "e",
+                        "12": "b",
+                        "13": "o",
+                        "14": "o",
+                        "15": "k",
+                        "16": ".",
+                        "17": "c",
+                        "18": "o",
+                        "19": "m",
+                        "url": "https://facebook.com"
+                    },
+                    "x": {
+                        "0": "h",
+                        "1": "t",
+                        "2": "t",
+                        "3": "p",
+                        "4": "s",
+                        "5": ":",
+                        "6": "/",
+                        "7": "/",
+                        "8": "t",
+                        "9": "w",
+                        "10": "i",
+                        "11": "t",
+                        "12": "t",
+                        "13": "e",
+                        "14": "r",
+                        "15": ".",
+                        "16": "c",
+                        "17": "o",
+                        "18": "m",
+                        "url": "https://x.com"
+                    },
+                    "instagram": {
+                        "0": "h",
+                        "1": "t",
+                        "2": "t",
+                        "3": "p",
+                        "4": "s",
+                        "5": ":",
+                        "6": "/",
+                        "7": "/",
+                        "8": "i",
+                        "9": "n",
+                        "10": "s",
+                        "11": "t",
+                        "12": "a",
+                        "13": "g",
+                        "14": "r",
+                        "15": "a",
+                        "16": "m",
+                        "17": ".",
+                        "18": "c",
+                        "19": "o",
+                        "20": "m",
+                        "url": "https://instagram.com"
+                    },
+                    "linkedin": {
+                        "0": "h",
+                        "1": "t",
+                        "2": "t",
+                        "3": "p",
+                        "4": "s",
+                        "5": ":",
+                        "6": "/",
+                        "7": "/",
+                        "8": "l",
+                        "9": "i",
+                        "10": "n",
+                        "11": "k",
+                        "12": "e",
+                        "13": "d",
+                        "14": "i",
+                        "15": "n",
+                        "16": ".",
+                        "17": "c",
+                        "18": "o",
+                        "19": "m",
+                        "url": "https://linkedin.com"
+                    }
+                }
+            },
+            "style": {
+                "iconSize": 24,
+                "iconColor": "#666666",
+                "spacing": 16,
+                "alignment": "center",
+                "paddingControl": {
+                    "all": 10,
+                    "top": 10,
+                    "right": 10,
+                    "bottom": 10,
+                    "left": 10,
+                    "isCustomPadding": false
+                },
+                "socialValid": true
+            },
+            "subType": "",
+            "zIndex": 3,
+            "rotation": 0,
+            "locked": false,
+            "order": 3,
+            "blocks": {},
+            "rowId": "row-1"
+        }
+    ],
+    "settings": {
+        "layout": "web",
+        "backgroundColor": "transparent",
+        "showGrid": true,
+        "gridSize": 15,
+        "snapToGrid": false,
+        "enableGuides": true,
+        "width": 1920,
+        "height": 1080,
+        "style": {
+            "emptyCanvas": false,
+            "emptyContentValid": true,
+            "backgroundColor": "transparent",
+            "mobileResponsive": true,
+            "contentBackgroundColor": "transparent",
+            "containerBackgroundColor": "transparent"
+        }
+    },
+    "rows": [
+        {
+            "id": "row-1",
+            "order": 0,
+            "components": [
+                "ab7e4bd4-a6f9-43a0-8f17-6c92173196f3",
+                "299a9386-48a2-461c-9f5b-f9de0ed0d1b5",
+                "75429860-6656-4ec8-9dab-8529ab2d22cc",
+                "7ea3450d-a23d-4198-a8f8-bd71424cf98c"
+            ]
+        }
+    ],
+    "FilePath": ""
+}

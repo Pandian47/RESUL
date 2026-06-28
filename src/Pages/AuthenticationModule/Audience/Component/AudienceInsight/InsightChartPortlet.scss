@@ -1,0 +1,11 @@
+// Scoped to Audience Insight charts only (InsightChartPortlet).
+.rs-audience-insight-chart--clock-gauge {
+    .guageclock {
+        background-image: url(Assets/Images/new_clock.svg);
+        width: 200px;
+        height: 200px;
+        background-repeat: no-repeat;
+        background-size: contain;
+        margin: 0 auto;
+    }
+}

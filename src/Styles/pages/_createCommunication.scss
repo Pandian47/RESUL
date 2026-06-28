@@ -1,0 +1,212 @@
+.campaign-lists {
+    li {
+        width: 100%;
+        position: relative;
+        &:before {
+            @include abs-position($contentcommon: '', $position: absolute, $left: 0, $top: 0, $bottom: 0);
+            width: 1px;
+            background-color: $tertiary-grey;
+        }
+        &:first-child:before {
+            content: inherit;
+        }
+    }
+    small {
+        font-size: $font-smd;
+        padding: 0 5px 0 0;
+    }
+    h1{
+        font-size: $font-md;
+        font-family: $rs-font-semi-bold;
+        margin-top: 5px;
+       }
+}
+.predictive_analysis_list {
+    border: 1px solid $quaternary-blue;
+    padding: 5px;
+    border-radius: var(--borderRadiusTabDropMenu);
+    // background: $tertiary-blue;
+    // padding: 15px;
+    p{
+        padding: 5px;
+        &:nth-child(even){
+          background: $tertiary-blue;
+        }
+      }
+    h4 {
+        margin: 0 0 15px 0;
+    }
+    ul {
+        margin-left: 30px;
+
+        li {
+            padding: 5px 10px;
+            list-style-type: disc;
+        }
+    }
+}
+.approval_list {
+    h4 {
+        margin: 0;
+    }
+    padding-bottom: 15px;
+    margin-bottom: 15px;
+    border-bottom: 1px solid $tertiary-grey;
+    span {
+        font-size: $font-xs;
+    }
+    &:last-child {
+        border: none;
+    }
+}
+.progress-reach {
+    width: 75%;
+    margin: 0 auto 17px auto;
+    .k-progressbar-horizontal {
+        height: 30px;
+    }
+}
+
+.fieldTracking:hover {
+    border: 2px dashed #ff0000;
+}
+.fieldTrackingClick {
+    border: 2px dashed #ff0000;
+}
+.fieldTrackingSelect {
+    border: 2px dashed #0f0;
+}
+
+.execute-list-footer {
+    li {
+      padding: 0 25px !important;
+      position: relative;
+      &::before {
+        content: "";
+        position: absolute;
+        right: 0;
+        width: 1px;
+        background: $tertiary-grey;
+        top: 0;
+        bottom: 0;
+        // transform: translateY(-50%);
+      }
+      &:last-child {
+        &::before {
+          content: none;
+        }
+      }
+    }
+  }
+
+.calculateROI {
+    input[type="range"]{
+        padding: 0;
+    }
+    .rs-input-wrapper:not(.calculate-roi-metric-input) {
+        input:placeholder-shown:not(:focus) + label {
+            left: 15px;
+        }
+    }
+    .rs-input-wrapper {
+        input[name='primarygoalValue']:placeholder-shown + label {
+            left: 0;
+        }
+        input:focus + label {
+            left: 0px;
+        }
+    }
+}
+  .Schedule-date{
+/* [Kendo disabled]
+    .k-datetime-wrap .k-datetime-buttongroup{
+        padding: 5px 5px 0 5px;
+    }
+*/
+/* [Kendo disabled]
+    .k-calendar-infinite .k-calendar-header{
+        padding: 8px 16px 0 16px;
+    }
+*/
+/* [Kendo disabled]
+    .k-datetime-footer.k-actions{
+        margin-top: 0 !important;
+    }
+*/
+/* [Kendo disabled]
+    .k-calendar-view.k-calendar-view{
+        height: 260px  !important;
+        margin-bottom: 0 !important;
+        margin-top: 0;
+    }
+*/
+/* [Kendo disabled]
+    .k-datetime-calendar-wrap, .k-datetime-time-wrap {
+        height: 235px;
+    }
+*/
+/* [Kendo disabled]
+    .k-time-list-container {
+        height: 150px;
+        .k-time-highlight{
+                top: calc(67% + 9px);
+        }
+        .k-time-separator{
+                top: 32px;
+        }
+    }
+*/
+/* [Kendo disabled]
+    .k-time-container > ul, .k-time-list-content > ul {
+        transform: translateY(79px) !important;
+    }
+*/
+}
+// .timezone{
+//     .k-list-filter{
+//         background-color: $white;
+//         // border: 1px solid $quaternary-blue;
+//     }
+//     .k-list.k-list-md{
+//         border-top: 0 !important;
+//         box-shadow: none !important;
+//     }
+// }
+
+.referenceModal {
+/* [Kendo disabled]
+    .rs-kendo-dropdownmenu-wrapper .k-floating-label-container.k-empty > .k-floating-label {
+        padding-right: 20px;
+    }
+*/
+}
+
+.splitab-expirydropdown {
+/* [Kendo disabled]
+    .rs-kendo-dropdownmenu-wrapper {
+        z-index: 2;
+    }
+*/
+}
+
+.voice-tag-list {
+/* [Kendo disabled]
+    .rs-kendo-multi-dropdownmenu-wrapper {
+        .rskmd-arrow,
+        .k-chip-actions {
+            display: none;
+        }
+    }
+*/
+}
+
+li.template-category-multidropdown {
+    &.communication {
+/* [Kendo disabled]
+        .rs-kendo-multi-dropdownmenu-wrapper {
+            min-height: 26px;
+            height: auto;
+        }
+*/
+    }
+}

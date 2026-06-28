@@ -1,0 +1,58 @@
+@-webkit-keyframes dashdraw { from { stroke-dashoffset: 10; } }
+@keyframes dashdraw { from { stroke-dashoffset: 10; } }
+.sankey-chart-container g.highcharts-series.highcharts-sankey-series.highcharts-tracker.highcharts-series-hover path.highcharts-link.highcharts-point.highcharts-point-hover {
+     stroke-dasharray: 5;
+     -webkit-animation: dashdraw 0.9s linear infinite;
+     animation: dashdraw 0.9s linear infinite;
+}
+// .chart-line-animate g.highcharts-series.highcharts-series-hover {
+//   @if $chart-animate == true {
+//     stroke-dasharray: 5;
+//     -webkit-animation: dashdraw 0.9s linear infinite;
+//     animation: dashdraw 0.9s linear infinite;
+//   }
+// }
+
+
+// BUBBLE CHART CUSTOM
+/* mon */
+.bubble-audience-behaviour .highcharts-root .highcharts-series-group .highcharts-series.highcharts-series-2 { transform: translate(-20px, -10px) !important;; }
+.bubble-audience-behaviour .highcharts-data-labels.highcharts-series-2 { transform: translate(10px, -5px); margin-left: -10px; }
+/* tue */
+.bubble-audience-behaviour .highcharts-root .highcharts-series-group .highcharts-series.highcharts-series-1 { transform: translate(50px, -90px); }
+.bubble-audience-behaviour .highcharts-data-labels.highcharts-series-1 { transform: translate(50px, -90px); margin-left: -10px; }
+/* wed */
+.bubble-audience-behaviour .highcharts-root .highcharts-series-group .highcharts-series.highcharts-series-0 { transform: translate(100px, 110px); }
+.bubble-audience-behaviour .highcharts-data-labels.highcharts-series-0 { transform: translate(100px, 110px); margin-left: -10px; }
+/* thu */
+.bubble-audience-behaviour .highcharts-root .highcharts-series-group .highcharts-series.highcharts-series-4 { transform: translate(260px, 100px); }
+.bubble-audience-behaviour .highcharts-data-labels.highcharts-series-4 { transform: translate(260px, 90px); margin-left: -10px; }
+/* fri */
+.bubble-audience-behaviour .highcharts-root .highcharts-series-group .highcharts-series.highcharts-series-6 { transform: translate(-120px, 40px); }
+.bubble-audience-behaviour .highcharts-data-labels.highcharts-series-6 { transform: translate(-120px, 30px); margin-left: -10px; }
+/* sat */
+.bubble-audience-behaviour .highcharts-root .highcharts-series-group .highcharts-series.highcharts-series-3 { transform: translate(-210px, 0px); }
+.bubble-audience-behaviour .highcharts-data-labels.highcharts-series-3 { transform: translate(-210px, -10px); margin-left: -10px; }
+/* sun */
+.bubble-audience-behaviour .highcharts-root .highcharts-series-group .highcharts-series.highcharts-series-5 { transform: translate(-180px, 30px); }
+.bubble-audience-behaviour .highcharts-data-labels.highcharts-series-5 { transform: translate(-180px, 20px); margin-left: -10px; }
+/* mon */
+.bubble-audience-behaviour .highcharts-root .highcharts-series-group .highcharts-series.highcharts-series-2 { transform: translate(-160px, 0px) !important;; }
+.bubble-audience-behaviour .highcharts-data-labels.highcharts-series-2 { transform: translate(-160px, -15px); margin-left: -10px; }
+
+
+.highcharts-plot-line-label.hc-note-icon {
+  transform: rotate(0deg) !important;
+}
+.highchart-tooltip-custom {
+  .highcharts-label.highcharts-tooltip > span {
+    background: #333333;
+    padding: 5px 10px;
+    right: 4px;
+    width: fit-content;
+    border-radius: 5px;
+  }
+  .highcharts-label.highcharts-tooltip .highcharts-label-box.highcharts-tooltip-box {
+    display: none;
+  }
+}

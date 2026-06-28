@@ -1,0 +1,5 @@
+.pushPermissions {
+    tr:not(:first-child) td.OFF {
+        @extend .click-off;
+    }
+}

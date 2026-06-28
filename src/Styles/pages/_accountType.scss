@@ -1,0 +1,202 @@
+.res-account-type-box {
+    .img-holder {
+        @include sizing($wh: 175px);
+        margin: 10px auto;
+        display: flex;
+        align-items: center;
+        text-align: center;
+        border-radius: 50%;
+        justify-content: center;
+        cursor: pointer;
+        transition: 0.3s all ease;
+        img {
+            border: 1px solid rgba(255, 255, 255, 0.7);
+            border-radius: 100%;
+        }
+    }
+    .content-holder {
+        margin: auto;
+        max-width: 230px;
+        text-align: center;
+        color: $primary-black;
+    }
+    &.ratb-agency {
+        .img-holder {
+            background-color: $primary-red;
+            transition: 0.3s all ease;
+        }
+        &:hover {
+            .img-holder {
+                box-shadow: 0 0px 15px $primary-red;
+            }
+        }
+    }
+    &.ratb-brand {
+        border-left: 1px solid $tertiary-grey;
+        .img-holder {
+            background-color: $secondary_blue;
+            transition: 0.3s all ease;
+        }
+        &:hover {
+            .img-holder {
+                color: $primary-black;
+                box-shadow: 0 0px 15px $secondary_blue;
+            }
+        }
+    }
+    h1 {
+        margin: 0;
+    }
+    p {
+        margin: 0;
+        font-size: $font-sm;
+        line-height: 24px;
+    }
+}
+.backBtnTopPosition {
+    position: absolute;
+    right: 0;
+    top: -57px;
+    .rs-button {
+        padding: 0;
+        font-size: $font-xsm;
+        text-decoration: none !important;
+    }
+}
+.textbox-min-h {
+    .rs-tags-wrapper {
+        min-height: 176px;
+    }
+}
+// .bu_Container {
+//     #rs_CompanyInfo_SelectBrandPositon {
+//         width: 263px;
+//     }
+//     .brandPositionAdd {
+//         width: 35px;
+//     }
+//     #rs_Companies_SelectBrandPositon {
+//         width: 190px;
+//     }
+// }
+.box-design.accountsetup-contact-info,
+.accountsetup-contact-info,
+.accountsetup-image-upload {
+    padding-right: 30px;
+    padding-left: 30px;
+}
+.accountsetup-image-upload {
+    padding-left: 26px;
+}
+.rs-companyinfo-list {
+    width: 290px;
+}
+.rs-companyinfo-list-details {
+    width: calc(100% - 290px);
+}
+// Toast popup ui start
+.Toastify__toast-container {
+	padding: 0;
+    .close {
+        width: 15px;
+        height: 15px;
+    }
+}
+
+.Toastify__toast {
+	padding: 0 !important;
+	border-radius: 10px !important;
+	border: 1px solid $quaternary-blue;
+	box-shadow: 0 0 5px #0000000d, 0 0 5px #0000000d !important;
+}
+
+.Toastify__toast-body {
+	padding: 15px 0 !important;
+	// align-items: stretch !important;
+}
+
+// Toast icons: same structure as RSHeader Notifications (rs-notification-icon-wrapper + Glyphicons)
+.Toastify__toast-icon {
+	width: 70px !important;
+	min-width: 70px;
+	border-radius: 7px 0 0 7px;
+	// background-color: $tertiary-blue;
+	padding: 0 !important;
+	display: flex !important;
+	align-items: center;
+	justify-content: center;
+    -webkit-margin-end: 0 !important;
+    margin-inline-end: 0 !important;
+
+	.rs-notification-icon-wrapper {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		background: $quaternary-blue;
+		height: 40px;
+		width: 40px;
+		border-radius: var(--borderRadiusTabDropMenu);
+		margin-right: 0;
+		color: $white;
+		flex-shrink: 0;
+
+		&.status-success {
+			background-color: $green-medium;
+		}
+		&.status-warning {
+			background-color: $orange-medium;
+		}
+		&.status-error {
+			background-color: $red-medium;
+		}
+        &.status-info{
+			background-color: $blue-medium;
+		}
+	}
+}
+
+.Toastify__toast-body>div:last-child {
+	padding: 0 25px 0 0;
+	font-size: 15px;
+	font-family: $rs-font-regular;
+	line-height: 1.25;
+    color: $secondary-black;
+}
+
+.Toastify__close-button::before {
+	content: "";
+	display: inline-block;
+	width: 15px;
+	height: 15px;
+	background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 15 15"><path fill="%230000FF" d="m7.5,0C3.36,0,0,3.36,0,7.5s3.36,7.5,7.5,7.5,7.5-3.36,7.5-7.5S11.64,0,7.5,0Zm2.62,9.37c.21.21.21.54,0,.75-.21.21-.54.21-.75,0l-1.87-1.87-1.86,1.86c-.21.21-.54.21-.75,0-.21-.21-.21-.54,0-.75l1.86-1.86-1.87-1.87c-.21-.21-.21-.54,0-.75.21-.21.54-.21.75,0l1.87,1.87,1.87-1.87c.21-.21.54-.21.75,0,.21.21.21.54,0,.75l-1.87,1.87,1.87,1.87Z"/></svg>');
+	background-size: contain;
+	background-size: contain;
+	background-repeat: no-repeat;
+    position: relative;
+    top: 8px;
+    right: 8px;
+}
+
+.Toastify__close-button--light {
+	opacity: 1 !important;
+}
+
+.Toastify__close-button>svg {
+	display: none !important;
+}
+.Toastify__progress-bar--success {
+        background-color: $green-medium !important;
+}
+.Toastify__progress-bar--info {
+        background: $blue-medium !important;;
+}
+.Toastify__progress-bar--error {
+       background: $red-medium !important;
+}
+.Toastify__progress-bar--warning {
+         background: $orange-medium !important;
+}
+.Toastify__progress-bar {
+    transform-origin: right !important;
+}
+// Toast popup ui End

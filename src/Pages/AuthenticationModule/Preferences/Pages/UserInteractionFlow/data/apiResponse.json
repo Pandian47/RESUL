@@ -1,0 +1,19 @@
+{
+  "nodes": [
+    { "id": "sms", "type": "analyticsNode", "data": { "label": "SMS", "count": 320000, "channel": "sms" } },
+    { "id": "email", "type": "analyticsNode", "data": { "label": "Email", "count": 280000, "channel": "email" } },
+
+    { "id": "home", "type": "analyticsNode", "data": { "label": "/home", "count": 300000 } },
+    { "id": "fd-apply", "type": "analyticsNode", "data": { "label": "/fd-apply", "count": 202000 } },
+    { "id": "fill-form", "type": "analyticsNode", "data": { "label": "/fill-form", "count": 68000 } },
+    { "id": "request-callback", "type": "analyticsNode", "data": { "label": "/request-callback", "count": 32000 } }
+  ],
+  "edges": [
+    { "id": "e1", "source": "sms", "target": "home" },
+    { "id": "e2", "source": "home", "target": "fd-apply" },
+    { "id": "e3", "source": "fd-apply", "target": "fill-form" },
+    { "id": "e4", "source": "fill-form", "target": "request-callback" },
+
+    { "id": "e5", "source": "email", "target": "home" }
+  ]
+}

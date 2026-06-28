@@ -1,0 +1,63 @@
+export const buildPayload = ({ data, mdcContentSetupDetails, attributeList }) => {
+    const {
+        channelFriendlyName,
+        channelDetailType,
+        channelDetailId,
+        parentChannelDetailType,
+        parentChannelDetailId,
+        levelNumber,
+        domId,
+        addOnLevel,
+        isALLorAny,
+        actionId,
+        actionTime,
+        actionTimeDuration,
+        dynamiclistId,
+        flowChannel,
+        channelId,
+        activeChannel,
+    } = mdcContentSetupDetails;
+    const {
+        webhookSetting: { webHookSettingId },
+        isAgree,
+        description,
+        userId,
+        clientId,
+        departmentId,
+        campaignType,
+        campaignId,
+    } = data;
+    const { selectedAttributeList } = attributeList;
+    return {
+        userId,
+        clientId,
+        departmentId,
+        dataSource: 'TL',
+        webHookCampaign: {
+            campaignId,
+            campaignType,
+            selectedwebhookattributes: selectedAttributeList,
+            isOptInEnabled: isAgree,
+            webHookSettingId: webHookSettingId,
+            webHookConfigId: channelDetailId, // for create = 0
+            description: description,
+            channelId,
+            activeChannel,
+            channelFriendlyName,
+            channelDetailType,
+            channelDetailId,
+            parentChannelDetailType,
+            parentChannelDetailId,
+            levelNumber,
+            domId,
+            addOnLevel,
+            isALLorAny,
+            actionId,
+            actionTime,
+            actionTimeDuration,
+            dynamicListId: dynamiclistId,
+            flowChannel,
+            totalAudience: 0,
+        },
+    };
+};

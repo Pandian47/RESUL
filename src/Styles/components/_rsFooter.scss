@@ -1,0 +1,120 @@
+footer.rs-page-footer-wrapper {
+    @extend .clearfix;
+    @include sizing($w: 100%, $h: auto);
+    @include space($mt: 20px);
+    @include color($bg: $white);
+    box-shadow: -1px -2px 12px 0px $tertiary-grey;
+    display: block;
+
+    ul.copyright {
+        @include space($pt: 10px, $pb: 0, $letterspace: 0);
+        @include flexbox($y: center, $x: center);
+
+        li {
+            margin: 0 15px;
+            position: relative;
+            font-size: 14px;
+            color: $primary-grey;
+            letter-spacing: 0.5px;
+
+            &:before {
+                @include abs-position($position: absolute, $contentcommon: '', $left: -15px, $top: 4px);
+                @include sizing($h: 14px);
+                border-left: 1px solid $quaternary-blue;
+            }
+
+            &:hover {
+                cursor: pointer;
+                text-decoration: underline;
+            }
+
+            &:first-child {
+                margin-left: 0;
+                &:before {
+                    content: inherit;
+                }
+
+                &:hover {
+                    cursor: default;
+                    text-decoration: none;
+                }
+            }
+            &:last-child {
+                margin-right: 0;
+            }
+        }
+    }
+
+     .powered-by {
+        @include abs-position($position: absolute, $top: 2px, $right: 0);
+        i{
+            @include abs-position($position: relative, $top: 2px, $right: -6px);
+            color: $tertiary-orange;
+            pointer-events: none;
+        }
+        // .rs-tooltip-wrapper {
+        //     width: 110px;
+        //     height: 54px;
+        //     overflow: hidden;
+        // }
+    }
+
+    // .rs-footer-pb-wrapper {
+    //     position: absolute;
+    //     right: 0;
+    //     top: 3px;
+    //     .powered-by {
+    //         position: static;
+    //     }
+    // }
+
+    .footer-borders-container {
+        @include space($margin: 9px 0 0, $padding: 0);
+        @include sizing($h: 11px, $w: 100%);
+        position: relative;
+        overflow: hidden;
+
+        li {
+            @include space($margin: 0, $padding: 0);
+            @include sizing($h: 11px, $w: 20%);
+            float: left;
+
+            &:nth-child(1) {
+                @include color($bg: $footerColor1);
+            }
+
+            &:nth-child(2) {
+                @include color($bg: $footerColor2);
+            }
+
+            &:nth-child(3) {
+                @include color($bg: $footerColor3);
+            }
+
+            &:nth-child(4) {
+                @include color($bg: $footerColor4);
+            }
+
+            &:nth-child(5) {
+                @include color($bg: $footerColor5);
+            }
+        }
+    }
+}
+
+.rs-page-content-wrapper {
+    @extend .clearfix;
+    @include sizing($mh: calc(100vh - 74px));
+
+    @include sizing($w: 100%);
+    &:after {
+        @include sizing($h: auto);
+        @include abs-position($contentcommon: '');
+    }
+    .page-content-holder {
+        @include space($pt: 78px);
+        .page-content {
+            @extend .clearfix;
+        }
+    }
+}

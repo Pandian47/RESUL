@@ -1,0 +1,306 @@
+// Firebase JSON Drag & Drop Upload Styles
+.firebase-dropzone {
+    border: 2px dashed #cbd5e1;
+    border-radius: 12px;
+    padding: 48px 24px;
+    text-align: center;
+    background-color: #f8fafc;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+
+    &:hover {
+        border-color: #3b82f6;
+        background-color: #eff6ff;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(59, 130, 246, 0.15);
+    }
+
+    &.dragging {
+        border-color: #3b82f6;
+        border-width: 3px;
+        background: linear-gradient(135deg, #dbeafe 0%, #eff6ff 100%);
+        border-style: solid;
+        box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
+
+        .dropzone-content {
+            transform: scale(1.05);
+        }
+    }
+
+    &.error {
+        border-color: #ef4444;
+        background-color: #fef2f2;
+
+        &:hover {
+            border-color: #dc2626;
+            background-color: #fee2e2;
+        }
+    }
+
+    .dropzone-content {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        transition: transform 0.3s ease;
+
+        h5 {
+            color: #1e293b;
+            font-weight: 600;
+            font-size: 16px;
+            margin: 0;
+        }
+
+        p {
+            color: #64748b;
+            font-size: 14px;
+            margin: 0;
+        }
+
+        .icon-xxlg {
+            font-size: 64px;
+            opacity: 0.8;
+        }
+    }
+
+    // Pulse animation for dragging state
+    &.dragging::before {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 100%;
+        height: 100%;
+        transform: translate(-50%, -50%);
+        background: radial-gradient(circle, rgba(59, 130, 246, 0.1) 0%, transparent 70%);
+        animation: pulse 2s ease-in-out infinite;
+    }
+}
+
+@keyframes pulse {
+    0%, 100% {
+        opacity: 1;
+        transform: translate(-50%, -50%) scale(1);
+    }
+    50% {
+        opacity: 0.5;
+        transform: translate(-50%, -50%) scale(1.1);
+    }
+}
+
+// File selected state
+.firebase-file-selected {
+    border: 2px solid #10b981;
+    border-radius: 12px;
+    background: linear-gradient(135deg, #f0fdf4 0%, #ffffff 100%);
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+
+    &::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent 0%, rgba(16, 185, 129, 0.05) 50%, transparent 100%);
+        animation: shimmer 2s infinite;
+        z-index: 0;
+        pointer-events: none;
+    }
+
+    > div {
+        position: relative;
+        z-index: 1;
+    }
+
+    &:hover {
+        box-shadow: 0 4px 12px rgba(16, 185, 129, 0.15);
+        transform: translateY(-1px);
+    }
+
+    .file-icon {
+        transition: transform 0.3s ease;
+    }
+
+    &:hover .file-icon {
+        transform: scale(1.1) rotate(5deg);
+    }
+}
+
+@keyframes shimmer {
+    0% {
+        transform: translateX(-100%);
+    }
+    100% {
+        transform: translateX(100%);
+    }
+}
+
+// Stepper specific styles
+.firebase-stepper-container {
+    .stepper-sidebar {
+        position: sticky;
+        top: 20px;
+        max-height: calc(100vh - 100px);
+        overflow-y: auto;
+    }
+
+    .stepper-item {
+        transition: all 0.3s ease;
+        cursor: pointer;
+        padding: 16px 12px;
+        border-radius: 8px;
+        margin-bottom: 8px;
+
+        &:hover {
+            background-color: rgba(59, 130, 246, 0.05);
+        }
+
+        &.active {
+            background: linear-gradient(135deg, #dbeafe 0%, #eff6ff 100%);
+            border-left: 4px solid #3b82f6;
+        }
+
+        &.completed {
+            .step-number {
+                background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            }
+        }
+
+        .step-number {
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+
+            &:hover {
+                transform: scale(1.1);
+            }
+        }
+    }
+
+    .stepper-content {
+        animation: fadeInUp 0.5s ease-in-out;
+    }
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+// Enhanced alert styles
+.alert {
+    animation: slideInFromTop 0.3s ease-out;
+
+    i {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+    }
+}
+
+@keyframes slideInFromTop {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+// Help section styling
+.bg-light.rounded {
+    border-left: 4px solid #3b82f6;
+    transition: all 0.3s ease;
+
+    &:hover {
+        background-color: #eff6ff !important;
+        box-shadow: 0 2px 8px rgba(59, 130, 246, 0.1);
+    }
+}
+
+// Button enhancements
+.btn-outline-danger {
+    transition: all 0.3s ease;
+
+    &:hover {
+        transform: scale(1.05);
+        box-shadow: 0 4px 12px rgba(239, 68, 68, 0.2);
+    }
+}
+
+// Responsive adjustments
+@media (max-width: 768px) {
+    .firebase-dropzone {
+        padding: 32px 16px;
+    }
+
+    .firebase-stepper-container {
+        .stepper-sidebar {
+            position: relative;
+            top: 0;
+            max-height: none;
+            margin-bottom: 24px;
+        }
+    }
+}
+
+// Icon size utilities
+.icon-xxlg {
+    font-size: 64px !important;
+}
+
+// Loading state
+.firebase-dropzone.loading {
+    pointer-events: none;
+    opacity: 0.6;
+
+    &::after {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 40px;
+        height: 40px;
+        margin: -20px 0 0 -20px;
+        border: 4px solid #f3f4f6;
+        border-top-color: #3b82f6;
+        border-radius: 50%;
+        animation: spinner 0.8s linear infinite;
+    }
+}
+
+@keyframes spinner {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+// Toast message animations
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+// Toast message styles
+.shadow-lg {
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15) !important;
+}
+

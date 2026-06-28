@@ -1,0 +1,106 @@
+.dataExchangePageCSS {
+    .rs-vertical-tabs-wrapper,
+    .res-vertical-tabs-wrapper {
+        // Float layout lives in restabber.scss (.res-tabber > ul + .res-tabs-content).
+        // display:flex here broke the 150px vertical tab column after ResTabber migration.
+        & > .tabs-content,
+        & > .res-tabs-content,
+        .res-tabber > .tabs-content,
+        .res-tabber > .res-tabs-content {
+            .row {
+                margin: 0;
+            }
+        }
+    }
+    .customTabDesign {
+        .fullWhiteBackground {
+            background: transparent;
+        }
+    }
+}
+.topSmallCard {
+    .card {
+        position: relative;
+        text-align: center;
+        .list-group {
+            border: 0;
+            .list-group-item {
+                padding: 5px;
+                img {
+                    height: 82px;
+                }
+                &:last-child {
+                    border-radius: 0 0 6px 6px;
+                }
+            }
+        }
+        .addPlusIcon {
+            position: absolute;
+            bottom: -12px;
+            right: -12px;
+            line-height: 0;
+            background: $white;
+            border-radius: 100%;
+        }
+    }
+    .iconList {
+        position: absolute;
+        top: 0;
+        right: 5px;
+        display: flex;
+        align-items: center;
+        justify-content: end;
+        li {
+            line-height: 0;
+            padding: 5px;
+        }
+    }
+}
+.sourceCategory {
+    margin-bottom: 15px;
+    h4 {
+        padding: 0 15px;
+        margin-bottom: 15px;
+    }
+    .card {
+        margin-bottom: 21px;
+        .card-body {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 116px;
+            cursor: pointer;
+            img {
+                height: 82px;
+            }
+            .addPlusIcon {
+                position: absolute;
+                bottom: -12px;
+                right: -12px;
+                line-height: 0;
+                background: $white;
+                border-radius: 100%;
+            }
+        }
+    }
+}
+.back-to-top {
+    position: fixed;
+    right: 9px;
+    bottom: 10px;
+    cursor: pointer;
+    z-index: 1000;
+    display: none;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+    &.visible {
+        display: block;
+        opacity: 1;
+        pointer-events: auto;
+    }
+}
+.list-group-radius-bottom {
+    border-bottom-left-radius: var(--borderRadiusTabDropMenu);
+    border-bottom-right-radius: var(--borderRadiusTabDropMenu);
+}

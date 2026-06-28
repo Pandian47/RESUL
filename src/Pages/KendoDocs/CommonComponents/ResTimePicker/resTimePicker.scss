@@ -1,0 +1,381 @@
+@use '../../kendoDocsVariables.scss' as *;
+
+.#{$res-kendo-timepicker-wrapper} {
+    position: relative;
+
+    .k-animation-container {
+        overflow: visible;
+    }
+
+    // Floating label (driven by the `label` prop on TimePicker)
+    .k-floating-label-container {
+        width: 100%;
+        padding: 0;
+
+        .k-floating-label {
+            left: 0;
+            max-width: 100%;
+            font-size: $font-xxs;
+            color: $secondary-grey;
+        }
+
+        // Empty + unfocused: label rests on the input line like a placeholder
+        &.k-empty > .k-floating-label {
+            top: 4px;
+            font-size: $font-xsm;
+        }
+
+        // Filled or focused: label floats above the field
+        > .k-floating-label,
+        &.k-focus > .k-floating-label {
+            top: -17px;
+            font-size: $font-xxs;
+        }
+    }
+
+    .k-timepicker-popup {
+        .k-button-solid-primary {
+            border: 0;
+            background-color: $secondary-blue;
+
+            &:hover,
+            &:focus,
+            &:target {
+                background-color: $secondary-blue;
+                color: $white;
+                box-shadow: 0 0px 10px $secondary-blue;
+            }
+        }
+    }
+
+    .k-timepicker {
+        border: none;
+
+        // Required indicator — short red segment at the bottom-left of the field
+        &.required::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            bottom: 1px;
+            width: 15px;
+            height: 1px;
+            border-bottom: 3px solid $primary-red;
+            z-index: 4;
+        }
+
+        &.required.k-focus::before,
+        &.required:focus-within::before {
+            display: none;
+        }
+
+        &:after {
+            content: '';
+            width: 100%;
+            height: 1px;
+            position: absolute;
+            bottom: 2px;
+            z-index: 3;
+            border-bottom: 1px solid $secondary-grey;
+        }
+
+        &:focus {
+            &::before {
+                display: none;
+                box-shadow: none;
+            }
+
+            &:after {
+                border-color: $secondary-blue;
+            }
+        }
+
+        &.k-input {
+            .k-input-inner {
+                padding: 0;
+            }
+
+            input {
+                padding: 0;
+                padding-bottom: 4px;
+                height: 35px;
+                color: $secondary-grey;
+                font-size: $font-xsm;
+            }
+        }
+       &.k-focus {
+        box-shadow: none;
+       }
+        .k-button .k-button-text {
+            text-decoration: none;
+        }
+
+        &.k-disabled,
+        &[aria-disabled='true'] {
+            cursor: not-allowed;
+
+            .k-input-inner,
+            input,
+            .k-input-button,
+            .k-button,
+            .rs-timepicker-toggle-icon {
+                cursor: not-allowed;
+            }
+        }
+    }
+
+    &:has(.k-timepicker.k-disabled),
+    &:has(.k-timepicker[aria-disabled='true']) {
+        cursor: not-allowed;
+    }
+
+    .rskdw-label-placeholder {
+        position: absolute;
+        top: -17px;
+        font-size: $font-xxs;
+        color: $primary-grey;
+    }
+
+    &.errorContainer {
+        .k-floating-label-container .k-floating-label {
+            color: $primary-red;
+        }
+
+        .k-timepicker {
+            &:after {
+                border-color: $primary-red;
+            }
+        }
+
+        .k-dateinput.k-input {
+            pointer-events: none;
+        }
+
+        .validation-message {
+            font-size: $font-xsm;
+            padding-right: 15px;
+            padding-bottom: 5px;
+            padding-left: 0;
+            top: 0;
+            width: 90%;
+        }
+    }
+}
+
+// Scope the popup offset to the TimePicker's portaled popup only
+.k-animation-container:has(.res-timepicker-popup) {
+    margin-top: -2px;
+}
+
+.#{$res-kendo-timepicker-wrapper} .k-timepicker {
+    button {
+        background: transparent;
+
+        span {
+            display: none;
+        }
+    }
+}
+
+// TimePicker popup — portaled; scoped via popupClass
+.res-timepicker-popup,
+.res-timepicker-popup.k-popup {
+    background-color: $white;
+
+    .k-time-header,
+    .k-time-selector-header {
+        background-color: $white;
+
+        .k-title,
+        .k-time-selector-header-title {
+            color: $primary-black;
+            background-color: $white;
+        }
+    }
+
+    .k-time-header .k-title,
+    .k-time-header .k-time-selector-header-title,
+    .k-time-selector-header .k-title,
+    .k-time-selector-header .k-time-selector-header-title,
+    .k-time-list-wrapper .k-title {
+        font-weight: normal;
+        color: $primary-black;
+    }
+
+    .k-time-header .k-time-now,
+    .k-time-selector-header .k-time-now {
+        color: $secondary-blue;
+        box-shadow: none;
+        outline: none;
+        background-color: transparent;
+    }
+
+    .k-time-list-container {
+        background-color: $white;
+    }
+
+    // Keep the columns transparent so the grey center highlight band shows through
+    .k-time-list-wrapper,
+    .k-time-list,
+    .k-time-container {
+        background-color: transparent;
+    }
+
+    .k-time-highlight {
+        background-color: transparent;
+        border-top: 1px solid $quaternary-blue;
+        border-bottom: 1px solid $quaternary-blue;
+        box-shadow: none;
+    }
+
+    .k-time-list-wrapper {
+        &::before,
+        &::after {
+            background-color: transparent;
+            border-color: $quaternary-blue;
+        }
+
+        &.k-focus::before,
+        &.k-focus::after {
+            height: calc(50% - 9px);
+        }
+    }
+
+    .k-time-separator {
+        color: $primary-black;
+    }
+
+    .k-time-list .k-item {
+        color: $primary-black;
+        // Center the number horizontally; let Kendo's row height handle vertical
+        // centering so the selected value lines up with the highlight band.
+        text-align: center;
+        background-color: transparent;
+
+        // No grey shade on hover/focus/selected — keep the cell clean
+        &:hover,
+        &.k-hover,
+        &:focus,
+        &.k-focus,
+        &.k-selected,
+        &.k-state-selected,
+        &.k-selected:hover,
+        &.k-state-selected:hover {
+            background-color: transparent;
+            box-shadow: none;
+        }
+
+        &:hover {
+            color: $secondary-blue;
+        }
+    }
+
+    .k-actions,
+    .k-action-buttons {
+        padding: 10px;
+        display: flex;
+        justify-content: flex-end;
+        gap: 10px;
+
+        .k-time-accept,
+        .k-button-solid-primary {
+            background-image: none;
+            border: 0;
+            background-color: $primary-btn;
+            color: $white;
+            border-radius: 5px;
+            font-size: $font-xsm;
+            font-family: $rs-font-regular;
+            cursor: pointer;
+            box-shadow: none;
+            outline: none;
+            height: 32px;
+            min-height: 32px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            order: 2;
+
+            .k-button-text {
+                color: $white;
+            }
+
+            &:hover,
+            &:focus,
+            &:active {
+                background-color: $primary-btn-hover;
+                box-shadow: 0 0 10px $primary-btn-hover;
+            }
+        }
+
+        .k-time-cancel,
+        .k-button-solid-base,
+        .k-button:not(.k-button-solid-primary):not(.k-time-accept) {
+            background-image: none;
+            background-color: transparent;
+            border: 0;
+            color: $secondary-orange;
+            border-radius: 0;
+            padding: 6px 10px;
+            font-size: $font-xsm;
+            font-family: $rs-font-regular;
+            cursor: pointer;
+            text-decoration: none;
+            box-shadow: none;
+            outline: none;
+            height: 32px;
+            min-height: 32px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            order: 1;
+
+            .k-button-text {
+                color: $secondary-orange;
+                text-decoration: none;
+            }
+
+            &:hover,
+            &:focus,
+            &:active {
+                background-color: transparent;
+                text-decoration: underline;
+
+                .k-button-text {
+                    text-decoration: underline;
+                }
+            }
+        }
+    }
+}
+
+// Modal hosts — time popup appended to .rsmd-content (see resolveKendoPopupAppendTo)
+.rs-modal .rsmd-content,
+.rs-modal .modal-content,
+.modal.show .rsmd-content,
+.modal.show .modal-content {
+    position: relative;
+    overflow: visible !important;
+
+    > .k-animation-container {
+        overflow: visible !important;
+        z-index: 1101 !important;
+
+        .k-child-animation-container,
+        .k-popup {
+            overflow: visible !important;
+        }
+    }
+}
+
+.rs-modal .rsmdc-body,
+.rs-modal .modal-body,
+.modal.show .modal-body {
+    overflow: visible;
+}
+
+.rs-modal .k-animation-container,
+.rs-modal.show .k-animation-container,
+[role='dialog'] .k-animation-container {
+    overflow: visible !important;
+    z-index: 1101 !important;
+}

@@ -1,0 +1,2377 @@
+// ============================================================================
+// ResTabber Component Styles (res- prefix)
+// Migrated from src/Styles/components/_rsTabber.scss
+// ============================================================================
+
+@import 'Styles/abstarct/variables';
+@import 'Styles/abstarct/mixins';
+
+$res-tab-switch-duration: 0.32s;
+$res-tab-switch-ease: cubic-bezier(0.4, 0, 0.2, 1);
+$res-tab-caret-ease: cubic-bezier(0.34, 1.28, 0.64, 1);
+$res-tab-active-delay: 0.06s;
+
+.clearfix {
+    &::after {
+        content: '';
+        display: table;
+        clear: both;
+    }
+}
+
+.box-design {
+    background-color: $white;
+    border-radius: var( --globalBorderRadius);
+    border: 1px solid $quaternary-blue;
+    padding: var( --boxDesignBodySpace);
+}
+
+.primary-box-shadow {
+    box-shadow: 0 0 5px 0 rgba(0, 0, 0, 0.05), 0 0 5px 0 rgba(0, 0, 0, 0.05) !important;
+}
+
+.no-box-shadow {
+    box-shadow: none !important;
+}
+
+.tabArrow,
+.tabArrow-2,
+.tabArrow-sub {
+    @include color($bg: $secondary_blue, $color: $white !important);
+
+    &:before {
+        border-left: 8px solid transparent;
+        border-right: 8px solid transparent;
+        border-top: 8px solid $secondary_blue;
+        @include space($ml: -9px);
+        @include abs-position($position: absolute, $left: 50%, $bottom: -7px, $contentcommon: '');
+    }
+}
+
+.tabArrow-2 {
+    &:before {
+        border-left: 17px solid transparent;
+        border-right: 17px solid transparent;
+        border-top: 17px solid $secondary-blue;
+        @include abs-position($left: 50%, $bottom: -16px, $contentcommon: '');
+        @include space($ml: -17px);
+    }
+}
+
+.tabArrow-sub {
+    &:before {
+        border-left: 17px solid transparent;
+        border-right: 17px solid transparent;
+        border-top: 17px solid $secondary-blue;
+        @include abs-position($left: 50%, $bottom: -16px, $contentcommon: '');
+        @include space($ml: -17px);
+    }
+}
+
+.tabArrow-right-big {
+    &:after {
+        content: '';
+        position: absolute;
+        height: 0;
+        width: 0;
+        left: 100%;
+        top: 50%;
+        margin-top: -13px;
+        border: 15px solid transparent;
+        border-left: 17px solid $secondary-blue;
+    }
+}
+
+.default-border-radius-trlb {
+    border-top-left-radius: var(--globalBorderRadius);
+    border-top-right-radius: var(--globalBorderRadius);
+    border-bottom-left-radius: var(--globalBorderRadius);
+}
+
+*:hover {
+    scrollbar-color: $secondary-grey;
+}
+
+.res-tabber {
+    // Suppress browser default focus ring on tab clicks — active tab styling is sufficient
+    .res-tab-default,
+    .res-tab-transparent {
+        &:focus,
+        &:focus-visible,
+        &:focus-within {
+            outline: none;
+            box-shadow: none;
+        }
+
+        span,
+        .res-tab-label {
+            &:focus,
+            &:focus-visible {
+                outline: none;
+                box-shadow: none;
+            }
+        }
+    }
+
+.res-tabs-with-heading {
+    h4 {
+        margin-top: 35px;
+        margin-bottom: 0;
+    }
+    h3 {
+        margin-top: 35px;
+        font-family: $rs-font-medium;
+    }
+}
+
+ul.res-chart-tab.tab-icon li.res-tab-default {
+    padding: 0 8px;
+    &.active {
+        &:before,
+        &:after {
+            z-index: 1;
+        }
+        &:after {
+            border-left: 4px solid $primary-black;
+            border-right: 4px solid $primary-black;
+            content: '';
+            display: block;
+            left: 50%;
+            margin-left: -4px;
+            position: absolute;
+            border-bottom: 5px solid $white;
+            border-top: none;
+            bottom: -6px;
+        }
+        &:before {
+            border-left: 5px solid $primary-black;
+            border-right: 5px solid $primary-black;
+            content: '';
+            display: block;
+            left: 50%;
+            margin-left: -5px;
+            position: absolute;
+            bottom: -5px;
+            border-bottom: 6px solid $primary-red;
+            border-top: none;
+            top: inherit;
+        }
+    }
+    .res-arrow-bar:before {
+        content: '';
+        display: block;
+        position: absolute;
+        left: -2%;
+        top: 35%;
+        margin-top: -7px;
+        height: 15px;
+        border-left: 1px solid $primary-red;
+        //$secondary-grey;
+    }
+    &:first-child {
+        padding-left: 8px;
+        .res-arrow-bar:before {
+            content: inherit;
+        }
+    }
+    &:last-child {
+        padding-right: 8px;
+    }
+}
+ul.res-chart-tab.rs-chart-tab2.addtab {
+    //  @include flexbox();
+    li.res-tab-default {
+        width: 206px;
+        .tab-text-vt {
+            display: inline-block;
+            width: 100%;
+            .remove-btn {
+                top: 8px;
+            }
+        }
+        span {
+            width: 100%;
+        }
+    }
+}
+.res-chart-tab.addtab li.res-tab-default:last-child {
+    margin-right: 0;
+}
+.res-chart-tab.tabCount5 li.res-tab-default span {
+    width: 209px;
+}
+
+// tab animate
+.res-chart-tab.mini.res-animate-tab {
+    position: relative;
+    li.res-tab-default {
+        &:first-child {
+            padding-left: 0;
+        }
+        &:last-child {
+            padding-right: 0;
+        }
+        &.active span {
+            border-bottom: 0;
+            &:before,
+            &:after {
+                content: inherit;
+            }
+        }
+        &.active ~ .res-animate-key {
+            bottom: 0;
+            display: block;
+            transition: all 0.3s ease;
+        }
+        &:nth-child(1).active ~ .res-animate-key {
+            --x: 0%;
+            --w: 99px;
+        }
+        &:nth-child(2).active ~ .res-animate-key {
+            --x: 181%;
+            --w: 71px;
+        }
+    }
+    .res-animate-key {
+        position: absolute;
+        height: 1px;
+        width: var(--w);
+        transition: transform 0.4s cubic-bezier(0.2, 0.64, 0.48, 1.12), opacity 0.4s ease, color 0.4s ease;
+        // transform: translateX(var(--x));
+        // -webkit-backface-visibility: hidden;
+        &:before,
+        &:after {
+            content: '';
+            display: inline-block;
+            left: 50%;
+            position: absolute;
+        }
+        &:before {
+            border-left: 5px solid transparent;
+            border-right: 5px solid transparent;
+            bottom: -5px;
+            margin-left: -5px;
+        }
+        &:after {
+            border-left: 4px solid transparent;
+            border-right: 4px solid transparent;
+            bottom: -4px;
+            margin-left: -4px;
+            border-top: 5px solid $white;
+        }
+    }
+}
+
+.res-tabs,
+.res-tabs-2 {
+    //margin: 4px 0 0 0;
+    margin: 0;
+    padding: 0;
+    .res-tab-default {
+        background-color: $tertiary-grey;
+        //border-right: 3px solid $white; // Commented for tabs display on plain bg (body bg)
+        text-align: center;
+        position: relative;
+        // padding: 6px;
+        padding: 2px 6px;
+        cursor: pointer;
+        // Instant bg/text on tab switch — only the caret (::before) animates
+        transition: none;
+        border-top-left-radius: var(--globalBorderRadius);
+        border-top-right-radius: var(--globalBorderRadius);
+        &:last-child {
+            border-right: 0;
+        }
+
+        &::before {
+            border-left: 7px solid transparent;
+            border-right: 7px solid transparent;
+            border-top: 10px solid $secondary_blue;
+            content: '';
+            display: block;
+            position: absolute;
+            left: 50%;
+            top: 100%;
+            bottom: auto;
+            margin-left: 0;
+            opacity: 0;
+            transform: translate(-50%, -8px) scale(0.7);
+            transform-origin: center top;
+            transition:
+                opacity 0.24s $res-tab-switch-ease,
+                transform 0.3s $res-tab-caret-ease;
+            pointer-events: none;
+        }
+
+        &.active {
+            background-color: $secondary_blue;
+            cursor: default;
+
+            span,
+            .res-tab-label {
+                color: $white;
+            }
+
+            &::before {
+                opacity: 1;
+                transform: translate(-50%, 0) scale(1);
+                transition-delay: calc(#{$res-tab-active-delay} + 0.04s);
+            }
+        }
+
+        &:not(.active)::before {
+            transition-delay: 0s;
+        }
+
+        span,
+        .res-tab-label {
+            font-size: $font-sm;
+            line-height: 37px;
+        }
+    }
+    &.res-tabs-left-space {
+        .res-tab-default {
+            border-left: 3px solid $body-bg-color;
+            border-top-left-radius: var(--globalBorderRadius);
+            &:first-child {
+                border-left: none;
+            }
+        }
+    }
+    &.res-tabs-right-align {
+        justify-content: flex-end;
+        .res-tab-default {
+            margin: 0 0 0 30px;
+            &:first-child {
+                margin-left: 0;
+            }
+            &:last-child {
+                padding-right: 0;
+            }
+        }
+    }
+    &.detail-tabs {
+        width: 100%;
+        display: flex;
+        background-color: #e9e9e9;
+    }
+    &.detail-tabs li.res-tab-default {
+        width: auto;
+        padding: 0 20px;
+        border-radius: 0;
+        margin-right: 0px;
+    }
+    &.res-tabs-icons-round {
+        display: flex;
+        justify-content: space-around;
+        .res-tab-default {
+            background-color: $white;
+            border: 3px solid $tertiary-grey;
+            border-radius: 50%;
+            width: 70px;
+            height: 70px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            &.active {
+                border-color: $tertiary-grey;
+                background-color: $secondary-blue;
+                &:before {
+                    display: none;
+                }
+                i {
+                    color: $white !important;
+                }
+            }
+            i {
+                font-size: 41px !important;
+            }
+        }
+    }
+    &.res-tabs-auto-width {
+        .res-tab-default {
+            width: auto;
+            margin-right: 0;
+        }
+    }
+}
+.pageSub_tab {
+    .res-tab-default {
+        span {
+            font-size: $font-sm;
+        }
+    }
+}
+.res-tabs-2 {
+    margin-top: 0;
+    .res-tab-default {
+        border-bottom: 1px solid transparent;
+        &.active {
+            background-color: $tertiary-grey;
+            color: $secondary-blue;
+            border-bottom-color: $secondary-blue;
+            span {
+                color: $secondary-blue;
+            }
+        }
+    }
+}
+
+.res-content-tabs {
+    @extend .clearfix;
+    li.res-tab-default {
+        text-align: center;
+        @include flexbox($dir: column);
+        line-height: 19px;
+        vertical-align: middle;
+        float: left;
+        // color: inherit;
+        min-width: 185px;
+        position: relative;
+        padding: 11px 19px;
+        border-top-left-radius: 15px;
+        border-top-right-radius: 15px;
+        background-color: $white;
+        margin-left: 7px;
+        color: $secondary-black;
+        //box-shadow: rgb(0 0 0 / 30%) 0 1px 4px -1px;
+        &:hover {
+            cursor: pointer;
+        }
+        &:first-child {
+            margin-left: 0;
+        }
+        .rs-tooltip-wrapper {
+            display: flex;
+            flex-direction: column;
+        }
+        .list-view {
+            padding: 17px 0;
+            &:hover {
+                cursor: pointer;
+            }
+        }
+
+        &.active {
+            @extend .tabArrow-2;
+            i {
+                color: $white !important;
+            }
+        }
+
+        i {
+            font-size: 52px;
+            color: $secondary-black;
+            margin-bottom: 10px;
+        }
+    }
+
+    &.res-tab-horizontal {
+        display: inline-block;
+        width: 100%;
+        background-color: $tertiary-grey;
+
+        li.res-tab-default {
+            height: 85px;
+            // width: 102px;
+            padding-left: 10px;
+            padding-right: 10px;
+            border-right: 3px solid $white;
+        }
+    }
+    &.dm-tabs {
+        li.res-tab-default {
+            //@extend .box-design;
+            border: 1px solid $quaternary-blue;
+            border-bottom-color: $quaternary-blue !important;
+        }
+        &.no-border-bottom {
+            li.res-tab-default {
+                border-bottom: 0 !important;
+            }
+        }
+    }
+
+    .rs-tabs-refresh,
+    .res-tabs-refresh {
+        margin-top: 38px;
+        margin-left: 20px;
+        float: left;
+        list-style: none;
+    }
+}
+
+.res-sub-tabs {
+    @extend .clearfix;
+    li.res-tab-default {
+        text-align: center;
+        @include flexbox($dir: column);
+        line-height: 19px;
+        vertical-align: middle;
+        justify-content: center;
+        float: left;
+        // color: inherit;
+        min-width: 113px;
+        position: relative;
+        padding: 11px 19px;
+        border-top-left-radius: var(--borderRadiusTabDropMenu);
+        border-top-right-radius: var(--borderRadiusTabDropMenu);
+        background-color: $white;
+        margin-left: 7px;
+        color: $secondary-black;
+        &:hover {
+            cursor: pointer;
+        }
+        &:first-child {
+            margin-left: 0;
+        }
+
+        .list-view {
+            padding: 17px 0;
+            &:hover {
+                cursor: pointer;
+            }
+        }
+
+        &.active {
+            @extend .tabArrow-sub;
+            i {
+                color: $white !important;
+            }
+        }
+
+        i {
+            color: $secondary-black;
+            margin-bottom: 5px;
+        }
+    }
+}
+
+// .res-v-tabs-content {
+//     [role=presentation] {
+//         &::before {
+//             top:0 !important;
+//         }
+//     }
+// }
+// .portlet-box-theme {
+//     padding: 30px;
+//     background-color: $tertiary-grey;
+//     border: 1px solid $secondary-grey;
+//     border-top-color: $primary-blue;
+//     display: inline-block;
+//     width: 100%;
+//     &.pb-2 {
+//         padding: 14px;
+//         background-color: $white;
+//     }
+// }
+// Invoice page css start
+.portlet-box-theme {
+    padding: 5px;
+    background-color: $white;
+    // border: 1px solid $quaternary-blue;
+    border-radius: $theme-radius-size-sm;
+}
+.invoice-new {
+    th,
+    td {
+        &:first-child,
+        &:nth-child(2),
+        &:nth-child(3),
+        &.invoice-border {
+            border: solid 1px $tertiary-grey;
+        }
+    }
+    th {
+        &:first-child {
+            border-top-left-radius: $theme-radius-size-sm;
+            border: 0;
+        }
+        &:last-child {
+            border-top-right-radius: $theme-radius-size-sm;
+        }
+    }
+    .list-account::before {
+        content: '';
+        position: absolute;
+        top: 27%;
+        left: -15px;
+        width: 1px;
+        height: 65%;
+        background: $grey-dark;
+        -webkit-transform: translateY(-10%);
+        -moz-transform: translateY(-10%);
+        -ms-transform: translateY(-10%);
+        -o-transform: translateY(-10%);
+        transform: translateY(-10%);
+    }
+}
+// Invoice page css end
+
+.res-content-tabs-2 {
+    @extend .clearfix;
+    li.res-tab-default {
+        text-align: center;
+        @include flexbox($dir: column);
+        line-height: 19px;
+        vertical-align: middle;
+        float: left;
+        // color: inherit;
+        position: relative;
+        padding: 8px 15px;
+        border-top-left-radius: var(--globalBorderRadius);
+        border-top-right-radius: var(--globalBorderRadius);
+        background-color: $tertiary-grey;
+        border: 0;
+        color: $secondary-black;
+        font-size: $font-xsm;
+        transition:
+            background-color $res-tab-switch-duration $res-tab-switch-ease,
+            color $res-tab-switch-duration $res-tab-switch-ease;
+
+        cursor: pointer;
+
+        &:first-child {
+            margin-left: 0;
+        }
+        &.active {
+            @extend .tabArrow;
+        }
+    }
+    &.rct-ra {
+        li {
+            &.active {
+                &:first-child {
+                    &:before {
+                        display: none;
+                    }
+                }
+            }
+        }
+    }
+}
+
+.res-content-tabs-split {
+    @extend .clearfix;
+    background-color: $tertiary-grey;
+    border-radius: 0;
+    // padding-top: 5px;
+    margin-bottom: 5px;
+    // display: flex;
+    padding-left: 111px;
+    justify-content: center;
+    margin-left: -19px;
+    margin-right: -19px;
+    li.res-tab-default {
+        text-align: center;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        float: left;
+        position: relative;
+        padding: 10px 19px;
+        border-radius: var( --borderRadiusTabDropMenu);
+        // border-top-left-radius: 5px;
+        // border-top-right-radius: 5px;
+        background-color: $white;
+        // border-bottom: 2px solid $tertiary-grey;
+        margin-left: 10px;
+        // margin-bottom: 5px;
+        // margin-top: 5px;
+        color: $secondary-black;
+        font-size: $font-xsm;
+        &:hover {
+            cursor: pointer;
+        }
+        &:first-child {
+            margin-left: 0;
+        }
+        &.active {
+            //@extend .tabArrow;
+            @include color($bg: $white, $color: $secondary-blue);
+            border-color: $white;
+            //@extend .primary-box-shadow;
+            // border-bottom: 5px solid $white;
+            margin-bottom: 10px;
+            border-bottom-left-radius: 0;
+            border-bottom-right-radius: 0;
+            @extend .no-box-shadow;
+            &::after {
+                content: '';
+                position: absolute;
+                bottom: -10px;
+                width: 100%;
+                border-bottom: solid 11px $white;
+            }
+            // &::after {
+            //     content: '';
+            //     position: absolute;
+            //     bottom: -5px;
+            //     width: 100%;
+            //     border-bottom: solid 1px $secondary-blue;
+            // }
+            // &::before {
+            //     content: '';
+            //     display: block;
+            //     position: absolute;
+            //     bottom: -15px;
+            //     left: 50%;
+            //     margin-left: -7px;
+            //     border-left: 7px solid transparent;
+            //     border-right: 7px solid transparent;
+            //     border-top: 10px solid $secondary-blue;
+            // }
+            // .res-tab-label {
+            //     font-family: $rs-font-semi-bold;
+            // }
+        }
+        &.res-tab-add {
+            cursor: default;
+            background: $white;
+            // width: 40px;
+            position: relative;
+            // top: 6px;
+        }
+        .res-tab-remove {
+            display: inline-block;
+            line-height: 0;
+            margin-left: 5px;
+        }
+    }
+    .rs-tabs-refresh,
+    .res-tabs-refresh {
+        margin-top: 12px;
+    }
+}
+
+// Reset / refresh control — legacy rs-tabs-refresh + res-tabs-refresh (inline after floated tabs)
+.rs-tabs-refresh,
+.res-tabs-refresh {
+    margin-top: 38px;
+    margin-left: 20px;
+    float: left;
+    list-style: none;
+}
+
+.rs-refresh-tab-spacing,
+.res-refresh-tab-spacing {
+    .rs-tabs-refresh,
+    .res-tabs-refresh {
+        height: auto !important;
+        margin-top: 30px;
+    }
+}
+
+.no-scroll-res-content-tabs, .smartLinkModal-CSS {
+    .res-content-tabs-split:not(.model_smartlink) {
+        padding: 10px 10px 0 10px;
+        justify-content: start;
+
+        li {
+            &.res-tab-default,
+            &.tabDefault {
+                margin-bottom: 10px;
+            }
+        }
+    }
+}
+.no-scroll-res-content-tabs {
+        .res-content-tabs-split  {
+            padding-left: 110px;
+        }
+
+}
+
+.res-ctf-closed {
+    li.res-tab-default {
+        border-bottom-color: $tertiary-grey !important;
+        border-radius: var(--globalBorderRadius);
+        margin-bottom: 3px;
+    }
+}
+
+.res-flat-tabs {
+    background-color: $tertiary-grey;
+    border-top-left-radius: var(--globalBorderRadius);
+    border-top-right-radius:var(--globalBorderRadius);
+    padding-top: 5px;
+    margin-bottom: 5px;
+    .res-content-tabs-flat {
+        @extend .clearfix;
+        li.res-tab-default {
+            text-align: center;
+            //@include flexbox($dir: column);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            // line-height: 19px;
+            // vertical-align: middle;
+            float: left;
+            position: relative;
+            padding: 11px 19px;
+            border-top-left-radius: var(--borderRadiusTabDropMenu);
+            border-top-right-radius: var(--borderRadiusTabDropMenu);
+            background-color: $white;
+            border-bottom: 2px solid $tertiary-grey;
+            margin-left: 5px;
+            color: $secondary-black;
+            &:hover {
+                cursor: pointer;
+            }
+            &:first-child {
+                margin-left: 0;
+            }
+            &.active {
+                border-bottom-color: $white;
+                border-bottom-width: 5px;
+                i {
+                    color: $primary-blue;
+                }
+                span {
+                    color: $primary-blue;
+                }
+            }
+            i {
+                color: $primary-grey;
+            }
+            span {
+                color: $primary-grey;
+                font-size: $font-xsm;
+                margin-left: 5px;
+            }
+        }
+    }
+    .tstwh-label {
+        width: 165px;
+        h4 {
+            margin-top: 14px !important;
+        }
+        h3 {
+            margin-top: 14px !important;
+        }
+    }
+    .rs-tabs-refresh,
+    .res-tabs-refresh {
+        margin-top: 14px;
+    }
+}
+
+.Emailcontenttab{
+    .tstwh-label {
+       margin-left: 15px !important;
+    }
+}
+
+// RSTabSlide TabLabelEditor (FormFields RSInput + inline actions)
+.res-tab-label-editor-root {
+    min-width: 140px;
+    width: auto;
+    margin: 0;
+}
+
+.res-tab-label-editor-input-inner {
+    position: relative;
+
+    .res-tab-label-editor-rsinput.rs-input-wrapper input.form-control {
+        padding-right: 52px;
+    }
+
+    // Floating-label RSInput (isNewTheme): align save/cancel with the input row
+    .res-tab-label-editor-rsinput.rs-input-placeholder-wrapper ~ .res-tab-label-editor-actions {
+        top: 22px;
+    }
+
+    .res-tab-label-editor-actions {
+        position: absolute;
+        top: 10px;
+        right: 0;
+        z-index: 2;
+        gap: 8px;
+        justify-content: flex-end;
+    }
+}
+
+//Tab Transparent
+.res-tabs {
+    .res-tab-transparent {
+        background-color: transparent;
+        //@include space($mr: 30px, $pl: 8px, $pr: 8px, $pb: 1px);
+        @include space($mr: 30px, $pl: 0, $pr: 0);
+        width: auto;
+        color: $primary-grey;
+        line-height: 22px;
+        padding-bottom: 1px;
+        border-bottom: 1px solid transparent;
+        transition:
+            border-bottom-color $res-tab-switch-duration $res-tab-switch-ease,
+            color $res-tab-switch-duration $res-tab-switch-ease;
+        span,
+        .res-tab-label {
+            line-height: 22px;
+            transition: color $res-tab-switch-duration $res-tab-switch-ease;
+        }
+        &.active {
+            background-color: transparent;
+            border-bottom: solid 1px $secondary-blue;
+            transition-delay: $res-tab-active-delay;
+            span,
+            .res-tab-label {
+                color: $secondary-blue;
+                transition-delay: $res-tab-active-delay;
+            }
+        }
+        &:last-child {
+            margin-right: 0;
+        }
+    }
+}
+
+.res-tabs-right-align {
+    .res-tabs {
+        justify-content: flex-end;
+        li {
+            //margin-right: 0;
+            //margin-left: 30px;
+        }
+    }
+}
+
+// Kendo scheduler tabs
+/* [Kendo disabled]
+.k-scheduler {
+    @extend .box-design;
+    @extend .no-box-shadow;
+    padding: 10px !important;
+    min-height: 675px;
+    .k-scheduler-views-wrapper {
+        .k-button-group {
+            margin-top: -10px;
+            .k-button {
+                background-color: transparent;
+                border: none;
+                padding: 0 10px !important;
+                margin-left: 10px !important;
+                position: relative;
+                .k-button-text {
+                    font-size: $font-sm;
+                    color: $quaternary-blue;
+                }
+                &:first-child {
+                    margin-left: 0 !important;
+                }
+                &.k-selected {
+                    border-bottom: 1px solid $white;
+                    &:after {
+                        display: block;
+                        opacity: 1;
+                        content: '';
+                        position: absolute;
+                        top: initial;
+                        right: 0;
+                        bottom: -8px;
+                        left: 0;
+                        margin: 0 auto;
+                        width: 0;
+                        height: 0;
+                        border-top: 8px solid $white;
+                        border-left: 7px solid transparent;
+                        border-right: 7px solid transparent;
+                    }
+                    .k-button-text {
+                        color: $white;
+                    }
+                }
+            }
+        }
+    }
+    .k-scheduler-toolbar {
+        background-color: $secondary-blue;
+        border-top-left-radius: var(--globalBorderRadius);
+        border-top-right-radius: var(--globalBorderRadius);
+        margin-bottom: 10px;
+        color: $white;
+        .k-button {
+            color: $white;
+        }
+        .k-i-calendar {
+            display: block;
+            color: $white !important;
+        }
+        .k-toolbar-item {
+            .k-scheduler-navigation {
+                .k-button {
+                    background-color: transparent !important;
+                    border: 0 !important;
+                }
+            }
+        }
+    }
+    .k-scheduler-footer {
+        display: none !important;
+    }
+    .k-button {
+        box-shadow: none !important;
+        outline: none !important;
+    }
+    .k-scheduler-layout {
+        @extend .css-scrollbar;
+        .k-scheduler-head {
+            display: none !important;
+        }
+        .k-scheduler-body {
+            .k-scheduler-content {
+                .k-scheduler-datecolumn {
+                    display: none;
+                }
+                .k-group-content {
+                    .k-scheduler-row {
+                        background-image: none;
+                        border: 1px solid rgba(0, 0, 0, 0.08);
+                        margin-bottom: 10px;
+                        color: $primary-black;
+                        .k-scheduler-cell {
+                            display: block;
+                            padding: 0;
+                            &.k-scheduler-timecolumn {
+                                display: none;
+                            }
+                            .rs-scheduler-content-wrapper {
+                                display: table;
+                                width: 100%;
+                                .rsscw-time {
+                                    display: table-cell;
+                                    vertical-align: middle;
+                                    width: 7%;
+                                    text-align: center;
+                                    font-size: $font-sm;
+                                    padding: 10px;
+                                    background-color: $primary-blue;
+                                    color: $white;
+                                }
+                                .rsscw-post {
+                                    white-space: initial;
+                                    display: table-cell;
+                                    vertical-align: middle;
+                                    padding: 5px 5px 5px 15px;
+                                    width: 80%;
+                                    .rsscwp-title {
+                                        margin: 0 0 0 0;
+                                    }
+                                    .rsscwp-description {
+                                        line-height: 18px;
+                                        color: $primary-grey;
+                                    }
+                                }
+                                .rsscw-icons {
+                                    display: table-cell;
+                                    vertical-align: middle;
+                                    text-align: right;
+                                    padding: 5px;
+                                    i {
+                                        margin-left: 5px;
+                                        color: $primary-blue;
+                                        &:first-child {
+                                            margin-left: 0;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        &:nth-child(odd) {
+                            background-color: $white;
+                        }
+                        &:nth-child(even) {
+                            background-color: $tertiary-blue;
+                        }
+                    }
+                    .k-scheduler-cell {
+                        border: 0;
+                    }
+                }
+            }
+            .k-group-horizontal {
+            }
+        }
+    }
+    .k-scheduler-monthview {
+        .k-scheduler-body {
+            .k-scheduler-row {
+                .k-scheduler-cell {
+                    .k-scheduler-row {
+                        .k-scheduler-cell {
+                            border-color: $tertiary-grey;
+                            font-size: $font-sm;
+                            color: $primary-grey;
+                            &:first-child {
+                                border-left: 1px solid $tertiary-grey;
+                            }
+                        }
+                        &:first-child {
+                            .k-scheduler-cell {
+                                border-top: 1px solid $tertiary-grey;
+                            }
+                        }
+                    }
+                }
+            }
+            .k-event {
+                background-color: $secondary-blue;
+                .k-event-template {
+                    white-space: nowrap;
+                    max-width: 100%;
+                    text-overflow: ellipsis;
+                    overflow: hidden;
+                    text-align: left;
+                    padding-left: 0;
+                }
+            }
+        }
+    }
+}
+*/
+
+/* [Kendo disabled]
+.k-scheduler-layout-flex .k-scheduler-cell.k-heading-cell {
+    font-weight: normal;
+}
+*/
+.res-tabs .res-tab-transparent::after {
+    content: '';
+    position: absolute;
+    right: -17px;
+    height: 15px;
+    width: 1px;
+    background: $secondary-grey;
+    top: 50%;
+    transform: translateY(-50%);
+}
+.res-tabs .res-tab-transparent:last-child::after {
+    content: inherit !important;
+}
+
+// .rs-list-group-horizontal,
+// .res-v-tabs-content,
+// .pc-my-profile,
+// .rs-box,
+// .communication-create,
+// .rsmd-content{}
+/* [Kendo disabled]
+.rs-kendo-dropdownmenu-wrapper {
+    .k-dropdownlist .k-icon-button .k-icon.k-i-caret-alt-down:before {
+        top: 2px;
+    }
+    .rs-kendo-multi-dropdownmenu-wrapper .rskmd-arrow:before {
+        top: 2px;
+    }
+}
+*/
+}
+
+// Campaign creation tabs closed (No tab selection) styles
+// Page wrapper uses legacy rs-camp-tabs-holder (parent of .res-tabber in the DOM)
+.rs-camp-tabs-holder,
+.res-camp-tabs-holder {
+    .res-tabs-closed-wrapper {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        @include sizing($h: calc(100vh - 236px));
+        .rs-camp-tabs-big,
+        .res-camp-tabs-big {
+            .ctabs-big-label {
+                margin-bottom: 70px;
+                text-align: center;
+                h3 {
+                    margin: 0;
+                }
+            }
+            .rs-tabs-refresh,
+            .res-tabs-refresh {
+                display: none;
+            }
+        }
+        .rsctf-closed,
+        .res-ctf-closed {
+            display: flex;
+            justify-content: center;
+            .tabDefault,
+            .res-tab-default {
+                @extend .primary-box-shadow;
+                margin: 0 0 0 30px;
+                @include sizing($w: 177px, $h: 150px);
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                padding: 0;
+                background-color: $white;
+                &:first-child {
+                    margin-left: 0;
+                }
+                .rs-tooltip-wrapper {
+                    display: flex;
+                    flex-direction: column;
+                    i {
+                        margin-bottom: 15px;
+                    }
+                    span {
+                        font-size: $font-sm;
+                    }
+                }
+            }
+        }
+    }
+}
+
+// Vertical channel tabs — page wrapper is rs-vertical-tabs-wrapper (parent of .res-tabber)
+.rs-vertical-tabs-wrapper,
+.res-vertical-tabs-wrapper {
+    position: relative;
+    @extend .clearfix;
+
+    .res-tabber {
+        @extend .clearfix;
+    }
+
+    .res-tabber > .rsv-tabs-list,
+    .res-tabber > .res-v-tabs-list,
+    .res-tabber > ul.res-v-tabs-list,
+    > .rsv-tabs-list,
+    > .res-v-tabs-list {
+        @extend .box-design;
+        @extend .primary-box-shadow;
+        margin-right: 10px;
+        padding: 5px !important;
+        float: left;
+        width: 150px;
+        list-style: none;
+
+        &.vertical-tabs,
+        &.res-vertical-tabs {
+            li.tabDefault,
+            li.res-tab-default,
+            li {
+                height: 115px;
+                border-bottom: 1px solid $tertiary-grey;
+                position: relative;
+                @include flexbox($y: center, $x: center, $dir: column);
+
+                &:hover {
+                    cursor: pointer;
+                }
+
+                &:last-child {
+                    border-bottom: none;
+                }
+
+                i {
+                    margin-bottom: 5px;
+                    color: $primary-blue;
+                }
+
+                &.active {
+                    @extend .default-border-radius-trlb;
+                    @extend .tabArrow-right-big;
+                    background-color: $primary-blue !important;
+                    color: $white;
+
+                    &:after {
+                        border-left-color: $primary-blue !important;
+                    }
+
+                    i {
+                        color: $white;
+                    }
+                }
+
+                div {
+                    text-align: center;
+                    @include flexbox($dir: column);
+                }
+
+                span {
+                    display: inline-block;
+                    text-align: center;
+                    font-size: $font-xsm;
+                    line-height: 21px;
+                }
+            }
+        }
+    }
+
+    .res-tabber > .tabs-content,
+    .res-tabber > .res-tabs-content,
+    > .tabs-content,
+    > .res-tabs-content {
+        // @include sizing($w: calc(100% - 160px));
+        width: 100%;
+        @extend .clearfix;
+        float: left;
+        box-sizing: border-box;
+    }
+
+    .rs-cc-sub-tabs,
+    .res-cc-sub-tabs {
+        width: 100%;
+        max-width: 100%;
+        @extend .clearfix;
+        float: left;
+        position: relative;
+        z-index: 101;
+        box-sizing: border-box;
+
+        li {
+            height: 85px;
+        }
+    }
+
+    .rs-cc-sub-tabs + .tabs-content,
+    .rs-cc-sub-tabs + .res-tabs-content,
+    .res-cc-sub-tabs + .tabs-content,
+    .res-cc-sub-tabs + .res-tabs-content {
+        width: 100%;
+        max-width: 100%;
+        @extend .clearfix;
+        float: left;
+        clear: both;
+        box-sizing: border-box;
+
+        .rsv-tabs-content,
+        .res-v-tabs-content {
+            width: 100%;
+            max-width: 100%;
+            float: none;
+            clear: both;
+            box-sizing: border-box;
+        }
+
+        .box-design.bd-top-border {
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        .tabs-right-align.pageSub_tab,
+        .res-tabs-right-align.pageSub_tab {
+            position: relative;
+            width: 100%;
+            box-sizing: border-box;
+
+            .rs-tabs.row,
+            .res-tabs.row {
+                display: flex;
+                flex-wrap: nowrap;
+                justify-content: flex-end;
+                align-items: center;
+                width: 100%;
+                margin: 0;
+                float: none;
+            }
+
+            .tabs-content,
+            .res-tabs-content {
+                width: 100%;
+                max-width: 100%;
+                float: none;
+                clear: both;
+                box-sizing: border-box;
+            }
+        }
+    }
+}
+
+// Data Exchange — vertical category tabs (ResTabber float layout)
+.dataExchangePageCSS,
+.page-content.dataExchangePageCSS {
+    .rs-vertical-tabs-wrapper,
+    .res-vertical-tabs-wrapper {
+        position: relative;
+        clear: both;
+        box-sizing: border-box;
+
+        &::after {
+            content: '';
+            display: table;
+            clear: both;
+        }
+
+        .res-tabber {
+            @extend .clearfix;
+        }
+
+        .res-tabber > .rsv-tabs-list.vertical-tabs,
+        .res-tabber > .res-v-tabs-list.vertical-tabs,
+        .res-tabber > ul.res-v-tabs-list.vertical-tabs {
+            float: left;
+            width: 150px;
+            max-width: 150px;
+            min-width: 150px;
+            flex: none;
+            box-sizing: border-box;
+        }
+
+        .res-tabber > .tabs-content,
+        .res-tabber > .res-tabs-content {
+            float: left;
+            width: calc(100% - 175px);
+            box-sizing: border-box;
+        }
+
+        .res-tabber > .res-v-tabs-list.vertical-tabs li.res-tab-default,
+        .res-tabber > .res-v-tabs-list.vertical-tabs li.tabDefault {
+            width: 100%;
+            box-sizing: border-box;
+
+            &::before {
+                display: none !important;
+                content: none !important;
+                border: none !important;
+            }
+
+            &:not(.active)::after {
+                display: none !important;
+                content: none !important;
+            }
+        }
+    }
+}
+
+.res-tab-vertical-content,
+.tab-vertical-content {
+    width: 100%;
+    padding: 20px 40px;
+}
+
+.tabs-vertical,
+.res-tabs-vertical {
+    min-width: 110px;
+    background-color: $tertiary-grey;
+}
+
+.vertical-tabs,
+.res-vertical-tabs {
+    li.tabDefault,
+    li.res-tab-default,
+    li {
+        height: 115px;
+        @include flexbox($y: center, $x: center, $dir: column);
+
+        &:hover {
+            cursor: pointer;
+        }
+
+        &:last-child {
+            border-bottom: 0;
+        }
+
+        i {
+            margin-bottom: 5px;
+            color: $primary-blue;
+        }
+
+        &.active {
+            @extend .default-border-radius-trlb;
+            background-color: $secondary_blue;
+            color: $white;
+
+            i {
+                color: $white;
+            }
+        }
+
+        div {
+            text-align: center;
+            @include flexbox($dir: column);
+        }
+
+        span {
+            display: inline-block;
+            text-align: center;
+        }
+    }
+}
+
+// KendoDocs + scroll tab helpers
+.res-tabber {
+    .fullWhiteBackground {
+        background: $body-bg-color;
+    }
+
+    ul.res-tabs {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+
+        &.row {
+            // display: flex;
+            // flex-wrap: wrap;
+            // width: 100%;
+        }
+
+        &.row.detail-tabs,
+        &.res-tabs-auto-width {
+            flex-wrap: nowrap;
+        }
+    }
+}
+
+.res-scroll-tabbar {
+    .res-scroll-container {
+        overflow-x: auto;
+        overflow-y: hidden;
+        white-space: nowrap;
+        scrollbar-width: none;
+        display: flex;
+        align-items: center;
+        position: relative;
+        width: 100%;
+
+        &::-webkit-scrollbar {
+            display: none;
+        }
+    }
+
+    .res-scroll-tab-list-container {
+        display: inline-flex;
+        flex-wrap: nowrap;
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+
+    ul.res-scroll-tab-list-container.res-tabs.detail-tabs.detail-analytics-tab {
+        border-top-right-radius: var(--globalBorderRadius);
+        border-top-left-radius: var(--globalBorderRadius);
+        margin-bottom: 10px !important;
+
+        li.res-tab-default {
+            padding-top: 3px;
+            padding-bottom: 3px;
+            border-left: solid 2px $white;
+            transition:
+                background-color $res-tab-switch-duration $res-tab-switch-ease,
+                border-color $res-tab-switch-duration $res-tab-switch-ease;
+
+            &:first-child {
+                border-left: 0;
+                border-top-left-radius: var(--borderRadiusTabDropMenu);
+            }
+
+            &.active {
+                border-top-left-radius: var(--borderRadiusTabDropMenu);
+                border-top-right-radius: var(--borderRadiusTabDropMenu);
+                transition-delay: $res-tab-active-delay;
+
+                &::before {
+                    top: 100%;
+                    bottom: auto;
+                    z-index: 2;
+                }
+            }
+        }
+    }
+
+    ul.res-tabs.detail-tabs.detail-analytics-tab,
+    ul.rs-tabs.detail-tabs.detail-analytics-tab {
+        border-top-right-radius: var(--globalBorderRadius);
+        border-top-left-radius: var(--globalBorderRadius);
+        margin-bottom: 10px !important;
+
+        li.res-tab-default,
+        li.tabDefault {
+            padding-top: 3px;
+            padding-bottom: 3px;
+            border-left: solid 2px $white;
+
+            &:first-child {
+                border-left: 0;
+                border-top-left-radius: var(--borderRadiusTabDropMenu);
+            }
+
+            &.active {
+                border-top-left-radius: var(--borderRadiusTabDropMenu);
+                border-top-right-radius: var(--borderRadiusTabDropMenu);
+
+                &::before,
+                &:before {
+                    bottom: -8px !important;
+                }
+            }
+        }
+    }
+
+    .scroll-controls {
+        position: absolute;
+        right: 0;
+        top: 21px;
+        transform: translateY(-49%);
+        z-index: 2;
+        display: flex;
+        gap: 4px;
+        background: $white;
+        box-shadow: -10px 0 5px rgba(204, 204, 204, 0.26);
+        border-top-right-radius: var(--borderRadiusTabDropMenu);
+    }
+
+    .scroll-left,
+    .scroll-right {
+        padding: 13px 6px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+
+        &.click-off {
+            cursor: not-allowed !important;
+        }
+    }
+
+    .res-subsegemnent-dropdown::before,
+    .rs-subsegemnent-dropdown::before {
+        content: '';
+        height: 27px;
+        position: absolute;
+        width: 1px;
+        background-color: $secondary-grey;
+        top: 1px;
+        left: 30px;
+        opacity: 0.3;
+    }
+}
+
+.res-icons-tab {
+    display: flex;
+    list-style: none;
+    padding: 0;
+    margin: 0;
+
+    li {
+        background: $tertiary-blue;
+        padding: 5px;
+        margin-right: 5px;
+        border-radius: var(--borderRadiusTabDropMenu);
+
+        &.active {
+            background-color: $primary-blue;
+
+            i {
+                color: $white !important;
+            }
+        }
+    }
+}
+
+.kendo-docs-transparent-subtabs-preview .res-tabs-content {
+    display: none;
+}
+
+// .smartLinkModal-CSS .res-content-tabs-split.model_smartlink,
+// .smartLinkModal-CSS .rs-content-tabs-split.model_smartlink,
+// .kendo-docs-smartlink-tabber-preview .res-content-tabs-split.model_smartlink {
+//     padding: 10px 10px 0 10px !important;
+//     margin-left: 0 !important;
+//     margin-right: 0 !important;
+//     margin-bottom: 0 !important;
+//     padding-left: 10px !important;
+//     justify-content: flex-start;
+//     float: none;
+
+//     .res-scroll-container,
+//     .rs-scroll-container {
+//         overflow-x: auto;
+//         overflow-y: hidden;
+//         width: 100%;
+//         white-space: nowrap;
+//         scrollbar-width: none;
+//         -ms-overflow-style: none;
+
+//         &::-webkit-scrollbar {
+//             display: none;
+//         }
+
+//         &.rs-scroll-container--carousel,
+//         &.res-scroll-container--carousel {
+//             padding-right: 38px;
+//         }
+//     }
+
+//     .position-relative:has(.res-tab-source-controls),
+//     .position-relative:has(.rs-tab-source-controls) {
+//         .res-scroll-container,
+//         .rs-scroll-container {
+//             padding-right: 38px;
+//         }
+//     }
+
+//     .res-scroll-tab-list-container,
+//     .rs-scrollTabList-container {
+//         display: inline-flex;
+//         flex-wrap: nowrap;
+//         align-items: flex-end;
+//         gap: 10px;
+//         list-style: none;
+//         padding: 0;
+//         margin: 0;
+//         float: none;
+//         min-width: min-content;
+//     }
+
+//     li.res-tab-default,
+//     li.tabDefault {
+//         display: inline-flex;
+//         align-items: center;
+//         text-align: left;
+//         white-space: normal;
+//         float: none;
+//         margin-left: 0 !important;
+//         margin-bottom: 10px;
+//         padding: 10px 14px;
+//         flex: 0 0 auto;
+
+//         &::before {
+//             display: none !important;
+//             content: none !important;
+//         }
+
+//         &.active {
+//             margin-bottom: 10px;
+//             border-bottom-left-radius: 0;
+//             border-bottom-right-radius: 0;
+
+//             .res-tab-label,
+//             .tab-label {
+//                 font-size: $font-sm;
+//             }
+
+//             &::after {
+//                 content: '';
+//                 position: absolute;
+//                 bottom: -10px;
+//                 left: 0;
+//                 width: 100%;
+//                 border-bottom: solid 11px $white;
+//             }
+//         }
+
+//         .res-tab-smartlink-label-stack,
+//         .tab-smartlink-label-stack {
+//             display: flex;
+//             flex-direction: column;
+//             align-items: flex-start;
+//             justify-content: flex-end;
+//             min-width: 0;
+//             min-height: 38px;
+//             flex: 0 1 auto;
+//             max-width: 103px;
+
+//             .res-tab-subtext.res-tab-subtext-first,
+//             .tab-subtext.tab-subtext-first {
+//                 font-size: 11px;
+//                 font-weight: 400;
+//                 color: $secondary-grey;
+//                 line-height: 1.2;
+//                 opacity: 0;
+//                 max-height: 0;
+//                 margin: 0 !important;
+//                 overflow: hidden;
+//                 transform: translateY(-6px);
+//                 transition:
+//                     opacity 0.22s ease,
+//                     max-height 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+//                     margin 0.28s cubic-bezier(0.4, 0, 0.2, 1),
+//                     transform 0.24s cubic-bezier(0.4, 0, 0.2, 1);
+//                 pointer-events: none;
+//             }
+
+//             &.res-tab-smartlink-label-stack--named,
+//             &.tab-smartlink-label-stack--named {
+//                 .res-tab-subtext.res-tab-subtext-first,
+//                 .tab-subtext.tab-subtext-first {
+//                     opacity: 1;
+//                     max-height: 22px;
+//                     margin: 0 0 2px !important;
+//                     transform: translateY(0);
+//                 }
+//             }
+
+//             .res-tab-label,
+//             .tab-label {
+//                 transition:
+//                     opacity 0.2s ease,
+//                     transform 0.24s cubic-bezier(0.4, 0, 0.2, 1),
+//                     color 0.2s ease,
+//                     font-size 0.2s ease;
+//             }
+//         }
+
+//         .res-tab-label,
+//         .tab-label {
+//             display: block;
+//             line-height: 1.25;
+//             max-width: 100%;
+//             overflow: hidden;
+//             text-overflow: ellipsis;
+//             white-space: nowrap;
+//         }
+
+//         &.active .res-tab-label,
+//         &.active .tab-label,
+//         &:not(.active) .res-tab-label,
+//         &:not(.active) .tab-label {
+//             color: $primary-blue;
+//         }
+
+//         .res-tab-remove,
+//         .tab-remove {
+//             flex-shrink: 0;
+//             margin-left: 8px;
+//             align-self: center;
+//             line-height: 0;
+//         }
+//     }
+
+//     li.res-tab-add,
+//     li.tab-add {
+//         display: inline-flex;
+//         align-items: center;
+//         justify-content: center;
+//         float: none;
+//         margin-left: 0 !important;
+//         margin-bottom: 10px;
+//         padding: 10px 14px;
+//         cursor: default;
+//         flex: 0 0 auto;
+//     }
+// }
+
+.res-content-tabs-split.rs-scroll-tabbar .rs-tab-source-controls,
+.res-content-tabs-split.res-scroll-tabbar .res-tab-source-controls,
+.res-content-tabs-split.rs-scroll-tabbar .scroll-controls,
+.res-content-tabs-split.res-scroll-tabbar .scroll-controls {
+    position: absolute;
+    right: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 2;
+    display: flex;
+    gap: 0;
+    background: $white;
+    padding: 9px;
+    margin-right: 3px;
+    box-shadow: -10px 0 5px #cccccc42;
+    -webkit-box-shadow: -10px 0 5px #cccccc42;
+    border-top-right-radius: var(--borderRadiusTabDropMenu);
+    border-left: 1px solid rgba($secondary-grey, 0.25);
+
+    .scroll-left,
+    .scroll-right {
+        padding: 13px 6px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        line-height: 0;
+
+        &.click-off {
+            cursor: not-allowed !important;
+        }
+    }
+
+    .scroll-enabled {
+        background-color: $tertiary-grey;
+        margin-right: 21px;
+    }
+}
+
+// smartSlide — col-sm-11 tabs + col-sm-1 scroll controls (not overlaid on tab strip)
+// .smartLinkModal-CSS,
+// .res-tabber {
+//     .rs-scroll-tabbar,
+//     .res-scroll-tabbar {
+//         > .row {
+//             > .col-sm-11,
+//             > [class*='col-sm-11'] {
+//                 .rs-scroll-container,
+//                 .res-scroll-container {
+//                     padding-right: 0;
+//                 }
+//             }
+
+//             > .col-sm-1,
+//             > [class*='col-sm-1'] {
+//                 display: flex;
+//                 align-items: center;
+//                 justify-content: flex-end;
+//                 padding-left: 0;
+//                 padding-right: 10px;
+
+//                 .rs-tab-source-controls,
+//                 .res-tab-source-controls,
+//                 .scroll-controls {
+//                     position: static;
+//                     top: auto;
+//                     right: auto;
+//                     transform: none;
+//                     margin-right: 0;
+//                     flex-shrink: 0;
+//                 }
+
+//                 .action-controls {
+//                     display: flex;
+//                     align-items: center;
+//                     margin-left: 8px;
+//                 }
+//             }
+//         }
+//     }
+// }
+
+.model_smartlink {
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+    border-top-left-radius: var(--globalBorderRadius) !important;
+    border-top-right-radius: var(--globalBorderRadius) !important;
+}
+
+// ============================================================================
+// Page-specific tabbar overrides (migrated from src/Styles/pages & brand)
+// ============================================================================
+
+.res-tabber {
+    .res-tabs-2.email-rs-tab.res-tabs-auto-width {
+        .res-tab-default,
+        .tabDefault {
+            background-color: transparent;
+            padding: 0;
+            margin-right: 19px;
+
+            &.active {
+                background-color: transparent;
+            }
+
+            &:last-child::after {
+                content: inherit;
+            }
+
+            &::after,
+            &:after {
+                content: '';
+                position: absolute;
+                right: -11px;
+                height: 15px;
+                width: 1px;
+                background: $secondary-grey;
+                top: 50%;
+                transform: translateY(-50%);
+            }
+        }
+    }
+
+    .res-tabs.detail-analytics-tab.no-dropdown li.res-tab-default:last-child,
+    .res-tabs.detail-analytics-tab.no-dropdown li.tabDefault:last-child,
+    .rs-tabs.detail-analytics-tab.no-dropdown li.res-tab-default:last-child,
+    .rs-tabs.detail-analytics-tab.no-dropdown li.tabDefault:last-child {
+        position: relative;
+    }
+
+    .detail-tabs li {
+        .res-tab-default,
+        .tabDefault {
+            width: auto;
+            padding: 0 20px;
+            border-radius: $theme-radius-size-sm !important;
+            margin-right: 0;
+        }
+    }
+
+    .res-tabs.icon-tabs,
+    .rs-tabs.icon-tabs {
+        display: flex;
+
+        li.res-tab-default,
+        li.tabDefault {
+            border-radius: var(--globalBorderRadius);
+            padding: 5px;
+            margin-left: 5px;
+            width: 36px;
+            height: 36px;
+            background: #f0f8ff;
+
+            &.active {
+                background: $primary-blue;
+
+                i {
+                    color: $white !important;
+                }
+
+                &::before,
+                &:before {
+                    content: inherit !important;
+                }
+            }
+
+            span {
+                line-height: inherit;
+            }
+        }
+    }
+}
+
+.MDC-subtab-tip {
+    .res-tabber li.res-tab-default.active::before,
+    .res-tabber li.tabDefault.active::before {
+        z-index: 111;
+    }
+}
+
+.default-tab-wrapper,
+.carousel-tab-wrapper {
+    &.no-scroll-res-content-tabs,
+    &.no-scroll-rs-content-tabs {
+        .res-tabber .res-content-tabs-split {
+            padding-left: 20px;
+            margin: 0 0 20px 0;
+            border-radius: 7px 7px 0 0;
+        }
+    }
+}
+
+.default-tab-wrapper {
+    &.no-scroll-res-content-tabs,
+    &.no-scroll-rs-content-tabs {
+        .res-tabber .res-content-tabs-split {
+            padding-left: 10px;
+        }
+    }
+
+    .res-tabber .res-scroll-tabbar .res-scroll-container .res-scroll-tab-list-container,
+    .res-tabber .rs-scroll-tabbar .rs-scroll-container .rs-scrollTabList-container {
+        padding-right: 30px;
+    }
+}
+.no-scroll-rs-content-tabs {
+        .res-tabber .res-content-tabs-split {
+            padding: 10px 10px 0;
+            padding-left: 111px;
+        }}
+
+.carousel-tab-wrapper {
+    &.no-scroll-res-content-tabs,
+    &.no-scroll-rs-content-tabs {
+        .res-tabber .res-content-tabs-split {
+            margin-bottom: 0;
+            background-color: $white;
+            margin: 0;
+            padding: 10px 0;
+            border-radius: 0;
+
+            li.res-tab-default,
+            li.tabDefault {
+                border: solid 1px $quaternary-blue;
+                margin-bottom: 0;
+
+                &.active {
+                    background-color: $tertiary-grey;
+                    border: 0;
+                    margin-bottom: 0;
+
+                    &::after,
+                    &:after {
+                        border-bottom: unset;
+                        height: 21px;
+                        background-color: $tertiary-grey;
+                        bottom: -12px;
+                    }
+                }
+            }
+        }
+
+        .smartLinkModal-CSS .res-tabber .res-content-tabs-split {
+            background-color: $tertiary-grey;
+            padding: 0 0 0 10px;
+            margin-bottom: 20px;
+        }
+    }
+
+    .res-tabber .res-scroll-tabbar .res-scroll-container .res-scroll-tab-list-container,
+    .res-tabber .rs-scroll-tabbar .rs-scroll-container .rs-scrollTabList-container {
+        padding-right: 38px;
+    }
+}
+
+.digipop-tab.res-tabs-2.res-tabs-auto-width {
+    overflow-y: hidden;
+
+    .res-tab-default,
+    .tabDefault {
+        display: flex;
+        align-items: center;
+        margin-bottom: 10px;
+        margin-left: 19px;
+        background: transparent;
+
+        &::after,
+        &:after {
+            content: '';
+            position: absolute;
+            right: -11px;
+            height: 15px;
+            width: 1px;
+            background: $secondary-grey;
+            top: 50%;
+            transform: translateY(-50%);
+        }
+
+        span {
+            line-height: 20px;
+        }
+
+        .res-tab-remove,
+        .tab-remove {
+            margin-left: 5px;
+        }
+    }
+}
+
+.create-offer-offer-tabs {
+    .res-flat-tabs .res-content-tabs-flat li.res-tab-default,
+    .rs-flat-tabs .rs-content-tabs-flat li.tabDefault {
+        transition: none;
+    }
+
+    .res-tabs .res-tab-default.active::before,
+    .res-tabs .tabDefault.active::before,
+    .rs-tabs .res-tab-default.active::before,
+    .rs-tabs .tabDefault.active::before {
+        border-top: 0;
+    }
+
+    .res-tabs .res-tab-transparent,
+    .rs-tabs .tabTransparent {
+        margin-right: 0;
+    }
+
+    .res-flat-tabs .res-content-tabs-flat li.res-tab-default:first-child,
+    .rs-flat-tabs .rs-content-tabs-flat li.tabDefault:first-child {
+        margin-left: 25px;
+    }
+}
+
+.res-content-tabs-split.offerMangement {
+    padding-top: 10px;
+    padding-bottom: 10px;
+    padding-left: 111px !important;
+
+    .res-tab-source-controls,
+    .rs-tab-source-controls {
+        margin-top: 4px;
+        display: none !important;
+    }
+
+    li.res-tab-default.active::after,
+    li.tabDefault.active::after {
+        content: '';
+        position: absolute;
+        bottom: -10px;
+        width: 100%;
+        border-bottom: solid 10px $white;
+    }
+
+    .res-scroll-container,
+    .rs-scroll-container {
+        overflow-x: inherit;
+        overflow-y: inherit;
+    }
+}
+
+.pulish_form_tabbar {
+    .res-tab-default.active::before,
+    .tabDefault.active::before,
+    .res-tabs-2 .res-tab-default.active::before,
+    .res-tabs-2 .tabDefault.active::before {
+        bottom: -9px;
+    }
+}
+
+.res-tabs-align-top,
+.rs-tabs-align-top {
+    position: relative;
+
+    .res-tabber .res-tabs,
+    .res-tabber .rs-tabs {
+        position: absolute;
+        top: -50px;
+        right: 0;
+
+        .res-tab-default,
+        .tabDefault {
+            border-right-color: transparent;
+        }
+    }
+}
+
+.detail-analytics-tab-skeleton {
+    min-height: 43px;
+    align-items: center;
+    background-color: #e2e7ee !important;
+
+    li.res-tab-default,
+    li.tabDefault {
+        padding: 0 16px;
+        margin-right: 4px;
+        background-color: #e2e7ee;
+    }
+}
+
+.tabber-skeleton-bar {
+    min-height: 55px;
+    padding: 0 16px;
+    background-color: #e2e7ee;
+    border-radius: var(--borderRadiusTabDropMenu, 6px);
+    align-items: center;
+
+    .tabber-skeleton-bar__inner {
+        span.react-loading-skeleton {
+            background-color: #e2e7ee !important;
+            background-image: linear-gradient(90deg, #dce1e8, #e8ecf2, #dce1e8) !important;
+        }
+    }
+}
+
+.tabbar-line-chart-nodata {
+    min-height: 220px;
+    height: 310px;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    .skeleton-span-con.skeleton-line-chart-con {
+        width: 100%;
+        min-width: 0;
+        max-width: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .list-acquisition-chart-skeleton-wrap {
+        width: 100%;
+        max-width: 100%;
+    }
+
+    .list-acquisition-chart-skeleton-inner {
+        right: 0 !important;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .res-tabber {
+        .res-tab-default,
+        .res-tab-transparent {
+            transition: none !important;
+
+            &::before {
+                transition: none !important;
+            }
+
+            span,
+            .res-tab-label {
+                transition: none !important;
+            }
+        }
+    }
+}
+
+.rs-vertical-tabs-wrapper {
+  .res-tabber {
+      .res-tabs-content {
+        width: calc(100% - 160px) !important;
+
+        .res-tabber{
+          .res-tabs-content {
+            width: 100% !important;
+          }
+        
+      }
+    }
+  }
+}
+
+.res-tabber .res-tabs-2.email-rs-tab.ai-email-tab-tab .res-tab-default.active span.res-tab-label{
+        color: $primary-blue !important;
+    }
+//smart link start
+.smartLinkModal-CSS .res-content-tabs-split.model_smartlink {
+	padding: 10px 10px 0;
+	max-width: 100%;
+
+	li.res-tab-default {
+		// Row flex on the tab keeps remove icon and active ::after border; stack titles in .tab-smartlink-label-stack.
+		align-items: center;
+		text-align: left;
+		white-space: normal;
+		margin-bottom: 10px;
+
+		.res-tab-smartlink-label-stack {
+			display: flex;
+			flex-direction: column;
+			align-items: flex-start;
+			justify-content: center;
+			min-width: 70px;
+			flex: 0 1 auto;
+			max-width: 103px;
+
+			// Subtitle (Smart Link N): collapsed until user types — smooth like a floating label
+			.res-tab-subtext.res-tab-subtext-first {
+				font-size: 11px;
+				font-weight: 400;
+				color: $secondary-grey;
+				line-height: 1.2;
+				opacity: 0;
+				max-height: 0;
+				margin: 0 0 2px !important;
+				overflow: hidden;
+				transform: translateY(-6px);
+				transition: opacity 0.22s ease, max-height 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+					margin 0.28s cubic-bezier(0.4, 0, 0.2, 1), transform 0.24s cubic-bezier(0.4, 0, 0.2, 1);
+				pointer-events: none;
+			}
+
+			&--named .res-tab-subtext.res-tab-subtext-first {
+				opacity: 1;
+				max-height: 22px;
+				margin: 0 0 2px !important;
+				transform: translateY(0);
+			}
+
+			.res-tab-label {
+				transition: opacity 0.2s ease, transform 0.24s cubic-bezier(0.4, 0, 0.2, 1), color 0.2s ease,
+					font-size 0.2s ease;
+			}
+		}
+
+		.res-tab-label {
+			display: block;
+			line-height: 1.25;
+			max-width: 100%;
+			overflow: hidden;
+			text-overflow: ellipsis;
+			white-space: nowrap;
+		}
+
+		&.active .res-tab-label {
+			color: $primary-blue;
+			font-size: $font-sm;
+		}
+
+		&:not(.active) .res-tab-label {
+			color: $primary-blue;
+		}
+
+		.res-tab-remove {
+			flex-shrink: 0;
+			margin-left: 8px;
+			align-self: center;
+			line-height: 0;
+		}
+	}
+}
+//smart link end

@@ -1,0 +1,88 @@
+// KendoDocs class prefix — change $res-prefix here only.
+// JS mirror: kendoDocsPrefix.config.js → RES_PREFIX (must stay equal).
+
+$res-prefix: 'res' !default;
+
+@function res-class($suffix) {
+    @return '#{$res-prefix}-#{$suffix}';
+}
+
+@function res-kendo-class($block, $suffix: null) {
+    @if $suffix == null or $suffix == '' {
+        @return '#{$res-prefix}-kendo-#{$block}';
+    }
+    @if str-index($suffix, '--') == 1 {
+        @return '#{$res-prefix}-kendo-#{$block}#{$suffix}';
+    }
+    @return '#{$res-prefix}-kendo-#{$block}-#{$suffix}';
+}
+
+// DropDown (sync with RES_KENDO_DD_CLASS)
+$res-dd-prefix: res-kendo-class('dd');
+$res-dd-wrapper: res-kendo-class('dd', 'menu-wrapper');
+$res-dd-sublabel: res-kendo-class('dd', 'sub-label');
+$res-dd-sub-floating-label: res-kendo-class('dd', 'sub-floating-label');
+$res-dd-floating-label-text: res-kendo-class('dd', 'floating-label-text');
+$res-dd-value-rows: res-kendo-class('dd', 'value-rows');
+$res-dd-state-sublabel: res-kendo-class('dd', 'sublabel');
+$res-dd-list-popup: res-kendo-class('dd', 'list-popup');
+$res-dd-bordertip: res-kendo-class('dd', 'bordertip');
+$res-dd-meta: res-kendo-class('dd', 'meta');
+
+// Icon DropDownButton (sync with RES_KENDO_ICON_DD_CLASS.base / .wrapper / .popup)
+$res-icon-dd-prefix: res-kendo-class('icon-dd');
+$res-icon-dd-wrapper: res-kendo-class('icon-dd', 'wrapper');
+$res-icon-dd-popup: res-kendo-class('icon-dd', 'popup');
+
+// MultiSelect (sync with RES_KENDO_MS_CLASS)
+$res-ms-prefix: res-kendo-class('ms');
+$res-ms-wrapper: res-kendo-class('ms', 'menu-wrapper');
+$res-ms-field: res-kendo-class('ms', 'field');
+$res-ms-list-popup: res-kendo-class('ms', 'list-popup');
+$res-ms-popup: res-kendo-class('ms', 'popup');
+$res-ms-custom-tag: res-kendo-class('ms', 'custom-tag');
+$res-ms-meta: res-kendo-class('ms', 'meta');
+
+// Other Kendo blocks
+$res-switch-prefix: res-kendo-class('switch');
+$res-scheduler-prefix: res-kendo-class('scheduler');
+$res-kendo-datepicker-wrapper: res-kendo-class('datepicker-wrapper');
+$res-kendo-timepicker-wrapper: res-kendo-class('timepicker-wrapper');
+$res-kendo-datetimepicker-wrapper: res-kendo-class('datetimepicker-wrapper');
+$res-kendo-datetimepicker-popup: res-kendo-class('datetimepicker-popup');
+$res-kendo-datetimepicker-footer: res-kendo-class('datetimepicker-footer');
+$res-kendo-label: res-kendo-class('label');
+$res-checkbox-class: res-class('checkbox');
+
+// Text input (sync with RES_INPUT_CLASS)
+$res-input-wrapper: res-class('input-wrapper');
+$res-input-field: res-class('input-field');
+$res-input-placeholder-wrapper: res-class('input-placeholder-wrapper');
+$res-input-wrapper-required: res-class('input-wrapper-required');
+$res-input-icon-wrapper: res-class('input-icon-wrapper');
+$res-input-validate-success: res-class('input-validate-success');
+$res-input-form-field-icon: res-class('input-form-field-icon');
+$res-input-border-bottom-required: res-class('input-border-bottom-required');
+$res-input-password-meter: res-class('input-password-meter');
+$res-input-meta: res-class('input-meta');
+$res-input-meta-text: res-class('input-meta-text');
+$res-input-meta-content: res-class('input-meta-content');
+$res-input-icon-placeholder: res-class('input-icon-placeholder');
+$res-input-custom-icon: res-class('input-custom-icon');
+$res-input-custom-double-icon: res-class('input-custom-double-icon');
+$res-input-segment-loader: res-class('input-segment-loader');
+$res-input-label-required: res-class('input-label-required');
+$res-input-label-text: res-class('input-label-text');
+$res-input-bg: res-class('input-bg');
+
+// DateRangePicker (sync with RES_DATE_RANGE_CLASS)
+$res-daterange-picker: res-class('daterange-picker');
+$res-dt-calendar-text: res-class('dt-calendar-text');
+$res-dt-calendar-icon: res-class('dt-calendar-icon');
+$res-dt-arrow-icon: res-class('dt-arrow-icon');
+$res-daterangepicker-list-view: res-class('daterangepicker-list-view');
+$res-daterangepicker-buttons: res-class('daterangepicker-buttons');
+$res-daterangepicker-content: res-class('daterangepicker-content');
+$res-kendo-daterange-picker-wrapper: res-kendo-class('daterange-picker', 'wrapper');
+$res-kendo-input-from-date-wrapper: res-kendo-class('input', 'from-date-wrapper');
+$res-kendo-input-to-date-wrapper: res-kendo-class('input', 'to-date-wrapper');

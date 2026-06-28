@@ -1,0 +1,49 @@
+/* Audience score page UI - start */
+.audienceScorePageCSS {
+    .pref-as-card-wrapper {
+        .pacrw-heading {
+            border: 0;
+        }
+        // .k-picker .k-input-inner .k-input-value-text {
+        //     top: -2px;
+        // }
+        // .rs-kendo-dropdownmenu-wrapper .k-floating-label-container > .k-label {
+        //     top: -13px;
+        // }
+    }
+}
+.targetListPage {
+    &.modal {
+        .sticky {
+            position: relative;
+            top: 0;
+            width: 25%;
+            .rs-targetList-leftSide {
+                .accordionBlock {
+                    box-shadow: none !important;
+                    //height: calc(100vh - 330px);
+                }
+            }
+        }
+        .rs-targetList-rightSide {
+            //width: 70%;
+            form {
+                margin-top: 33px;
+                .targetListGroupBlock {
+                    box-shadow: none !important;
+                }
+            }
+        }
+    }
+}
+/* Audience score page UI - end */
+
+.pacrw-content-head {
+/* [Kendo disabled]
+    .rs-kendo-dropdownmenu-wrapper.errorContainer {
+        .k-floating-label {
+            top: -4px !important;
+        }
+    }
+*/
+}

@@ -1,0 +1,332 @@
+.assign-roleusers-list {
+    //border-top: solid 1px $secondary_blue;
+    height: calc(100vh - 312px);
+    box-shadow: none !important;
+    ul {
+        li {
+            // padding: 10px;
+            border: 0;
+            border-bottom: solid 1px $tertiary-grey;
+            border-radius: 0 !important;
+
+            &:nth-child(odd) {
+                background-color: $tertiary-blue;
+            }
+
+            &:nth-child(even) {
+                background-color: $white;
+            }
+
+            &:last-child {
+                border-bottom: none;
+            }
+
+            &.list-group-item.active {
+                background-color: $secondary_blue;
+                margin-top: 0;
+                .assign-user-card-status small{
+                    color: $white !important;
+                }
+            }
+        }
+    }
+}
+
+/* Entity assignment card styles */
+.assign-entity-cards-container {
+    padding: 10px;
+}
+
+.assign-entity-wrapper {
+    border-radius: 10px;
+    overflow: hidden;
+    border: 1px solid $tertiary-grey;
+
+}
+
+
+.assign-entity-header {
+    background: $secondary-blue;
+    padding: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-top-left-radius: var(--globalBorderRadius);
+    border-top-right-radius: var(--globalBorderRadius);
+
+}
+
+.assign-entity-header-left {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+
+.assign-entity-user-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.assign-entity-label {
+    color: $white;
+    letter-spacing: 0.5px;
+}
+
+.assign-entity-name {
+    color: $white;
+}
+
+.assign-modal-entity-list {
+    min-height: 100px;
+}
+
+// When search is active, hide the dropdown and expand search to full width
+.rs-assign-role .rs-search-filter {
+    position: absolute;
+    right: 0;
+    transition : width 0.5s ease;
+    &.active {
+        width: 100%;
+        
+    }
+
+}
+
+.rs-assign-role .d-flex:has(> .rs-search-filter.active) {
+    >.rs-bootstrap-dropdown {
+        display: none;
+    }}
+
+
+.assign-entity-cards {
+    padding: 10px 0;
+}
+
+.assign-entity-card {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px;
+    border-bottom: 1px solid $tertiary-grey;
+
+    &:last-child {
+        border-bottom: none;
+    }
+}
+
+.assign-entity-card-left {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.assign-entity-card-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: $tertiary-blue;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.assign-entity-card-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.assign-entity-card-label {
+    color: $secondary-grey;
+    letter-spacing: 0.5px;
+}
+
+.assign-entity-card-name {
+    color: $primary-black;
+}
+
+.assign-entity-card-right {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.assign-entity-card-role {
+    display: flex;
+    flex-direction: column;
+    min-width: 120px;
+}
+
+.assign-entity-card-role-label {
+    font-size: 10px;
+    color: $secondary-grey;
+
+    letter-spacing: 0.5px;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+}
+
+
+.rs-dropdown-checkbox-item {
+    display: flex !important;
+    align-items: center;
+    gap: 8px;
+}
+
+.rs-dropdown-checkbox {
+    width: 16px;
+    height: 16px;
+    accent-color: $primary-blue;
+    cursor: pointer;
+    flex-shrink: 0;
+}
+
+.rs-dropdown-footer {
+    border-top: 1px solid $tertiary-grey;
+    padding: 4px 0;
+    background: $white;
+}
+
+.rs-assign-btn {
+    padding: 6px 16px !important;
+    font-size: 13px !important;
+}
+
+.rs-cancel-btn {
+    padding: 6px 16px !important;
+    font-size: 13px !important;
+}
+
+/* User card list styles */
+.assign-user-card-list {
+    .assign-user-card {
+        display: flex;
+        align-items: center;
+        // padding: 14px 16px;
+        border: 0;
+        border-bottom: solid 1px $tertiary-grey;
+        border-radius: 0 !important;
+        cursor: pointer;
+        transition: background-color 0.15s;
+
+        &:hover {
+            background-color: $tertiary-blue;
+        }
+
+        &.active {
+            background-color: $secondary_blue;
+        }
+    }
+}
+
+.assign-user-card-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.assign-user-card-status {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.assign-status-assigned {
+    color: $success;
+    letter-spacing: 0.3px;
+}
+
+.assign-status-unassigned {
+    color: $secondary-grey;
+    letter-spacing: 0.3px;
+}
+
+.assign-entity-link {
+    color: $primary-blue;
+
+    i {
+        visibility: hidden;
+    }
+}
+
+.assign-user-card:hover .assign-entity-link i {
+    visibility: visible !important;
+}
+
+.assign-arrow-label {
+    font-size: 11px;
+    color: $secondary-grey;
+    letter-spacing: 0.5px;
+    margin-top: 6px;
+}
+
+/* Entity details modal styles */
+
+
+.assign-modal-header-content {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+}
+
+
+.assign-modal-user-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.assign-modal-entity-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px;
+    border: 1px solid $tertiary-grey;
+    border-radius: 10px;
+    margin-bottom: 21px;
+
+    &:last-child {
+        margin-bottom: 0;
+    }
+}
+
+.assign-modal-entity-left {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.assign-modal-entity-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    background: $tertiary-blue;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.assign-modal-entity-info {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.assign-modal-entity-parent {
+    color: $secondary-grey;
+    font-weight: 400;
+}
+
+
+.assign-modal-entity-role {
+    display: flex;
+    align-items: center;
+}
+
+.assign-user-card.active .assign-user-card-status small {
+    color: $white;
+
+    i {
+        color: $white !important;
+    }
+}

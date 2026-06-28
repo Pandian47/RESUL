@@ -1,0 +1,380 @@
+@import '../../Styles/abstarct/variables';
+
+/* Customer Journey Flow Container */
+.customer-journey-flow-container {
+    width: 100%;
+    height: 500px;
+    background-color: $white;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+/* Channel Node Styles */
+.channel-node {
+    width: 60px;
+    height: 60px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    border: 3px solid var(--channel-border-color, $secondary-green);
+    background-color: var(--channel-bg-color, $secondary-green);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.channel-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    i {
+        color: $white;
+        font-size: $icon-md;
+    }
+}
+
+.channel-count {
+    position: absolute;
+    top: -8px;
+    right: -8px;
+    left: auto;
+    transform: none;
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-size: $font-xxs;
+    font-weight: 600;
+    color: $white;
+    white-space: nowrap;
+    border: 2px solid $white;
+    z-index: 10;
+    background-color: $secondary-green;
+}
+
+/* Page Node Styles */
+.page-node {
+    width: 80px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: relative;
+    padding-bottom: 20px;
+    min-height: 120px;
+}
+
+.page-count-badge {
+    position: absolute;
+    top: -8px;
+    right: -8px;
+    left: auto;
+    transform: none;
+    background-color: $secondary-green;
+    color: $white;
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-size: $font-xxs;
+    font-weight: 600;
+    white-space: nowrap;
+    z-index: 10;
+    border: 2px solid $white;
+}
+
+.flowchart-page-content {
+    width: 60px;
+    height: 60px;
+    background-color: $white;
+    border: 1px solid $tertiary-grey;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.page-icon-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+}
+
+.page-lines {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 8px;
+}
+
+.page-line {
+    width: 35px;
+    height: 3px;
+    background-color: $green-light;
+    border-radius: 2px;
+}
+
+.page-line.short {
+    width: 20px;
+}
+
+.page-download-icon {
+    position: absolute;
+    bottom: 58px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: $icon-md;
+    height: $icon-md;
+    background-color: $red-medium;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    z-index: 5;
+    color: $white;
+
+    svg {
+        width: 14px;
+        height: 14px;
+    }
+}
+
+.page-label {
+    margin-bottom: 10px;
+    margin-top: 5px;
+    font-size: $font-xxs;
+    color: $primary-grey;
+    text-align: center;
+    max-width: 120px;
+    word-wrap: break-word;
+    line-height: 1.4;
+    padding: 0 4px;
+    overflow: visible;
+    white-space: normal;
+}
+
+/* Header Node Styles */
+.header-node {
+    text-align: center;
+    min-width: 120px;
+    padding: 8px;
+}
+
+.header-label {
+    font-weight: 600;
+    font-size: $font-xs;
+    color: $secondary-black;
+    margin-bottom: 4px;
+}
+
+.header-stats {
+    font-size: $font-xxs;
+    color: $primary-grey;
+}
+
+/* Goal Node Styles */
+.goal-node {
+    width: 80px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: relative;
+    padding-bottom: 20px;
+    min-height: 120px;
+}
+
+.goal-count-badge {
+    position: absolute;
+    top: -8px;
+    right: -8px;
+    left: auto;
+    transform: none;
+    background-color: $secondary-green;
+    color: $white;
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: $font-xxs;
+    font-weight: 600;
+    white-space: nowrap;
+    z-index: 10;
+    border: 2px solid $white;
+}
+
+.goal-content {
+    width: 60px;
+    height: 70px;
+    background-color: $white;
+    border: 1px solid $tertiary-grey;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+
+    .page-lines {
+        padding: 8px;
+    }
+}
+
+.goal-flag {
+    position: absolute;
+    top: -8px;
+    left: -8px;
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: $secondary-green;
+
+    svg {
+        width: 20px;
+        height: 20px;
+    }
+}
+
+.goal-label {
+    margin-top: 10px;
+    font-size: $font-xxs;
+    color: $primary-grey;
+    text-align: center;
+    max-width: 120px;
+    word-wrap: break-word;
+    line-height: 1.4;
+    padding: 0 4px;
+    overflow: visible;
+    white-space: normal;
+}
+
+/* Animated Dashed Edge */
+.animated-dash {
+    animation: dash 1s linear infinite;
+}
+
+@keyframes dash {
+    to {
+        stroke-dashoffset: -10;
+    }
+}
+
+/* Controls Styling */
+.journey-flow-controls {
+    display: flex;
+    flex-direction: row;
+    gap: 5px;
+    background: transparent;
+    box-shadow: none !important;
+    border: none;
+}
+
+.journey-flow-controls .react-flow__controls-button {
+    border: 0;
+    padding: 5px;
+    width: 28px;
+    height: 28px;
+    border-radius: 5px;
+    background-color: $tertiary-blue;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background-color 0.2s ease;
+    opacity: 1 !important;
+
+    &:hover {
+        background-color: rgba(0, 0, 0, 0.05);
+        opacity: 1 !important;
+
+        i {
+            opacity: 1 !important;
+        }
+    }
+
+    i {
+        opacity: 1 !important;
+    }
+}
+
+.journey-control-btn {
+    border: 0;
+    padding: 5px;
+    width: 28px;
+    height: 28px;
+    border-radius: 5px;
+    background-color: $tertiary-blue;
+    transition: background-color 0.2s ease;
+    opacity: 1 !important;
+
+    &:hover {
+        background-color: rgba(0, 0, 0, 0.05);
+        opacity: 1 !important;
+
+        i {
+            opacity: 1 !important;
+        }
+
+        .rs-tooltip-wrapper {
+            opacity: 1 !important;
+        }
+    }
+
+    i {
+        opacity: 1 !important;
+        transition: none;
+    }
+
+    .rs-tooltip-wrapper {
+        line-height: 0;
+        opacity: 1 !important;
+    }
+}
+
+/* React Flow Overrides */
+.customer-journey-flow-container .react-flow__node {
+    cursor: default;
+    overflow: visible !important;
+    
+    /* Ensure labels are not clipped */
+    .page-node,
+    .goal-node {
+        overflow: visible;
+    }
+}
+
+/* Prevent React Flow from clipping node content */
+.customer-journey-flow-container .react-flow__node-wrapper {
+    overflow: visible !important;
+}
+
+.customer-journey-flow-container .react-flow__renderer {
+    overflow: visible !important;
+}
+
+.customer-journey-flow-container .react-flow__edge-path {
+    stroke: $secondary-grey;
+    stroke-width: 1.5;
+}
+
+.customer-journey-flow-container .react-flow__background {
+    background-color: $quaternary-grey;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .customer-journey-flow-container {
+        height: 400px;
+    }
+
+    .channel-node {
+        width: 50px;
+        height: 50px;
+    }
+
+    .flowchart-page-content {
+        width: 50px;
+        height: 60px;
+    }
+
+    .page-label,
+    .goal-label {
+        font-size: $font-xxs;
+    }
+}

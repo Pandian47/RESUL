@@ -1,0 +1,683 @@
+/*$theme-radius-size-sm: 5px;
+$quaternary-blue: #c2cfe3; // box border color
+$primary-blue: #0018f9; //Main Heading, icons, save btn
+$white: #ffffff; //Main Heading, icons, save btn*/
+
+.skeleton-span-con {
+    // height: 100%;
+    position: relative;
+    height: 100%;
+    .nodata-bar.nodata-skeleton-con{
+        top: 47%;
+    &.customTop {
+         top: 55% ;
+    }
+    }
+   
+    span {
+        border-radius: 5px;
+    }
+    .skeleton-span {
+        // float: left;
+        display: flex;
+        flex: 1;
+        flex-direction: column;
+        width: 100%;
+        position: relative;
+        &.circle-left {
+            span {
+                margin-left: 0;
+            }
+        }
+        span {
+            float: left;
+            // border-radius: 0;
+            display: block;
+            height: 100%;
+            flex: 1;
+            margin: 0 auto;
+            border-radius: $theme-radius-size-sm;
+            &[class*='css-'] {
+                width: 100%;
+            }
+            &:last-child {
+                span {
+                    height: 100%;
+                }
+            }
+        }
+        &.fill {
+            span {
+                width: 100%;
+            }
+        }
+        &.center {
+            span {
+                text-align: center;
+            }
+            .react-loading-skeleton {
+                display: inline-block;
+                border-radius: 250px !important;
+            }
+        }
+    }
+    hr {
+        // height: 5px;
+        width: 100%;
+        float: left;
+        border: none;
+        margin: 0 !important;
+        background: none;
+    }
+}
+.flex-row {
+    flex-direction: row;
+}
+.flex-column {
+    flex-direction: column;
+}
+.pie-legend-skeleton-wr {
+    width: 250px;
+}
+.skeleton-span-con .semipie-legend-skeleton-wr span {
+    width: fit-content;
+}
+.pie-legend-skeleton {
+    position: relative;
+}
+.mt130 {
+    margin-top: 130px !important;
+}
+// bubble
+.bubble-chart-skeleton {
+    position: relative;
+    height: 320px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
+
+    > span {
+        position: absolute;
+    }
+}
+.bubble-chart-skeleton > span {
+    &:first-child {
+        left: 24%;
+        top: 55%;
+    }
+    &:nth-child(2) {
+        left: 35%;
+        top: 30%;
+    }
+    &:nth-child(3) {
+        left: 79%;
+        top: 44%;
+    }
+    &:nth-child(4) {
+        left: 42%;
+        top: 71%;
+    }
+    &:nth-child(5) {
+        left: 62%;
+        top: 58%;
+    }
+    &:nth-child(6) {
+        left: 48%;
+        top: 41%;
+    }
+    &:nth-child(7) {
+        left: 63%;
+        top: 26%;
+    }
+}
+
+.listing-preview-no-data-panel {
+    .nodata-bar.listing-preview-no-data,
+    .nodata-bar.nodata-skeleton-con.listing-preview-no-data {
+        position: relative;
+        top: auto !important;
+        left: auto !important;
+        transform: none !important;
+    }
+}
+
+.react-loading-skeleton {
+    background-color: #e2e7ee !important;
+    &:after {
+        background-image: linear-gradient(90deg, #e2e7ee, #eef2f9, #e2e7ee) !important;
+    }
+}
+// Gallery card skeleton shimmer — moved to CommonComponents/ResTemplateCard/ResTemplateCard.scss
+.commlistpreview,
+.analyticslistpreview {
+    .listing-preview-skeleton .gl-img,
+    .listing-preview-skeleton__panel.gl-img {
+        position: relative;
+        overflow: hidden;
+        background-color: #e2e7ee;
+        transform: translateZ(0);
+        backface-visibility: hidden;
+        
+        &:after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background-image: linear-gradient(90deg, transparent, #eef2f9, transparent);
+            animation: shimmer 2s infinite;
+            will-change: transform;
+            transform: translateZ(0);
+        }
+    }
+    
+    @keyframes shimmer {
+        0% {
+            left: -100%;
+        }
+        100% {
+            left: 100%;
+        }
+    }
+}
+
+.skeleton-shimmer {
+    position: relative;
+    overflow: hidden;
+    background-color: #e2e7ee;
+    transform: translateZ(0);
+    backface-visibility: hidden;
+    
+    &:after {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background-image: linear-gradient(90deg, transparent, #eef2f9, transparent);
+        animation: shimmer 2s infinite;
+        z-index: 1;
+        will-change: transform;
+        transform: translateZ(0);
+    }
+    
+    @keyframes shimmer {
+        0% {
+            left: -100%;
+        }
+        100% {
+            left: 100%;
+        }
+    }
+}
+
+
+
+.skeleton-line-chart-con .skeleton-line-chart-bars {
+    height: 220px;
+}
+
+/* Line chart skeleton full height (ListAqusitionSekelton when isChartSkeleton) */
+.skeleton-line-chart-con {
+    height: 100%;
+    min-height: 220px;
+    display: flex;
+    flex-direction: column;
+}
+
+.list-acquisition-chart-skeleton-wrap {
+    height: 100%;
+    min-height: 220px;
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+}
+
+.list-acquisition-chart-skeleton-wrap .list-acquisition-chart-skeleton-inner {
+    flex: 1;
+    min-height: 180px;
+}
+
+.skeleton-bottom-align {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+    align-items: flex-end;
+    // transform: rotate(180deg);
+    // position: absolute;
+}
+
+%new-theme-shadow {
+    border: 1px solid $quaternary-blue;
+    border-radius: var(--borderRadiusTabDropMenu);
+    overflow: hidden;
+    transition: 0.3s all ease;
+    /*&:hover {
+        box-shadow: 0px 4px 9px -2px #0000001f;
+        // -webkit-box-shadow: 0 0 5px 0 rgba(0, 0, 0, 0.05), 0 0 5px 0 rgba(0, 0, 0, 0.05);
+        // box-shadow: 0 0 5px 0 rgba(0, 0, 0, 0.05), 0 0 5px 0 rgba(0, 0, 0, 0.05);
+    }*/
+}
+%center-div {
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    position: absolute;
+}
+.no-data-container {
+    position: relative;
+
+    .rs-skeleton-table__bars {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        width: 100%;
+        box-sizing: border-box;
+        flex: 0 0 auto;
+    }
+
+    .rs-skeleton-table__bar {
+        width: 100%;
+        height: 33px;
+        border-radius: 10px;
+        background-color: #e2e7ee;
+        flex-shrink: 0;
+        box-sizing: border-box;
+    }
+
+    &.rs-skeleton-table--fill-height {
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-start;
+        align-items: stretch;
+
+        .rs-skeleton-table__bars {
+            flex: 1 1 auto;
+            min-height: 310px;
+        }
+
+        .rs-skeleton-table__bar {
+            flex: 1 1 0;
+            min-height: 28px;
+            height: auto;
+        }
+    }
+}
+.nodata-bar {
+    z-index: 2;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #ffffff;
+    color: #585858;
+    // height: 33px;
+    // line-height: 22px;
+    padding: 3px 10px;
+    @extend %center-div;
+    @extend %new-theme-shadow;
+
+    .rs-nodata-icon-wrap {
+        display: inline-flex;
+        align-items: center;
+        vertical-align: middle;
+
+        &.cursor-not-allowed {
+            cursor: not-allowed !important;
+        }
+    }
+
+    // i {
+    //     margin-top: -5px;
+    //     &:before {
+    //         top: 2px;
+    //         position: relative;
+    //     }
+    //     &.icon-plus-fill-medium {
+    //         &:before {
+    //             top: 3px;
+    //         }
+    //     }
+    // }
+    p {
+        display: flex;
+        align-items: center;
+        margin: 0;
+        // line-height: 28px;
+        white-space: pre;
+        font-size: $font-xsm;
+        position: relative;
+        // top: 1px;
+        color: $secondary-black;
+    }
+    .no-data-holder > p i {
+        display: inline-block;
+        vertical-align: sub;
+        padding: 0 3px;
+        position: relative;
+        // top: 1px;
+    }
+}
+.nodata-bar {
+    &.add-func {
+        &:hover {
+            background-color: $primary-blue;
+            cursor: pointer;
+            p,
+            i:before {
+                color: $white;
+            }
+        }
+        p {
+            @extend %animate;
+        }
+        i:before {
+            @extend %animate;
+        }
+    }
+}
+
+.count-pie {
+  position: relative;
+  height: 100%;
+  top: 0;
+  transform: translateY(0);
+  .skeleton-span {
+    height: 160px;
+    flex-direction: row;
+    gap: 20px;
+  }
+}
+
+.notificationdatabar{
+    .no-data-container{
+        margin-top: 145px;  
+    }
+}
+
+// Custom Channel Portlet Skeleton
+.skeleton-channel-portlet {
+    display: flex;
+    flex-direction: column;
+    min-height: 112px;
+    
+    .skeleton-icon {
+        width: $icon-md;
+        height: $icon-md;
+        background-color: $grey-light;
+        border-radius: $theme-radius-size-sm;
+        position: relative;
+        overflow: hidden;
+        transform: translateZ(0);
+        backface-visibility: hidden;
+        
+        &::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background-image: linear-gradient(90deg, transparent, rgba($white, 0.6), transparent);
+            animation: skeleton-shimmer 1.5s infinite;
+            will-change: transform;
+            transform: translateZ(0);
+        }
+    }
+    
+    .skeleton-text {
+        background-color: $grey-light;
+        border-radius: $theme-radius-size-sm;
+        position: relative;
+        overflow: hidden;
+        transform: translateZ(0);
+        backface-visibility: hidden;
+        
+        &::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background-image: linear-gradient(90deg, transparent, rgba($white, 0.6), transparent);
+            animation: skeleton-shimmer 1.5s infinite;
+            will-change: transform;
+            transform: translateZ(0);
+        }
+        
+        &.skeleton-title {
+            width: 80px;
+            height: $font-xs;
+        }
+    }
+    
+    .skeleton-count {
+        width: 79px;
+        height: 31px;
+        background-color: $grey-light;
+        border-radius: $theme-radius-size-sm;
+        position: relative;
+        overflow: hidden;
+        transform: translateZ(0);
+        backface-visibility: hidden;
+        
+        &::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background-image: linear-gradient(90deg, transparent, rgba($white, 0.6), transparent);
+            animation: skeleton-shimmer 1.5s infinite;
+            will-change: transform;
+            transform: translateZ(0);
+        }
+    }
+    
+    .skeleton-info-icon {
+        width: $icon-md;
+        height: $icon-md;
+        background-color: $grey-light;
+        border-radius: 50%;
+        position: absolute;
+        bottom: 15px;
+        right: 15px;
+        overflow: hidden;
+        transform: translateZ(0);
+        backface-visibility: hidden;
+        
+        &::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background-image: linear-gradient(90deg, transparent, rgba($white, 0.6), transparent);
+            animation: skeleton-shimmer 1.5s infinite;
+            will-change: transform;
+            transform: translateZ(0);
+        }
+    }
+}
+
+@keyframes skeleton-shimmer {
+    0% {
+        left: -100%;
+    }
+    100% {
+        left: 100%;
+    }
+}
+
+@keyframes skeletonShimmer {
+    0% {
+        transform: translateX(-100%);
+    }
+    100% {
+        transform: translateX(100%);
+    }
+}
+
+.consumption-skeleton-portlet {
+    min-height: 75px;
+    .skeleton-channel-portlet .skeleton-info-icon {
+        bottom: 5px;
+        right: 5px;
+    }
+
+}
+
+/* db-sk bubble chart — in-page layout when critical CSS is not injected */
+.portlet-container.portlet-md .portlet-body > .db-sk-bubble-chart {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    height: 100%;
+    min-height: 0;
+    box-sizing: border-box;
+    overflow: visible;
+}
+
+.portlet-container.portlet-md .portlet-body:has(> .db-sk-bubble-chart) {
+    overflow: visible;
+}
+
+.portlet-container.portlet-md .portlet-body > .db-sk-bubble-chart .db-sk-bubble-chart__plot {
+    position: relative;
+    flex: 1 1 auto;
+    min-height: 0;
+    height: 100%;
+    width: 100%;
+    box-sizing: border-box;
+    overflow: visible;
+}
+
+.portlet-container.portlet-md .portlet-body > .db-sk-bubble-chart .db-sk-bubble-chart__plot-inner {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    box-sizing: border-box;
+    overflow: visible;
+}
+
+.portlet-container.portlet-md .portlet-body > .db-sk-bubble-chart .db-sk-bubble-chart__bubble {
+    position: absolute;
+    transform: translate(-50%, -50%);
+    background: #e2e7ee;
+}
+
+/* Dashboard db-sk placeholders — shimmer when critical CSS is not injected (in-page loading) */
+$dashboard-sk-shimmer-highlight: #eef2f9;
+
+@keyframes dbSkSkeletonShimmer {
+    0% {
+        left: -100%;
+    }
+    100% {
+        left: 100%;
+    }
+}
+
+@mixin dashboard-db-sk-shimmer-target {
+    position: relative;
+    overflow: hidden;
+
+    &::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background-image: linear-gradient(90deg, transparent, $dashboard-sk-shimmer-highlight, transparent);
+        animation: dbSkSkeletonShimmer 2s infinite;
+        pointer-events: none;
+        z-index: 1;
+        will-change: left;
+    }
+}
+
+$db-sk-shimmer-targets: '.db-sk-block:not(.db-sk-bubble-chart__bubble):not(.db-sk-gauge-chart__center)',
+    '.db-sk-tab:not(.db-sk-tab--active)', '.db-sk-user-status__avatar',
+    '.db-sk-user-status__line', '.db-sk-keymetrics__value', '.db-sk-keymetrics__label',
+    '.db-sk-horizontal-bars__bar', '.db-sk-sankey__bar', '.db-sk-path-analyser__title',
+    '.db-sk-path-analyser__levels', '.db-sk-path-analyser__icon', '.db-sk-path-analyser__filter-label',
+    '.db-sk-path-analyser__filter-field', '.db-sk-pie-chart__circle', '.db-sk-pie-chart__legend-dot',
+    '.db-sk-pie-chart__legend-text', '.db-sk-column-chart__bar', '.db-sk-gauge-chart__ring',
+    '.db-sk-gauge-chart__footer', '.db-sk-gauge-card__title', '.db-sk-gauge-card__line',
+    '.db-sk-gauge-card__arc', '.db-sk-gauge-card__date';
+
+$db-sk-shimmer-scopes: '.db-sk-scope', '.dashboard-skeleton-scope', '.portlet-container',
+    '.keymetrics-portlet.live-dashboard';
+
+@mixin dashboard-db-sk-shimmer-after {
+    &::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background-image: linear-gradient(90deg, transparent, $dashboard-sk-shimmer-highlight, transparent);
+        animation: dbSkSkeletonShimmer 2s infinite;
+        pointer-events: none;
+        z-index: 1;
+        will-change: left;
+    }
+}
+
+@each $scope in $db-sk-shimmer-scopes {
+    @each $target in $db-sk-shimmer-targets {
+        #{$scope} #{$target} {
+            @include dashboard-db-sk-shimmer-target;
+        }
+
+        #{$scope} *:has(> .nodata-bar.nodata-skeleton-con) #{$target}::after {
+            display: none;
+            animation: none;
+        }
+    }
+
+    #{$scope} .db-sk-bubble-chart__plot-inner .db-sk-bubble-chart__bubble {
+        position: absolute;
+        overflow: hidden;
+        @include dashboard-db-sk-shimmer-after;
+    }
+
+    #{$scope} .db-sk-bubble-chart:has(.nodata-bar.nodata-skeleton-con) .db-sk-bubble-chart__bubble::after {
+        display: none;
+        animation: none;
+    }
+
+    #{$scope} .db-sk-gauge-chart__plot .db-sk-gauge-chart__center {
+        position: absolute;
+        overflow: hidden;
+        @include dashboard-db-sk-shimmer-after;
+
+        &::after {
+            z-index: 2;
+        }
+    }
+
+    #{$scope} .db-sk-gauge-chart__ring::after,
+    #{$scope} .db-sk-gauge-card__arc::after {
+        z-index: 0;
+    }
+
+    #{$scope} .db-sk-gauge-chart:has(.nodata-bar.nodata-skeleton-con) .db-sk-gauge-chart__ring::after,
+    #{$scope} .db-sk-gauge-chart:has(.nodata-bar.nodata-skeleton-con) .db-sk-gauge-chart__center::after,
+    #{$scope} .db-sk-gauge-card:has(.nodata-bar.nodata-skeleton-con) .db-sk-gauge-card__arc::after,
+    #{$scope} .db-sk-gauge-card:has(.nodata-bar.nodata-skeleton-con) .db-sk-gauge-card__line::after,
+    #{$scope} .db-sk-gauge-card:has(.nodata-bar.nodata-skeleton-con) .db-sk-gauge-card__title::after,
+    #{$scope} .db-sk-gauge-card:has(.nodata-bar.nodata-skeleton-con) .db-sk-gauge-card__date::after {
+        display: none;
+        animation: none;
+    }
+}

@@ -1,0 +1,377 @@
+@import '../../Styles/abstarct/_variables.scss';
+
+.respager {
+    position: relative;
+    overflow: visible;
+}
+
+// Pagination — hover/focus: icon/text color only, no Kendo theme fill
+.k-pager.k-pager-responsive {
+    background-color: $white;
+    border: 1px solid $quaternary-blue;
+    margin: var(--pageButtonTopSpace) auto 0 auto !important;
+    border-radius: 10px !important;
+    color: $secondary-grey !important;
+    font-size: 14px !important;
+    box-shadow: 0 0 5px 0 rgb(0 0 0 / 5%), 0 0 5px 0 rgb(0 0 0 / 5%);
+    padding: 21px 0 21px 21px;
+    margin: var(--pageButtonTopSpace) auto 0 auto;
+    width: fit-content;
+    overflow: visible;
+    height: 30px;
+    padding-inline: 0;
+    padding-block: 0;
+    gap: 0;
+    height: 44px;
+
+    // Kendo theme overlay on .k-button::before — disable so hover is color-only
+    .k-button::before,
+    .k-button:hover::before,
+    .k-button.k-hover::before,
+    .k-button.k-focus::before,
+    .k-button:focus::before,
+    .k-button:focus-visible::before {
+        opacity: 0 !important;
+    }
+
+    .k-button.k-pager-nav,
+    .k-button.k-pager-nav.k-button-solid,
+    .k-button.k-pager-nav.k-button-solid-base {
+
+        &:hover,
+        &.k-hover,
+        &.k-focus,
+        &:focus,
+        &:focus-visible {
+            background-color: transparent;
+            background-image: none;
+            border-color: transparent;
+            box-shadow: none;
+            color: $secondary-blue;
+
+            .k-icon,
+            .k-svg-icon,
+            .k-button-icon {
+                color: $secondary-blue;
+            }
+        }
+    }
+
+    .k-link,
+    .k-pager-nav,
+    .k-pager-numbers .k-button {
+        height: auto;
+        background-color: transparent;
+        background-image: none;
+        outline: none;
+        box-shadow: none;
+        color: $primary-black;
+
+        &:hover,
+        &.k-hover,
+        &.k-focus,
+        &:focus,
+        &:focus-visible,
+        &.k-focus:hover {
+            background-color: transparent;
+            background-image: none;
+            box-shadow: none;
+            color: $secondary-blue;
+        }
+
+        &.k-pager-nav {
+
+            .k-icon,
+            .k-svg-icon {
+                font-family: $rs-font-regular;
+                font-size: 14px;
+
+                &.k-i-caret-alt-to-left,
+                &.k-svg-i-caret-alt-to-left {
+                    &:before {
+                        content: '';
+                        margin-right: 20px;
+                    }
+                }
+
+                &.k-i-caret-alt-left,
+                &.k-svg-i-chevron-left {
+                    &:before {
+                        content: '';
+                    }
+                }
+
+                &.k-i-caret-alt-right,
+                &.k-svg-i-chevron-right {
+                    &:before {
+                        content: '';
+                        margin-right: 15px;
+                    }
+                }
+
+                &.k-i-caret-alt-to-right,
+                &.k-svg-i-caret-alt-to-right {
+                    &:before {
+                        content: '';
+                        margin-left: 5px;
+                    }
+                }
+
+                svg {
+                    display: none;
+                }
+            }
+        }
+    }
+
+    .k-pager-numbers-wrap {
+        margin: 0 10px;
+        border-left: none;
+        border-right: 1px solid $quaternary-blue;
+        display: flex;
+        align-items: center;
+
+        .k-pager-numbers {
+            margin: 0 10px;
+            display: flex;
+            align-items: center;
+
+            .k-link,
+            .k-button {
+                color: $primary-black;
+                font-size: $font-xs;
+                position: relative;
+                top: 0;
+                padding: 0 5px;
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                background-color: transparent;
+                background-image: none;
+
+                &:hover:not(.k-selected),
+                &.k-hover:not(.k-selected),
+                &.k-focus:not(.k-selected),
+                &:focus:not(.k-selected),
+                &:focus-visible:not(.k-selected) {
+                    background-color: transparent;
+                    background-image: none;
+                    box-shadow: none;
+                    color: $secondary-blue;
+                }
+
+                &.k-selected {
+                    font-family: $rs-font-regular;
+                    border-radius: 5px;
+                    background-color: $primary-blue !important;
+                    color: $white !important;
+                    min-width: 24px;
+                    min-height: 24px;
+
+                    &:hover {
+                        text-decoration: none;
+                        background-color: $primary-blue;
+                        color: $white;
+                    }
+                }
+            }
+        }
+    }
+
+    .k-pager-sizes {
+        padding-left: 0;
+        margin-right: 0;
+        margin-left: 0;
+        border-left: none;
+        min-height: 30px;
+        color: transparent;
+        position: relative;
+        font-size: 0;
+        display: flex;
+        align-items: center;
+
+        &::after {
+            content: '/Page';
+            position: relative;
+            font-family: $rs-font-regular;
+            font-size: 14px;
+            color: $secondary-grey;
+            right: 0px;
+            width: 50px;
+        }
+
+        .k-dropdownlist,
+        .k-dropdownlist.k-picker {
+            width: 50px;
+            min-width: 50px;
+            max-width: 50px;
+            height: 20px;
+            border: none;
+            margin-right: 10px;
+            margin-left: 10px;
+            position: relative;
+            top: 1px;
+            background-color: transparent !important;
+            border-bottom: 1px solid $secondary-grey;
+            border-radius: 0;
+                &:focus,
+                &:focus-visible,
+                &:focus-within {
+                    box-shadow: none;
+                }
+
+            .k-input-inner {
+                padding: 0;
+                min-width: 0;
+            }
+
+            .k-button,
+            .k-input-button {
+                width: auto;
+                min-width: 0;
+                padding: 0;
+
+                // Replace Kendo's chevron SVG with a small solid triangle caret
+                .k-icon,
+                .k-svg-icon {
+
+                    &.k-i-caret-alt-down,
+                    &.k-i-chevron-down,
+                    &.k-svg-i-chevron-down,
+                    &.k-svg-i-caret-alt-down {
+                        width: 0;
+                        height: 0;
+
+                        svg {
+                            display: none;
+                        }
+
+                        &::before {
+                            content: '';
+                            display: inline-block;
+                            width: 0;
+                            height: 0;
+                            border-left: 6px solid transparent;
+                            border-right: 6px solid transparent;
+                            border-top: 7px solid $secondary-grey;
+                            margin-left: -11px;
+                        }
+                    }
+                }
+            }
+
+            .k-input-value-text {
+                font-size: $font-xs;
+                padding-right: 2px;
+                color: $primary-black;
+                padding-top: 0;
+            }
+        }
+    }
+
+    .k-pager-info {
+        margin-left: 0;
+        color: $secondary-grey;
+        font-family: $rs-font-regular;
+        font-size: 14px;
+        display: flex;
+        align-items: center;
+        padding: 0 10px;
+        border-left: 1px solid $quaternary-blue;
+        min-height: 30px;
+    }
+}
+
+.respager.no-box-shadow .k-pager.k-pager-responsive {
+    box-shadow: none !important;
+}
+
+// Page-size dropdown popup (scoped to ResPager via appendTo + respager-sizes-popup class).
+.respager .k-animation-container.respager-sizes-popup,
+.k-animation-container.respager-sizes-popup {
+    // Match the popup width to the page-size picker (Kendo sets inline width here)
+    min-width: 50px !important;
+    width: 50px !important;
+    max-width: 50px !important;
+    position: fixed;
+    z-index: 1103;
+
+    &.showing-below {
+        .k-popup,
+        .k-popup.k-list-container {
+            margin-top: -2px;
+            margin-bottom: 0;
+            border-radius: 0 0 5px 5px;
+
+            .k-list {
+                border-radius: 0 0 5px 5px;
+            }
+        }
+    }
+
+    &.showing-top {
+        .k-popup,
+        .k-popup.k-list-container {
+            margin-top: 0;
+            margin-bottom: -2px;
+            border-radius: 5px 5px 0 0;
+
+            .k-list {
+                border-radius: 5px 5px 0 0;
+            }
+        }
+    }
+
+    .k-popup,
+    .k-popup.k-list-container {
+        min-width: 50px;
+        width: 50px;
+        max-width: 50px;
+        padding: 0;
+        border: 1px solid $quaternary-blue;
+        background-color: $white;
+        box-shadow: 0 0 5px 0 rgb(0 0 0 / 5%), 0 0 5px 0 rgb(0 0 0 / 5%);
+
+        .k-list {
+            border: 0;
+            border-radius: 0 0 5px 5px;
+            box-shadow: none;
+
+            .k-list-content .k-list-ul {
+
+                .k-list-item,
+                >li {
+                    border: 0;
+                    border-bottom: 0;
+                    padding: 6px 8px;
+                    min-height: auto;
+                    line-height: 1.5;
+                    font-size: $font-xs;
+                    color: $primary-black;
+                    text-align: center;
+                    justify-content: center;
+
+                    &:hover,
+                    &.k-hover,
+                    &.k-focus {
+                        background-color: $secondary-blue;
+                        color: $white;
+                        border-radius: 0;
+                    }
+
+                    // Hide the active page size from popup options (value stays in the picker input)
+                    &.k-selected,
+                    &[aria-selected='true'] {
+                        display: none !important;
+                    }
+                }
+            }
+        }
+    }
+}
+
+.k-button.k-button-flat::after, .k-button.k-button-flat:focus::after, .k-button.k-button-flat.k-focus::after {
+    box-shadow: none;
+    outline: none;
+    border: none;
+}

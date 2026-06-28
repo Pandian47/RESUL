@@ -1,0 +1,82 @@
+.accordion {
+    @extend .box-design;
+    //padding: 10px !important;
+    --bs-accordion-color: #{$secondary-black};
+    --bs-accordion-active-color: #{$secondary-black};
+    --bs-accordion-bg: #{$white};
+    --bs-accordion-border-color: #{$quaternary-blue};
+    --bs-accordion-border-radius: var(--globalBorderRadius);
+    --bs-accordion-inner-border-radius: var(--globalBorderRadius);
+    --bs-accordion-btn-bg: #{$tertiary-blue};
+    --bs-accordion-active-bg: #{$tertiary-blue};
+    --bs-accordion-btn-focus-border-color: transparent;
+    --bs-accordion-btn-focus-box-shadow: transparent;
+    --bs-accordion-btn-icon: none;
+    --bs-accordion-btn-active-icon: none;
+    --bs-accordion-btn-padding-x: 15px;
+    --bs-accordion-btn-padding-y: 15px;
+    --bs-accordion-body-padding-x: 15px;
+    --bs-accordion-body-padding-y: 15px;
+    --bs-accordion-border-width: 0;
+    //float: $tertiary-blue;
+    .accordion-item {
+        border: 0;
+        margin-bottom: 10px;
+        &:first-of-type {
+            border: 0;
+            border-top-left-radius: var( --globalBorderRadius);
+            border-top-right-radius: var( --globalBorderRadius);
+        }
+        &:last-of-type {
+            margin-bottom: 0;
+            border-bottom-left-radius: var( --globalBorderRadius);
+            border-bottom-right-radius: var( --globalBorderRadius);
+        }
+        .rs-accordion-item-remove {
+            position: absolute;
+            right: 15px;
+            z-index: 9999;
+        }
+    }
+    .accordion-button {
+        padding-top: 10px;
+        padding-bottom: 10px;
+        &.collapsed {
+            i {
+                color: $primary-blue;
+            }
+        }
+        &:not(.collapsed) {
+            color: $secondary-grey;
+        }
+        span {
+            color: $primary-black;
+            font-size: $font-sm;
+            margin-left: 8px;
+            line-height: normal;
+        }
+    }
+    .accordion-body {
+        padding-top: 20px;
+        .form-group {
+            &:last-child {
+                //margin-bottom: 0;
+            }
+        }
+    }
+    // .accordion-button {
+    //     i {
+    //         color: $secondary-grey;
+    //     }
+    //     &.collapsed {
+    //         i {
+    //             color: $primary-blue;
+    //         }
+    //     }
+    //     span {
+    //         color: $primary-black;
+    //         font-size: $font-sm;
+    //         margin-left: 5px;
+    //     }
+    // }
+}

@@ -1,0 +1,1166 @@
+// // Default table
+// .rs-table-wrapper {
+//     background-color: transparent;
+//     border: 0;
+//     color: $primary-black;
+//     padding: 5px !important;
+//     @extend .box-design;
+//     @extend .primary-box-shadow;
+
+//     table {
+//         th {
+//             box-sizing: border-box;
+//             background-color: $secondary_blue;
+//             color: $white;
+//             font-family: $rs-font-regular;
+//             font-size: $font-xsm;
+//             font-weight: normal;
+//             --bs-body-font-weight: normal;
+//             padding: 6px 10px;
+//             border-color: $tertiary-grey;
+//             // border-width: 0 0 1px 1px;
+
+//             &:first-child {
+//                 border-top-left-radius: var(--globalBorderRadius);
+//             }
+
+//             &:last-child {
+//                 border-top-right-radius: var(--globalBorderRadius);
+//             }
+//         }
+
+//         tbody {
+//             tr {
+//                 background-color: $white;
+
+//                 td {
+//                     font-family: $rs-font-regular;
+//                     font-size: $font-xsm;
+//                     padding: 10px;
+//                     border-width: 0 0 0 1px;
+//                     border-color: $tertiary-grey;
+
+//                     &:first-child {
+//                         border-left-width: 0;
+//                     }
+//                 }
+
+//                 &:nth-child(odd) {
+//                     background-color: $white;
+//                 }
+
+//                 &:nth-child(even) {
+//                     background-color: $tertiary-blue;
+//                 }
+
+//                 &:last-child {
+//                     td {
+//                         border-bottom: 0;
+//                     }
+//                 }
+//             }
+//         }
+//     }
+// }
+
+// // -----------------------------------------------------------------------------
+// // Legacy Kendo listing shell — NOT ResGrid (.resgrid owns listing in resgrid.scss)
+// // -----------------------------------------------------------------------------
+// .rs-grid-listing:not(.resgrid) {
+//     .k-grid-header {
+//         display: none;
+//     }
+
+//     .k-grid {
+//         border: 0;
+//         background-color: inherit;
+//         padding: 0;
+
+//         table {
+//             width: 100%;
+//             border: 0 !important;
+//             // border-collapse: initial;
+//             border-spacing: 0 var(--pageButtonTopSpace);
+
+//             tr {
+//                 position: relative;
+
+//                 td {
+//                     border: 0;
+//                     vertical-align: middle;
+//                     overflow: inherit;
+//                 }
+
+//                 &.k-master-row {
+//                     position: relative;
+
+//                     td {
+//                         /* &:first-child {
+//                             border: 0;
+//                             @include abs-position($position: absolute, $right: 0, $bottom: 0);
+//                             width: 24px;
+//                             a {
+//                                 padding: 0;
+//                             }
+//                         }*/
+
+//                         &:nth-child(2) {
+//                             border: 0;
+//                             padding: 0;
+//                             width: 100%;
+//                             float: left;
+//                         }
+//                     }
+
+//                     &.k-alt {
+//                         // background-color: $white !important;
+
+//                         // &:hover {
+//                         //     background-color: $white;
+//                         // }
+//                     }
+//                 }
+
+//                 &.k-detail-row {
+//                     display: inline-flex;
+//                     margin-top: -22px;
+//                     position: relative;
+//                     width: 100%;
+//                     border-radius: var(--globalBorderRadius);
+
+//                     td.k-detail-cell {
+//                         border: 0;
+//                         padding: 0;
+//                         width: 100%;
+//                         position: relative;
+//                         &:before {
+//                             //@include Dropdownuparrow();
+//                             @include abs-position($top: -4px, $right: 5px);
+//                             background-color: $tertiary-blue;
+//                         }
+//                         // &:before {
+//                         //     content: '';
+//                         //     @include abs-position($position: absolute, $top: -13px, $right: 5px);
+//                         //     display: block;
+//                         //     border: 7px solid transparent;
+//                         //     border-bottom-color: $white;
+//                         //     z-index: 1;
+//                         // }
+
+//                         // &:after {
+//                         //     content: '';
+//                         //     @include abs-position($position: absolute, $top: -14px, $right: 5px);
+//                         //     display: block;
+//                         //     border: 7px solid transparent;
+//                         //     border-bottom-color: $quaternary-blue;
+//                         // }
+//                     }
+//                 }
+//             }
+//         }
+
+//         // .k-pager {
+//         //     background-color: inherit;
+//         // }
+//         .k-hierarchy-cell {
+//             @include abs-position($position: absolute, $right: 3px, $bottom: 3px);
+//             padding: 0;
+//             height: 15px;
+//             width: 15px;
+//             .k-icon {
+//                 padding: 0;
+//                 vertical-align: top;
+//                 &:before {
+//                     color: $white;
+//                     position: relative;
+//                     right: 0;
+//                     bottom: 0;
+//                     z-index: 10;
+//                 }
+
+//                 /*&:after {
+//                     // border-bottom: 28px solid #2896f0;
+//                     border-left: 28px solid transparent;
+//                     content: '';
+//                     @include abs-position($position: absolute, $right: 0, $bottom: -1px);
+//                     height: 0;
+//                     width: 0;
+//                     z-index: 0;
+//                 }*/
+//             }
+//             .k-icon.k-i-minus {
+//                 pointer-events: none;
+//             }
+//         }
+
+//         .k-pager-info {
+//             margin-left: -37px;
+//             color: $secondary-grey;
+//             font-family: $rs-font-regular;
+//             font-size: 14px;
+//             display: flex;
+//             align-items: center;
+//             padding: 0 10px;
+//             border-left: 1px solid $quaternary-blue;
+//             min-height: 30px;
+//         }
+//     }
+// }
+
+// // Legacy listing cards (BrandShops, AppsList, tab skeletons — outside .resgrid)
+// .rs-grid-listing:not(.resgrid),
+// .brandShops,
+// .rsgdv-plain,
+// .communication-list-tab-skeleton__rows,
+// .analytics-list-tab-skeleton__rows {
+//     .rs-communication-list,
+//     .rs-list-grid-wrapper {
+//     display: flex;
+//     align-items: center;
+//     border: 1px solid $quaternary-blue;
+//     border-radius: var(--globalBorderRadius);
+//     text-align: left;
+//     // min-height: 90px;
+//     position: relative;
+//     box-shadow: 0 0 5px 0 rgb(0 0 0 / 5%), 0 0 5px 0 rgb(0 0 0 / 5%);
+//     &:after {
+//         content: '';
+//         @include abs-position($position: absolute, $left: 1px, $top: 2px, $bottom: 2px);
+//         width: 5px;
+//         border-top-left-radius: var(--borderRadiusTabDropMenu);
+//         border-bottom-left-radius: var(--borderRadiusTabDropMenu);
+//         background: $others;
+//     }
+//     &.sp-grid-expanded {
+//         border-bottom-left-radius: 0;
+//         border-bottom-right-radius: 0;
+//     }
+
+//     .communication-content,
+//     .rslgw-content {
+//         position: relative;
+//         padding: 8px 10px;
+
+//         &:first-child {
+//             width: 50%;
+//             padding-left: 20px;
+
+//             &:after {
+//                 content: '';
+//                 @include abs-position($position: absolute, $right: 0, $top: 11px, $bottom:0);
+//                 width: 1px;
+//                 height: 85%;
+//                 background: $others;
+//                 @include css3-prefix(transform, translateY(-10%));
+//             }
+//         }
+
+//         &:nth-child(2) {
+//             width: 17%;
+//             padding-left: 20px;
+//         }
+
+//         &:nth-child(3) {
+//             width: 19%;
+//         }
+
+//         &:nth-child(4) {
+//             width: 183px;
+//             padding-right: 1px;
+//             padding-top: 2px;
+//             padding-bottom: 10px;
+//             //top: -6px;
+//             // position: relative;
+//             // z-index: 3;
+//         }
+
+//         small {
+//             display: inline-block;
+//             color: $primary-grey;
+//         }
+//         .rsclc-tags {
+//             font-size: $font-xs;
+//             color: $primary-grey;
+//         }
+
+//         p {
+//             color: $secondary-black;
+//             font-size: $font-xsm;
+//             margin: 0;
+//         }
+
+//         .badge {
+//             background: $tertiary-grey;
+//             font-size: $font-xs;
+//             color: $secondary-black;
+//             padding: 5px 7px;
+//             margin-right: 10px;
+//             border-radius: 3px;
+//             // font-family: $rs-font-light;
+//             font-weight: inherit;
+//         }
+//     }
+
+//     .communication-status {
+//         background: $primary-grey;
+//         color: $white;
+//         padding: 5px;
+//         display: block;
+//         text-align: center;
+//         margin: 0;
+//         position: relative;
+//         right: 1px;
+//         @include border-radius-all($brtr: var(--borderRadiusTabDropMenu));
+//         small {
+//             color: $white;
+//             font-size: $font-xsm;
+//         }
+
+//         .status-column {
+//             display: flex;
+//             justify-content: center;
+//         }
+
+//         &.status-draft {
+//             background: $draft;
+//         }
+//         &.status-multistatus {
+//             background: $multi-status;
+//         }
+
+//         &.status-scheduled {
+//             background: $scheduled;
+//         }
+
+//         &.status-inprogress {
+//             background: $inprogress;
+//         }
+
+//         &.status-completed {
+//             background: $completed;
+//         }
+
+//         &.status-alert {
+//             background: $alert;
+//         }
+//         &.status-stop {
+//             background: $stop;
+//         }
+//         &.status-pause {
+//             background: $pause;
+//         }
+//         &.status-extraction {
+//             background: $extraction;
+//         }
+//         &.status-reject {
+//             background: $reject;
+//         }
+//         &.status-archive{
+//             background: $archive;
+
+//         }
+//     }
+
+//     &.status-inprogress {
+//         &:after {
+//             background: $inprogress;
+//         }
+//     }
+
+//     &.status-alert {
+//         &:after {
+//             background: $alert;
+//         }
+//     }
+
+//     &.status-completed {
+//         &:after {
+//             background: $completed;
+//         }
+//     }
+
+//     &.status-scheduled {
+//         &:after {
+//             background: $scheduled;
+//         }
+//     }
+
+//     &.status-draft {
+//         &:after {
+//             background: $draft;
+//         }
+//     }
+//     &.status-multistatus {
+//         &:after {
+//             background: $multi-status;
+//         }
+//     }
+//     &.status-stop {
+//         &:after {
+//             background: $stop;
+//         }
+//     }
+//     &.status-pause {
+//         &:after {
+//             background: $pause;
+//         }
+//     }
+//     &.status-reject {
+//         &:after {
+//             background: $reject;
+//         }
+//     }
+//     &.status-extraction {
+//         &:after {
+//             background: $extraction;
+//         }
+//     }
+//      &.status-archive{
+//         &:after {
+//             background: $archive;
+//         }
+//     }
+//     }
+
+//     .rs-communication-list {
+//         .comm-listing {
+//             .communication-content {
+//                 &:nth-child(4) {
+//                     width: 145px;
+//                 }
+//             }
+//         }
+//     }
+
+//     .rs-list-grid-wrapper {
+//     @extend .no-box-shadow;
+
+//     .rslgw-content {
+//         &:first-child {
+//             width: 30%;
+//         }
+
+//         &:nth-child(2) {
+//             width: 20%;
+//             padding-left: 25px;
+//         }
+
+//         &:nth-child(3) {
+//             width: 35%;
+//         }
+
+//         &:nth-child(4) {
+//             width: 17%;
+//             padding-right: 0;
+//             padding-left: 20px;
+//             padding-top: 8px;
+
+//             // position: relative;
+//             // z-index: 5;
+//             &:after {
+//                 content: '';
+//                 @include abs-position($position: absolute, $left: 0, $top: 11px, $bottom: 0);
+//                 width: 1px;
+//                 height: auto;
+//                 background: $others;
+//                 @include css3-prefix(transform, translateY(-10%));
+//             }
+//         }
+
+//         h4 {
+//             margin: 0;
+//         }
+//     }
+
+//     .expand-plus {
+//         .k-icon {
+//             &.k-i-plus {
+//                 &:after {
+//                     //right: 0;
+//                 }
+//             }
+//         }
+//         .rs-icon-panel {
+//             li {
+//                 &:before {
+//                     height: 0;
+//                 }
+//             }
+//         }
+//     }
+//     }
+// }
+
+// .rsgdv-plain {
+//     .k-grid {
+//         .k-hierarchy-cell {
+//             .k-icon {
+//                 &:before {
+//                     right: 0;
+//                 }
+//             }
+//         }
+//     }
+// }
+
+// .rs-table-with-heading {
+//     @extend .box-design;
+
+//     // padding: 15px !important;
+//     .rs-kendo-grid-table {
+//         .rs-kendo-scrollable-grid {
+//             // padding: 0 !important;
+//             box-shadow: none !important;
+//             margin-bottom: 50px;
+//             border-bottom-left-radius: var(--globalBorderRadius);
+//             border-bottom-right-radius: var(--globalBorderRadius);
+//             border-color: $quaternary-blue;
+
+//             .k-pager {
+//                 top: 20px !important;
+//             }
+//         }
+
+//         .rs-kendo-fixed-grid {
+//             table {
+//                 // padding: 0 !important;
+//                 box-shadow: none !important;
+//                 margin-bottom: 0;
+//                 border-bottom-left-radius: var(--globalBorderRadius);
+//                 border-bottom-right-radius: var(--globalBorderRadius);
+//                 border-color: $quaternary-blue;
+//             }
+
+//             .k-pager {
+//                 top: -15px;
+//             }
+//         }
+//     }
+
+//     .rs-kendo-table-hide-header {
+//         table {
+//             border-radius: 0 !important;
+//         }
+//     }
+
+//     &.MDM-AudienceList {
+//         .rs-kendo-grid-table {
+//             .rs-kendo-scrollable-grid {
+//                 .k-pager {
+//                     top: 26px !important;
+//                 }
+//             }
+//         }
+//     }
+// }
+
+// .rs-kendo-table-hide-header {
+//     .k-grid {
+//         table {
+//             thead {
+//                 display: none !important;
+//             }
+//         }
+//     }
+// }
+// .alertsAndNotificationCSS {
+//     .k-widget.k-grid table tbody tr td {
+//         border: 0;
+//         padding: 19px;
+//     }
+// }
+
+// // Legacy expand corner — ResGrid defines .expand-plus under .resgrid in resgrid.scss
+// .rs-grid-listing:not(.resgrid),
+// .brandShops,
+// .rsgdv-plain,
+// .communication-list-tab-skeleton__rows,
+// .analytics-list-tab-skeleton__rows {
+//     .expand-plus {
+//     @include abs-position($position: absolute, $right: 2px, $bottom: 2px);
+
+//     .camp-icon-pannel,
+//     .rs-icon-panel {
+//         display: flex;
+//         justify-content: flex-end;
+//         align-items: center;
+
+//         li {
+//             margin: 0;
+//             .k-icon {
+//                 vertical-align: bottom;
+//             }
+//             &:before {
+//                 content: '';
+//                 position: absolute;
+//                 width: 23px;
+//                 height: 45px;
+//                 background-color: $white;
+//                 z-index: 1;
+//                 transform: rotate(45deg);
+//                 left: -20px;
+//                 top: -24px;
+//                 border-radius: 20px 0px 0px 20px;
+//                 display: none;
+//             }
+//         }
+//     }
+
+//     .k-icon.k-i-plus {
+//         &:after {
+//             border-bottom: 27px solid $secondary-grey;
+//             border-left: 27px solid transparent;
+//             content: '';
+//             @include abs-position($position: absolute, $right: 0, $bottom: 0);
+//             height: 0;
+//             width: 0;
+//             z-index: 0;
+//             border-radius: 0 0 var(--borderRadiusTabDropMenu);
+//         }
+//     }
+
+//     &.status-inprogress {
+//         .k-icon.k-i-plus {
+//             &:after {
+//                 border-bottom-color: $inprogress;
+//             }
+//         }
+//     }
+
+//     &.status-alert {
+//         .k-icon.k-i-plus {
+//             &:after {
+//                 border-bottom-color: $alert;
+//             }
+//         }
+//     }
+//     &.status-archive{
+//         .k-icon.k-i-plus {
+//             &:after {
+//                 border-bottom-color: $archive;
+//             }
+//         }
+//     }
+
+//     &.status-completed {
+//         .k-icon.k-i-plus {
+//             &:after {
+//                 border-bottom-color: $completed;
+//             }
+//         }
+//     }
+
+//     &.status-scheduled {
+//         .k-icon.k-i-plus {
+//             &:after {
+//                 border-bottom-color: $scheduled;
+//             }
+//         }
+//     }
+
+//     &.status-draft {
+//         .k-icon.k-i-plus {
+//             &:after {
+//                 border-bottom-color: $draft;
+//             }
+//         }
+//     }
+//     &.status-multistatus {
+//         .k-icon.k-i-plus {
+//             &:after {
+//                 border-bottom-color: $multi-status;
+//             }
+//         }
+//     }
+//     &.status-stop {
+//         .k-icon.k-i-plus {
+//             &:after {
+//                 border-bottom-color: $stop;
+//             }
+//         }
+//     }
+//     &.status-pause {
+//         .k-icon.k-i-plus {
+//             &:after {
+//                 border-bottom-color: $pause;
+//             }
+//         }
+//     }
+//     &.status-reject {
+//         .k-icon.k-i-plus {
+//             &:after {
+//                 border-bottom-color: $reject;
+//             }
+//         }
+//     }
+//     &.status-extraction {
+//         .k-icon.k-i-plus {
+//             &:after {
+//                 border-bottom-color: $extraction;
+//             }
+//         }
+//     }
+//     }
+// }
+
+// // Legacy detail panels — ResGrid detail styles live in Pages/KendoDocs/CommonComponents/ResGrid/resgrid.scss
+// .rs-grid-detail-view.channel-settings,
+// .rs-grid-detail-view.brand-shop-detail,
+// .rs-grid-listing:not(.resgrid) .rs-grid-detail-view {
+//     border: 1px solid $quaternary-blue;
+//     //border-bottom: 0;
+//     overflow: hidden;
+//     border-radius: 0 0 var(--globalBorderRadius) var(--globalBorderRadius);
+//     .expand-plus {
+//         .k-icon.k-i-minus {
+//             &:before {
+//                 color: $white;
+//                 position: relative;
+//                 right: -1px;
+//                 bottom: 0;
+//                 top: 1px;
+//                 z-index: 10;
+//                 //right: 0;
+//             }
+//         }
+//     }
+
+//     .k-icon.k-i-minus {
+//         &:after {
+//             border-bottom: 24px solid $secondary-grey;
+//             border-left: 24px solid transparent;
+//             content: '';
+//             @include abs-position($position: absolute, $right: 0, $bottom: 0);
+//             height: 0;
+//             width: 0;
+//             z-index: 0;
+//             border-radius: 0 0 var(--borderRadiusTabDropMenu);
+//         }
+//     }
+//     .status-inprogress {
+//         .k-icon.k-i-minus {
+//             &:after {
+//                 border-bottom-color: $inprogress;
+//             }
+//         }
+//     }
+
+//     &.split-info-wrapper {
+//         td {
+//             // &:nth-child(1) {
+//             //     width: 7% !important;
+//             // }
+//             &:nth-child(2) {
+//                 width: 20% !important;
+//             }
+//             &:nth-child(3) {
+//                 width: 20% !important;
+//             }
+//         }
+//     }
+//     .status-alert {
+//         .k-icon.k-i-minus {
+//             &:after {
+//                 border-bottom-color: $alert;
+//             }
+//         }
+//     }
+//     .status-archive {
+//         .k-icon.k-i-minus {
+//             &:after {
+//                 border-bottom-color: $archive;
+//             }
+//         }
+//     }
+
+//     .status-completed {
+//         .k-icon.k-i-minus {
+//             &:after {
+//                 border-bottom-color: $completed;
+//             }
+//         }
+//     }
+
+//     .status-scheduled {
+//         .k-icon.k-i-minus {
+//             &:after {
+//                 border-bottom-color: $scheduled;
+//             }
+//         }
+//     }
+
+//     .status-draft {
+//         .k-icon.k-i-minus {
+//             &:after {
+//                 border-bottom-color: $draft;
+//             }
+//         }
+//     }
+//     .status-multistatus {
+//         .k-icon.k-i-minus {
+//             &:after {
+//                 border-bottom-color: $multi-status;
+//             }
+//         }
+//     }
+//     .status-stop {
+//         .k-icon.k-i-minus {
+//             &:after {
+//                 border-bottom-color: $stop;
+//             }
+//         }
+//     }
+//     .status-pause {
+//         .k-icon.k-i-minus {
+//             &:after {
+//                 border-bottom-color: $pause;
+//             }
+//         }
+//     }
+//     .status-reject {
+//         .k-icon.k-i-minus {
+//             &:after {
+//                 border-bottom-color: $reject;
+//             }
+//         }
+//     }
+//     .status-extraction {
+//         .k-icon.k-i-minus {
+//             &:after {
+//                 border-bottom-color: $extraction;
+//             }
+//         }
+//     }
+//     table.grid-detail-content {
+//         border-spacing: 0;
+//         &.subsegment {
+//             tr {
+//                 td {
+//                     &:first-child {
+//                         width: 10%;
+//                     }
+//                     &:nth-child(2) {
+//                         width: 25%;
+//                     }
+//                 }
+//             }
+//         }
+
+
+//         th {
+//             background-color: $tertiary-blue;
+//             border-bottom-color: $quaternary-blue;
+//             border-left: 0;
+
+//             &:first-child {
+//                 border-top-left-radius: 0;
+//                 padding-left: 20px;
+//             }
+
+//             &:last-child {
+//                 border-top-right-radius: 0;
+//             }
+//         }
+
+//         tr {
+//             td {
+//                 border-left: 0;
+//                 border-bottom: 1px solid $quaternary-blue !important;
+//                 overflow: inherit;
+//                 padding: 10px 12px 10px 12px !important;
+
+//                 // &:nth-child(1) {
+//                 //     width: 20%;
+//                 // }
+//                 &.rs-cl-col-channel {
+//                     width: 100px;
+//                 }
+
+//                 &.rs-cl-col-status {
+//                     width: 50px;
+//                 }
+
+//                 &.rs-cl-col-friendly-name,
+//                 &.rs-cl-col-metrics {
+//                     width: 90px;
+//                 }
+
+//                 &.rs-cl-col-action {
+//                     width: 9% !important;
+//                 }
+
+//                 &:first-child {
+//                     padding-left: 20px !important;
+//                 }
+
+//                 .rs-tooltip-wrapper {
+//                     line-height: 0;
+//                 }
+//             }
+
+//             &:last-child {
+//                 td {
+//                     border-bottom: 0 !important;
+
+//                     &:first-child {
+//                         border-radius: 0 0 0 var(--globalBorderRadius);
+//                     }
+
+//                     &:last-child {
+//                         border-radius: 0 0 var(--globalBorderRadius) 0;
+//                     }
+//                 }
+//             }
+//         }
+
+//         p {
+//             margin: 0;
+//         }
+//         .cl-channel-icons {
+//             i {
+//                 cursor: initial;
+//             }
+//         }
+//         .cl-status-icons {
+//             i {
+//                 cursor: initial;
+//             }
+//         }
+
+//         .rs-communication-icon {
+//             justify-content: end;
+//             width: 100%;
+//             margin: 0 0 0 -8px;
+
+//             &:after {
+//                 content: inherit;
+//             }
+//         }
+
+//         .dropdown-menu {
+//             .dropdown-item {
+//                 display: flex;
+//                 align-items: center;
+
+//                 i {
+//                     color: #b8b8b8;
+//                 }
+//             }
+//         }
+//         &.grid-listing-comm {
+//             tr {
+//                 position: relative;
+//                 &:nth-last-child(2) td {
+//                     border-bottom: 0;
+//                 }
+//                 td {
+//                     border-bottom: 1px solid $quaternary-blue;
+//                     &.subsegment-channel-border {
+//                         border-left: 1px solid $quaternary-blue;
+//                     }
+//                     &:nth-child(1) {
+//                         width: 5%;
+//                     }
+//                     &:nth-child(2) {
+//                         width: 16%;
+//                     }
+//                     &:nth-child(3) {
+//                         width: 16%;
+//                     }
+//                     &:nth-child(4) {
+//                         width: 30%;
+//                     }
+//                     &:last-child {
+//                         width: 10%;
+//                     }
+//                 }
+//             }
+//             // Detail skeleton + empty rows — see Pages/KendoDocs/CommonComponents/ResGrid/resgrid.scss (ListDetailSkeleton)
+//         }
+//     }
+//     &.is-detail-loading {
+//         table.grid-detail-content.grid-listing-comm .rs-communication-icon:after {
+//             display: none;
+//         }
+//     }
+//     .split-indicator-wrapper {
+//         display: flex;
+//         align-items: center;
+//         &.ml50 {
+//             margin-left: 50px; // Align with channel icon when icon is hidden
+//         }
+//         .split-dot {
+//             width: 12px;
+//             height: 12px;
+//             border-radius: 50%;
+//             display: inline-block;
+//             flex-shrink: 0;
+//         }
+//         .split-winner-icon {
+//             font-size: 16px;
+//             flex-shrink: 0;
+//         }
+
+//         i {
+//             margin-right: 6px;
+//             flex-shrink: 0;
+//         }
+//     }
+//     &.channel-settings {
+//         table.grid-detail-content {
+//             tr {
+//                 td {
+//                     &:nth-child(1) {
+//                         width: 26.5%;
+//                     }
+//                     &:nth-child(2) {
+//                         width: 15%;
+//                     }
+//                 }
+//             }
+//         }
+//     }
+// }
+
+// .rs-communication-icon {
+//     margin: 18px 0 14px;
+//     display: flex;
+//     align-items: center;
+//     position: relative;
+
+//     &:after {
+//         content: '';
+//         @include abs-position($position: absolute, $top: 0, $left: -1px);
+//         width: 1px;
+//         height: 100%;
+//         background: $others;
+//     }
+
+//     li {
+//         // display: inline-flex;
+//         margin-left: 15px;
+//         .rs-tooltip-wrapper {
+//             line-height: 0;
+//         }
+//         .rs-bootstrap-dropdown .rs-dropdown .dropdown-toggle {
+//             height: auto;
+//         }
+//     }
+// }
+
+// .rs-child-table {
+//     td {
+//         border: none;
+//     }
+// }
+
+// .table {
+//     &.opd-table {
+//         > :not(caption) > * > * {
+//             border: 0;
+//         }
+
+//         &.table.table-striped {
+//             > tbody > tr {
+//                 &:nth-of-type(odd) > * {
+//                     background-color: $tertiary-blue;
+//                     -webkit-box-shadow: none;
+//                     box-shadow: none;
+//                     border: 0;
+//                 }
+//             }
+//         }
+//     }
+// }
+
+// .table {
+//     &.opd-table {
+//         border-bottom: 1px solid $tertiary-grey;
+
+//         &.table {
+//             &.table-striped {
+//                 thead tr th,
+//                 tbody tr td {
+//                     border-right: 1px solid $tertiary-grey !important;
+//                     padding: 0.818rem 0.5rem;
+//                 }
+
+//                 &.text-center-ex-1 {
+//                     thead,
+//                     tbody {
+//                         tr {
+//                             text-align: center;
+//                         }
+//                     }
+
+//                     thead tr th,
+//                     tbody tr td {
+//                         &:first-child {
+//                             text-align: left;
+//                         }
+//                     }
+//                 }
+//             }
+//         }
+//     }
+
+//     &.table.table-striped thead tr th,
+//     &.table.table-striped tbody tr td {
+//         &:first-child {
+//             text-align: left;
+//         }
+
+//         &:last-child {
+//             border: 0 !important;
+//         }
+//     }
+// }
+
+// // .table.opd-table.table.table-striped tbody tr td,
+// // .table.opd-table.table.table-striped thead tr th {
+// //     border-right: 1px solid #b8b8b8 !important;
+// // }
+// // .table.opd-table.table.table-striped tbody tr td:last-child,
+// // .table.opd-table.table.table-striped thead tr th:last-child {
+// //     border: 0 !important;
+// // }
+// // .table.opd-table {
+// //     border-bottom: 1px solid #b8b8b8;
+// // }
+// // table.opd-table.table.table-striped.text-center-ex-1 thead tr {
+// //     text-align: center;
+// // }
+// // table.opd-table.table.table-striped.text-center-ex-1 tbody tr {
+// //     text-align: center;
+// // }
+// // table.opd-table.table.table-striped.text-center-ex-1 thead tr th:first-child,
+// // table.opd-table.table.table-striped.text-center-ex-1 tbody tr td:first-child {
+// //     text-align: left;
+// // }
+
+// // .rs-grid-detail-view table.grid-detail-content.grid-listing-comm tbody tr:nth-last-child(2) td:first-child {
+// //     border-bottom-left-radius: 9px;
+// // }
+// // .rs-grid-detail-view table.grid-detail-content.grid-listing-comm tbody tr:nth-last-child(2) td:last-child {
+// //     border-bottom-right-radius: 9px;
+// // }
+
+// .custom-rspager:not(.resgrid) {
+//     > .k-pager {
+//         margin-top: 0;
+//     }
+//     .rs-grid-detail-view table.grid-detail-content tr{
+//         .campaign-custom-border{
+//             border-bottom: 0 !important;
+//             border-right: 1px solid $quaternary-blue !important;
+//         }
+//         .campaign-custom-right-bottom{
+//             border-right: 1px solid $quaternary-blue !important;
+//         }
+//     }
+// }
+
+// .rs-grid-listing:not(.resgrid) .rs-communication-list.comm-listing .communication-content:nth-child(3) {
+//     padding-right: 110px;
+// }
+// }

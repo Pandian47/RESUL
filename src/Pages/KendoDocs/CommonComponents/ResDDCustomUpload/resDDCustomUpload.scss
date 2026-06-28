@@ -1,0 +1,118 @@
+
+@use '../../kendoDocsVariables.scss' as *;
+
+.#{$res-prefix}-dd-custom-upload-wrapper {
+    .#{$res-prefix}-dd-custom-upload-zone {
+        border: 2px dashed $quaternary-blue;
+        border-radius: 5px;
+        background-color: $tertiary-blue;
+        padding: 15px;
+        text-align: center;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        position: relative;
+
+        &.#{$res-prefix}-dd-custom-upload-zone--dragging {
+            border-color: $primary-blue;
+            background-color: $white;
+        }
+
+        &.#{$res-prefix}-dd-custom-upload-zone--disabled {
+            opacity: var(--click-off-opacity, 0.5);
+            cursor: not-allowed;
+        }
+
+        .#{$res-prefix}-dd-custom-upload-content {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 3px;
+
+            .#{$res-prefix}-dd-custom-upload-browse-btn {
+                background: none;
+                border: none;
+                color: $primary-blue;
+                cursor: pointer;
+                text-decoration: underline;
+                padding: 0;
+                margin: 0;
+                transition: color 0.3s ease;
+
+                &:hover {
+                    color: $secondary_blue;
+                }
+
+                &:disabled {
+                    opacity: var(--click-off-opacity, 0.5);
+                    cursor: not-allowed;
+                }
+            }
+
+            .#{$res-prefix}-dd-custom-upload-formats {
+                color: $secondary-grey;
+                line-height: 1.4;
+            }
+        }
+    }
+
+    .#{$res-prefix}-dd-custom-upload-selected-list {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        margin-top: 10px;
+    }
+
+    .#{$res-prefix}-dd-custom-upload-selected {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 10px;
+        padding: 8px 12px;
+        margin-top: 0;
+        border-radius: 6px;
+
+        .#{$res-prefix}-dd-custom-upload-file-name {
+            flex: 1;
+            text-align: left;
+            word-break: break-all;
+        }
+
+        &.#{$res-prefix}-dd-custom-upload-selected--invalid {
+            background-color: #ffebee;
+            border: 1px solid $primary-red;
+        }
+
+        &.#{$res-prefix}-dd-custom-upload-selected--valid {
+            background-color: #e3f2fd;
+            border: 1px solid $quaternary-blue;
+        }
+    }
+
+    .#{$res-prefix}-dd-custom-upload-error {
+        line-height: 1.6;
+        display: block;
+        margin-top: 4px;
+    }
+
+    .#{$res-prefix}-dd-custom-upload-url-section {
+        margin-top: 0;
+    }
+
+    .#{$res-prefix}-dd-custom-upload-url-hint {
+        display: block;
+        margin-top: 5px;
+        line-height: 1.4;
+        color: $secondary-grey;
+    }
+}
+
+// Form generator compact variant
+.rs-form-styles-wrapper .rs-formStyles-properties-wrapper .#{$res-prefix}-dd-custom-upload-wrapper {
+    .#{$res-prefix}-dd-custom-upload-zone {
+        padding: 10px;
+
+        .#{$res-prefix}-dd-custom-upload-content {
+            gap: 0;
+        }
+    }
+}

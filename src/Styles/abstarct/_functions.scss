@@ -1,0 +1,362 @@
+// height, width, margin, padding, line-height
+@for $i from 0 through 150 {
+    .height#{$i},
+    .h#{$i} {
+        height: #{$i}px;
+    }
+    .lh#{$i} {
+        line-height: #{$i}px;
+    }
+    .top#{$i} {
+        top: #{$i}px !important;
+    }
+    .top-#{$i} {
+        top: -#{$i}px !important;
+    }
+    .bottom#{$i} {
+        bottom: #{$i}px;
+    }
+    .bottom-#{$i} {
+        bottom: -#{$i}px;
+    }
+    .right#{$i} {
+        right: #{$i}px !important;
+    }
+    .right-#{$i} {
+        right: -#{$i}px !important;
+    }
+    .left#{$i} {
+        left: #{$i}px;
+    }
+    .left-#{$i} {
+        left: -#{$i}px;
+    }
+    .Left#{$i} {
+        left: #{$i} + '%' !important;
+    }
+    .rsLeft#{$i} {
+        left: #{$i} + '%' !important;
+    }
+    .fs#{$i} {
+        font-size: #{$i}px;
+    }
+    // ZINDEX
+    .zIndex#{$i} {
+        z-index: #{$i};
+    }
+    // MARGIN (X, Y)
+    .my#{$i} {
+        margin-top: #{$i}px;
+        margin-bottom: #{$i}px;
+    }
+    .mx#{$i} {
+        margin-right: #{$i}px !important;
+        margin-left: #{$i}px !important;
+    }
+    // MARGIN - (X, Y)
+    .my-#{$i} {
+        margin-top: -#{$i}px !important;
+        margin-bottom: -#{$i}px !important;
+    }
+    .mx-#{$i} {
+        margin-right: -#{$i}px !important;
+        margin-left: -#{$i}px !important;
+    }
+    // PADDING (X, Y)
+    .py#{$i} {
+        padding-top: #{$i}px !important;
+        padding-bottom: #{$i}px !important;
+    }
+    .px#{$i} {
+        padding-right: #{$i}px !important;
+        padding-left: #{$i}px !important;
+    }
+    // MARGIN
+    .m#{$i} {
+        margin: #{$i}px !important;
+    }
+    .m-#{$i} {
+        margin: -#{$i}px !important;
+    }
+
+    .mt#{$i} {
+        margin-top: #{$i}px !important;
+    }
+    .mr#{$i} {
+        margin-right: #{$i}px !important;
+    }
+    .mb#{$i} {
+        margin-bottom: #{$i}px !important;
+    }
+    .ml#{$i} {
+        margin-left: #{$i}px !important;
+    }
+
+    .mt-#{$i} {
+        margin-top: -#{$i}px !important;
+    }
+    .mr-#{$i} {
+        margin-right: -#{$i}px !important;
+    }
+    .mb-#{$i} {
+        margin-bottom: -#{$i}px !important;
+    }
+    .ml-#{$i} {
+        margin-left: -#{$i}px !important;
+    }
+
+    // PADDING (X, Y)
+    .p#{$i} {
+        padding: #{$i}px !important;
+    }
+    .pt#{$i} {
+        padding-top: #{$i}px !important;
+    }
+    .pr#{$i} {
+        padding-right: #{$i}px !important;
+    }
+    .pb#{$i} {
+        padding-bottom: #{$i}px !important;
+    }
+    .pl#{$i} {
+        padding-left: #{$i}px !important;
+    }
+    .width#{$i} {
+        width: #{$i}px !important;
+    }
+    .height#{$i}p {
+        height: #{$i} + '%' !important;
+    }
+    .width#{$i}p {
+        width: #{$i} + '%' !important;
+    }
+    .max-width#{$i} {
+        max-width: #{$i}px !important;
+    }
+    .transformY#{$i} {
+        transform: translateY(#{$i}px) !important;
+    }
+    .transformY-#{$i} {
+        transform: translateY(-#{$i}px) !important;
+    }
+
+    //Radius
+    .border-r#{$i} {
+        border-radius: #{$i}px !important;
+    }
+    .border-tlr#{$i} {
+        border-top-left-radius: #{$i}px !important;
+    }
+    .border-trr#{$i} {
+        border-top-right-radius: #{$i}px !important;
+    }
+    .border-blr#{$i} {
+        border-bottom-left-radius: #{$i}px !important;
+    }
+    .border-brr#{$i} {
+        border-bottom-right-radius: #{$i}px !important;
+    }
+}
+
+// =============================================================================
+// String Replace
+// =============================================================================
+@function str-replace($string, $search, $replace: '') {
+    $index: str-index($string, $search);
+
+    @if $index {
+        @return str-slice($string, 1, $index - 1) + $replace +
+            str-replace(str-slice($string, $index + str-length($search)), $search, $replace);
+    }
+
+    @return $string;
+}
+// =============================================================================
+// String Replace
+// =============================================================================
+
+// =============================================================================
+// Color and Background color
+// =============================================================================
+
+$colors: (
+    body-bg-color: $body-bg-color,
+    head-band-color: $head-band-color,
+    primary-blue: $primary-blue,
+    secondary-blue: $secondary_blue,
+    tertiary-blue: $tertiary-blue,
+    quaternary-blue: $quaternary-blue,
+    primary-black: $primary-black,
+    secondary-black: $secondary-black,
+    primary-grey: $primary-grey,
+    secondary-grey: $secondary-grey,
+    tertiary-grey: $tertiary-grey,
+    quaternary-grey: $quaternary-grey,
+    primary-orange: $primary-orange,
+    secondary-orange: $secondary-orange,
+    tertiary-orange: $tertiary-orange,
+    quaternary-orange: $quaternary-orange,
+    primary-yellow: $yellow-dark,
+    secondary-yellow: $yellow-medium,
+    tertiary-yellow: $yellow-light,
+    primary-red: $primary-red,
+    secondary-red: $secondary-red,
+    primary-green: $primary-green,
+    secondary-green: $secondary-green,
+    primary-btn: $primary-btn,
+    primary-btn-hover: $primary-btn-hover,
+    draft: $draft,
+    all-audience: $all-audience,
+    seed-list: $seed-list,
+    ad-hoc-list: $ad-hoc-list,
+    match-list: $match-list,
+    suppression: $suppression,
+    auto-cluster: $auto-cluster,
+    completed: $completed,
+    pause: $pause,
+    play: $play,
+    stop: $stop,
+    extraction: $extraction,
+    reject: $reject,
+    scheduled: $scheduled,
+    inprogress: $inprogress,
+    alert: $alert,
+    multi-status: $multi-status,
+    email: $email,
+    web-analytics: $web-analytics,
+    social-post: $social-post,
+    webinar: $webinar,
+    video: $video,
+    voice: $voice,
+    line: $line,
+    social-media: $social-media,
+    orm: $orm,
+    sms: $sms,
+    web-push: $web-push,
+    mobile-push: $mobile-push,
+    vms: $vms,
+    call-center: $call-center,
+    whatsapp: $whatsapp,
+    qr-code: $qr-code,
+    direct-mail: $direct-mail,
+    paid-media: $paid-media,
+    twitter: $twitter,
+    facebook: $facebook,
+    linkedin: $linkedin,
+    insta: $insta,
+    pinterest: $pinterest,
+    notification: $notification,
+    rcs-message: $rcs-message,
+    webhook: $webhook,
+    landing-page: $landing-page,
+    zip-code: $zip-code,
+    gender: $gender,
+    male: $male,
+    female: $female,
+    age: $age,
+    country: $country,
+    website: $website,
+    others: $others,
+
+   google-ads: $google-ads,
+   facebook-ads: $facebook-ads,
+   x-ads: $x-ads,
+   amazon-ads: $amazon-ads,
+   linkedin-ads: $linkedin-ads,
+
+
+    list-audience: $list-audience,
+    dynamic-audience: $dynamic-audience,
+    monday: $monday,
+    tuesday: $tuesday,
+    wednesday: $wednesday,
+    thursday: $thursday,
+    friday: $friday,
+    saturday: $saturday,
+    sunday: $sunday,
+    positive: $positive,
+    neutral: $neutral,
+    negative: $negative,
+    startup: $startup,
+    pro: $pro,
+    enterprise: $enterprise,
+
+    blue-heavy-dark: $blue-heavy,
+    blue-dark: $blue-dark,
+    blue-medium: $blue-medium,
+    blue-light: $blue-light,
+
+    green-dark: $green-dark,
+    green-medium: $green-medium,
+    green-light: $green-light,
+
+    orange-dark: $orange-dark,
+    orange-medium: $orange-medium,
+    orange-light: $orange-light,
+
+    yellow-dark: $yellow-dark,
+    yellow-medium: $yellow-medium,
+    yellow-light: $yellow-light,
+
+    red-heavy-dark: $red-heavy-dark,
+    red-dark: $red-dark,
+    red-medium: $red-medium,
+    red-light: $red-light,
+
+    green-dark-blue: $blue-green-dark,
+    green-medium-blue: $blue-green-medium,
+    green-light-blue: $blue-green-light,
+
+    grey-dark: $grey-dark,
+    grey-medium: $grey-medium,
+    grey-light: $grey-light,
+
+    pink-dark: $pink-dark,
+    pink-medium: $pink-medium,
+    pink-light: $pink-light,
+
+    purple-dark: $purple-dark,
+    purple-medium: $purple-medium,
+    purple-light: $purple-light,
+
+    reach: $reach,
+    engagement: $engagement,
+    conversion: $conversion,
+    
+    whites: $white,
+    even: $tertiary-blue,
+
+
+    chart-1: $chartColor01,
+    chart-2: $chartColor02,
+    chart-3: $chartColor03,
+    chart-4: $chartColor04,
+    chart-5: $chartColor05,
+    chart-6: $chartColor06,
+    chart-7: $chartColor07,
+    chart-8: $chartColor08,
+    chart-9: $chartColor09,
+
+
+    versium-color: $versium,
+
+    splitA: $splitA,
+    splitB: $splitB,
+    splitC: $splitC,
+    splitD: $splitD,
+
+    primaryKey: $chartColor03,
+    foreignKey: $chartColor04,
+);
+
+@each $key, $value in $colors {
+    .color-#{$key} {
+        color: $value !important;
+    }
+    .bg-#{$key} {
+        background-color: $value !important;
+    }
+    .border-#{$key} {
+        border-color: $value !important;
+    }
+}

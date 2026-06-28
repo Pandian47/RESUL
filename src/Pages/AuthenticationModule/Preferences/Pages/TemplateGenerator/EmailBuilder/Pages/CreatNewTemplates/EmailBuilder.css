@@ -1,0 +1,35 @@
+.email-builder .rowComponent {
+  padding: 5% 10%;
+  min-height: 200px;
+}
+.email-builder .workbook {
+  padding: 0% 10%;
+}
+.email-builder .ebformfield {
+  display: grid;
+  border: 2px dashed #2995f0;
+}
+.email-builder .ebformfield:hover {
+  border: 1px dashed #2995f0;
+}
+.email-builder .ebformfield .moveIcon {
+  position: absolute;
+  opacity: 0;
+  left: -20px;
+}
+.email-builder .ebformfield:hover .moveIcon {
+  opacity: 1;
+}
+.email-builder .ebformfield .elementActionIconsShow {
+  display: flex;
+  bottom: 30px;
+  position: absolute;
+  right: 0;
+  background-color: blue;
+  align-items: center;
+  padding: 5px 5px;
+  border-radius: 5px;
+}
+.email-builder .ebformfield .elementActionIconsHide {
+  display: none;
+}/*# sourceMappingURL=EmailBuilder.css.map */

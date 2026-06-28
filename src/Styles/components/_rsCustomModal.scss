@@ -1,0 +1,51 @@
+.rs-custom-modal {
+    @include abs-position($position: absolute, $top: 0, $left: 0);
+    width: 100%;
+    height: 100%;
+    overflow-x: hidden;
+    overflow-y: auto;
+    outline: 0;
+    z-index: 1000;
+    &::after {
+        content:"";
+        @include abs-position($position: absolute, $top: 0, $left: 0);
+        width: 100%;
+        height: 100%;
+        background: rgba(0,0,0,0.5);
+        z-index: -1;
+    }
+    .rs-custom-content {
+        background: transparent;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        @include abs-position($position: absolute, $bottom: 30%, $left: 0);
+        width: 100%;
+        transform: translate(0, 50%);
+        img {
+            width: 150px;
+        }
+        h3 {
+            color: $white;
+            padding: 35px;
+        }
+        .rs-button-primary {
+            border: 1px solid $white;
+        }
+        &.bg-yellow {
+            background: #d29b29;
+        }
+        &.bg-red {
+            background: #d70a16;
+        }
+        &.bg-green {
+            background: #005f32;
+        }
+        &.bg-grey {
+            background: #afb7b9;
+        }
+        &.bg-blue {
+            background: #0e68b4;
+        }
+    }
+}

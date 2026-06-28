@@ -1,0 +1,371 @@
+{
+    "MdcType": "RecursivelyTraverse_React",
+    "CampaignGoal": "",
+    "CampaignName": "",
+    "ReceipientCount": 0,
+    "dataSource": {
+        "Type": "",
+        "DataList": [],
+        "ListType": "",
+        "isAutoRefresh": false,
+        "CssClass": "",
+        "Position": {
+            "top": "",
+            "left": ""
+        },
+        "DomId": "",
+        "isSubsegmentJoureny": false,
+        "isGroupCommunication": false,
+        "isGroupCommunicationId": ""
+    },
+    "Campaign": {
+        "CanvasChannel": {
+            "IsChannelSwitched": false,
+            "switchCond": {
+                "Position": {
+                    "top": "",
+                    "left": ""
+                },
+                "DomId": ""
+            },
+            "activeChannel": [],
+            "channelEnteries": [
+                {
+                    "Name": "Email",
+                    "ChannelFriendlyName": "Email",
+                    "ChannelDetailID": 0,
+                    "ChannelDetailType": "E",
+                    "ChannelId": "ch001",
+                    "DomId": "",
+                    "ContentThumbnailPath": "",
+                    "ScheduleDate": "",
+                    "T1": "",
+                    "B1": "",
+                    "C1": "",
+                    "B2": "",
+                    "AttributeSelect": false,
+                    "TotalCount": 0,
+                    "Position": {
+                        "top": "",
+                        "left": ""
+                    },
+                    "Action": {
+                        "Name": "Email action",
+                        "Template": false,
+                        "TemplateId": ""
+                    },
+                    "statusId": "-1"
+                },
+                {
+                    "Name": "SMS",
+                    "ChannelFriendlyName": "SMS",
+                    "ChannelDetailID": 0,
+                    "ChannelDetailType": "S",
+                    "ChannelId": "ch002",
+                    "DomId": "",
+                    "ContentThumbnailPath": "",
+                    "ScheduleDate": "",
+                    "T1": "",
+                    "B1": "",
+                    "C1": "",
+                    "B2": "",
+                    "TotalCount": 0,
+                    "AttributeSelect": false,
+                    "Position": {
+                        "top": "",
+                        "left": ""
+                    },
+                    "Action": {
+                        "Name": "SMS action",
+                        "Template": false,
+                        "TemplateId": ""
+                    },
+                    "statusId": "-1"
+                },
+                {
+                    "Name": "Web push",
+                    "ChannelFriendlyName": "Web push",
+                    "ChannelDetailID": 0,
+                    "ChannelDetailType": "WP",
+                    "ChannelId": "ch008",
+                    "DomId": "",
+                    "ContentThumbnailPath": "",
+                    "ScheduleDate": "",
+                    "T1": "",
+                    "B1": "",
+                    "C1": "",
+                    "B2": "",
+                    "TotalCount": 0,
+                    "AttributeSelect": false,
+                    "Position": {
+                        "top": "",
+                        "left": ""
+                    },
+                    "Action": {
+                        "Name": "Web push action",
+                        "Template": false,
+                        "TemplateId": ""
+                    },
+                    "statusId": "-1"
+                },
+                {
+                    "Name": "Mobile push",
+                    "ChannelFriendlyName": "Mobile push",
+                    "ChannelDetailID": 0,
+                    "ChannelDetailType": "MP",
+                    "ChannelId": "ch0014",
+                    "DomId": "",
+                    "ContentThumbnailPath": "",
+                    "ScheduleDate": "",
+                    "T1": "",
+                    "B1": "",
+                    "C1": "",
+                    "B2": "",
+                    "TotalCount": 0,
+                    "AttributeSelect": false,
+                    "Position": {
+                        "top": "",
+                        "left": ""
+                    },
+                    "Action": {
+                        "Name": "Mobile push action",
+                        "Template": false,
+                        "TemplateId": ""
+                    },
+                    "statusId": "-1"
+                },
+                {
+                    "Name": "Call center",
+                    "ChannelFriendlyName": "Call center",
+                    "ChannelDetailID": 0,
+                    "ChannelDetailType": "C",
+                    "ChannelId": "ch0026",
+                    "DomId": "",
+                    "ContentThumbnailPath": "",
+                    "ScheduleDate": "",
+                    "T1": "",
+                    "B1": "",
+                    "C1": "",
+                    "B2": "",
+                    "TotalCount": 0,
+                    "AttributeSelect": false,
+                    "Position": {
+                        "top": "",
+                        "left": ""
+                    },
+                    "Action": {
+                        "Name": "Call center action",
+                        "Template": false,
+                        "TemplateId": ""
+                    },
+                    "statusId": "-1"
+                },
+                {
+                    "Name": "VMS",
+                    "ChannelFriendlyName": "VMS",
+                    "ChannelDetailID": 0,
+                    "ChannelDetailType": "V",
+                    "ChannelId": "ch0025",
+                    "DomId": "",
+                    "ContentThumbnailPath": "",
+                    "ScheduleDate": "",
+                    "T1": "",
+                    "B1": "",
+                    "C1": "",
+                    "B2": "",
+                    "TotalCount": 0,
+                    "AttributeSelect": false,
+                    "Position": {
+                        "top": "",
+                        "left": ""
+                    },
+                    "Action": {
+                        "Name": "VMS action",
+                        "Template": false,
+                        "TemplateId": ""
+                    },
+                    "statusId": "-1"
+                },
+                {
+                    "Name": "QR code",
+                    "ChannelFriendlyName": "QR code",
+                    "ChannelDetailID": 0,
+                    "ChannelDetailType": "Q",
+                    "ChannelId": "ch003",
+                    "DomId": "",
+                    "ContentThumbnailPath": "",
+                    "ScheduleDate": "",
+                    "T1": "",
+                    "B1": "",
+                    "C1": "",
+                    "B2": "",
+                    "TotalCount": 0,
+                    "AttributeSelect": false,
+                    "Position": {
+                        "top": "",
+                        "left": ""
+                    },
+                    "Action": {
+                        "Name": "QR code action",
+                        "Template": false,
+                        "TemplateId": ""
+                    },
+                    "statusId": "-1"
+                },
+                {
+                    "Name": "WhatsApp",
+                    "ChannelFriendlyName": "WhatsApp",
+                    "ChannelDetailID": 0,
+                    "ChannelDetailType": "WA",
+                    "ChannelId": "ch0021",
+                    "DomId": "",
+                    "ContentThumbnailPath": "",
+                    "ScheduleDate": "",
+                    "T1": "",
+                    "B1": "",
+                    "C1": "",
+                    "B2": "",
+                    "TotalCount": 0,
+                    "AttributeSelect": false,
+                    "Position": {
+                        "top": "",
+                        "left": ""
+                    },
+                    "Action": {
+                        "Name": "WhatsApp action",
+                        "Template": false,
+                        "TemplateId": ""
+                    },
+                    "statusId": "-1"
+                },
+                {
+                    "Name": "RCS",
+                    "ChannelFriendlyName": "RCS",
+                    "ChannelDetailID": 0,
+                    "ChannelDetailType": "RCS",
+                    "ChannelId": "ch0041",
+                    "DomId": "",
+                    "ContentThumbnailPath": "",
+                    "ScheduleDate": "",
+                    "T1": "",
+                    "B1": "",
+                    "C1": "",
+                    "B2": "",
+                    "TotalCount": 0,
+                    "AttributeSelect": false,
+                    "Position": {
+                        "top": "",
+                        "left": ""
+                    },
+                    "Action": {
+                        "Name": "RCS action",
+                        "Template": false,
+                        "TemplateId": ""
+                    },
+                    "statusId": "-1"
+                },
+                {
+                    "Name": "Webhook",
+                    "ChannelFriendlyName": "Webhook",
+                    "ChannelDetailID": 0,
+                    "ChannelDetailType": "WH",
+                    "ChannelId": "ch0034",
+                    "DomId": "",
+                    "ContentThumbnailPath": "",
+                    "ScheduleDate": "",
+                    "T1": "",
+                    "B1": "",
+                    "C1": "",
+                    "B2": "",
+                    "TotalCount": 0,
+                    "AttributeSelect": false,
+                    "Position": {
+                        "top": "",
+                        "left": ""
+                    },
+                    "Action": {
+                        "Name": "Webhook action",
+                        "Template": false,
+                        "TemplateId": ""
+                    },
+                    "statusId": "-1"
+                },
+                {
+                    "Name": "Landing page",
+                    "ChannelFriendlyName": "{Landing page}",
+                    "ChannelDetailID": 0,
+                    "ChannelDetailType": "LP1",
+                    "ChannelId": "goal001",
+                    "DomId": "",
+                    "ContentThumbnailPath": "",
+                    "ScheduleDate": "",
+                    "T1": "",
+                    "B1": "",
+                    "C1": "",
+                    "B2": "",
+                    "TotalCount": 0,
+                    "Position": {
+                        "top": "",
+                        "left": ""
+                    },
+                    "Action": {
+                        "Name": "Landing page action",
+                        "Template": false,
+                        "TemplateId": ""
+                    }
+                },
+                {
+                    "Name": "Landing page",
+                    "ChannelFriendlyName": "{Landing page2}",
+                    "ChannelDetailID": 0,
+                    "ChannelDetailType": "LP2",
+                    "ChannelId": "goal002",
+                    "DomId": "",
+                    "ContentThumbnailPath": "",
+                    "ScheduleDate": "",
+                    "T1": "",
+                    "B1": "",
+                    "C1": "",
+                    "B2": "",
+                    "TotalCount": 0,
+                    "Position": {
+                        "top": "",
+                        "left": ""
+                    },
+                    "Action": {
+                        "Name": "Landing page action",
+                        "Template": false,
+                        "TemplateId": ""
+                    },
+                    "statusId": "-1"
+                }
+            ]
+        },
+        "PotentialRecipients": {
+            "Recipients": []
+        },
+        "MdcFlowConfig": {
+            "maxChannelConnection": 0,
+            "withoutGoal": 0,
+            "withGoalOne": 0,
+            "withGoalTwo": 0,
+            "isShowScheduleTooltip": true,
+            "isCurveLine":true
+        }
+    },
+    "nodeState": [],
+    "edgeState": [],
+    "subSegment": {
+        "IsSubSegmentSwitched": false,
+        "switchCond": {
+            "DomId": "",
+            "SelectionMode": "All",
+            "Position": {
+                "left": 275,
+                "top": 206
+            }
+        },
+        "subSegmentList": []
+    },
+    "disableNodeList": []
+}

@@ -1,0 +1,142 @@
+@use '../../kendoDocsVariables.scss' as *;
+
+.k-switch {
+    width: auto;
+    min-width: 60px;
+    font-family: $rs-font-regular;
+    font-size: 14px !important;
+    font-weight: 400 !important;
+    height: 26px;
+    line-height: 26px;
+
+    .k-switch-track {
+        height: 26px !important;
+        width: 100%;
+        outline: none;
+        border: 0;
+
+        .k-switch-label-on,
+        .k-switch-label-off {
+            width: 50%;
+            transform: translateY(-47%);
+            font-family: $rs-font-semi-bold;
+        }
+
+        .k-switch-label-on {
+            text-align: center;
+         }
+
+        .k-switch-label-off {
+            text-align: center;
+        }
+
+    }
+
+    &.k-switch-off {
+        .k-switch-track {
+            background-color: $secondary-grey;
+            border-color: $secondary-grey;
+            color: $white;
+        }
+
+        .k-switch-thumb {
+            background-color: $white;
+            border-color: $secondary-grey;
+            left: -2px;
+
+        }
+
+        &.switchNot {
+            .k-switch-track {
+                background-color: $primary-red;
+                border-color: $primary-red;
+                color: $white;
+            }
+        }
+
+        &.switchOr {
+            .k-switch-track {
+                background-color: $primary-orange;
+                border-color: $primary-orange;
+                color: $white;
+            }
+
+            .k-switch-thumb {
+                background-color: $white;
+                border-color: $primary-orange;
+            }
+        }
+    }
+
+    &.k-switch-on {
+        .k-switch-track {
+            background-color: $secondary-green;
+            border-color: $secondary-green;
+            color: $white;
+        }
+
+        .k-switch-thumb {
+            background-color: $white;
+            border-color: $secondary-green;
+            left: 2px;
+        }
+
+        &.switchNot {
+            .k-switch-track {
+                background-color: $primary-red;
+                border-color: $primary-red;
+                color: $white;
+            }
+        }
+    }
+
+    &.k-switch-on,
+    &.k-switch-off {
+        &:focus {
+            .k-switch-track {
+                outline: none;
+            }
+        }
+    }
+
+    .k-switch-thumb-wrap {
+        .k-switch-thumb {
+            width: 20px;
+            height: 20px;
+            border: 0;
+        }
+
+    }
+    &.k-disabled,
+    &[aria-disabled='true'],
+    &.click-off {
+        cursor: not-allowed;
+        pointer-events: none;
+
+        .k-switch-track,
+        .k-switch-thumb-wrap,
+        .k-switch-thumb,
+        .k-switch-label-on,
+        .k-switch-label-off {
+            cursor: not-allowed;
+        }
+    }
+}
+
+.#{$res-switch-prefix} {
+    &:has(.k-switch.k-disabled),
+    &:has(.k-switch[aria-disabled='true']),
+    &:has(.k-switch.click-off) {
+        cursor: not-allowed;
+    }
+}
+
+td:has(> .k-switch.k-disabled),
+td:has(> .k-switch[aria-disabled='true']),
+td:has(> .k-switch.click-off),
+.k-grid td:has(.k-switch.k-disabled),
+.k-grid td:has(.k-switch[aria-disabled='true']),
+.k-grid td:has(.k-switch.click-off) {
+    cursor: not-allowed;
+
+}

@@ -1,0 +1,738 @@
+@import 'Styles/abstarct/variables';
+@import 'Styles/abstarct/placeholder';
+
+// @extend targets for ResKendoGrid filter popup SCSS (same stubs as ComponentDocs)
+.box-design {
+   background-color: $white;
+    border-radius: var( --globalBorderRadius);
+    border: 1px solid $quaternary-blue;
+    padding: var( --boxDesignBodySpace);
+}
+.secondary-box-shadow {
+    box-shadow: 5px 5px 5px -5px rgba(0, 0, 0, 0.1), 5px 5px 5px -5px rgba(0, 0, 0, 0.1);
+}
+
+*:hover {
+    scrollbar-color: $secondary-grey;
+}
+.rs-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 10px 20px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: 500;
+}
+.rs-button-primary {
+    background-color: #005534;
+    color: #ffffff;
+    border: none;
+}
+
+@import './CommonComponents/ResKendoGrid/reskendogrid.scss';
+@import './CommonComponents/ResTabber/restabber.scss';
+@import './CommonComponents/ResTooltip/restooltip.scss';
+
+// /kendoDocs is a public auth route — App.jsx skips lazy-loaded Styles/app.scss there.
+// Load ResKendoGrid styles here (same stubs as ComponentDocs/componentDocs.scss).
+.box-design {
+    background-color: $white;
+    border-radius: var( --globalBorderRadius);
+    border: 1px solid $quaternary-blue;
+    padding: var( --boxDesignBodySpace);
+}
+.primary-box-shadow {
+    box-shadow: 0 0 5px 0 rgba(0, 0, 0, 0.05), 0 0 5px 0 rgba(0, 0, 0, 0.05);
+}
+.secondary-box-shadow {
+    box-shadow: 5px 5px 5px -5px rgba(0, 0, 0, 0.1), 5px 5px 5px -5px rgba(0, 0, 0, 0.1);
+}
+.no-box-shadow {
+    box-shadow: none;
+}
+
+*:hover {
+    scrollbar-color: $secondary-grey;
+}
+.rs-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 10px 20px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: 500;
+}
+.rs-button-primary {
+    background-color: #005534;
+    color: #ffffff;
+    border: none;
+}
+
+@import '../../Styles/css/resul-icons.css';
+@import './CommonComponents/ResKendoGrid/reskendogrid.scss';
+@import './CommonComponents/ResTabber/restabber.scss';
+@import './CommonComponents/ResTooltip/restooltip.scss';
+
+$kendo-docs-ease: cubic-bezier(0.4, 0, 0.2, 1);
+$kendo-docs-duration: 0.22s;
+$docs-bg: #f5f6fa;
+$docs-purple: #0000ff;
+$docs-purple-light: #ecebfe;
+$docs-blue: #0043ff;
+$docs-blue-light: #eef3ff;
+$docs-border: rgba(225, 227, 235, 0.8);
+$docs-glass-bg: rgba(255, 255, 255, 0.75);
+$docs-glass-border: rgba(255, 255, 255, 0.6);
+$docs-text-main: #1d2129;
+$docs-text-muted: #6b7280;
+
+.kendo-docs-page {
+    padding-bottom: 56px;
+    background-color: $docs-bg;
+    position: relative;
+    overflow: hidden;
+
+    .rs-page-header {
+        margin-bottom: 0;
+        position: relative;
+        z-index: 10;
+        background: transparent;
+    }
+
+    &__aside-col {
+        @media (max-width: 991px) {
+            margin-bottom: 16px;
+        }
+    }
+
+    &__aside-sticky {
+        position: sticky;
+        top: 88px;
+        max-height: calc(100vh - 8px);
+        overflow-y: auto;
+        padding-right: 8px;
+    }
+
+    &__main-col {
+        min-width: 0;
+    }
+    
+    &__group {
+        margin-bottom: 16px;
+    }
+}
+
+/* Background Shapes */
+.kendo-docs-bg-shapes {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    overflow: hidden;
+    z-index: 0;
+    pointer-events: none;
+}
+
+.kendo-docs-bg-shape {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(100px);
+    opacity: 0.6;
+    animation: kendo-docs-float 12s ease-in-out infinite alternate;
+
+    &--1 {
+        width: 800px;
+        height: 800px;
+        background: radial-gradient(circle, rgba(132, 104, 245, 0.15) 0%, rgba(132, 104, 245, 0) 70%);
+        top: -200px;
+        left: -200px;
+    }
+
+    &--2 {
+        width: 600px;
+        height: 600px;
+        background: radial-gradient(circle, rgba(79, 124, 244, 0.1) 0%, rgba(79, 124, 244, 0) 70%);
+        bottom: -100px;
+        right: -100px;
+        animation-delay: -5s;
+    }
+
+    &--3 {
+        width: 500px;
+        height: 500px;
+        background: radial-gradient(circle, rgba(132, 104, 245, 0.08) 0%, rgba(132, 104, 245, 0) 70%);
+        top: 30%;
+        left: 40%;
+        animation-delay: -2s;
+    }
+}
+
+@keyframes kendo-docs-float {
+    0% { transform: translate(0, 0) scale(1); }
+    100% { transform: translate(30px, 40px) scale(1.05); }
+}
+
+/* Hero Section */
+.kendo-docs-hero {
+    margin-bottom: 24px;
+    
+    &__title {
+        font-size: 24px;
+        font-family: $rs-font-bold;
+        color: $docs-text-main;
+        margin: 0 0 4px;
+    }
+    
+    &__subtitle {
+        font-size: 14px;
+        color: $docs-text-muted;
+        margin: 0;
+    }
+}
+
+/* Layout Grid */
+.kendo-docs-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 24px;
+    align-items: start;
+}
+
+.kendo-docs-right-sticky {
+    position: sticky;
+    top: 88px;
+    max-height: calc(100vh - 8px);
+    overflow-y: auto;
+    padding-right: 4px;
+}
+
+/* Sidebar */
+.kendo-docs-sidebar {
+    background: transparent;
+    padding: 0;
+
+    &__group {
+        & + & {
+            margin-top: 24px;
+        }
+    }
+
+    &__group-title {
+        font-size: 12px;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        color: $docs-text-muted;
+        margin: 0 0 12px 16px;
+        font-family: $rs-font-bold;
+    }
+
+    ul {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+    }
+
+    &__link {
+        position: relative;
+        display: flex;
+        align-items: center;
+        width: 100%;
+        text-align: left;
+        border: 1px solid transparent;
+        background: transparent;
+        padding: 10px 16px;
+        border-radius: 12px;
+        font-size: 14px;
+        font-family: $rs-font-medium;
+        color: $docs-text-muted;
+        cursor: pointer;
+        transition: all $kendo-docs-duration $kendo-docs-ease;
+
+        i {
+            margin-right: 12px;
+            font-size: 18px;
+            color: $docs-text-muted;
+            transition: color $kendo-docs-duration $kendo-docs-ease;
+        }
+
+        &:hover {
+            background-color: rgba(255, 255, 255, 0.5);
+            color: $docs-text-main;
+            
+            i { color: $docs-text-main; }
+        }
+
+        &.is-active {
+            background: linear-gradient(135deg, rgba(255,255,255,1) 0%, rgba(245,246,255,1) 100%);
+            border: 1px solid rgba(255, 255, 255, 0.8);
+            box-shadow: 0 4px 12px rgba(112, 88, 244, 0.08);
+            color: $docs-purple;
+            font-family: $rs-font-bold;
+
+            i { color: $docs-purple; }
+        }
+    }
+}
+
+/* Accordion Section (Middle Column) */
+.kendo-docs-section {
+    margin-bottom: 16px;
+    border: 1px solid $docs-border;
+    border-radius: 16px;
+    background: $docs-glass-bg;
+    backdrop-filter: blur(12px);
+    box-shadow: inset 0 0 0 1px $docs-glass-border, 0 2px 8px rgba(0,0,0,0.02);
+    overflow: hidden;
+    transition: all $kendo-docs-duration $kendo-docs-ease;
+
+    &:hover {
+        box-shadow: inset 0 0 0 1px $docs-glass-border, 0 6px 16px rgba(0,0,0,0.04);
+        border-color: rgba($docs-purple, 0.2);
+    }
+
+    &.is-active {
+        border-color: rgba($docs-purple, 0.4);
+        box-shadow: inset 0 0 0 1px $docs-glass-border, 0 8px 24px rgba(112, 88, 244, 0.08);
+    }
+
+    .accordion {
+        --bs-accordion-bg: transparent;
+        --bs-accordion-border-width: 0;
+        --bs-accordion-border-radius: 0;
+        --bs-accordion-inner-border-radius: 0;
+    }
+    
+    .accordion-item {
+        background: transparent;
+        border: none;
+    }
+
+    &__header-wrapper {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 20px 24px;
+        cursor: pointer;
+        user-select: none;
+    }
+
+    &__header-content {
+        flex: 1;
+        min-width: 0;
+    }
+
+    &__title {
+        font-size: 18px;
+        font-family: $rs-font-bold;
+        color: $docs-text-main;
+        margin: 0 0 4px;
+        transition: color $kendo-docs-duration $kendo-docs-ease;
+        
+        .is-active & {
+            color: $docs-purple;
+        }
+    }
+
+    &__desc {
+        font-size: 13px;
+        color: $docs-text-muted;
+        margin: 0;
+        line-height: 1.5;
+    }
+
+    &__chevron {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: $docs-purple-light;
+        color: $docs-purple;
+        flex-shrink: 0;
+        transition: all $kendo-docs-duration $kendo-docs-ease;
+
+        i {
+            font-size: 18px;
+        }
+        
+        .is-active & {
+            background: $docs-purple;
+            color: white;
+        }
+    }
+
+    .accordion-body {
+        padding: 0 24px 24px;
+    }
+
+    &__io-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 16px;
+        margin-bottom: 16px;
+    }
+
+    &__io-card {
+        background: white;
+        border: 1px solid $docs-border;
+        border-radius: 12px;
+        overflow: hidden;
+    }
+
+    &__io-header {
+        padding: 12px 16px;
+        border-bottom: 1px solid $docs-border;
+    }
+
+    &__io-title {
+        font-size: 14px;
+        font-family: $rs-font-bold;
+        color: $docs-text-main;
+        margin: 0 0 2px;
+    }
+
+    &__io-subtitle {
+        font-size: 12px;
+        color: $docs-text-muted;
+        margin: 0;
+    }
+
+    &__io-body {
+        padding: 12px;
+    }
+
+    &__io-pre {
+        margin: 0;
+        padding: 12px;
+        border-radius: 8px;
+        font-size: 12px;
+        font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+        line-height: 1.5;
+        overflow-x: auto;
+
+        &--purple {
+            background-color: #f8f7ff;
+            color: #5b21b6;
+        }
+
+        &--blue {
+            background-color: #f0fdfa;
+            color: #0f766e;
+        }
+    }
+
+    &__notes-card {
+        display: flex;
+        align-items: flex-start;
+        padding: 16px;
+        background: white;
+        border: 1px solid $docs-border;
+        border-radius: 12px;
+        gap: 16px;
+    }
+
+    &__notes-icon {
+        width: 32px;
+        height: 32px;
+        border-radius: 8px;
+        background: $docs-purple-light;
+        color: $docs-purple;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+
+        i {
+            font-size: 18px;
+        }
+    }
+
+    &__notes-content {
+        flex: 1;
+        min-width: 0;
+    }
+
+    &__notes-title {
+        font-size: 14px;
+        font-family: $rs-font-bold;
+        color: $docs-text-main;
+        margin: 0 0 4px;
+    }
+
+    &__notes-text {
+        font-size: 13px;
+        color: $docs-text-muted;
+        margin: 0;
+        line-height: 1.5;
+    }
+
+    &__notes-action {
+        color: $docs-purple;
+        cursor: pointer;
+        
+        i {
+            font-size: 20px;
+        }
+    }
+}
+
+/* Right Panel Cards */
+.kendo-docs-right-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.kendo-docs-right-card {
+    background: $docs-glass-bg;
+    border: 1px solid $docs-border;
+    border-radius: 16px;
+    box-shadow: inset 0 0 0 1px $docs-glass-border, 0 2px 8px rgba(0,0,0,0.02);
+    overflow: hidden;
+
+    &--preview {
+        overflow: visible;
+    }
+
+    &__header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 12px 16px;
+        border-bottom: 1px solid $docs-border;
+    }
+
+    &__title {
+        font-size: 11px;
+        font-family: $rs-font-bold;
+        color: $docs-text-muted;
+        letter-spacing: 0.05em;
+    }
+
+    &__icon {
+        color: $docs-purple;
+        font-size: 16px;
+        cursor: pointer;
+    }
+
+    &__body {
+        padding: 12px;
+        
+        &--preview {
+            padding: 16px;
+            background: white;
+            min-height: 140px;
+            border-bottom-left-radius: 15px;
+            border-bottom-right-radius: 15px;
+        }
+    }
+
+    /* Override CopyCode component styles */
+    .kendo-docs-code-block {
+        border: none;
+        border-radius: 8px;
+        background: transparent;
+        box-shadow: none;
+
+        &__head {
+            display: none;
+        }
+
+        &__pre {
+            padding: 0;
+            background: transparent;
+            font-size: 12px;
+            color: $docs-text-main;
+        }
+
+        &--props {
+            max-height: 420px;
+            overflow-y: auto;
+        }
+    }
+}
+
+.kendo-docs-props-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+
+    &__item {
+        padding-bottom: 14px;
+        border-bottom: 1px solid $docs-border;
+
+        &:last-child {
+            padding-bottom: 0;
+            border-bottom: none;
+        }
+    }
+
+    &__name {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 6px;
+        margin-bottom: 4px;
+
+        code {
+            font-size: 12px;
+            font-family: $rs-font-semi-bold;
+            color: $docs-purple;
+        }
+    }
+
+    &__required {
+        font-size: 10px;
+        font-family: $rs-font-bold;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        color: $primary-red;
+    }
+
+    &__type {
+        font-size: 10px;
+        color: $docs-text-muted;
+        font-family: $rs-font-regular;
+    }
+
+    &__desc {
+        margin: 0 0 6px;
+        font-size: 12px;
+        line-height: 1.45;
+        color: $docs-text-main;
+        font-family: $rs-font-regular;
+    }
+
+    &__example {
+        margin: 0;
+        padding: 8px 10px;
+        border-radius: 6px;
+        background: rgba(0, 0, 0, 0.03);
+        font-size: 11px;
+        line-height: 1.4;
+        overflow-x: auto;
+
+        code {
+            font-family: monospace;
+            color: $secondary-black;
+            white-space: pre-wrap;
+        }
+    }
+}
+
+.kendo-docs-preview-container {
+    .kendo-editor,
+    .rs-kendo-scrollable-grid,
+    .communication-list-tab-skeleton {
+        min-height: 150px;
+    }
+
+    .kendo-docs-dropdown-demo__props {
+        display: none;
+    }
+    
+    .kendo-docs-dropdown-demo > p,
+    .kendo-docs-restabber-demo > p {
+        display: none;
+    }
+}
+
+// ResTabber styles load from ResTabber/index.jsx (restabber.scss)
+.kendo-docs-restabber-demo {
+    width: 100%;
+
+    .kendo-docs-variation__body {
+        overflow-x: auto;
+    }
+}
+
+/* Multi-state preview layout: stacks several variations of one component
+   with a small caption above each, evenly spaced. */
+.kendo-docs-variations {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+.kendo-docs-variation {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+
+    &__label {
+        font-size: 11px;
+        font-family: $rs-font-bold;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        color: $docs-text-muted;
+        margin-bottom: 21px;
+    }
+}
+
+/* Illustration mock */
+.kendo-docs-right-illustration {
+    margin-top: 16px;
+    height: 120px;
+    background: linear-gradient(135deg, $docs-purple-light, #ffd1f4);
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+    
+    &::before {
+        content: '';
+        position: absolute;
+        width: 60px;
+        height: 60px;
+        background: rgba(255,255,255,0.4);
+        border-radius: 12px;
+        transform: rotate(15deg);
+        left: 20px;
+        bottom: 10px;
+        backdrop-filter: blur(4px);
+    }
+}
+
+.kendo-docs-illustration-glass {
+    width: 140px;
+    height: 80px;
+    background: rgba(255, 255, 255, 0.6);
+    backdrop-filter: blur(8px);
+    border: 1px solid rgba(255, 255, 255, 0.8);
+    border-radius: 12px;
+    box-shadow: 0 8px 32px rgba(112, 88, 244, 0.1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.kendo-docs-illustration-code {
+    font-family: ui-monospace, SFMono-Regular, monospace;
+    font-weight: bold;
+    color: $docs-purple;
+    font-size: 24px;
+}
+
+.kendo-docs-grid-demo,
+.kendo-docs-text-editor-demo {
+    width: 100%;
+}
+
+.resgrid-docs-preview {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    width: 100%;
+}

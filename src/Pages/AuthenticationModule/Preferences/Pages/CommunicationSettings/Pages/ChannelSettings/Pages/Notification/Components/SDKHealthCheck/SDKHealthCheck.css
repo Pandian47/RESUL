@@ -1,0 +1,46 @@
+  
+  /* Skeleton placeholders */
+  .skeleton {
+    background-color: #f3f4f6;
+    position: relative;
+    overflow: hidden;
+  }
+  
+  .skeleton .shimmer {
+    background: linear-gradient(
+      to right,
+      #f3f4f6 0%,
+      #e5e7eb 50%,
+      #f3f4f6 100%
+    );
+    background-size: 200% 100%;
+    animation: shimmer 1.2s infinite;
+    border-radius: 6px;
+  }
+  
+  .skeleton-title {
+    height: 18px;
+    width: 70%;
+  }
+  
+  .skeleton-status {
+    height: 16px;
+    width: 60px;
+    margin-left: auto;
+  }
+  
+  .skeleton-meta {
+    height: 14px;
+    width: 50%;
+    margin-top: 12px;
+  }
+  
+  @keyframes shimmer {
+    0% {
+      background-position: -200% 0;
+    }
+    100% {
+      background-position: 200% 0;
+    }
+  }
+  
