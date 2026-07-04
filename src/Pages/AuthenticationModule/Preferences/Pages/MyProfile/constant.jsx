@@ -1,4 +1,4 @@
-import _get from 'lodash/get';
+import { get as _get } from 'Utils/modules/lodashReplacements';
 export const FORM_INITIAL_STATE = {
     defaultValues: {
         userProfile: '',
@@ -84,7 +84,7 @@ export const buildPayload = (formState) => {
         title: 0,
         state: _get(state, 'state', state || ''),
         timeFormatId: _get(timeFormat, 'timeFormatID', 0),
-        dateFormatId: _get(dateFormat, 'dateFormatID', 0),
+        dateFormatId: _get(dateFormat, 'dateFormatID', 4),
         timezoneId: _get(timezone, 'timeZoneID', 0),
         languageId: _get(langauge, 'languageID', 0),
         countryId: _get(country, 'countryID', 0),

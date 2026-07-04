@@ -10,7 +10,7 @@ export const WEBLIVESOCKETURL = 'https://websoc.resu.io';
 export const MOBILELIVESOCKETURL = 'https://soc.resu.io';
 export const PREVIOUSVERSIONURL = 'https://run.resulticks.com/v48/';
 
-export const baseURL = BASEURLRUN;
+export const baseURL = window.location.host === 'reacuix.resul.io' || window.location.host === 'localhost:4000' ? BASEURLTEAM : BASEDEVWIZURL;
 export const GET_MASTER_DATA = 'AccountSetup/GetMasterData';
 export const GET_IP_ADDRESS_DATA = 'AccountSetup/GetIPData';
 export const GET_BU_DATA = 'User/GetDepartmentList';
@@ -766,6 +766,7 @@ export const GET_SERVICE_PROVIDERS = 'CommunicationSetting/GetServiceProvider';
 export const DKIM_VALIDATION = 'CommunicationSetting/DkimValidation';
 export const COMM_GET_DKIM_VALUES = 'Communication/GetDkimValues';
 export const COMM_SEND_DKIM_DETAILS_MAIL = 'Communication/SendDKIMDetailsMail';
+export const COMM_SEND_DOMAIN_DETAILS_MAIL = 'CommunicationSetting/DomainDetailsMail';
 export const COMM_CHECK_DOMAIN_EXIST = 'Communication/CheckDomainExist';
 export const COMM_RESTORE_DOMAIN_NAME = 'Communication/RestoreDomainName';
 
@@ -953,6 +954,13 @@ export const UPDATE_SENDER_DETAILS = 'Communication/UpdateSenderDetails';
 
 // --Mail/SMTP -Settings
 export const UPDATE_SMTP_DOMAIN = 'CommunicationSetting/UpsertSmtpDomainSetting';
+
+// --Custom event 
+export const CREATE_OR_UPDATE_CUSTOM_EVENT = 'CommunicationSetting/SaveCustomEvent';
+export const GET_CUSTOM_EVENT_LIST = 'CommunicationSetting/GetCustomEventList';
+export const GET_CUSTOM_EVENT_BY_ID = 'CommunicationSetting/GetCustomEventById';
+export const DELETE_CUSTOM_EVENT = 'CommunicationSetting/DeleteCustomEvent';
+export const CHECK_CUSTOM_EVENT_NAME_EXIST = 'CommunicationSetting/CheckCustomEventNameExist';
 
 // --Double Opt-In
 export const GET_DOUBLE_OPT_IN = 'CommunicationSetting/GetDoubleOptIn';

@@ -11,7 +11,7 @@ import { updateIntegartedSytem } from 'Reducers/preferences/DataExchange/reducer
 import { Fragment, useEffect, useState } from 'react';
 import { Col, Container, Row } from 'react-bootstrap';
 import { FormProvider, useForm } from 'react-hook-form';
-import _isEmpty from 'lodash/isEmpty';
+import { isEmpty as _isEmpty } from 'Utils/modules/lodashReplacements';
 import { useDispatch, useSelector } from 'react-redux';
 import { connectFieldsLists } from './constants';
 // import TableAttributes from './TableAttributes';

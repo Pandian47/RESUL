@@ -628,25 +628,11 @@ const handleOptionalResolution = (resolution) => {
     return findResolution?.imageResolution;
 };
 
-const handleBase64 = (base64) => {
-    const finalPayloadBase64 = base64.split(',')[1];
-    return finalPayloadBase64;
-};
-
 const handleHtmlResponsiveSize = (size = []) => {
     const findSize = size && commonResolution?.filter((resoultion) => size.includes(resoultion?.size));
     return findSize;
 };
 
-const handleEditBase64 = (editBase64, type) => {
-    if (type === 'video') {
-        return `data:video/mp4;base64,${editBase64}`;
-    } else if (type === 'audio') {
-        return `data:audio/mp3;base64,${editBase64}`;
-    } else {
-        return editBase64;
-    }
-};
 export const handleSettingEditData = (editData) => {
     const { requestBody } = editData[0];
     const { type } = requestBody;

@@ -8,8 +8,7 @@ import { Fragment, useCallback, useEffect, useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import _isEmpty from 'lodash/isEmpty';
-import _find from 'lodash/find';
+import { isEmpty as _isEmpty,find as _find } from 'Utils/modules/lodashReplacements';
 import { MASTERDATA_INITIAL_STATE, AUDIENCE_TYPE_FLAGS } from './constant';
 import usePermission from 'Hooks/usePersmission';
 import { getMasterDataAudience, getMasterGridData ,getRecommendationJson} from 'Reducers/audience/masterdata/request';
@@ -158,17 +157,19 @@ const MasterData = () => {
                         departmentName?.toLowerCase() === 'all' && licenseTypeId == '3' ? 'click-off' : ''
                     }  rs-list-group-horizontal jc-right`}
                 >
-                    <li>
-                        <RSTooltip text={translation('Sync_history')} position="top" className="lh0">
-                            <i
-                                id="rs_data_circle_history_fill_edge"
-                                className={`icon-lg color-primary-blue icon-hover-shadow-primary ${circle_history_fill_edge_large}`}
-                                onClick={() => {
-                                    if (pathname) navigate(`${pathname}/sync-history`);
-                                }}
-                            ></i>
-                        </RSTooltip>
-                    </li>
+                    {!_isEmpty(audienceOverview) && (
+                        <li>
+                            <RSTooltip text={translation('Sync_history')} position="top" className="lh0">
+                                <i
+                                    id="rs_data_circle_history_fill_edge"
+                                    className={`icon-lg color-primary-blue icon-hover-shadow-primary ${circle_history_fill_edge_large}`}
+                                    onClick={() => {
+                                        if (pathname) navigate(`${pathname}/sync-history`);
+                                    }}
+                                ></i>
+                            </RSTooltip>
+                        </li>
+                    )}
                     <li className={isHybrid && !addAudienceAccess ? 'd-none' : ''}>
                         <RSTooltip text={translation('Add audience')} position="top" className="lh0">
                             <i

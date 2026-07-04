@@ -29,7 +29,7 @@ function useNonProtectedRouteShell() {
                 const temp_session_credentials = localStorage.getItem('sessionCredentials');
                 const tempNewVersionConfirm = localStorage.getItem('newVersionConfirm');
                 localStorage.clear();
-                localStorage.setItem('masterData', tempMasterData);
+               // localStorage.setItem('masterData', tempMasterData);
                 localStorage.setItem('ipAddressData', tempipAddressData);
                 localStorage.setItem('disable_plugin_last_shown', tempdisable_plugin_last_shown);
                 localStorage.setItem('newVersionConfirm', tempNewVersionConfirm);

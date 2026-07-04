@@ -2,7 +2,6 @@ import { getUserCurrentFormat } from 'Utils/modules/dateTime';
 import { ReachChannelSkeleton } from 'Components/Skeleton/Skeleton';
 import { mapChartOptions } from 'Constants/Charts';
 import { Col } from 'react-bootstrap';
-import _map from 'lodash/map';
 
 import RSHighchartsContainer from 'Components/Highcharts';
 import { useSelector } from 'react-redux';
@@ -13,7 +12,7 @@ const Geography = ({ date }) => {
     const geography = useSelector((state) => getGeographyList(state));
     const { list = [], lastJobTime = new Date() } = geography;
 
-    const geographySeries = _map(list, (series) => ({
+    const geographySeries = (list || []).map((series) => ({
         zoomLevel: 15,
         country: series.country,
         state: series.city,

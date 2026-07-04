@@ -3,7 +3,7 @@ import { NOTE_ACTION, SETTINGS } from 'Constants/GlobalConstant/Placeholders';
 import { circle_minus_fill_edge_mini, circle_plus_fill_edge_medium } from 'Constants/GlobalConstant/Glyphicons';
 import { memo, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { v4 as uuid } from 'uuid';
-import _find from 'lodash/find';
+import { find as _find, uniqueId } from 'Utils/modules/lodashReplacements';
 
 import { useFormContext, useWatch } from 'react-hook-form';
 import { FormGeneratorContext } from '../FormTypes/FormGenerator';
@@ -19,7 +19,6 @@ import {
     handleAttributeDuplicates,
 } from '../../constant';
 import SettingsPopup from './SettingsPopup';
-import { uniqueId } from 'lodash';
 
 import RSCheckbox from 'Components/FormFields/RSCheckbox';
 import RSRadioButton from 'Components/FormFields/RSRadioButton';

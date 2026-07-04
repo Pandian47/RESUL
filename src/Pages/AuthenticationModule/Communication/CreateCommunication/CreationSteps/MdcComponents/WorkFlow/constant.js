@@ -1,20 +1,14 @@
 import { getDDMMMYYYY } from 'Utils/modules/dateTime';
-import { getmasterData } from 'Utils/modules/masterData';
-import { encodeUrl, getUserDetails } from 'Utils/modules/crypto';
-import { getUserCurrentFormat } from 'Utils/modules/dateTime';
-import { handleCustomNavigationDetails } from 'Utils/modules/navigation';
+import {
+    addHoursToDate,
+    encodeUrl,
+    getmasterData,
+    getUserCurrentFormat,
+    getUserDetails,
+    handleCustomNavigationDetails,
+} from 'Utils/index';
 import { eachDeep, filterDeep, findDeep, mapDeep } from 'deepdash-es/standalone';
-import _cloneDeep from 'lodash/cloneDeep';
-import _mapKeys from 'lodash/mapKeys';
-import _camelCase from 'lodash/camelCase';
-import _filter from 'lodash/filter';
-import _sum from 'lodash/sum';
-import _reduce from 'lodash/reduce';
-import _findIndex from 'lodash/findIndex';
-import _find from 'lodash/find';
-import _get from 'lodash/get';
-import _unionBy from 'lodash/unionBy';
-import _maxBy from 'lodash/maxBy';
+import { cloneDeep as _cloneDeep, mapKeys as _mapKeys, camelCase as _camelCase, filter as _filter, sum as _sum, reduce as _reduce, findIndex as _findIndex, find as _find, get as _get, unionBy as _unionBy, maxBy as _maxBy } from 'Utils/modules/lodashReplacements';
 import { getEnvironment } from 'Utils/modules/environment';
 import MdcTemplate from './MdcTemplate';
 import { MDC_CHANNEL_AND_ACTION_TEMPLATE } from './mdcJsonConfigConstant';
@@ -260,129 +254,6 @@ export const canvasInitialState = {
         className: 'res-mdc-placeholder',
         style: { visibilit: 'visible' },
     },
-};
-
-export const updateSubSegmentNodeList = (canvasState, payload) => {
-    const { nodeState = [] } = canvasState || {};
-    const { subSegmentData, addOnEle, isAddOn, positionList } = payload || {};
-
-    if (!subSegmentData) {
-        return [...nodeState];
-    }
-
-    let finalNodeList = [...nodeState];
-
-    const handleList = ['A1', 'A2', 'A3', 'A4'];
-    const subSegmentLevel = (canvasState?.subSegment?.subSegmentList?.length || 0) + 1;
-
-    if (isAddOn) {
-        const findSegmentNodeItem = _find(nodeState, { type: 'SubSegmentItem' });
-
-        if (findSegmentNodeItem && addOnEle) {
-            const updatePreviousNodeState = {
-                ...findSegmentNodeItem,
-                data: {
-                    ...(findSegmentNodeItem.data || {}),
-                    parentWindowId: addOnEle.id,
-                    sourceHandle: handleList[0],
-                },
-                position: positionList?.existingChannelPosition,
-            };
-
-            const updateNextNodeState = {
-                ...subSegmentData,
-                data: {
-                    ...(subSegmentData.data || {}),
-                    parentWindowId: addOnEle.id,
-                    sourceHandle: handleList[2],
-                    subSegmentLevel,
-                },
-            };
-
-            finalNodeList = [
-                ..._filter(nodeState, (item) => item.type !== 'SubSegmentItem'),
-                updatePreviousNodeState,
-                updateNextNodeState,
-                addOnEle,
-            ];
-        }
-    } else {
-        const findaddOnEleNodeItem = _find(nodeState, { type: 'AddonItem' });
-        const findSegmentNodeItem = _find(nodeState, { type: 'SubSegmentItem' });
-
-        if (findaddOnEleNodeItem) {
-            const subSegmentDataCopy = _cloneDeep(subSegmentData);
-            const parentWindowId =
-                findSegmentNodeItem?.data?.parentWindowId ??
-                subSegmentDataCopy?.data?.parentWindowId ??
-                findaddOnEleNodeItem?.data?.parentWindowId ??
-                '';
-
-            subSegmentDataCopy.data = {
-                ...(subSegmentDataCopy.data || {}),
-                parentWindowId,
-            };
-
-            const existingIndex = finalNodeList.findIndex((node) => node.id === subSegmentDataCopy.id);
-
-            if (existingIndex !== -1) {
-                finalNodeList[existingIndex] = {
-                    ...finalNodeList[existingIndex],
-                    ...subSegmentDataCopy,
-                };
-            } else {
-                finalNodeList.push({
-                    ...subSegmentDataCopy,
-                    data: {
-                        ...(subSegmentDataCopy.data || {}),
-                        subSegmentLevel,
-                    },
-                });
-            }
-
-            const updatedSubSegmentList = finalNodeList
-                .filter((node) => node.type === 'SubSegmentItem')
-                .map((subSegmentItem) => ({
-                    ...subSegmentItem,
-                    data: {
-                        ...(subSegmentItem.data || {}),
-                        sourceHandle: subSegmentItem?.data?.subSegmentLevel === 1 ? handleList[0] : handleList[2],
-                    },
-                }));
-
-            finalNodeList = [
-                ...finalNodeList.filter((node) => node.type !== 'SubSegmentItem'),
-                ...updatedSubSegmentList,
-            ];
-        } else if (subSegmentData?.id) {
-            const existingIndex = finalNodeList.findIndex((node) => node.id === subSegmentData.id);
-
-            if (existingIndex !== -1) {
-                finalNodeList[existingIndex] = {
-                    ...finalNodeList[existingIndex],
-                    ...subSegmentData,
-                };
-            } else {
-                finalNodeList.push({
-                    ...subSegmentData,
-                    data: {
-                        ...(subSegmentData.data || {}),
-                        subSegmentLevel,
-                    },
-                });
-            }
-
-            const validSubSegmentIds = new Set([
-                ...(canvasState?.subSegment?.subSegmentList ?? []).map((segment) => segment.id),
-                subSegmentData.id,
-            ]);
-            finalNodeList = finalNodeList.filter(
-                (node) => node.type !== 'SubSegmentItem' || validSubSegmentIds.has(node.id),
-            );
-        }
-    }
-
-    return finalNodeList;
 };
 
 export const updateCanvasStateInSubSegmentList = (canvasState, payload) => {
@@ -1227,6 +1098,10 @@ export const communicationCanvasReducer = (state, action) => {
             let canvasJson = action.payload?.MDCTemplate?.canvasJson ?? action.payload?.MDCTemplate;
             let channelDeleteList = action.payload?.MDCTemplate?.channelDeleteList;
             let selectedAudienceList = action.payload?.data?.selectedAudienceList ?? [];
+            let segmentationList = _filter(selectedAudienceList, 'segmentationListId').map((v) => v.segmentationListId);
+            let listType = _filter(selectedAudienceList, 'listType').map((v) => v.listType);
+            let recipientCount = _filter(selectedAudienceList, 'recipientCount').map((v) => v.recipientCount);
+            let totalRecipientCount = _sum(recipientCount);
 
             const finalNodeList = canvasJson?.nodeState?.filter(
                 (nodeState) => !channelDeleteList?.includes(nodeState.id),
@@ -1241,6 +1116,7 @@ export const communicationCanvasReducer = (state, action) => {
                 ...canvasJson,
                 nodeState: [...nodeRslt],
                 updatedCount: state.updatedCount,
+                ReceipientCount: totalRecipientCount,
                 subSegment: {
                     ...canvasJson.subSegment,
                     subSegmentList: [...matchSegmentList],
@@ -1261,10 +1137,17 @@ export const communicationCanvasReducer = (state, action) => {
                 finalCanvasState.nodeState = [...finalCanvasState.nodeState, action.payload.SourceItem];
             }
             if (action.payload.subSegmentObj) {
-                finalCanvasState.nodeState = [...finalCanvasState.nodeState, action.payload.subSegmentObj];
+                const subSegmentObj = {
+                    ...action.payload.subSegmentObj,
+                    data: {
+                        ...action.payload.subSegmentObj.data,
+                        audienceCount: totalRecipientCount,
+                    },
+                };
+                finalCanvasState.nodeState = [...finalCanvasState.nodeState, subSegmentObj];
                 finalCanvasState.subSegment = {
                     ...state.subSegment,
-                    subSegmentList: [action.payload.subSegmentObj],
+                    subSegmentList: [subSegmentObj],
                 };
             }
             if (!action.payload.subSegmentObj) {
@@ -1272,17 +1155,34 @@ export const communicationCanvasReducer = (state, action) => {
                     finalCanvasState.Campaign.CanvasChannel.Placeholder = [action?.payload?.placeholderObj];
                     finalCanvasState.nodeState = [action.payload.SourceItem, action?.payload?.placeholderObj];
                 }
+                finalCanvasState.subSegment = {
+                    ...canvasJson.subSegment,
+                    subSegmentList: [],
+                    IsSubSegmentSwitched: false,
+                    switchCond: {
+                        DomId: '',
+                        SelectionMode: 'All',
+                        Position: { left: '', top: '' },
+                    },
+                };
             }
             if (action?.payload?.data) {
                 const { isCGTGEnabled } = action.payload?.data;
                 finalCanvasState.dataSource = {
                     ...finalCanvasState.dataSource,
+                    ListType: listType,
+                    DataList: segmentationList,
                     isAutoRefresh,
                     isGroupCommunication,
                     GroupedCampaignId,
                     isSubsegmentJoureny,
                     isCGTGEnabled: isCGTGEnabled ?? false,
                 };
+            }
+
+            if (!action.payload.subSegmentObj) {
+                const edgeList = GenerateEdgeObject(finalCanvasState);
+                return { ...finalCanvasState, edgeState: [...edgeList], updatedCount: state.updatedCount + 1 };
             }
 
             return finalCanvasState;
@@ -2432,34 +2332,6 @@ export const GetAudienceBasedOnChannel = (channelId, recipients) => {
     return count;
 };
 
-export const GetAudienceBasedOnChannelRecursiveFlow = (channelId, recipients) => {
-    let count = 0;
-
-    switch (channelId) {
-        case 'ch001':
-            count = getCountForRecursiveFlow(recipients, 'Email');
-            break;
-        case 'ch002':
-            count = getCountForRecursiveFlow(recipients, 'SMS');
-            break;
-        case 'ch008':
-            count = getCountForRecursiveFlow(recipients, 'Webpush');
-            break;
-        case 'ch0014':
-            count = getCountForRecursiveFlow(recipients, 'Mobilepush');
-            break;
-        case 'ch0021':
-            count = getCountForRecursiveFlow(recipients, 'WhatsApp');
-            break;
-        case 'ch0025':
-            count = getCountForRecursiveFlow(recipients, 'VMS');
-            break;
-        case 'ch0041':
-            count = getCountForRecursiveFlow(recipients, 'RCS');
-            break;
-    }
-    return parseFloat(count.replace(/,/g, ''));
-};
 export const NodeFormatter = (tmpJson) => {
     // debugger;
     const mdcTemplate = _cloneDeep(tmpJson);
@@ -4026,9 +3898,6 @@ export const buildCanvasDataSavePayload = (campaignDetails) => {
     return { userId, departmentId, clientId, campaignId, campaignData: JSON.stringify(canvasState) };
 };
 
-export const getCanvasSavePayloadData = (canvasState) =>
-    canvasState ? JSON.stringify(canvasState) : '';
-
 export const isSameCanvasSaveData = (lastSavedSnapshot, canvasState) =>
     Boolean(lastSavedSnapshot) &&
     serializeCanvasStateForAutoSave(canvasState) === lastSavedSnapshot;
@@ -4111,10 +3980,7 @@ export const UpdateRecursivelyFlowDateTime = (payload, canvasJson, type = 'recur
                                         days: durVal,
                                     });
                                 if (durType['value'] === 'hours')
-                                    addedDate = getUserCurrentFormat(null, {
-                                        addDaysFromDate: dateFormat,
-                                        days: durVal,
-                                    });
+                                    addedDate = getUserCurrentFormat(addHoursToDate(dateFormat, durVal));
 
                                 child['actionOption']['durDate'] = addedDate?.dateToString;
                                 child['ScheduleDate'] = addedDate?.dateToString;
@@ -4168,11 +4034,15 @@ export const UpdateRecursivelyFlowDateTime = (payload, canvasJson, type = 'recur
                 }
 
                 const dateFormat = new Date(prevDurDate);
+                const placeholderDurType = placeholderItem?.data?.actionOption?.durType?.value;
+                const placeholderDurVal = placeholderItem?.data?.actionOption?.durVal;
 
-                const addedDate = getUserCurrentFormat(null, {
-                    addDaysFromDate: dateFormat,
-                    days: placeholderItem?.data?.actionOption?.durVal,
-                });
+                const addedDate = placeholderDurType === 'hours'
+                    ? getUserCurrentFormat(addHoursToDate(dateFormat, placeholderDurVal))
+                    : getUserCurrentFormat(null, {
+                        addDaysFromDate: dateFormat,
+                        days: placeholderDurVal,
+                    });
 
                 return {
                     ...placeholderItem,

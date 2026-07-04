@@ -39,11 +39,11 @@ const usePermission = () => {
                 const temp_session_credentials = localStorage.getItem('sessionCredentials');
                  const tempNewVersionConfirm = localStorage.getItem('newVersionConfirm');
                 localStorage.clear();
-                if (tempMasterData !== null) {
-                    localStorage.setItem('masterData', tempMasterData);
-                    localStorage.setItem('ipAddressData',  tempipAddressData);  
-                    localStorage.setItem('disable_plugin_last_shown', tempdisable_plugin_last_shown);
-                }
+                // if (tempMasterData !== null) {
+                //     localStorage.setItem('masterData', tempMasterData);
+                //     localStorage.setItem('ipAddressData',  tempipAddressData);  
+                //     localStorage.setItem('disable_plugin_last_shown', tempdisable_plugin_last_shown);
+                // }
                 if(temp_session_credentials) {
                     localStorage.setItem('sessionCredentials', temp_session_credentials);
                 }

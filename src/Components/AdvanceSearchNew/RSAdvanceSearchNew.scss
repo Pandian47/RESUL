@@ -1,13 +1,43 @@
 @import 'Styles/abstarct/variables';
 
+.empty-width {
+    flex: 0 1 0px !important;
+    width: 0px !important;
+    max-width: 0px !important;
+    overflow: hidden !important;
+    padding: 0px !important;
+    margin: 0px !important;
+    border: 0px !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
+}
+
+@mixin rs-asn-width-motion {
+    min-width: 0;
+    transition:
+        flex-basis 0.78s cubic-bezier(0.22, 1, 0.36, 1),
+        width 0.78s cubic-bezier(0.22, 1, 0.36, 1),
+        max-width 0.78s cubic-bezier(0.22, 1, 0.36, 1),
+        opacity 0.52s ease,
+        padding 0.52s ease,
+        margin 0.52s ease,
+        border-width 0.52s ease,
+        flex-grow 0.78s cubic-bezier(0.22, 1, 0.36, 1);
+
+    @media (prefers-reduced-motion: reduce) {
+        transition: none;
+    }
+}
+
 .rs-asn-wrapper {
     width: 100%;
     position: relative;
     overflow: visible;
 
-    &.is-expanded-full {
+    &.is-expanded-full,
+    &.is-advanced-panel-layout {
         .rs-asn-top-row {
-            gap: 0;
+            // gap: 0;
             position: relative;
             z-index: 51;
         }
@@ -19,7 +49,9 @@
         .rs-asn-advanced-panel {
             z-index: 120;
         }
+    }
 
+    &.is-expanded-full {
         &::after {
             content: '';
             position: fixed;
@@ -44,15 +76,53 @@
             gap: 15px;
         }
 
-        .rs-asn-toolbar-actions {
-            display: inline-flex;
+        .rs-asn-search-cluster {
+            display: flex;
             align-items: center;
-            gap: 15px;
-            flex-shrink: 0;
+            justify-content: flex-end;
+            flex: 0 0 auto;
+            min-width: 0;
+            gap: 0;
+            border: 1px solid transparent;
+            border-radius: 50px;
+            background: transparent;
+            overflow: visible;
+            position: relative;
+            z-index: 2;
+            transition:
+                gap 0.52s ease,
+                border-color 0.32s ease,
+                background-color 0.32s ease;
 
-            &.has-collapsed-bar {
-                flex: 1 1 0%;
-                min-width: 0;
+            &.is-expanded {
+                // gap: 15px;
+                border-color: #c2cfe3;
+                background: #ffffff;
+                z-index: 80;
+            }
+        }
+
+        .search-icon-box {
+            // display: inline-flex;
+            // align-items: center;
+            // justify-content: center;
+            // flex: 0 0 auto;
+            height: 32px;
+            line-height: 0;
+
+            .rs-tooltip-wrapper,
+            .lh0 {
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                line-height: 0;
+            }
+
+            i {
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                line-height: 1;
             }
         }
 
@@ -62,6 +132,9 @@
             gap: 15px;
             flex-wrap: nowrap;
             flex-shrink: 0;
+            max-width: 100%;
+            opacity: 1;
+            @include rs-asn-width-motion;
 
             // Date range + channel dropdown sit on one line (gallery / list toolbar)
             .res-daterange-picker,
@@ -363,44 +436,41 @@
         }
 
         .rs-asn-search-bar-wrap {
-            flex: 1 1 auto;
-            width: 0;
+            flex: 0 0 0px;
+            width: 0px;
             min-width: 0;
-            max-width: 100%;
+            max-width: 0px;
             display: flex;
             flex-direction: column;
             align-items: stretch;
             position: relative;
             overflow: visible;
-
-            .is-expanded & {
-                width: 100%;
-            }
+            opacity: 1;
+            @include rs-asn-width-motion;
         }
 
         .rs-asn-search-bar {
             display: flex;
             width: 100%;
+            min-width: 0;
+            overflow: visible;
             // padding: 0px;
             // z-index: 99;
             // border: 1px solid $quaternary-blue;
             // background: #ffffff;
-            // height: 32px;
+            height: 32px;
             // border-radius: 50px;
             // position: relative;
-            .rs-asn-search-wrapper {
-                display: flex;
-                width: 100%;
-                padding: 0px;
-                /* z-index: 99; */
-                border: 1px solid #c2cfe3;
-                background: #ffffff;
-                height: 32px;
-                border-radius: 50px;
-                position: relative;
-                padding-right: 41px;
-                margin-right: -32px;
-            }
+
+            // padding-right: 13px;
+            // .rs-asn-search-wrapper {
+            //     display: flex;
+            //     width: 100%;
+            //     padding: 0px;
+            //     /* z-index: 99; */
+            //     height: 32px;
+            //     position: relative;
+            // }
         }
 
         .rs-asn-scroll-area {
@@ -410,6 +480,7 @@
             align-items: center;
             gap: 4px;
             height: 100%;
+            overflow: hidden;
         }
 
         .rs-asn-inline-scroll-btn {
@@ -512,15 +583,19 @@
             height: auto;
             flex-shrink: 0;
             cursor: pointer;
+            max-width: 36px;
+            opacity: 1;
+            @include rs-asn-width-motion;
         }
 
         .rs-asn-chips-inline {
-            display: flex;
+            display: inline-flex;
             flex-wrap: nowrap;
             align-items: center;
             gap: 8px 12px;
-            max-width: 100%;
-            flex-shrink: 0;
+            width: max-content;
+            max-width: none;
+            flex: 0 0 auto;
         }
 
         .rs-asn-filter-pair {
@@ -594,7 +669,7 @@
             font-size: $font-xs;
             color: $secondary-black;
             font-family: $rs-font-regular;
-            padding: 0px 12px;
+            // padding: 0px 12px;
 
             &::placeholder {
                 color: $secondary-grey;
@@ -614,18 +689,23 @@
         .rs-asn-search-actions {
             display: flex;
             align-items: center;
-            gap: 10px;
+            // gap: 10px;
             align-self: stretch;
-            padding-left: 10px;
+            // padding-left: 10px;
             margin-left: auto;
             flex-shrink: 0;
             height: 100%;
+            z-index: 3;
 
             li {
                 display: inline-flex;
                 align-items: center;
                 justify-content: center;
                 height: 100%;
+                max-width: 72px;
+                width: 40px;
+                opacity: 1;
+                @include rs-asn-width-motion;
             }
 
             i {
@@ -641,7 +721,7 @@
         }
 
         .rs-asn-action-divider {
-            padding-left: 10px;
+            // padding-left: 10px;
             border-left: 1px solid $quaternary-blue;
         }
 
@@ -652,6 +732,9 @@
             height: 100%;
             padding: 0 4px 0 8px;
             flex-shrink: 0;
+            max-width: 32px;
+            opacity: 1;
+            @include rs-asn-width-motion;
 
             .segment_loader {
                 position: relative;
@@ -712,7 +795,7 @@
             max-width: 100%;
             grid-column: span 2;
             box-sizing: border-box;
-            margin: 0;
+            margin: 5px 0 0;
             padding: 0;
             list-style: none;
             border: 1px solid $quaternary-blue;
@@ -750,7 +833,7 @@
                 text-align: center;
                 color: $secondary-grey;
                 cursor: default;
-                padding: 0 10px;
+                padding: 20px 10px;
 
                 &:hover {
                     background: transparent;
@@ -779,6 +862,8 @@
         border-radius: 10px;
         border: 1px solid $quaternary-blue;
         box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+        transform-origin: top center;
+        will-change: transform, opacity;
 
         .is-expanded & {
             top: 100%;
@@ -786,7 +871,7 @@
             border-radius: 0 0 10px 10px;
             height: calc(100vh - 100% - 10px);
             min-height: 500px;
-            overflow-y: auto;
+            overflow: visible;
         }
     }
 
@@ -986,12 +1071,12 @@
     }
 
     .rs-asn-chips-inline .rs-asn-chip {
-        max-width: 100%;
+        max-width: 220px;
     }
 
     .rs-asn-chips-inline .rs-asn-chip .rs-asn-chip-value {
-        white-space: normal;
-        word-break: break-word;
+        white-space: nowrap;
+        word-break: normal;
     }
 }
 

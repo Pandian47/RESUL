@@ -6,7 +6,7 @@ import { Fragment, useCallback, useEffect, useMemo, useRef, useState } from 'rea
 import { Row, Col } from 'react-bootstrap';
 import { useDispatch } from 'react-redux';
 import { useFormContext, useFormState } from 'react-hook-form';
-import _get from 'lodash/get';
+import { get as _get } from 'Utils/modules/lodashReplacements';
 import RSModal from 'Components/RSModal';
 import RSTooltip from 'Components/RSTooltip';
 import RSFileUpload from 'Components/FormFields/RSFileUpload';
@@ -92,21 +92,6 @@ const uploadFilesToServer = async (dispatch, files, { kindLabel }) => {
     const urls = list.map((r) => r?.data?.url || r?.url || r?.filePath || r?.data?.filePath).filter(Boolean);
     if (urls.length !== files.length) {
         return { ok: false, error: `Upload succeeded but missing URL(s) for ${kindLabel}` };
-    }
-    return { ok: true, urls };
-};
-
-const uploadFilesToServerSequentially = async (dispatch, files, { kindLabel }) => {
-    if (!files?.length) {
-        return { ok: true, urls: [] };
-    }
-    const urls = [];
-    for (const file of files) {
-        const res = await uploadFilesToServer(dispatch, [file], { kindLabel });
-        if (!res.ok) {
-            return res;
-        }
-        urls.push(res.urls[0]);
     }
     return { ok: true, urls };
 };
@@ -269,27 +254,6 @@ const collectFilesFromEntry = async (entry, bucket, maxCount, platformType, soci
             if (bucket.length >= maxCount) break;
         }
     }
-};
-
-const getImageFilesFromDataTransfer = async (dataTransfer, maxNew, platformType, socialPostType) => {
-    if (maxNew <= 0) return [];
-    const out = [];
-    const items = dataTransfer.items;
-    if (items?.length) {
-        for (let i = 0; i < items.length && out.length < maxNew; i++) {
-            const entry = items[i].webkitGetAsEntry?.();
-            if (entry) {
-                await collectFilesFromEntry(entry, out, maxNew, platformType, socialPostType);
-            }
-        }
-    }
-    if (out.length === 0 && dataTransfer.files?.length) {
-        Array.from(dataTransfer.files).forEach((f) => {
-            if (out.length >= maxNew) return;
-            if (acceptMultiFile(f, platformType, socialPostType)) out.push(f);
-        });
-    }
-    return out;
 };
 
 const reorderWithPointer = (items, fromIndex, hoverIndex, insertAfter) => {
@@ -1031,6 +995,7 @@ const MultiImageUpload = ({
                                     }
                                     selectedFile={!isMulti && selectedFiles[0] ? selectedFiles[0] : null}
                                     isFileInvalid={!isMulti && isFileInvalid}
+                                    isProcessing={isUploadingNow}
                                     errorMessage={
                                         !isMulti &&
                                         uploadImageError &&

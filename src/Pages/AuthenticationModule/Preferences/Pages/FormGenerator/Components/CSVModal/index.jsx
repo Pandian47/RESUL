@@ -4,7 +4,7 @@ import { getWarningPopupMessage } from 'Utils/modules/warningPopup';
 import { ENTER_DAYS, ENTER_MONTHS, SELECT, SELECT_DAYS, SELECT_END_DATE, SELECT_HOURS, SELECT_WEEK } from 'Constants/GlobalConstant/ValidationMessage';
 import { ARE_YOU_SURE_STOP_SCHEDULE, CANCEL, COMMUNICATION_NAME, CONDITION_ATTRIBUTE_VALUE_DATE, DOWNLOAD_LINK_DATA_SHORTLY, END_DATE, ENTER_FORM_FIELDS, EXECUTE_ONCE_IMMEDIATELY, FORM_FIELDS, FREQUENCY, NEWCONTACT_DOWNLOAD, OK, SCHEDULE_DOWNLOAD, SELECT_FORM_FIELDS_TO_DOWNLOAD, STOP, THANK_YOU_YOUR_REQUEST, UPCOMING_SCHEDULE_CANCELLED } from 'Constants/GlobalConstant/Placeholders';
 import { circle_question_mark_mini } from 'Constants/GlobalConstant/Glyphicons';
-import { Fragment, useEffect, useMemo, useState } from 'react';
+import { Fragment, useEffect, useMemo, useState, useRef } from 'react';
 import { Col, Row } from 'react-bootstrap';
 import { FormProvider, useForm } from 'react-hook-form';
 
@@ -78,7 +78,31 @@ const CSVModal = ({ show, handleActions, data, communicationName, campaignId, fr
     const csvModalLoader = useApiLoader({ autoFetch: false });
     const csvDownloadLoader = useApiLoader({ autoFetch: false });
     const stopScheduleLoader = useApiLoader({ autoFetch: false });
-    const [scheduleStatus] = watch(['schedule']);
+    const [scheduleStatus, scheduleEndDate] = watch(['schedule', 'scheduleEndDate']);
+
+    const manualEndDateRef = useRef(formFieldState.endDate);
+
+    useEffect(() => {
+        if (!scheduleStatus) {
+            manualEndDateRef.current = formFieldState.endDate;
+        }
+    }, [formFieldState.endDate, scheduleStatus]);
+
+    useEffect(() => {
+        if (scheduleStatus) {
+            if (scheduleEndDate) {
+                setFormFieldState((pre) => ({
+                    ...pre,
+                    endDate: getYYMMDD(scheduleEndDate),
+                }));
+            }
+        } else {
+            setFormFieldState((pre) => ({
+                ...pre,
+                endDate: manualEndDateRef.current,
+            }));
+        }
+    }, [scheduleEndDate, scheduleStatus]);
 
     const csvScheduleEndDateMin = useMemo(() => {
         const t = new Date();
@@ -554,6 +578,12 @@ const CSVModal = ({ show, handleActions, data, communicationName, campaignId, fr
                                 </Col>
                                 <Col sm={7} className="float-left">
                                     <RSDateRangePicker
+                                        key={`${formFieldState.startDate}_${formFieldState.endDate}`}
+                                        selectedDateText={
+                                            (new Date(formFieldState.endDate).toDateString() !== new Date().toDateString())
+                                                ? "Custom range"
+                                                : "Last 30 days"
+                                        }
                                         name="dateRange"
                                         mainClass="float-start"
                                         startDate={new Date(formFieldState.startDate)}

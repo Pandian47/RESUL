@@ -12,7 +12,7 @@ import { Col, Row } from 'react-bootstrap';
 import { FormProvider, useForm } from 'react-hook-form';
 import { uploadList } from '../../constants';
 import RSFileUpload from 'Components/FormFields/RSFileUpload';
-import _map from 'lodash/map';
+import { map as _map } from 'Utils/modules/lodashReplacements';
 import DownloadCSV from 'Pages/AuthenticationModule/Components/DownloadCSV/DownloadCSV';
 const hideColor = '#e9e9eb';
 

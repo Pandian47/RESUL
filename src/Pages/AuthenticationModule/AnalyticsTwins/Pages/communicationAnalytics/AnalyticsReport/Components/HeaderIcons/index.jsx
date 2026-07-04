@@ -2,11 +2,9 @@ import { encodeUrl } from 'Utils/modules/crypto';
 import { addTabKey } from '../../constants';
 import { MAX_LENGTH75, MIN_LENGTH } from 'Constants/GlobalConstant/Regex';
 import { ENTER_SNAPSHOT_NAME } from 'Constants/GlobalConstant/ValidationMessage';
-import { download_medium, goals_benchmark_large, pdf_download_large, snapshot_large, star_fill_large, star_large } from 'Constants/GlobalConstant/Glyphicons';
+import { alert_large, download_medium, goals_benchmark_large, pdf_download_large, snapshot_large, star_fill_large, star_large, thumps_up_xlarge } from 'Constants/GlobalConstant/Glyphicons';
 import { useContext, useEffect, useMemo, useState } from 'react';
-import _get from 'lodash/get';
-import _map from 'lodash/map';
-import _filter from 'lodash/filter';
+import { get as _get,map as _map,filter as _filter } from 'Utils/modules/lodashReplacements';
 import RSTooltip from 'Components/RSTooltip';
 import { BootstrapDropdown } from 'Components/RSBootstrapDropDown';
 import { ANALYSIS_PERFORMANCE_DATA } from '../../constants';
@@ -439,7 +437,22 @@ const HeaderIcons = ({
                     <RSConfirmationModal
                         show={snapshotStatus?.success}
                         header="Info"
-                        text={snapshotStatus?.status ? `Snapshot saved successfully` : 'Failed to save snapshot'}
+                        htmlContent={
+                            <div className="d-flex flex-column align-items-center">
+                                {snapshotStatus?.status ? (
+                                    <i
+                                        className={`${thumps_up_xlarge} fs75 cursor-normal color-primary-green`}
+                                    />
+                                ) : (
+                                    <i className={`${alert_large} color-primary-red fs75 cursor-normal`} />
+                                )}
+                                <div className="mt10">
+                                    {snapshotStatus?.status
+                                        ? 'Snapshot saved successfully'
+                                        : 'Failed to save snapshot'}
+                                </div>
+                            </div>
+                        }
                         primaryButtonText="OK"
                         handleClose={() => setSnapshotStatus((pre) => ({ ...pre, success: false }))}
                         handleConfirm={() => setSnapshotStatus((pre) => ({ ...pre, success: false }))}

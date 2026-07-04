@@ -6,7 +6,7 @@ import { useSelector, useDispatch } from 'react-redux';
 import KendoGrid from 'Components/RSKendoGrid';
 
 
-import _map from 'lodash/map';
+import { map as _map } from 'Utils/modules/lodashReplacements';
 import { getSessionId } from 'Reducers/globalState/selector';
 import { getConsumptionChannelDetails } from 'Reducers/preferences/consumptions/request';
 import useQueryParams from 'Hooks/useQueryParams';

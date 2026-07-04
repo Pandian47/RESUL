@@ -2,8 +2,7 @@ import { getUserCurrentFormat } from 'Utils/modules/dateTime';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { PanelBar, PanelBarItem } from '@progress/kendo-react-layout';
 import { useSelector } from 'react-redux';
-import _isEmpty from 'lodash/isEmpty';
-import _groupBy from 'lodash/groupBy';
+import { isEmpty as _isEmpty,groupBy as _groupBy } from 'Utils/modules/lodashReplacements';
 
 
 import NoDataAvailableRender from 'Components/FormFields/Component/NoDataAvailableRender';

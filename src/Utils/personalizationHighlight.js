@@ -10,12 +10,12 @@ const SINGLE_BRACE_REGEX = /(?<!\{)\{([^{}]*)\}(?!\})/g;
 /**
  * Generates the innerHTML for the highlight backdrop div.
  *
- * CRITICAL — the <mark> must have:
- *   padding: 0   → so backdrop text wraps at exactly the same column as the textarea
- *   box-shadow   → CSS-side trick to paint a visual chip without adding layout width
+ * CRITICAL — visual chip styling lives in _communication.scss (`.personalization-highlight`).
+ * The mark uses `background-clip: content-box` with equal padding + negative margin so
+ * the blue chip has a transparent gap next to braces without changing inline width.
  *
- * Do NOT add padding/border here; any inline width on the mark shifts line-breaks
- * in the backdrop relative to the textarea and misaligns highlights.
+ * Do NOT add characters (&nbsp;, spaces) or extra DOM nodes here; anything not present
+ * in the textarea value shifts line-breaks and misaligns the caret.
  */
 export function getHighlightedHTML(text) {
     if (!text) return '';
@@ -264,22 +264,6 @@ function tryInsertPipeAfterSelectedToken(ta, braceType = 'double') {
     return false;
 }
 
-/**
- * Blocks keyboard input in static template text and smart-link placeholders.
- */
-export function shouldBlockKeyboardInput(text, selStart, selEnd, braceType = 'double') {
-    const ranges = getPlaceholderRanges(text, braceType);
-    if (ranges.length === 0) return false;
-    return !isKeyboardEditablePosition(text, selStart, selEnd, braceType);
-}
-
-/**
- * @deprecated Use isCaretAllowedPosition — kept for existing imports.
- */
-export function isEditablePosition(text, selStart, selEnd, braceType = 'double') {
-    return isCaretAllowedPosition(text, selStart, selEnd, braceType);
-}
-
 export function findPlaceholderRangeForInsert(text, selStart, selEnd, braceType = 'double') {
     const ranges = getPlaceholderRanges(text, braceType);
     if (!ranges.length) return -1;
@@ -360,39 +344,6 @@ export function replacePlaceholderInner(text, rangeIndex, newContent, braceType 
 }
 
 /**
- * Returns the nearest allowed caret index inside a placeholder inner zone.
- * Positions in static text or on delimiters snap to the closest inner boundary.
- */
-export function getEditableCaretPosition(text, pos, braceType = 'double') {
-    const ranges = getPlaceholderRanges(text, braceType);
-    if (ranges.length === 0) return pos;
-
-    const safePos = Math.max(0, Math.min(pos, text?.length ?? 0));
-
-    for (const r of ranges) {
-        if (safePos >= r.innerStart && safePos <= r.innerEnd) {
-            return safePos;
-        }
-        if (safePos > r.innerEnd && safePos < r.fullEnd) {
-            return r.innerEnd;
-        }
-    }
-
-    let nearest = ranges[0].innerStart;
-    let minDist = Math.abs(safePos - nearest);
-    for (const r of ranges) {
-        for (const candidate of [r.innerStart, r.innerEnd]) {
-            const dist = Math.abs(safePos - candidate);
-            if (dist < minDist) {
-                minDist = dist;
-                nearest = candidate;
-            }
-        }
-    }
-    return nearest;
-}
-
-/**
  * Builds inserted text at the current selection when it lies in an editable placeholder zone.
  * Returns null when insertion is not allowed.
  */
@@ -449,9 +400,6 @@ export function buildProgrammaticInsert(
     const contentType = getPlaceholderContentType(inner);
 
     if (isSmartLink) {
-        if (contentType === 'smartlink') {
-            return null;
-        }
         return replacePlaceholderInner(text, rangeIndex, content, braceType);
     }
 
@@ -521,7 +469,7 @@ export function canInsertSmartLinkIntoTextarea(textarea, braceType = 'double') {
         textarea.selectionStart,
         textarea.selectionEnd,
         braceType,
-        { allowSmartLinkZone: false },
+        { allowSmartLinkZone: true },
     );
 }
 
@@ -532,12 +480,7 @@ export function canInsertPersonalizationAt(text, selStart, selEnd, braceType = '
 
 /** Validates a saved selection for smart-link insert (not on an existing smart link). */
 export function canInsertSmartLinkAt(text, selStart, selEnd, braceType = 'double') {
-    return canInsertAtSelection(text, selStart, selEnd, braceType, { allowSmartLinkZone: false });
-}
-
-/** @deprecated Use canInsertPersonalizationIntoTextarea or canInsertSmartLinkIntoTextarea */
-export function canInsertIntoTextarea(textarea, braceType = 'double') {
-    return canInsertPersonalizationIntoTextarea(textarea, braceType);
+    return canInsertAtSelection(text, selStart, selEnd, braceType, { allowSmartLinkZone: true });
 }
 
 /** Returns true when an emoji may be inserted at a selection (not inside a smart-link placeholder). */
@@ -763,10 +706,12 @@ export function useRestrictedPlaceholderEdit(braceType = 'double', onInsertionAl
 
             const insertedText = e.data ?? e.dataTransfer?.getData('text') ?? '';
 
-            // Block curly braces { and } inside placeholders entirely
-            if (/[\{\}]/.test(insertedText)) {
-                e.preventDefault();
-                return;
+            // Block curly braces only when caret is inside an existing placeholder
+            if (/[{}]/.test(insertedText)) {
+                if (isInsidePlaceholderInner(text, ta.selectionStart, ta.selectionEnd, braceType)) {
+                    e.preventDefault();
+                    return;
+                }
             }
 
             // Intercept pipe character typed/inserted on a personalization selection
@@ -836,8 +781,11 @@ export function useRestrictedPlaceholderEdit(braceType = 'double', onInsertionAl
 
             if (isKeyboardEditablePosition(text, selStart, selEnd, braceType)) {
                 if (e.key === '{' || e.key === '}') {
-                    e.preventDefault();
-                    return;
+                    if (isInsidePlaceholderInner(text, selStart, selEnd, braceType)) {
+                        e.preventDefault();
+                        return;
+                    }
+                    return; // allow it in free text
                 }
                 if (e.key === 'Backspace') {
                     const checkStart = selStart === selEnd ? Math.max(0, selStart - 1) : selStart;

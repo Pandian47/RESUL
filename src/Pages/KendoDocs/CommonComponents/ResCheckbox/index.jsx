@@ -1,7 +1,7 @@
 import { circle_question_mark_mini } from 'Constants/GlobalConstant/Glyphicons';
 import { memo } from 'react';
 import './resCheckbox.scss';
-import _get from 'lodash/get';
+import { get as _get } from 'Utils/modules/lodashReplacements';
 import PropTypes from 'prop-types';
 import { Controller } from 'react-hook-form';
 import RSPPophover from 'Components/RSPPophover';

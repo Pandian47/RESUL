@@ -1,7 +1,7 @@
 import { encodeUrl, getUserDetails } from 'Utils/modules/crypto';
 import { getDateWithDaynoFormat, getUserCurrentFormat, getYYMMDD } from 'Utils/modules/dateTime';
 import { useState, useEffect, useMemo } from 'react';
-import _get from 'lodash/get';
+import { get as _get } from 'Utils/modules/lodashReplacements';
 import { BootstrapDropdown } from 'Components/RSBootstrapDropDown';
 import { useSelector, useDispatch } from 'react-redux';
 import { getSessionId } from 'Reducers/globalState/selector';
@@ -217,7 +217,7 @@ const Card = ({
                     message: 'Select layout',
                 });
                 return;
-            } else if (!subjectLine && !audience) {
+            } else if (!errors?.subjectLine && !errors?.audience) {
                 formState = {
                     ...campaignDetails,
                     ...formState,
@@ -308,14 +308,14 @@ const Card = ({
                         // channelDetailId: edmChannelId || 0,
                         channelDetailId:
                             type?.type === 'Web'
-                                ? WebPushNotifyChannelDetailID
+                                ? data?.WebPushNotifyChannelDetailID
                                 : type?.type === 'Mobile'
-                                ? MobilePushNotifyChannelDetailID
-                                : edmChannelId || 0,
+                                ? data?.MobilePushNotifyChannelDetailID
+                                : data?.edmChannelId || 0,
                         departmentId,
                         clientId,
                         userId,
-                        edmChannelId: edmChannelId || 0,
+                        edmChannelId: data?.edmChannelId || 0,
                     };
                     let channelDetails = JSON.stringify(params);
 
@@ -329,10 +329,10 @@ const Card = ({
 
                     const currentChannelDetailId =
                         type?.type === 'Web'
-                            ? WebPushNotifyChannelDetailID
+                            ? data?.WebPushNotifyChannelDetailID
                             : type?.type === 'Mobile'
-                            ? MobilePushNotifyChannelDetailID
-                            : edmChannelId || 0;
+                            ? data?.MobilePushNotifyChannelDetailID
+                            : data?.edmChannelId || 0;
 
                     const isWebOrMobileNotification = type?.type === 'Web' || type?.type === 'Mobile';
 
@@ -382,7 +382,7 @@ const Card = ({
                         //         ? MobilePushNotifyChannelDetailID
                         //         : 0,
                         channelDetailId: currentChannelDetailId,
-                        edmChannelId: edmChannelId || 0,
+                        edmChannelId: data?.edmChannelId || 0,
                         fromEnvi: locationEnvi,
                         templateCategoryType: categoryData?.filter(
                             (e) => e.templateCategoryId === templateCategoryID,

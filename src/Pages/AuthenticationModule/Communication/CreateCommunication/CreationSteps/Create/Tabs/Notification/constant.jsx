@@ -2,10 +2,7 @@ import { getCreatedDate } from 'Utils/modules/dateTime';
 import { getmasterData } from 'Utils/modules/masterData';
 import { circle_minus_fill_medium, circle_plus_medium } from 'Constants/GlobalConstant/Glyphicons';
 import { Fragment } from 'react';
-import _map from 'lodash/map';
-import _get from 'lodash/get';
-import _find from 'lodash/find';
-import _uniqBy from 'lodash/uniqBy';
+import { map as _map,get as _get,find as _find,uniqBy as _uniqBy } from 'Utils/modules/lodashReplacements';
 import SplitAB from './Component/SplitAB/SplitAB';
 import {
     SPLIT_AB_NAME,
@@ -292,7 +289,7 @@ export const buildTabContent = (formState, _type, timeZoneId, location, notifica
                 : '',
         impressionCount: !!formState?.impressions?.value ? Number(formState?.impressions?.value) : 0,
         priority: !!formState?.priority?.value ? Number(formState?.priority?.value) : 0,
-        bannerId: !!formState?.inPageBanner?.bannerId ? formState?.inPageBanner?.bannerId : '',
+        bannerId: !!formState?.inPageBanner?.bannerId ? Number(formState.inPageBanner.bannerId) : 0,
         bannerName: !!formState?.inPageBanner?.bannerName ? formState?.inPageBanner?.bannerName : '',
         webMediaURLType: _urlType,
     };
@@ -515,7 +512,7 @@ export const buildTabContent = (formState, _type, timeZoneId, location, notifica
                         : '',
                 impressionCount: !!formstateSplit?.impressions?.value ? Number(formstateSplit?.impressions?.value) : 0,
                 priority: !!formstateSplit?.priority?.value ? Number(formstateSplit?.priority?.value) : 0,
-                bannerId: !!formState?.inPageBanner?.bannerId ? formState.inPageBanner.bannerId : '',
+                bannerId: !!formState?.inPageBanner?.bannerId ? Number(formState.inPageBanner.bannerId) : 0,
                 bannerName: !!formState?.inPageBanner?.bannerName ? formState.inPageBanner.bannerName : '',
                 webMediaURLType: _urlType,
             };
@@ -579,7 +576,7 @@ export const buildPayload = (formState, _type, timeZoneId, mobileApp, location, 
         deliveryTypeId: !!formState?.deliveryType ? formState?.deliveryType?.id : 0,
         allOrAny: 'ALL',
         testPushCampaignEmailAddres: !!sendMail ? sendMail : '',
-        bannerId: !!formState?.inPageBanner?.bannerId ? formState?.inPageBanner?.bannerId : '',
+        bannerId: !!formState?.inPageBanner?.bannerId ? Number(formState.inPageBanner.bannerId) : 0,
         bannerName: !!formState?.inPageBanner?.bannerName ? formState?.inPageBanner?.bannerName : '',
         webSplit: {
             pushChannelId: 0,

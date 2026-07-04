@@ -24,6 +24,27 @@ export function hasTargetListEditData(data) {
     return Boolean(item && typeof item === 'object' && Object.keys(item).length);
 }
 
+export function resolveSegmentListName(editListData = {}, navigationState = null) {
+    const editRecord = editListData && typeof editListData === 'object' ? editListData : {};
+    const isMdcSubSegment = Boolean(navigationState?.isMDCSubSegment);
+
+    if (isMdcSubSegment) {
+        return (
+            editRecord?.SubSegmentName ??
+            navigationState?.listName ??
+            editRecord?.recipientsBunchName ??
+            ''
+        );
+    }
+
+    return (
+        editRecord?.recipientsBunchName ??
+        editRecord?.SubSegmentName ??
+        navigationState?.listName ??
+        ''
+    );
+}
+
 /** Parse JSON array fields (dropdowns, attributes, groups); never throws. */
 export function parseAudienceJsonArray(value, fallback = []) {
     if (value == null || value === '') return fallback;
@@ -123,19 +144,6 @@ export function getFilterBindCount(filterFrontEndBind, fallback = 0) {
 
 export function hasFilterBindSegments(filterFrontEndBind) {
     return getFilterBindOuterString(filterFrontEndBind).split('||').length > 0;
-}
-
-export function normalizeAudienceGridPayload(raw) {
-    if (raw == null || typeof raw !== 'object') {
-        return { ...EMPTY_AUDIENCE_GRID };
-    }
-    const rows = Array.isArray(raw.data) ? raw.data : Array.isArray(raw.items) ? raw.items : [];
-    return {
-        ...EMPTY_AUDIENCE_GRID,
-        ...raw,
-        data: rows,
-        total: Number(raw.total ?? raw.totalCount ?? rows.length) || 0,
-    };
 }
 
 /** Coerce API value to array; never throws. */

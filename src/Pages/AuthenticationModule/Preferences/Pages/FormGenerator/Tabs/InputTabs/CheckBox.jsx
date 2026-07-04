@@ -2,7 +2,7 @@ import { formatName } from 'Utils/modules/formatters';
 import { SETTINGS } from 'Constants/GlobalConstant/Placeholders';
 import { memo, useContext, useEffect, useState } from 'react';
 import { useFormContext } from 'react-hook-form';
-import _find from 'lodash/find';
+import { find as _find } from 'Utils/modules/lodashReplacements';
 import RSCheckbox from 'Components/FormFields/RSCheckbox';
 
 import { SETTINGS_ICON, ASTERISK_ICON, BODYCONFIG, mapToItemRender, handleAttributeDuplicates } from '../../constant';

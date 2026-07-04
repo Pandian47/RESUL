@@ -2,7 +2,7 @@ import { pieChartOptions } from 'Constants/Charts';
 import { useState } from 'react';
 import { Col } from 'react-bootstrap';
 import { useSelector } from 'react-redux';
-import _map from 'lodash/map';
+import { map as _map } from 'Utils/modules/lodashReplacements';
 
 import RSHighchartsContainer from 'Components/Highcharts';
 import { getKnownToUnknown, getSummaryList } from 'Reducers/analytics/analyticsSummary/selector';

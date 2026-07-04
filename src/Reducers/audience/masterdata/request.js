@@ -1,4 +1,4 @@
-import { GET_AUDIENCE_GRID, GET_LIST_ACQUISITION, GET_RECOMMENDATION_JSON, IS_PARTNER_DATA_ENABLE, MASTER_DATA_AUDIENCE, MASTER_DATA_BIND_AUDIENCE_CHART, MASTER_DATA_GET_AUDIENCE_LIST_ATTRIBUTES, MASTER_DATA_LISTACTIVITY, MASTER_DATA_MAKE_ACQUISITION, MASTER_DATA_RECIPIENT_ACQUISITION, MASTER_DATA_UPDATE_AUDIENCE_LIST_ATTRIBUTES } from 'Constants/EndPoints';
+import { GET_AUDIENCE_GRID, GET_LIST_ACQUISITION, GET_RECOMMENDATION_JSON, IS_PARTNER_DATA_ENABLE, MASTER_DATA_AUDIENCE, MASTER_DATA_GET_AUDIENCE_LIST_ATTRIBUTES, MASTER_DATA_MAKE_ACQUISITION, MASTER_DATA_RECIPIENT_ACQUISITION, MASTER_DATA_UPDATE_AUDIENCE_LIST_ATTRIBUTES } from 'Constants/EndPoints';
 import request from 'Utils/Http';
 
 import { update_master_audience_data, update_MDM_field, update_errors, update_MDM_loading, reset_mdm } from './reducer';
@@ -140,57 +140,6 @@ export const getMasterGridData = (payload) => async (dispatch) => {
         }),
     );
 };
-export const getMasterDataBindAudience = (payload) => async (dispatch) => {
-    dispatch(update_MDM_loading({ field: 'bindAudienceLoading', status: true }));
-    dispatch(
-        request.post({
-            url: MASTER_DATA_BIND_AUDIENCE_CHART,
-            payload,
-            ok: (res) => {
-                const { data, status, message } = getApiPayload(res);
-                if (status && data != null) {
-                    dispatch(update_MDM_field({ field: 'bindAudience', data: data }));
-                } else {
-                    dispatch(update_MDM_field({ field: 'bindAudience', data: [] }));
-                    dispatch(update_errors({ field: 'bindAudience', error: message }));
-                }
-            },
-            fail: (err) => {
-                dispatch(update_MDM_field({ field: 'bindAudience', data: [] }));
-                dispatch(update_errors({ field: 'bindAudience', error: String(err) }));
-            },
-            final: () => dispatch(update_MDM_loading({ field: 'bindAudienceLoading', status: false })),
-        }),
-    );
-};
-
-export const getListActivity = (payload) => async (dispatch, getState) => {
-    const requestId = beginListAcquisitionChartRequest(dispatch, getState);
-    return dispatch(
-        request.post({
-            url: MASTER_DATA_LISTACTIVITY,
-            payload,
-            loading: false,
-            ok: (res) => {
-                if (isStaleListAcquisitionChartRequest(requestId)) return;
-                const { data, status, message } = getApiPayload(res);
-                if (status && data && typeof data === 'object') {
-                    dispatch(update_MDM_field({ field: 'listAcquisitionChart', data: data }));
-                } else {
-                    dispatch(update_MDM_field({ field: 'listAcquisitionChart', data: {} }));
-                    dispatch(update_errors({ field: 'listAcquisitionChart', error: message }));
-                }
-            },
-            fail: (err) => {
-                if (isStaleListAcquisitionChartRequest(requestId)) return;
-                dispatch(update_MDM_field({ field: 'listAcquisitionChart', data: {} }));
-                dispatch(update_errors({ field: 'listAcquisitionChart', error: String(err) }));
-            },
-            final: () => endListAcquisitionChartRequest(dispatch, requestId),
-        }),
-    );
-};
-
 export const getRecepientAcquisitions = (payload) => async (dispatch) => {
     const requestId = beginRecipientAcquisitionRequest(dispatch);
     return dispatch(

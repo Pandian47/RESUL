@@ -78,6 +78,10 @@ const CustomNode = ({ data }) => {
     const borderColor = getStatusColor(data.state);
     const detailText = data?.detail || data?.details || data?.task?.detail || data?.task?.details || 'NA';
     const labelText = String(data?.label || 'NA');
+    const rawDuration = data?.task?.duration ?? data?.duration;
+    const exactDuration = (rawDuration !== null && rawDuration !== undefined && String(rawDuration).trim() !== '')
+        ? String(rawDuration).trim()
+        : 'NA';
 
     const formatDateTime = (date) => {
         if (!date) return 'NA';
@@ -94,6 +98,8 @@ const CustomNode = ({ data }) => {
                     <span style="word-break: break-word; color: #ffffff;">${formatDateTime(data.start_date)}</span>
                     <span style="font-weight: 600; color: #cbd5e1;">End date & time</span>
                     <span style="word-break: break-word; color: #ffffff;">${formatDateTime(data.task?.end_date)}</span>
+                    <span style="font-weight: 600; color: #cbd5e1;">Duration</span>
+                    <span style="word-break: break-word; color: #ffffff;">${exactDuration}</span>
                     <span style="font-weight: 600; color: #cbd5e1;">Detail</span>
                     <span style="word-break: break-word; color: #ffffff;">${detailText}</span>
                 </div>
@@ -164,9 +170,9 @@ const CustomNode = ({ data }) => {
                         {data.state || 'Unknown'}
                     </div>
 
-                    {data.duration && (
+                    {(data.duration || data?.task?.duration) && (
                         <div style={{ fontSize: '12px', color: '#64748b', marginBottom: '5px' }}>
-                            Duration: {stripDurationMilliseconds(data.duration)}
+                            Duration: {stripDurationMilliseconds(data.duration || data?.task?.duration)}
                         </div>
                     )}
                 </div>
@@ -407,7 +413,7 @@ const GraphAndLogs = ({ dagId, runId }) => {
                     dynamicTab="mb0 mini"
                     activeClass="active"
                     tabData={tabData}
-                    className="rs-tabs row"
+                    className="rs-tabs row justify-content-end"
                     componentClassName="mt20"
                     defaultTab={0}
                     onTabChange={handleTabChange}

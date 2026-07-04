@@ -6,16 +6,28 @@ const BingLogo = GoogleLogo;
 const YahooLogo = GoogleLogo;
 import { mFulltimeSubt_01, mFulltimeSubt_02, mFulltimeSubt_03, mFulltimeSubt_04 } from 'Constants/Utils/dates';
 import { chartSizing, seriesNameField } from 'Constants/Charts/commonFunction';
-import { ch_clockchart1, ch_clockchart2, ch_primary_green, ch_secondary_green } from 'Constants/GlobalConstant/Colors/colorsVariable';
-import { arrow_up_mini, channel_action_mini, communication_target_mini, link_large, messaging_mini, social_post_large, thumbs_up_mini } from 'Constants/GlobalConstant/Glyphicons';
-import moment from 'moment';
+import {
+    ch_clockchart1,
+    ch_clockchart2,
+    ch_primary_green,
+    ch_secondary_green,
+} from 'Constants/GlobalConstant/Colors/colorsVariable';
+import {
+    arrow_up_mini,
+    channel_action_mini,
+    communication_target_mini,
+    link_large,
+    messaging_mini,
+    social_post_large,
+    thumbs_up_mini,
+} from 'Constants/GlobalConstant/Glyphicons';
 import DetailAnalyticsEmail from './Pages/Email/Email';
 import DetailAnalyticsSms from './Pages/Sms/Sms';
 import DetailAnalyticsQr from './Pages/Qr/Qr';
 import DetailAnalyticsWhatsapp from './Pages/Whatsapp/Whatsapp';
 import DetailAnalyticsVMS from './Pages/Vms/Vms';
 import DetailAnalyticsSocialMedia from './Pages/SocialMedia/SocialMedia';
-import DetailAnalyticsWebAppAnalytics from './Pages/WebAppAnalytics/WebAppAnalytics'; 
+import DetailAnalyticsWebAppAnalytics from './Pages/WebAppAnalytics/WebAppAnalytics';
 import DetailAnalyticsPaidMedia from './Pages/Paid-media/PaidMedia';
 import WebNotification from './Pages/WebNotification/WebNotification';
 import MobileNotification from './Pages/MobileNotification/MobileNotification';
@@ -32,9 +44,6 @@ const progressbarData = [
     { name: 'Boost post', value: 10, cls: 'rejected' },
 ];
 
-const getDateWithDay = (value) => {
-    return moment().subtract(value, 'days').format('MMM DD');
-};
 export const handleDefaultTab = (list, channelId, currentBlastId) => {
     // debugger;
     let findShortCode = list?.findIndex(
@@ -80,7 +89,7 @@ export const DETAIL_ANALYTICS_TAB_CONFIG = (isDownloadUI) => [
         channelId: 2,
         component: () => <DetailAnalyticsSms type="SMS" key="sms" isDownloadUI={isDownloadUI} />,
     },
-   
+
     {
         text: 'Mobile push',
         channelId: 14,
@@ -107,7 +116,7 @@ export const DETAIL_ANALYTICS_TAB_CONFIG = (isDownloadUI) => [
         text: 'RCS',
         channelId: 41,
         component: () => <DetailAnalyticsRcs type="Rcs" key="rcs" isDownloadUI={isDownloadUI} />,
-    }, 
+    },
     {
         text: 'VMS',
         channelId: 25,
@@ -121,7 +130,9 @@ export const DETAIL_ANALYTICS_TAB_CONFIG = (isDownloadUI) => [
     {
         text: 'Social media',
         channelId: 7,
-        component: () => <DetailAnalyticsSocialMedia type="Social media" key="Social media" isDownloadUI={isDownloadUI} />,
+        component: () => (
+            <DetailAnalyticsSocialMedia type="Social media" key="Social media" isDownloadUI={isDownloadUI} />
+        ),
     },
     {
         text: 'Web / App analytics',
@@ -134,7 +145,6 @@ export const DETAIL_ANALYTICS_TAB_CONFIG = (isDownloadUI) => [
             />
         ),
     },
-    
 ];
 
 export const defaultValues = () => {
@@ -193,20 +203,6 @@ export const ORM_TAB_CONFIG = [
         component: () => <DetailsTab type="LIST_ACQUISITION" key={'Details'} />,
     },
 ];
-
-const daysCount = (props) => {
-    let i = 0;
-    for (i; i < 30; i++) {
-        // getDateWithDay(i) + ','
-        // let test = i.split(' ')
-        // let test2 = test[0]
-        // console.log(`getDateWithDay(${i}),`);
-    }
-    return Array(props)
-        .fill(props)
-        .map((_, index) => getDateWithDay(index))
-        .reverse();
-};
 
 //Common details methods
 export const areachangeToBase64 = (data, size) => {
@@ -280,7 +276,6 @@ export const changeToBase641 = (data, size, customseries = false) => {
             name: ser.name,
         })) || [];
 
-
     const height = chartSizing?.[size] ?? 200;
 
     let chart = {
@@ -292,19 +287,18 @@ export const changeToBase641 = (data, size, customseries = false) => {
         series: customSeriesData,
     };
 
-
     return chart;
 };
 
 export const pieChartOption = (appData, size, useDoubleValue = false) => {
     const appChartValue = parseAnalyticsJsonArray(appData, []);
-    
-    const transformedSeries = useDoubleValue 
-        ? appChartValue.map(item => ({
-            ...item,
-            y: item.doubleValue || item.y || item.value || item.intValue,
-            value: item.doubleValue || item.y || item.value || item.intValue
-        }))
+
+    const transformedSeries = useDoubleValue
+        ? appChartValue.map((item) => ({
+              ...item,
+              y: item.doubleValue || item.y || item.value || item.intValue,
+              value: item.doubleValue || item.y || item.value || item.intValue,
+          }))
         : appChartValue;
 
     return {
@@ -319,9 +313,9 @@ export const pieChartOption = (appData, size, useDoubleValue = false) => {
                     }
                     const formattedPercentage = formatPercentageDisplay(this.point.y);
                     return `<span class="font-xs">${this.point.name || 'Unknown'}</span><br/><hr /><span class="font-monospace" style="color:${this.point.color || '#000'}">\u25CF</span>&nbsp;<span class="font-xs">Value: </span><span class="font-xs" style="text-align: right;">${formattedPercentage}%</span>`;
-                }
-            }
-        })
+                },
+            },
+        }),
     };
 };
 
@@ -430,18 +424,22 @@ export const getContentTargetGridData = (contentTarget) => {
             if (!entry || typeof entry !== 'object') {
                 return;
             }
-            Object.keys(entry).forEach((targetAttributeName) => {
-                const metrics = entry[targetAttributeName];
+            Object.keys(entry).forEach((targetName) => {
+                const metrics = entry[targetName];
                 if (!metrics || typeof metrics !== 'object') {
                     return;
                 }
+                const reach = metrics.is_Open ?? 0;
+                const engagement = metrics.is_Click ?? 0;
                 rows.push({
                     targetGroup,
                     targetAttributeName,
+                    targetName: targetAttributeName,
                     audience: metrics.is_Blast ?? 0,
                     clicks: metrics.is_Click ?? 0,
                     ctr: metrics.is_Open ?? 0,
                     conversion: metrics.is_TotalConv ?? 0,
+                    contentTargetCtr: getContentTargetCtrValue(metrics),
                 });
             });
         });
@@ -456,19 +454,34 @@ const formatContentTargetMetric = (value) => {
     return safe > 0 ? numberWithCommas(safe) : '0';
 };
 
+const getContentTargetCtrValue = (metrics) => {
+    const reach = Number(metrics?.is_Open ?? 0);
+    const engagement = Number(metrics?.is_Click ?? 0);
+    if (!Number.isFinite(reach) || reach <= 0) {
+        return 0;
+    }
+    if (!Number.isFinite(engagement) || engagement < 0) {
+        return 0;
+    }
+    const pct = (engagement / reach) * 100;
+    return Math.round(pct * 100) / 100;
+};
+
 /** CTR numeric part only; `%` is rendered with `fs11` in the column cell. Engagement/Reach = clicks/ctr. */
 const getContentTargetCtrNumberStr = (dataItem) => {
+    const ctrValue = Number(dataItem?.contentTargetCtr);
+    if (Number.isFinite(ctrValue)) {
+        return String(numberWithCommas(ctrValue));
+    }
     const reach = Number(dataItem?.ctr);
     const engagement = Number(dataItem?.clicks);
     if (!Number.isFinite(reach) || reach <= 0) {
         return '0';
     }
-    if (!Number.isFinite(engagement) || engagement < 0) {
-        return '0';
+    if (!Number.isFinite(engagementNum) || engagementNum < 0) {
+        return 0;
     }
-    const pct = (engagement / reach) * 100;
-    const rounded = Math.round(pct * 100) / 100;
-    return String(numberWithCommas(rounded));
+    return Math.round((engagementNum / reachNum) * 100 * 100) / 100;
 };
 
 export const CONTENT_TARGET_GRID_COLUMN_DATA = [
@@ -483,12 +496,12 @@ export const CONTENT_TARGET_GRID_COLUMN_DATA = [
         ),
     },
     {
-        field: 'targetGroup',
+        field: 'targetName',
         title: 'Target name',
         width: 200,
         cell: ({ dataItem }) => (
             <td style={{ minWidth: 0 }}>
-                <TruncatedCell noTable value={String(dataItem?.targetAttributeName ?? '')} />
+                <TruncatedCell noTable value={String(dataItem?.targetName ?? '')} />
             </td>
         ),
     },
@@ -496,25 +509,19 @@ export const CONTENT_TARGET_GRID_COLUMN_DATA = [
         field: 'audience',
         title: 'Audience',
         width: 130,
-        cell: ({ dataItem }) => (
-            <TruncatedCell alignRight value={formatContentTargetMetric(dataItem?.audience)} />
-        ),
+        cell: ({ dataItem }) => <TruncatedCell alignRight value={formatContentTargetMetric(dataItem?.audience)} />,
     },
     {
         field: 'is_Open',
         title: 'Reach',
         width: 100,
-        cell: ({ dataItem }) => (
-            <TruncatedCell alignRight value={formatContentTargetMetric(dataItem?.ctr)} />
-        ),
+        cell: ({ dataItem }) => <TruncatedCell alignRight value={formatContentTargetMetric(dataItem?.ctr)} />,
     },
     {
         field: 'is_Click',
         title: 'Engagement',
         width: 110,
-        cell: ({ dataItem }) => (
-            <TruncatedCell alignRight value={formatContentTargetMetric(dataItem?.clicks)} />
-        ),
+        cell: ({ dataItem }) => <TruncatedCell alignRight value={formatContentTargetMetric(dataItem?.clicks)} />,
     },
     {
         field: 'contentTargetCtr',
@@ -522,9 +529,7 @@ export const CONTENT_TARGET_GRID_COLUMN_DATA = [
         width: 100,
         cell: ({ dataItem }) => (
             <td className="text-right">
-                <span
-                    className="k-text-truncate d-inline-block"
-                >
+                <span className="k-text-truncate d-inline-block">
                     {getContentTargetCtrNumberStr(dataItem)}
                     <span className="fs11">%</span>
                 </span>
@@ -535,9 +540,7 @@ export const CONTENT_TARGET_GRID_COLUMN_DATA = [
         field: 'is_TotalConv',
         title: 'Conversion',
         width: 120,
-        cell: ({ dataItem }) => (
-            <TruncatedCell alignRight value={formatContentTargetMetric(dataItem?.conversion)} />
-        ),
+        cell: ({ dataItem }) => <TruncatedCell alignRight value={formatContentTargetMetric(dataItem?.conversion)} />,
     },
 ];
 
@@ -624,7 +627,7 @@ export const CAMPAIGN_GRID_COLUMN_DATA = (callBack, selectedOption) => {
             field: 'emailId',
             title: 'Email',
             width: 205,
-        }
+        },
     ];
 
     if (selectedOption) {
@@ -664,7 +667,7 @@ export const CAMPAIGN_GRID_COLUMN_DATA = (callBack, selectedOption) => {
                 title: 'Conversion',
                 className: 'text-end',
                 width: 100,
-            }
+            },
         ];
     }
 
@@ -911,28 +914,28 @@ export const SMS_COMMOUNICATION_GRID_COLUMN_DATA = [
         title: 'S.No',
         className: 'text-center',
         width: 70,
-        filter:'text'
+        filter: 'text',
     },
     {
         field: 'name',
         filtervalue: 'string',
         title: 'Name',
         width: 300,
-        filter:'text'
+        filter: 'text',
     },
     {
         field: 'email',
         filtervalue: 'string',
         title: 'Email',
         width: 300,
-        filter:'text'
+        filter: 'text',
     },
     {
         field: 'mobile',
         filtervalue: 'string',
         title: 'Mobile',
         width: 300,
-        filter:'text'
+        filter: 'text',
     },
 ];
 export const SMS_COMMOUNICATION_GRID_DATA = [
@@ -975,14 +978,14 @@ export const TWO_WAYSMS_GRID_COLUMN_DATA = [
         title: 'S.No',
         className: 'text-center',
         width: 70,
-        filter:'text'
+        filter: 'text',
     },
     {
         field: 'keywords',
         filtervalue: 'string',
         title: 'Keywords',
         width: 300,
-        filter:'text'
+        filter: 'text',
     },
     {
         field: 'totalResponse',
@@ -990,7 +993,7 @@ export const TWO_WAYSMS_GRID_COLUMN_DATA = [
         title: 'Total response',
         className: 'text-end',
         width: 150,
-        filter:'text'
+        filter: 'text',
     },
     {
         field: 'uniqueResponse',
@@ -998,7 +1001,7 @@ export const TWO_WAYSMS_GRID_COLUMN_DATA = [
         title: 'Unique response',
         className: 'text-end',
         width: 150,
-        filter:'text'
+        filter: 'text',
     },
 ];
 export const TWO_WAYSMS_LINK_GRID_DATA = [
@@ -1024,14 +1027,14 @@ export const LINE_TOTAL_LINK_GRID_COLUMN_DATA = [
         title: 'S.No',
         className: 'text-center',
         width: 70,
-        filter:'text',
+        filter: 'text',
     },
     {
         field: 'url',
         filtervalue: 'string',
         title: 'Link (URL)',
         width: 500,
-        filter:'text',
+        filter: 'text',
     },
     {
         field: 'totalClicks',
@@ -1039,7 +1042,7 @@ export const LINE_TOTAL_LINK_GRID_COLUMN_DATA = [
         title: 'Total clicks',
         className: 'text-end',
         width: 150,
-        filter:'text',
+        filter: 'text',
     },
     {
         field: 'totalUniqueClicks',
@@ -1047,7 +1050,7 @@ export const LINE_TOTAL_LINK_GRID_COLUMN_DATA = [
         title: 'Total unique clicks',
         className: 'text-end',
         width: 150,
-        filter:'text',
+        filter: 'text',
     },
 ];
 export const LINE_TOTAL_LINK_GRID_DATA = [
@@ -1065,21 +1068,21 @@ export const LINE_COMMOUNICATION_GRID_COLUMN_DATA = [
         title: 'S.No',
         className: 'text-center',
         width: 70,
-        filter:'text',
+        filter: 'text',
     },
     {
         field: 'name',
         filtervalue: 'string',
         title: 'Name',
         width: 300,
-        filter:'text',
+        filter: 'text',
     },
     {
         field: 'mobile',
         filtervalue: 'string',
         title: 'Mobile',
         width: 300,
-        filter:'text',
+        filter: 'text',
     },
     {
         field: 'status',
@@ -1129,14 +1132,14 @@ export const PAIDMEDIA_TOTAL_LINK_GRID_COLUMN_DATA = [
         title: 'S.No',
         className: 'text-center',
         width: 70,
-        filter:'text',
+        filter: 'text',
     },
     {
         field: 'url',
         filtervalue: 'string',
         title: 'Link (URL)',
         width: 400,
-        filter:'text',
+        filter: 'text',
     },
     {
         field: 'totalClicks',
@@ -1144,7 +1147,7 @@ export const PAIDMEDIA_TOTAL_LINK_GRID_COLUMN_DATA = [
         title: 'Total clicks',
         className: 'text-end',
         width: 150,
-        filter:'text',
+        filter: 'text',
     },
     {
         field: 'totalUniqueClicks',
@@ -1152,7 +1155,7 @@ export const PAIDMEDIA_TOTAL_LINK_GRID_COLUMN_DATA = [
         title: 'Unique clicks',
         className: 'text-end',
         width: 150,
-        filter:'text',
+        filter: 'text',
     },
 ];
 
@@ -1164,21 +1167,21 @@ export const VoiceAssistant_TOTAL_LINK_GRID_COLUMN_DATA = [
         title: 'S.No',
         className: 'text-center',
         width: 70,
-        filter:'text',
+        filter: 'text',
     },
     {
         field: 'channel',
         filtervalue: 'string',
         title: 'Channel',
         width: 100,
-        filter:'text',
+        filter: 'text',
     },
     {
         field: 'url',
         filtervalue: 'string',
         title: 'Link (URL)',
         width: 400,
-        filter:'text',
+        filter: 'text',
     },
     {
         field: 'totalClicks',
@@ -1186,7 +1189,7 @@ export const VoiceAssistant_TOTAL_LINK_GRID_COLUMN_DATA = [
         title: 'Total clicks',
         className: 'text-end',
         width: 150,
-        filter:'text',
+        filter: 'text',
     },
 ];
 export const VoiceAssistant_TOTAL_LINK_GRID_DATA = [
@@ -1210,28 +1213,28 @@ export const VoiceAssistant_COMMOUNICATION_GRID_COLUMN_DATA = [
         title: 'S.No',
         className: 'text-center',
         width: 70,
-        filter:'text',
+        filter: 'text',
     },
     {
         field: 'name',
         filtervalue: 'string',
         title: 'Name',
         width: 200,
-        filter:'text',
+        filter: 'text',
     },
     {
         field: 'email',
         filtervalue: 'string',
         title: 'Email',
         width: 300,
-        filter:'text',
+        filter: 'text',
     },
     {
         field: 'regID',
         filtervalue: 'string',
         title: 'Mobile',
         width: 200,
-        filter:'text',
+        filter: 'text',
     },
     {
         field: 'received',
@@ -1239,7 +1242,7 @@ export const VoiceAssistant_COMMOUNICATION_GRID_COLUMN_DATA = [
         title: 'Mobile OS',
         className: 'text-right',
         width: 200,
-        filter:'text',
+        filter: 'text',
     },
     {
         field: 'conversions',
@@ -1247,7 +1250,7 @@ export const VoiceAssistant_COMMOUNICATION_GRID_COLUMN_DATA = [
         title: 'Country',
         className: 'text-right',
         width: 200,
-        filter:'text',
+        filter: 'text',
     },
 ];
 
@@ -1303,7 +1306,7 @@ export const POST_SUMMARY_RESULTICKS_GRID_COLUMN_DATA = [
     //                             </li>
     //                         );
     //                     })}
-    //                 </ul> 
+    //                 </ul>
     //             </div>*/}
     //         </td>
     //     ),
@@ -1461,7 +1464,7 @@ export const KEYWORD_RANKING_GRID_COLUMN_DATA = [
         filtervalue: 'string',
         title: 'Search engine',
         width: 200,
-        filter:'text',
+        filter: 'text',
         cell: ({ dataItem }) => {
             return (
                 <td>
@@ -1476,7 +1479,7 @@ export const KEYWORD_RANKING_GRID_COLUMN_DATA = [
         title: 'My engine',
         width: 150,
         className: 'text-end',
-        filter:'text',
+        filter: 'text',
     },
     {
         field: 'positionOne',
@@ -1484,7 +1487,7 @@ export const KEYWORD_RANKING_GRID_COLUMN_DATA = [
         title: 'Position 1',
         width: 180,
         className: 'text-end',
-        filter:'text',
+        filter: 'text',
     },
     {
         field: 'positionTwo',
@@ -1492,7 +1495,7 @@ export const KEYWORD_RANKING_GRID_COLUMN_DATA = [
         title: 'Position 2',
         width: 150,
         className: 'text-end',
-        filter:'text',
+        filter: 'text',
     },
     {
         field: 'positionThree',
@@ -1500,7 +1503,7 @@ export const KEYWORD_RANKING_GRID_COLUMN_DATA = [
         title: 'Position 3',
         className: 'text-end',
         width: 120,
-        filter:'text',
+        filter: 'text',
     },
     {
         field: 'positionFour',
@@ -1508,7 +1511,7 @@ export const KEYWORD_RANKING_GRID_COLUMN_DATA = [
         title: 'Position 4',
         className: 'text-end',
         width: 150,
-        filter:'text',
+        filter: 'text',
     },
     {
         field: 'positionFive',
@@ -1516,7 +1519,7 @@ export const KEYWORD_RANKING_GRID_COLUMN_DATA = [
         title: 'Position 5',
         className: 'text-end',
         width: 200,
-        filter:'text',
+        filter: 'text',
     },
 ];
 // GoogleLogo,BingLogo,YahooLogo
@@ -1573,7 +1576,7 @@ export const POST_SUMMARY_OTHERS_GRID_COLUMN_DATA = [
         filtervalue: 'string',
         title: 'Posts title',
         width: 400,
-        filter:'text',
+        filter: 'text',
         cell: ({ dataItem }) => (
             <td>
                 <div>
@@ -1588,7 +1591,7 @@ export const POST_SUMMARY_OTHERS_GRID_COLUMN_DATA = [
         filtervalue: 'string',
         title: 'Content type',
         width: 150,
-        filter:'text',
+        filter: 'text',
         cell: ({ dataItem }) => (
             <td className="text-center">
                 <i className={`${dataItem?.contentType} icon-lg ml10 color-primary-blue`}></i>
@@ -1600,7 +1603,7 @@ export const POST_SUMMARY_OTHERS_GRID_COLUMN_DATA = [
         filtervalue: 'string',
         title: 'Reach',
         width: 180,
-        filter:'text',
+        filter: 'text',
         cell: ({ data }) => (
             <td>
                 <div className="progressbar mt15 mb15">
@@ -1626,7 +1629,7 @@ export const POST_SUMMARY_OTHERS_GRID_COLUMN_DATA = [
         filtervalue: 'string',
         title: 'Engagement',
         width: 150,
-        filter:'text',
+        filter: 'text',
         cell: ({ dataItem }) => (
             <td>
                 {engagementStatus.map((item, index) => {
@@ -1648,7 +1651,7 @@ export const POST_SUMMARY_OTHERS_GRID_COLUMN_DATA = [
         title: 'Conversion',
         className: 'text-end',
         width: 120,
-        filter:'text',
+        filter: 'text',
     },
     {
         field: 'ratings',
@@ -1656,7 +1659,7 @@ export const POST_SUMMARY_OTHERS_GRID_COLUMN_DATA = [
         title: 'Ratings',
         className: 'text-end',
         width: 100,
-        filter:'text',
+        filter: 'text',
     },
 ];
 export const POST_SUMMARY_OTHERS_GRID_DATA = [
@@ -1706,7 +1709,12 @@ export const getPreviewData = async (dispatch, setState, payload, data, channelD
         setState((pre) => ({ ...pre, isClickMapModal: true, isPreviewLoading: true, previewData: '' }));
         const response = await dispatch(getHeatMapContentDetails(payload));
         if (response?.status) {
-            setState((pre) => ({ ...pre, isClickMapModal: true, isPreviewLoading: false, previewData: response?.data }));
+            setState((pre) => ({
+                ...pre,
+                isClickMapModal: true,
+                isPreviewLoading: false,
+                previewData: response?.data,
+            }));
         } else {
             setState((pre) => ({ ...pre, isClickMapModal: true, isPreviewLoading: false, previewData: '' }));
         }
@@ -1734,9 +1742,12 @@ export const getPreviewData = async (dispatch, setState, payload, data, channelD
             const previewDataFromApi = response?.data?.[0] || {};
             const currentBlastId = payload.blastId;
             const currentChannelInfo = channelDetail?.channelInfos?.find(
-                (info) => info.blastShortCode === currentBlastId
+                (info) => info.blastShortCode === currentBlastId,
             );
-            const scheduleDate = currentChannelInfo?.scheduleDate || previewDataFromApi?.scheduleDate || previewDataFromApi?.scheduleDateTime;
+            const scheduleDate =
+                currentChannelInfo?.scheduleDate ||
+                previewDataFromApi?.scheduleDate ||
+                previewDataFromApi?.scheduleDateTime;
 
             setState((pre) => ({
                 ...pre,
@@ -1789,9 +1800,7 @@ export const getDaywiseChartData = (data, size = 'bubble') => {
 };
 
 export const getHoursWiseChartData = (chartData, size = 'footer') => {
-    const data = Array.isArray(chartData)
-        ? chartData
-        : parseAnalyticsJsonArray(chartData, []);
+    const data = Array.isArray(chartData) ? chartData : parseAnalyticsJsonArray(chartData, []);
     const hourRows = Array.isArray(data) ? data : [];
     if (hourRows.length) {
         let result = [];
@@ -1829,12 +1838,12 @@ export const getHoursWiseChartData = (chartData, size = 'footer') => {
                     item.count == max
                         ? ch_primary_green
                         : item.count == secondMax
-                        ? ch_secondary_green
-                        : item.count == thirdMax
-                        ? ch_clockchart1
-                        : item.count == fourthMax
-                        ? ch_clockchart2
-                        : '#e8e8ea',
+                          ? ch_secondary_green
+                          : item.count == thirdMax
+                            ? ch_clockchart1
+                            : item.count == fourthMax
+                              ? ch_clockchart2
+                              : '#e8e8ea',
                 outerRadius: '105%',
                 thickness: '5%',
             })),
@@ -1854,4 +1863,4 @@ export const getHoursWiseChartData = (chartData, size = 'footer') => {
     }
 };
 
-export const SEGMENT_ENABLED_CAMPAIGNS = [1, 2, 8, 14, 21, 25, 26,41];
+export const SEGMENT_ENABLED_CAMPAIGNS = [1, 2, 8, 14, 21, 25, 26, 41];

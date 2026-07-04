@@ -12,8 +12,7 @@ import { ENTER_LIST_NAME, MINLENGTH, SPECIAL_CHATACTERS_NOT_ALlOWED } from 'Cons
 import { ADD_GROUP, APPLY, APPROVE, APPROVER_EMAIL, APPROVER_NAME, AUDIENCE_SELECTION, CANCEL, COMMENTS, EDIT_SUB_SEGMENT_LIST, ENTER_COMMENTS, EXTRACTION_LIMIT, LOOK_ALIKE, MAX_500_CHARACTERS, NEW_SUB_SEGMENT_LIST, OK, REJECT, RENAME, SAVE, TARGETLIST_NAME, TOT_AUDIENCE } from 'Constants/GlobalConstant/Placeholders';
 import { checkbox_mini, circle_plus_fill_edge_medium, pencil_edit_medium } from 'Constants/GlobalConstant/Glyphicons';
 import { Fragment, createContext, createRef, useCallback, useEffect, useReducer, useRef, useState } from 'react';
-import _get from 'lodash/get';
-import _isEmpty from 'lodash/isEmpty';
+import { get as _get,isEmpty as _isEmpty } from 'Utils/modules/lodashReplacements';
 import { Col, Container, Row } from 'react-bootstrap';
 import { FormProvider, useForm } from 'react-hook-form';
 import { useLocation, useNavigate } from 'react-router-dom';
@@ -2174,53 +2173,50 @@ const TargetListCreation = () => {
                                                                 !locationVersium?.isMDCSubSegment &&
                                                                 handleHiddenPlus() && (
                                                                     <div className="groupAddPlusIcon">
-                                                                        <BootstrapDropdown
-                                                                            data={handleFilterGroupList()}
-                                                                            flatIcon
-                                                                            defaultItem={
-                                                                                <div>
-                                                                                    <RSTooltip
-                                                                                        text={ADD_GROUP}
-                                                                                        position="top"
-                                                                                    >
+                                                                        <RSTooltip text={ADD_GROUP} position="top" className="lh0">
+                                                                            <div>
+                                                                                <BootstrapDropdown
+                                                                                    data={handleFilterGroupList()}
+                                                                                    flatIcon
+                                                                                    defaultItem={
                                                                                         <i
                                                                                             id="rs_data_circle_plus_fill_edge"
-                                                                                            className={`${circle_plus_fill_edge_medium} icon-md`}
+                                                                                            className={`${circle_plus_fill_edge_medium} icon-md color-primary-blue`}
                                                                                         />
-                                                                                    </RSTooltip>
-                                                                                </div>
-                                                                            }
-                                                                            showUpdate={false}
-                                                                            className="mr15 no_caret"
-                                                                            disbleItems={filterGroups.disableGroups}
-                                                                            onSelect={(filterGroup) => {
-                                                                                let allAttributeFormState = [];
-                                                                                filterGroups?.groups?.forEach(
-                                                                                    (group) => {
-                                                                                        allAttributeFormState.push(
-                                                                                            ...getValues(group),
+                                                                                    }
+                                                                                    showUpdate={false}
+                                                                                    className="mr15 no_caret"
+                                                                                    disbleItems={filterGroups.disableGroups}
+                                                                                    onSelect={(filterGroup) => {
+                                                                                        let allAttributeFormState = [];
+                                                                                        filterGroups?.groups?.forEach(
+                                                                                            (group) => {
+                                                                                                allAttributeFormState.push(
+                                                                                                    ...getValues(group),
+                                                                                                );
+                                                                                            },
                                                                                         );
-                                                                                    },
-                                                                                );
-                                                                                const findIndex =
-                                                                                    getallAttributes(
-                                                                                        attributes,
-                                                                                        allAttributeFormState,
-                                                                                    );
-                                                                                if (findIndex === -1) {
-                                                                                    addFilterGroup(filterGroup);
-                                                                                } else {
-                                                                                    trigger();
-                                                                                }
-                                                                            }}
-                                                                            containerClass={
-                                                                                !isCreateStatus() ||
-                                                                                    isDisableFilterGroup ||
-                                                                                    isDisablePlusBtn()
-                                                                                    ? 'pe-none click-off'
-                                                                                    : ''
-                                                                            }
-                                                                        />
+                                                                                        const findIndex =
+                                                                                            getallAttributes(
+                                                                                                attributes,
+                                                                                                allAttributeFormState,
+                                                                                            );
+                                                                                        if (findIndex === -1) {
+                                                                                            addFilterGroup(filterGroup);
+                                                                                        } else {
+                                                                                            trigger();
+                                                                                        }
+                                                                                    }}
+                                                                                    containerClass={
+                                                                                        !isCreateStatus() ||
+                                                                                        isDisableFilterGroup ||
+                                                                                        isDisablePlusBtn()
+                                                                                            ? 'pe-none click-off'
+                                                                                            : ''
+                                                                                    }
+                                                                                />
+                                                                            </div>
+                                                                        </RSTooltip>
                                                                     </div>
                                                                 )}
                                                         </SegmentationLists>
@@ -2835,7 +2831,7 @@ const TargetListCreation = () => {
                         {showActiveCommunicationListWarning && <RSConfirmationModal
                             show={showActiveCommunicationListWarning}
                             header="Info"
-                            text="This list is currently used in an active communication. Changes may affect audience count and Reports."
+                            text="This list is currently used in an active communication. Changes may affect audience count and reports."
                             handleClose={() => setShowActiveCommunicationListWarning(false)}
                             handleConfirm={() => setShowActiveCommunicationListWarning(false)}
                             secondaryButton={false}

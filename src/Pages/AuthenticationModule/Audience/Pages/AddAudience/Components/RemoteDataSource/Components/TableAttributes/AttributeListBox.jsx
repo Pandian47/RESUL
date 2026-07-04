@@ -2,7 +2,7 @@ import { NO_DATA_AVAILABEL, SELECT_LEFT_ATTRIBUTES } from 'Constants/GlobalConst
 import { justify_dropdown_mini } from 'Constants/GlobalConstant/Glyphicons';
 import { memo, useCallback, useEffect, useRef, useState } from 'react';
 import { ListBox, ListBoxToolbar, processListBoxData, processListBoxDragAndDrop } from '@progress/kendo-react-listbox';
-import _size from 'lodash/size';
+import { size as _size } from 'Utils/modules/lodashReplacements';
 
 import RSSearchField from 'Components/RSSearchField';
 import { KendoIconDropdown } from 'Components/RSDropDown';

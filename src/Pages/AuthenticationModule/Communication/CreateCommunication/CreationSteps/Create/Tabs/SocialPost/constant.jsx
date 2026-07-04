@@ -702,14 +702,6 @@ export const getSocialPostTypeLabelForListing = (content, tabName = '') => {
     return getSocialPostTypeListingLabel(channelType, '', imageCount) || 'Single';
 };
 
-export const shouldShowCarouselMultiImageSpecInfo = (channelType, postType) => {
-    if (channelType === 'twitter') return false;
-    if (channelType === 'linkedIn' && postType?.id === 'linkedin_single_image') {
-        return true;
-    }
-    return isCarouselOrMultiImagePostType(postType);
-};
-
 export const getCarouselMultiImageSpecModalTitle = (channelType, postType) => {
     const channelName =
         channelType === 'linkedIn'
@@ -1167,19 +1159,3 @@ export const getFromTab = (tab) => {
     }
 };
 
-export const buildForGetPostOnDropDownAndAudience = (val, clientId = '', userId = '', departmentId = '') => {
-    const postOn = {
-        socialMediaChannelId: 1,
-    };
-    const audience = {
-        clientId,
-        userId,
-        departmentId,
-        recipientListId: 0,
-        searchText: '',
-        segmentIds: [],
-        campaignId: 0,
-        channelType: '',
-    };
-    return val == 'audience' ? audience : postOn;
-};

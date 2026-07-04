@@ -8,7 +8,7 @@ import {
     SYMBOL_TO_DISPLAY_MAP,
     CUSTOM_VALUE, 
 } from './Component/RenderField/constant';
-import _get from 'lodash/get';
+import { get as _get } from 'Utils/modules/lodashReplacements';
 
 const SAME_TRIGGER_SOURCE_NOT_ALLOWED = 'Same trigger source not allowed';
 
@@ -142,6 +142,438 @@ export const checkRequestApproval = (name, request, dispatchState) => {
 
 export const RULE_ATTRIBUTES_LENGTH_CONFIG = 14;
 
+export const normalizeCustomEventRuleTypeOptions = (data = []) => {
+    if (!Array.isArray(data)) {
+        return [];
+    }
+
+    return data
+        .map((item, index) => {
+            if (item == null) {
+                return null;
+            }
+            if (typeof item === 'string') {
+                return {
+                    id: index + 1,
+                    value: item,
+                    fieldType: 'D',
+                };
+            }
+            if (typeof item === 'object') {
+                return {
+                    ...item,
+                    id: item.id ?? index + 1,
+                    value: item.value ?? item.name ?? '',
+                    fieldType: item.fieldType ?? item.fieldtype ?? 'D',
+                };
+            }
+            return null;
+        })
+        .filter(Boolean);
+};
+
+/** Extract a primitive string from a dropdown/multi-select stored value (object, array, or scalar). */
+export const resolveTriggerDropdownPrimitiveValue = (value) => {
+    if (value == null || value === '') {
+        return '';
+    }
+    if (Array.isArray(value)) {
+        return value
+            .map((item) => resolveTriggerDropdownPrimitiveValue(item))
+            .filter(Boolean)
+            .join(',');
+    }
+    if (typeof value === 'object') {
+        return value.value ?? value.UIPrintableName ?? value.name ?? value.label ?? '';
+    }
+    return String(value);
+};
+
+const findTriggerDropdownOptionMatch = (item, options = []) => {
+    if (!Array.isArray(options) || !options.length) {
+        return null;
+    }
+
+    if (item != null && typeof item === 'object') {
+        const valueText = resolveTriggerDropdownPrimitiveValue(item);
+        const idText = item.id != null ? String(item.id) : '';
+        return (
+            options.find(
+                (opt) =>
+                    (idText && String(opt.id) === idText) ||
+                    resolveTriggerDropdownPrimitiveValue(opt) === valueText,
+            ) ?? null
+        );
+    }
+
+    const text = String(item ?? '');
+    return options.find((opt) => resolveTriggerDropdownPrimitiveValue(opt) === text) ?? null;
+};
+
+/** Map saved string values (e.g. `["20"]`) to dropdown rows so Kendo chips render. */
+export const coerceValuesToTriggerDropdownOptions = (values = [], options = []) => {
+    if (!Array.isArray(values) || !values.length) {
+        return Array.isArray(values) ? values : [];
+    }
+
+    const normalizedOptions = normalizeTriggerAttributeDropdownOptions(options);
+
+    return values.map((item) => findTriggerDropdownOptionMatch(item, normalizedOptions) ?? item);
+};
+
+export const coerceValueToTriggerDropdownOption = (value, options = []) => {
+    if (value == null || value === '') {
+        return value;
+    }
+
+    return findTriggerDropdownOptionMatch(value, options) ?? value;
+};
+
+/** Coerce API trigger value lists (e.g. `["N"]`) into Kendo-safe `{ id, value }` rows. */
+export const normalizeTriggerAttributeDropdownOptions = (data = []) => {
+    if (!Array.isArray(data)) {
+        return [];
+    }
+
+    return data
+        .map((item, index) => {
+            if (item == null) {
+                return null;
+            }
+            if (typeof item === 'string' || typeof item === 'number' || typeof item === 'boolean') {
+                const text = String(item);
+                return {
+                    id: index + 1,
+                    value: text,
+                    UIPrintableName: text,
+                };
+            }
+            if (typeof item === 'object') {
+                const value =
+                    item.value ??
+                    item.name ??
+                    item.UIPrintableName ??
+                    item.formStatus ??
+                    '';
+                const id = item.id ?? item.formId ?? item.FormId ?? index + 1;
+                return {
+                    ...item,
+                    id,
+                    value: value || String(id),
+                    UIPrintableName: item.UIPrintableName ?? value ?? String(id),
+                };
+            }
+            return null;
+        })
+        .filter(Boolean);
+};
+
+export const isCustomEventValueOptionsList = (data = []) =>
+    Array.isArray(data) &&
+    data.length > 0 &&
+    data.every((item) => typeof item === 'number' || (typeof item === 'string' && item.trim() !== '' && !Number.isNaN(Number(item))));
+
+export const resolveCustomEventsStateFromRedux = (customAttributes) => {
+    if (!customAttributes?.field) {
+        return { field: '', data: [] };
+    }
+
+    if (isCustomEventValueOptionsList(customAttributes.data)) {
+        return { field: customAttributes.field, data: [] };
+    }
+
+    return {
+        field: customAttributes.field,
+        data: normalizeCustomEventRuleTypeOptions(customAttributes.data),
+    };
+};
+
+export const buildCustomEventValuesCacheKey = (columnName = '', attributevalue = '') =>
+    `custom-events-${columnName ?? ''}-${attributevalue ?? ''}`;
+
+export const buildFieldTriggerValuesKey = (fldname, fieldType, levelNo) => {
+    if (fieldType === '2D' && levelNo != null && levelNo !== '') {
+        return `${fldname}|${levelNo}`;
+    }
+    return fldname;
+};
+
+/** Trigger sources that use their own value APIs or free-text — never call GetTriggerAttributeValues. */
+export const TRIGGER_IDS_SKIP_ATTRIBUTE_VALUES_API = [9, 10, 11, 14];
+
+export const shouldSkipTriggerAttributeValuesApi = (triggerId) =>
+    TRIGGER_IDS_SKIP_ATTRIBUTE_VALUES_API.includes(Number(triggerId));
+
+/** Target list: duplicate when the same rule type is selected more than once in a group. */
+export const TRIGGER_IDS_DUPLICATE_BY_RULE_TYPE = [9];
+
+export const COMMUNICATION_NAME_TRIGGER_ID = 10;
+
+export const shouldDuplicateCheckByRuleTypeOnly = (triggerId) =>
+    TRIGGER_IDS_DUPLICATE_BY_RULE_TYPE.includes(Number(triggerId));
+
+export const shouldDuplicateCheckByCommunicationNameRule = (triggerId) =>
+    Number(triggerId) === COMMUNICATION_NAME_TRIGGER_ID;
+
+const normalizeCommunicationNameComparisonType = (value) => {
+    if (value == null || value === '') {
+        return '';
+    }
+
+    if (typeof value === 'object') {
+        return String(value?.value ?? value?.label ?? value?.id ?? '').trim();
+    }
+
+    return String(value).trim();
+};
+
+const normalizeCommunicationNameChannel = (value) => {
+    if (value == null || value === '') {
+        return '';
+    }
+
+    if (typeof value === 'object') {
+        return String(value?.type ?? value?.apiValue ?? value?.label ?? value?.id ?? '').trim();
+    }
+
+    return String(value).trim();
+};
+
+const normalizeCommunicationNameStatus = (value) => {
+    if (value == null || value === '') {
+        return '';
+    }
+
+    if (typeof value === 'object') {
+        return String(value?.label ?? value?.status ?? value?.id ?? '').trim();
+    }
+
+    return String(value).trim();
+};
+
+const getCommunicationNameRuleFingerprint = (rule) => {
+    const ruleType = String(rule?.attributeName?.value ?? '').trim();
+    const comparisonType = normalizeCommunicationNameComparisonType(rule?.attributeComparison);
+    const channel = normalizeCommunicationNameChannel(rule?.attributeChannelValues);
+    const status = normalizeCommunicationNameStatus(rule?.attributeActionValues);
+
+    if (!ruleType || !comparisonType || !channel || !status) {
+        return '';
+    }
+
+    return [ruleType, comparisonType, channel, status].join('|');
+};
+
+/**
+ * Rule types that need GetTriggerAttributeValues for value dropdowns.
+ * Subscription Form fieldType T (Page URL, Form submission date, etc.) uses free-text input — skip API.
+ */
+export const shouldFetchTriggerAttributeValuesForRule = (selectedRuleType, triggerId) => {
+    if (shouldSkipTriggerAttributeValuesApi(triggerId)) {
+        return false;
+    }
+
+    const fieldType = selectedRuleType?.fieldType ?? selectedRuleType?.fieldtype;
+    const numericTriggerId = Number(triggerId);
+
+    return (
+        fieldType === 'D' ||
+        fieldType === 'SD' ||
+        fieldType === '2D' ||
+        (numericTriggerId === 14 && fieldType === 'T') ||
+        (numericTriggerId === 15 && fieldType === 'T')
+    );
+};
+
+export const isTwoDimensionalTriggerPayload = (payload = {}) => {
+    const fieldType = String(payload?.fieldType ?? payload?.fieldtype ?? '').toUpperCase();
+    if (fieldType === '2D') {
+        return true;
+    }
+
+    const levelNo = Number(payload?.levelNo);
+    const attributeName = formatName(payload?.attributeName ?? '');
+    return (levelNo === 1 || levelNo === 2) && ['forms', 'attributes', 'eventbrite'].includes(attributeName);
+};
+
+export const extractTriggerAttributeValuesList = (result) => {
+    if (!result) {
+        return [];
+    }
+    if (Array.isArray(result)) {
+        return normalizeTriggerAttributeDropdownOptions(result);
+    }
+    if (Array.isArray(result?.data)) {
+        return normalizeTriggerAttributeDropdownOptions(result.data);
+    }
+    if (Array.isArray(result?.data?.data)) {
+        return normalizeTriggerAttributeDropdownOptions(result.data.data);
+    }
+    return [];
+};
+
+export const buildTriggerDdlCacheKey = (selectedRuleType, fieldType, levelNo, options = {}) => {
+    const { value = '', id = '' } = selectedRuleType || {};
+    if (!value && !id) {
+        return '';
+    }
+    const triggerSourceId = options.triggerSourceId ?? '';
+    const triggerddlValue = options.triggerddlValue ?? '';
+    let key = `${value}-${id}`;
+    if (fieldType === '2D' && levelNo != null && levelNo !== '') {
+        key = `${key}-${levelNo}`;
+        if (triggerSourceId) {
+            key = `${key}-${triggerSourceId}`;
+        }
+        if (triggerddlValue) {
+            key = `${key}-${triggerddlValue}`;
+        }
+        if (options.formId) {
+            key = `${key}-${options.formId}`;
+        }
+        if (levelNo === 2 && options.columnName) {
+            key = `${key}-${options.columnName}`;
+        }
+    } else if (triggerSourceId || triggerddlValue) {
+        key = `${key}-${triggerSourceId}-${triggerddlValue}`;
+    }
+    return key;
+};
+
+export const formatFieldTriggerValuesData = (payload, data = []) => {
+    const attributeName = payload?.attributeName;
+    const values = normalizeTriggerAttributeDropdownOptions(Array.isArray(data) ? data : []);
+
+    if (isTwoDimensionalTriggerPayload(payload)) {
+        const key = Number(payload?.levelNo) === 2 ? `${attributeName}2` : attributeName;
+        return { [key]: values };
+    }
+
+    return values;
+};
+
+const RULE_ATTRIBUTE_FIELD_KEY = /^rule\.(\d+)\.RuleAttributes\[(\d+)\](.*)$/;
+const RULE_FIELD_KEY = /^rule\.(\d+)\.(.*)$/;
+const CUSTOM_EVENT_FIELD_KEY =
+    /^rule\.(\d+)\.RuleAttributes\[(\d+)\]\.attributeCustom\[(\d+)\](.*)$/;
+
+export const pruneFieldTriggerValuesAfterAttributeRemove = (
+    fieldTriggerValues = {},
+    ruleIndex,
+    removedAttributeIndex,
+) => {
+    const next = {};
+
+    Object.entries(fieldTriggerValues).forEach(([key, value]) => {
+        const match = key.match(RULE_ATTRIBUTE_FIELD_KEY);
+        if (!match) {
+            next[key] = value;
+            return;
+        }
+
+        const [, rIdx, attrIdx, suffix] = match;
+        if (Number(rIdx) !== ruleIndex) {
+            next[key] = value;
+            return;
+        }
+
+        const idx = Number(attrIdx);
+        if (idx === removedAttributeIndex) {
+            return;
+        }
+        if (idx > removedAttributeIndex) {
+            next[`rule.${ruleIndex}.RuleAttributes[${idx - 1}]${suffix}`] = value;
+            return;
+        }
+        next[key] = value;
+    });
+
+    return next;
+};
+
+export const pruneFieldTriggerValuesAfterCustomEventRemove = (
+    fieldTriggerValues = {},
+    ruleIndex,
+    attributeIndex,
+    removedCustomIndex,
+) => {
+    const next = {};
+
+    Object.entries(fieldTriggerValues).forEach(([key, value]) => {
+        const match = key.match(CUSTOM_EVENT_FIELD_KEY);
+        if (!match) {
+            next[key] = value;
+            return;
+        }
+
+        const [, rIdx, attrIdx, customIdx, suffix] = match;
+        if (Number(rIdx) !== ruleIndex || Number(attrIdx) !== attributeIndex) {
+            next[key] = value;
+            return;
+        }
+
+        const idx = Number(customIdx);
+        if (idx === removedCustomIndex) {
+            return;
+        }
+        if (idx > removedCustomIndex) {
+            next[
+                `rule.${ruleIndex}.RuleAttributes[${attributeIndex}].attributeCustom[${idx - 1}]${suffix}`
+            ] = value;
+            return;
+        }
+        next[key] = value;
+    });
+
+    return next;
+};
+
+export const pruneFieldTriggerValuesAfterRuleRemove = (fieldTriggerValues = {}, removedRuleIndex) => {
+    const next = {};
+
+    Object.entries(fieldTriggerValues).forEach(([key, value]) => {
+        const match = key.match(RULE_FIELD_KEY);
+        if (!match) {
+            next[key] = value;
+            return;
+        }
+
+        const ruleIdx = Number(match[1]);
+        const rest = match[2];
+
+        if (ruleIdx === removedRuleIndex) {
+            return;
+        }
+        if (ruleIdx > removedRuleIndex) {
+            next[`rule.${ruleIdx - 1}.${rest}`] = value;
+            return;
+        }
+        next[key] = value;
+    });
+
+    return next;
+};
+
+export const clearFieldTriggerValuesForRuleAttributes = (fieldTriggerValues = {}, ruleIndex) => {
+    const prefix = `rule.${ruleIndex}.RuleAttributes[`;
+
+    return Object.fromEntries(
+        Object.entries(fieldTriggerValues).filter(([key]) => !key.startsWith(prefix)),
+    );
+};
+
+export const clearFieldTriggerValuesForPaths = (fieldTriggerValues = {}, keys = []) => {
+    if (!keys?.length) {
+        return fieldTriggerValues;
+    }
+
+    const next = { ...fieldTriggerValues };
+    keys.forEach((key) => {
+        delete next[key];
+    });
+    return next;
+};
+
 export const STATE_REDUCER = (state, action) => {
     const { type, field, payload } = action;
     // console.log('Form :::: ', type, field, payload);
@@ -191,6 +623,82 @@ export const STATE_REDUCER = (state, action) => {
                 ...state,
                 filterLabels: { ...state.filterLabels, [payload.attrName]: payload.values },
             };
+        case 'UPDATE_FIELD_TRIGGER_VALUES': {
+            const { fieldName, isLoading, triggerValues } = payload;
+            const current = state.fieldTriggerValues?.[fieldName] ?? { isLoading: false, triggerValues: {} };
+
+            return {
+                ...state,
+                fieldTriggerValues: {
+                    ...state.fieldTriggerValues,
+                    [fieldName]: {
+                        isLoading: isLoading ?? current.isLoading,
+                        triggerValues: triggerValues !== undefined ? triggerValues : current.triggerValues,
+                    },
+                },
+            };
+        }
+        case 'UPDATE_TRIGGER_DDL_VALUES':{
+            const { fieldName, data} = payload;
+            return {
+                ...state,
+                triggerDdlValues: { ...state.triggerDdlValues, [fieldName]: data },
+            };
+        }
+        case 'RESET_DROPDOWN_STATE':
+            return {
+                ...state,
+                fieldTriggerValues: {},
+                triggerDdlValues: {},
+                formAttributeId: {},
+                dataAttributeId: {},
+                formAttributes: false,
+                formAttrDropdownChange: false,
+                filterLabels: {},
+            };
+        case 'REMOVE_ATTRIBUTE_FIELD_TRIGGER_VALUES':
+            return {
+                ...state,
+                fieldTriggerValues: pruneFieldTriggerValuesAfterAttributeRemove(
+                    state.fieldTriggerValues,
+                    payload.ruleIndex,
+                    payload.attributeIndex,
+                ),
+            };
+        case 'REMOVE_CUSTOM_EVENT_FIELD_TRIGGER_VALUES':
+            return {
+                ...state,
+                fieldTriggerValues: pruneFieldTriggerValuesAfterCustomEventRemove(
+                    state.fieldTriggerValues,
+                    payload.ruleIndex,
+                    payload.attributeIndex,
+                    payload.customIndex,
+                ),
+            };
+        case 'REMOVE_RULE_FIELD_TRIGGER_VALUES':
+            return {
+                ...state,
+                fieldTriggerValues: pruneFieldTriggerValuesAfterRuleRemove(
+                    state.fieldTriggerValues,
+                    payload.ruleIndex,
+                ),
+            };
+        case 'CLEAR_RULE_FIELD_TRIGGER_VALUES':
+            return {
+                ...state,
+                fieldTriggerValues: clearFieldTriggerValuesForRuleAttributes(
+                    state.fieldTriggerValues,
+                    payload.ruleIndex,
+                ),
+            };
+        case 'CLEAR_FIELD_TRIGGER_VALUES_KEYS':
+            return {
+                ...state,
+                fieldTriggerValues: clearFieldTriggerValuesForPaths(
+                    state.fieldTriggerValues,
+                    payload?.keys ?? [],
+                ),
+            };
         default:
             return state;
     }
@@ -220,8 +728,8 @@ export const INITIAL_STATE = {
     dataAttributeId: {},
     fullAttributeJSONValues: [],
     filterLabels: {},
-    geoFencesFullList: null,
-    geoFencesFullListLoading: false,
+    fieldTriggerValues: {},
+    triggerDdlValues: {},
 };
 
 export const ATTRIBUTE_TYPES = {
@@ -536,9 +1044,12 @@ function handleAttributeValueInSave(currentRule, k) {
     if (fieldType === 'D' || (triggerId === 14 && fieldType === 'T') || (triggerId === 15 && fieldType === 'T')) {
         // For operators that use attributeValue, return attributeValue instead of attributeMultipleValues
         if (usesAttributeValue) {
-            return attributeValue || '';
+            return resolveTriggerDropdownPrimitiveValue(attributeValue);
         }
-        return attributeMultipleValues?.join() || '';
+        return (attributeMultipleValues ?? [])
+            .map((item) => resolveTriggerDropdownPrimitiveValue(item))
+            .filter(Boolean)
+            .join();
     }
 
     if ((triggerId === 18 || triggerId === 5) && fieldType === 'T' && formatName(attribute?.attributeName?.value) === 'locationurl') {
@@ -557,7 +1068,7 @@ function handleAttributeValueInSave(currentRule, k) {
             .join(',');
     }
 
-    return attributeValue || '';
+    return resolveTriggerDropdownPrimitiveValue(attributeValue);
 }
 
 export const BuildCreatePayload = (data, temp, rule, location, crossDeviceStatus) => {
@@ -613,8 +1124,13 @@ export const BuildCreatePayload = (data, temp, rule, location, crossDeviceStatus
                     cName: rule[j]?.RuleAttributes[k]?.attributeCustom[m]?.attributeName?.value,
                     cValue:
                         rule[j]?.RuleAttributes[k]?.attributeCustom[m]?.attributeName?.fieldType === 'D'
-                            ? rule[j]?.RuleAttributes[k]?.attributeCustom[m]?.attributeMultipleValues.join()
-                            : rule[j]?.RuleAttributes[k]?.attributeCustom[m]?.attributeValue,
+                            ? (rule[j]?.RuleAttributes[k]?.attributeCustom[m]?.attributeMultipleValues ?? [])
+                                  .map((item) => resolveTriggerDropdownPrimitiveValue(item))
+                                  .filter(Boolean)
+                                  .join()
+                            : resolveTriggerDropdownPrimitiveValue(
+                                  rule[j]?.RuleAttributes[k]?.attributeCustom[m]?.attributeValue,
+                              ),
                     cFilterValue: convertComparisonValue(
                         rule[j]?.RuleAttributes[k]?.attributeCustom[m]?.attributeComparison,
                         rule[j]?.RuleAttributes[k]?.attributeCustom[m]?.attributeName?.fieldType,
@@ -786,8 +1302,34 @@ export const MatchTypeCheck = (ruleData, type, count) => {
     }
 };
 export const repeatedValuesCheck = (ruleData, name, triggerId, isCustom = false, isHandleChange = false) => {
-    if (triggerId > 9 && triggerId <= 11) return [true];
+    if (Number(triggerId) === 11) return [true];
     if (!ruleData?.length || ruleData.length === 1) return [true];
+
+    if (shouldDuplicateCheckByRuleTypeOnly(triggerId)) {
+        for (let i = 0; i < ruleData.length; i++) {
+            for (let j = i + 1; j < ruleData.length; j++) {
+                const ruleTypeI = ruleData[i]?.attributeName?.value;
+                const ruleTypeJ = ruleData[j]?.attributeName?.value;
+                if (ruleTypeI && ruleTypeJ && ruleTypeI === ruleTypeJ) {
+                    return [false, `${name}[${j}].attributeName`, '', j];
+                }
+            }
+        }
+        return [true];
+    }
+
+    if (shouldDuplicateCheckByCommunicationNameRule(triggerId)) {
+        for (let i = 0; i < ruleData.length; i++) {
+            for (let j = i + 1; j < ruleData.length; j++) {
+                const fingerprintI = getCommunicationNameRuleFingerprint(ruleData[i]);
+                const fingerprintJ = getCommunicationNameRuleFingerprint(ruleData[j]);
+                if (fingerprintI && fingerprintJ && fingerprintI === fingerprintJ) {
+                    return [false, `${name}[${j}].attributeName`, '', j];
+                }
+            }
+        }
+        return [true];
+    }
 
     const compareValues = (i, j, fieldType) => {
         const path = `${name}[${j}]`;
@@ -949,281 +1491,6 @@ export const repeatedValuesCheck = (ruleData, name, triggerId, isCustom = false,
     }
 
     return [true];
-};
-
-export const repeatedValuesCheckOG = (ruleData, name, triggerId, isCustom = false) => {
-    // debugger
-    var returnData = [];
-    // if (ruleData?.length === 1) {
-    //     returnData.push(true);
-    // } else {
-    if (triggerId > 9 && triggerId <= 11) {
-        returnData.push(true);
-    } else {
-        for (var i = 0; i < ruleData?.length; i++) {
-            for (var j = 0; j < ruleData?.length; j++) {
-                returnData = [];
-                if (j === i) break;
-                if (ruleData[i]?.attributeName?.value === ruleData[j]?.attributeName?.value) {
-                    if (ruleData[j]?.attributeName?.fieldType === '2D') {
-                        if (ruleData[i]?.attributeComparison?.value === ruleData[j]?.attributeComparison?.value) {
-                            returnData.push(false);
-                            returnData.push(`${name}[${i}].attributeComparison`);
-                            returnData.push('');
-                            returnData.push(i);
-                            break;
-                        } else {
-                            returnData.push(true);
-                            break;
-                        }
-                    } else {
-                        if (ruleData[i]?.attributeComparison === ruleData[j]?.attributeComparison) {
-                            if (
-                                ruleData[i]?.attributeName?.value === 'Custom events' &&
-                                ruleData[j]?.attributeComparison === 'Contains'
-                            ) {
-                                //    The custom event does not have multiple values; it's a dropdown, so check the attribute value
-                                // var combine = [
-                                //     ...ruleData[i]?.attributeMultipleValues,
-                                //     ...ruleData[j]?.attributeMultipleValues,
-                                // ];
-                                // var result = combine.filter(
-                                //     (
-                                //         (set) => (item) =>
-                                //             !set.has(item) && set.add(item)
-                                //     )(new Set()),
-                                // );
-
-                                // if (ruleData[j]?.attributeMultipleValues?.length === 0) {
-                                //     returnData.push(false);
-                                //     returnData.push(`${name}[${i}].attributeMultipleValues`);
-                                //     returnData.push([]);
-                                //     returnData.push(i);
-                                //     break;
-                                // } else {
-                                //     returnData.push(result?.length === combine?.length);
-                                //     returnData.push(`${name}[${i}].attributeMultipleValues`);
-                                //     returnData.push([]);
-                                //     returnData.push(i);
-                                //     break;
-                                // }
-                                if (ruleData[i]?.attributeValue === ruleData[j]?.attributeValue) {
-                                    returnData.push(false);
-                                    returnData.push(`${name}[${i}].attributeValue`);
-                                    returnData.push('');
-                                    returnData.push(i);
-                                    break;
-                                } else {
-                                    returnData.push(true);
-                                    break;
-                                }
-                            } else {
-                                returnData.push(false);
-                                returnData.push(`${name}[${i}].attributeComparison`);
-                                returnData.push('');
-                                returnData.push(i);
-                                returnData.push({
-                                    isCustomEventDuplicate: isCustom,
-                                });
-                                break;
-                            }
-                        } else {
-                            switch (ruleData[j]?.attributeName?.fieldType || ruleData[j]?.attributeName?.fieldtype) {
-                                case 'D':
-                                    var combine = [
-                                        ...ruleData[i]?.attributeMultipleValues,
-                                        ...ruleData[j]?.attributeMultipleValues,
-                                    ];
-                                    var result = combine.filter(
-                                        (
-                                            (set) => (item) =>
-                                                !set.has(item) && set.add(item)
-                                        )(new Set()),
-                                    );
-                                    if (ruleData[j]?.attributeMultipleValues?.length === 0) {
-                                        returnData.push(false);
-                                        returnData.push(`${name}[${i}].attributeMultipleValues`);
-                                        returnData.push([]);
-                                        returnData.push(i);
-                                        break;
-                                    } else {
-                                        // Why is the code commented? Only check the comparison value if it is different; do not check multiple values.
-                                        // returnData.push(result?.length === combine?.length);
-                                        // returnData.push(`${name}[${i}].attributeMultipleValues`);
-                                        // returnData.push([]);
-                                        // returnData.push(i);
-                                        //  break;
-                                    }
-                                case 'SD':
-                                    if (ruleData[j]?.attributeValue === ruleData[i]?.attributeValue) {
-                                        // ruleData[j] = false;
-                                        returnData.push(false);
-                                        returnData.push(`${name}[${i}].attributeValue`);
-                                        returnData.push('');
-                                        returnData.push(i);
-                                        break;
-                                    }
-                                case 'T':
-                                    if (ruleData[j]?.attributeValue === ruleData[i]?.attributeValue) {
-                                        // ruleData[j] = false;
-                                        returnData.push(false);
-                                        returnData.push(`${name}[${i}].attributeValue`);
-                                        returnData.push('');
-                                        returnData.push(i);
-                                        break;
-                                    }
-                                case 'AN':
-                                    if (ruleData[i]?.attributeValue - ruleData[j]?.attributeValue === 0) {
-                                        // ruleData[j] = false;
-                                        returnData.push(false);
-                                        returnData.push(`${name}[${i}].attributeValue`);
-                                        returnData.push('');
-                                        returnData.push(i);
-                                        break;
-                                    }
-                                case 'NR':
-                                    if (ruleData[i]?.attributeValue === ruleData[j]?.attributeValue) {
-                                        returnData.push(false);
-                                        returnData.push(`${name}[${i}].attributeValue`);
-                                        returnData.push('');
-                                        returnData.push(i);
-                                        break;
-                                    }
-                                case 'TR':
-                                    var resul =
-                                        ruleData[i]?.attributeValue?.toLocaleString() !==
-                                        ruleData[j]?.attributeValue?.toLocaleString();
-                                    returnData.push(resul);
-                                    returnData.push(`${name}[${i}].attributeValue`);
-                                    returnData.push('');
-                                    returnData.push(i);
-                                    break;
-                            }
-                            if (returnData?.length !== 0) break;
-                        }
-                    }
-                }
-            }
-        }
-    }
-    // }
-
-    if (returnData?.length === 0) returnData.push(true);
-    return returnData;
-};
-
-export const repeatedGroupValuesCheckOld = (allRule, name, triggerId) => {
-    let triggerName = [];
-    let pagesValue = [];
-    let attrcomparison = [];
-    let attrName = [];
-    let attrMultiValues;
-    let sameGroup = false;
-    let duplicatesValues = [];
-    let fieldType = '';
-    let attrValue = '';
-
-    allRule?.forEach((rule) => {
-        if (triggerName.includes(rule?.TriggerName?.triggerName)) {
-            if (pagesValue.includes(rule?.pages?.value)) {
-                return (sameGroup = true);
-            }
-        } else {
-            triggerName.push(rule?.TriggerName?.triggerName);
-            pagesValue.push(rule?.pages?.value);
-        }
-    });
-
-    sameGroup &&
-        allRule?.forEach((rule) => {
-            rule?.RuleAttributes?.forEach((attribute, idx) => {
-                if (attrName.includes(attribute?.attributeName?.value)) {
-                    if (attrcomparison.includes(attribute?.attributeComparison)) {
-                        switch (fieldType) {
-                            case 'D':
-                                const checkData = attrMultiValues?.filter((value) =>
-                                    attribute?.attributeMultipleValues?.some((multi) => multi === value),
-                                );
-                                duplicatesValues.push({
-                                    duplicateCount: checkData?.length ?? 0,
-                                    name: `rule[${idx + 1}].RuleAttributes`,
-                                });
-                                break;
-                            case '2D':
-                            case 'SD':
-                            case 'T':
-                            case 'AN':
-                            case 'NR':
-                                attrValue === attribute?.attributeValue &&
-                                    duplicatesValues.push({
-                                        duplicateCount: 1,
-                                        name: `rule[${idx + 1}].RuleAttributes`,
-                                    });
-                                break;
-
-                            case 'TR':
-                                attrValue.toLocaleString() === attribute?.attributeValue.toLocaleString() &&
-                                    duplicatesValues.push({
-                                        duplicateCount: 1,
-                                        name: `rule[${idx + 1}].RuleAttributes`,
-                                    });
-                                break;
-                        }
-                    }
-                } else {
-                    attrName.push(attribute?.attributeName?.value);
-                    attrcomparison.push(attribute?.attributeComparison);
-                    attrMultiValues = attribute?.attributeMultipleValues;
-                    fieldType = attribute?.attributeName?.fieldType;
-                    attrValue = attribute?.attributeValue;
-                }
-            });
-        });
-
-    // let allValues = {};
-    // let duplicateDetail = {
-    //     status: false,
-    //     index: null,
-    // };
-
-    // allRule.forEach((rule) => {
-    //     rule?.RuleAttributes?.forEach((attribute, idx) => {
-    //         if (
-    //             allValues['ruleType'] === attribute?.attributeName?.value &&
-    //             allValues['type'] === attribute?.attributeComparison
-    //         ) {
-    //             switch (attribute?.attributeName?.fieldType) {
-    //                 case 'D':
-    //                     attribute?.attributeMultipleValues?.forEach((value) => {
-    //                         if (allValues['multiValues']?.includes(value)) {
-    //                             duplicateDetail['status'] = true;
-    //                             duplicateDetail['index'] = idx;
-    //                         } else {
-    //                             allValues['multiValues']?.push(value);
-    //                         }
-    //                     });
-    //                     break;
-    //                 case '2D':
-    //                 case 'SD':
-    //                 case 'T':
-    //                 case 'AN':
-    //                 case 'NR':
-    //                 case 'TR':
-    //                     if (allValues['singleValue'] === attribute?.attributeValue) {
-    //                         duplicateDetail['status'] = true;
-    //                         duplicateDetail['index'] = idx;
-    //                     }
-    //             }
-    //         } else {
-    //             allValues['ruleType'] = attribute?.attributeName?.value;
-    //             allValues['type'] = attribute?.attributeComparison;
-    //             allValues['singleValue'] = attribute?.attributeValue;
-    //             allValues['multiValues'] = attribute?.attributeMultipleValues;
-    //         }
-    //     });
-    // });
-
-    return duplicatesValues;
 };
 
 export const repeatedGroupValuesCheck = (allRule, name, triggerId) => {

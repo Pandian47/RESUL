@@ -119,7 +119,7 @@ const PushBuilderHome = () => {
                     <Container fluid>
                         <div className="page-content">
                             <RSTabbarFluid
-                                defaultClass={`col-md-4`}
+                                defaultClass={`col-md-4 col-sm-4`}
                                 dynamicTab={`mb0 mini rst-left-space`}
                                 activeClass={`active`}
                                 tabData={tabData(payload, setPayload, categoriesData, userId, handleCategories, isLoading)}

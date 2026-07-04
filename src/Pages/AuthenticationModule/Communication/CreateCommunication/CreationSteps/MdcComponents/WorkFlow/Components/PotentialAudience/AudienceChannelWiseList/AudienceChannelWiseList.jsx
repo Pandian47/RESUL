@@ -1,7 +1,7 @@
 import { formatNumber } from 'Utils/modules/campaignUtils';
 import { useState, useEffect, useContext } from 'react';
 import { Col } from 'react-bootstrap';
-import _get from 'lodash/get';
+import { get as _get } from 'Utils/modules/lodashReplacements';
 import Icon from 'Components/Icon/Icon';
 import CreateWorkFlowContext from '../../../context';
 import { getCount, getCustomizedReceipientList, getCustomizedReceipientListRecursiveFlow } from '../PotentialConst';

@@ -6,7 +6,7 @@ import { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { Container, Row, Col } from 'react-bootstrap';
 import { useForm } from 'react-hook-form';
-import _find from 'lodash/find';
+import { find as _find } from 'Utils/modules/lodashReplacements';
 import { getSessionId } from 'Reducers/globalState/selector';
 import audienceScoreHelp from 'Assets/Images/audienceScoreHelp.svg';
 import RSTabbar from 'Components/RSTabber';

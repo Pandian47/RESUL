@@ -338,24 +338,3 @@ export const EDITDATA = {
     zoneTags: ['North', 'South', 'East', 'West'],
 };
 
-export const handleAnalyticsCal = (selectedValue) => {
-    let conversionDataList = [];
-    if (selectedValue === 'By Target') {
-        conversionDataList.push(
-            { titleId: 1, title: 'By Target' },
-            { titleId: 2, title: 'By Reach' },
-            { titleId: 3, title: 'By Engagement' },
-        );
-    } else if (selectedValue === 'By Send') {
-        conversionDataList.push(
-            { titleId: 1, title: 'By Sent' },
-            { titleId: 2, title: 'By Reach' },
-            { titleId: 3, title: 'By Engagement' },
-        );
-    } else if (selectedValue === 'By Delivered') {
-        conversionDataList.push({ titleId: 1, title: 'By Delivered' }, { titleId: 2, title: 'By Engagement' });
-    } else if (selectedValue === 'By Reach') {
-        conversionDataList.push({ titleId: 1, title: 'By Reach' }, { titleId: 2, title: 'By Engagement' });
-    }
-    return conversionDataList;
-};

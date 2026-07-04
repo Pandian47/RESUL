@@ -1,15 +1,10 @@
 
-import { textFormatter } from 'Utils/modules/stringUtils';
-
-import { getUserDetails } from 'Utils/modules/crypto';
-import { getUserCurrentFormat } from 'Utils/modules/dateTime';
 import { circle_plus_edge_medium } from 'Constants/GlobalConstant/Glyphicons';
-import _map from 'lodash/map';
-import _get from 'lodash/get';
+import { map as _map, get as _get } from 'Utils/modules/lodashReplacements';
 
 import SplitAB from './Component/SplitAB/SplitAB';
-import { formatDateScheculer, handleAllChannelPayload, handleAllChannelTimeZonePayload, handleMDCExtraPayload, resolveLocalBlastDateTime } from '../../constant';
-
+import { formatDateScheculer, handleAllChannelPayload, handleAllChannelTimeZonePayload, handleMDCExtraPayload, resolveLocalBlastDateTime, resolveMdcSchedule } from '../../constant';
+import { getUserDetails, textFormatter, getUserCurrentFormat, isValidDate } from 'Utils/index';
 import { extractPlaceholders } from '../RCS/constant';
 import { mapImage } from 'Assets/Images';
 import {
@@ -86,12 +81,7 @@ export const buildPayload = (formState, type, location) => {
         ...restState
     } = ensureObject(formState);
 
-    schedule =
-        levelNumber > 1
-            ? new Date(formState.schedule)
-            : campaignType === 'M' && dataSource === 'DL'
-                ? new Date()
-                : schedule;
+    schedule = resolveMdcSchedule(formState, location, levelNumber, campaignType, dataSource, schedule);
 
     // if (type === 'whatsapp') {
     //     parentChannelDetailType = 'WA';

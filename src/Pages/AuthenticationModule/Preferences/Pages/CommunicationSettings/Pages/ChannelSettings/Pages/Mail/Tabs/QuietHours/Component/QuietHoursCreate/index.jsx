@@ -1,4 +1,4 @@
-import { BACK, CANCEL, CHANNEL, QUIET_HOURS_ACCOUNT_TIMEZONE_NOTE, QUIET_HOURS_ADD_RULE, QUIET_HOURS_BOTH_MESSAGE_WARNING, QUIET_HOURS_BRAND_SHORTER_THAN_REGULATORY, QUIET_HOURS_COUNTRY_REGION, QUIET_HOURS_DAYS_OF_WEEK, QUIET_HOURS_DISCARD, QUIET_HOURS_DUPLICATE_RULE, QUIET_HOURS_EDIT_RULE, QUIET_HOURS_MESSAGE_TYPE, QUIET_HOURS_PRIORITY_OVERRIDE, QUIET_HOURS_PRIORITY_OVERRIDE_TOOLTIP, QUIET_HOURS_PROMO_DELIVERY_NOTE, QUIET_HOURS_QUEUE_AND_SEND, QUIET_HOURS_QUEUE_EXPIRY, QUIET_HOURS_SELECT_DAYS_REQUIRED, QUIET_HOURS_STATUS_OFF, QUIET_HOURS_STATUS_ON, QUIET_HOURS_SUPPRESSION_BEHAVIOUR, QUIET_HOURS_USA_TCPA_BOTH_WARNING, QUIET_HOURS_VIEW_RULE, QUIET_HOURS_WINDOW_END, QUIET_HOURS_WINDOW_START, RULENAME, SAVE, UNABLE_TOLOAD_DATA } from 'Constants/GlobalConstant/Placeholders';
+import { BACK, CANCEL, QUIET_HOURS_ADD_RULE, QUIET_HOURS_BOTH_MESSAGE_WARNING, QUIET_HOURS_COUNTRY_REGION, QUIET_HOURS_DAYS_OF_WEEK, QUIET_HOURS_DISCARD, QUIET_HOURS_DUPLICATE_RULE, QUIET_HOURS_EDIT_RULE, QUIET_HOURS_MESSAGE_TYPE, QUIET_HOURS_PRIORITY_OVERRIDE, QUIET_HOURS_PRIORITY_OVERRIDE_TOOLTIP, QUIET_HOURS_PROMO_DELIVERY_NOTE, QUIET_HOURS_QUEUE_AND_SEND, QUIET_HOURS_QUEUE_EXPIRY, QUIET_HOURS_SELECT_COUNTRY_REQUIRED, QUIET_HOURS_SELECT_DAYS_REQUIRED, QUIET_HOURS_STATUS_OFF, QUIET_HOURS_STATUS_ON, QUIET_HOURS_SUPPRESSION_BEHAVIOUR, QUIET_HOURS_USA_TCPA_BOTH_WARNING, QUIET_HOURS_VIEW_RULE, QUIET_HOURS_WINDOW_END, QUIET_HOURS_WINDOW_START, RULENAME, SAVE, UNABLE_TOLOAD_DATA } from 'Constants/GlobalConstant/Placeholders';
 import { circle_question_mark_mini } from 'Constants/GlobalConstant/Glyphicons';
 import { useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { Row, Col } from 'react-bootstrap';
@@ -14,7 +14,6 @@ import RSRadioButton from 'Components/FormFields/RSRadioButton';
 import RSTooltip from 'Components/RSTooltip';
 import RSSwitch from 'Components/FormFields/RSSwitch';
 import RSPPophover from 'Components/RSPPophover';
-import RSSkeletonTable from 'Components/RSSkeleton/RSSkeletonTable';
 import RSAlertWarning from 'Components/RSAlertWarning';
 import { CommunicationSettingsQuietHoursEditSkeletonGate } from 'Components/Skeleton/Components/PreferencesSubPageRouteSkeleton';
 
@@ -24,7 +23,6 @@ import {
     checkQuietHoursNameExists,
     duplicateQuietHoursSettings,
     getQuietHoursLookups,
-    getQuietHoursSettings,
     getQuietHoursSettingsById,
     upsertQuietHoursSettings,
 } from 'Reducers/preferences/CommunicationSettings/request';
@@ -39,13 +37,11 @@ import {
     WEEK_DAY_OPTIONS,
     buildQuietHoursByIdPayload,
     buildQuietHoursDuplicatePayload,
-    buildQuietHoursListPayload,
     buildQuietHoursLookupsPayload,
     buildQuietHoursUpsertPayload,
     buildSuggestedDuplicateRuleName,
     alignQuietHoursFormLookups,
     extractQuietHoursDetailData,
-    extractRegulatoryRowsFromList,
     isUsaQuietHoursRegion,
     getBrandCountryOptions,
     getChannelOptionForKey,
@@ -59,13 +55,12 @@ import {
     mapQuietHoursDetailToForm,
     normalizeQuietHoursLookupResponse,
     parseQuietHoursApiResponse,
-    validateBrandWindowAgainstRegulatory,
     QUIET_HOURS_BOTH_BEHAVIOR_TOOLTIP,
     QUIET_HOURS_REGULATORY_READONLY_TOOLTIP,
-    validateQuietHoursWindowEndField,
-    validateQuietHoursWindowStartField,
+    QUIET_HOURS_WINDOW_FIELDS,
+    getQuietHoursWindowFieldError,
+    runQuietHoursWindowFieldValidation,
     validateQuietHoursRuleName,
-    isQuietHoursWindowEndBeforeStartError,
 } from '../../constant';
 import useApiLoader from 'Hooks/useApiLoader';
 import { FIELD_BOTH_LOADER_CONFIG as fieldLoaderConfig } from 'Hooks/loaderTypes';
@@ -109,8 +104,6 @@ const QuietHoursCreate = ({ config, type, handleCancel, setFailedApi }) => {
     const [lookups, setLookups] = useState(EMPTY_LOOKUPS);
     const [lookupsError, setLookupsError] = useState('');
     const [initialRuleName, setInitialRuleName] = useState('');
-    const [submitError, setSubmitError] = useState('');
-    const [regulatoryBaselines, setRegulatoryBaselines] = useState([]);
     const [validationModal, setValidationModal] = useState({ show: false, message: '' });
 
     const showValidationModal = useCallback((message) => {
@@ -142,7 +135,7 @@ const QuietHoursCreate = ({ config, type, handleCancel, setFailedApi }) => {
     const showRegulatoryRequired = isRegulatoryViewOnly;
     const showNameExistsCheck = !isReadOnly && !isRegulatory && (isCreate || isEditMode);
 
-    const methods = useForm(getFormInitialState(EMPTY_LOOKUPS));
+    const methods = useForm(getFormInitialState(EMPTY_LOOKUPS, channelKey));
     const {
         control,
         handleSubmit,
@@ -153,7 +146,6 @@ const QuietHoursCreate = ({ config, type, handleCancel, setFailedApi }) => {
         setError,
         clearErrors,
         formState: { isValid },
-        getFieldState,
     } = methods;
     const hasUiValidationErrors = !isValid;
 
@@ -163,52 +155,38 @@ const QuietHoursCreate = ({ config, type, handleCancel, setFailedApi }) => {
     const daysCustomValue = useWatch({ control, name: 'daysCustom' });
     const windowStartValue = useWatch({ control, name: 'windowStart' });
     const windowEndValue = useWatch({ control, name: 'windowEnd' });
-    const windowEndInteractionAfterInvalidPairRef = useRef(false);
+    const lastChangedWindowFieldRef = useRef(QUIET_HOURS_WINDOW_FIELDS.END);
 
-    const applyInvalidWindowPairReset = useCallback(
-        (start, end) => {
-            const pairError = validateQuietHoursWindowStartField(start, end);
-            if (!isQuietHoursWindowEndBeforeStartError(pairError)) {
-                return false;
-            }
-            windowEndInteractionAfterInvalidPairRef.current = false;
-            clearErrors('windowEnd');
-            setValue('windowEnd', null, { shouldValidate: false, shouldTouch: false, shouldDirty: true });
-            setError('windowStart', { type: 'invalidPair', message: pairError });
-            return true;
+    const handleQuietHoursWindowChange = useCallback(
+        (fieldName) => {
+            lastChangedWindowFieldRef.current = fieldName;
+            runQuietHoursWindowFieldValidation({
+                changedField: fieldName,
+                getValues,
+                clearErrors,
+                trigger,
+            });
         },
-        [clearErrors, setError, setValue],
+        [clearErrors, getValues, trigger],
     );
-
-    const runWindowFieldValidation = useCallback(() => {
-        window.setTimeout(() => {
-            const start = getValues('windowStart');
-            const end = getValues('windowEnd');
-            if (start != null && end != null) {
-                if (applyInvalidWindowPairReset(start, end)) {
-                    return;
-                }
-                void trigger(['windowStart', 'windowEnd']);
-                return;
-            }
-            const startFieldError = getFieldState('windowStart').error;
-            if (start != null && startFieldError?.type !== 'invalidPair') {
-                void trigger('windowStart');
-            } else if (start == null) {
-                void trigger('windowStart');
-            }
-            if (end != null) {
-                void trigger('windowEnd');
-            } else if (getFieldState('windowStart').error?.type !== 'invalidPair') {
-                void trigger('windowEnd');
-            }
-        }, 0);
-    }, [applyInvalidWindowPairReset, getFieldState, getValues, trigger]);
 
     useEffect(() => {
         if (isReadOnly || isRegulatory) return;
-        runWindowFieldValidation();
-    }, [windowStartValue, windowEndValue, isReadOnly, isRegulatory, runWindowFieldValidation]);
+        runQuietHoursWindowFieldValidation({
+            changedField: lastChangedWindowFieldRef.current,
+            getValues,
+            clearErrors,
+            trigger,
+        });
+    }, [
+        windowStartValue,
+        windowEndValue,
+        isReadOnly,
+        isRegulatory,
+        clearErrors,
+        getValues,
+        trigger,
+    ]);
     const isQueueBehavior = isQueueBehaviorValue(behavior);
     const isBothMessageType = isBothMessageTypeCode(messageType);
     const showUsaTcpaBothWarning = isBothMessageType && isUsaQuietHoursRegion(countryRegion);
@@ -230,53 +208,47 @@ const QuietHoursCreate = ({ config, type, handleCancel, setFailedApi }) => {
                 ? QUIET_HOURS_EDIT_RULE
                 : QUIET_HOURS_ADD_RULE;
 
-    const fetchLookups = useCallback(async () => {
-        try {
-            const response = await dispatch(
-                getQuietHoursLookups(
-                    buildQuietHoursLookupsPayload({
-                        clientId,
-                        userId,
-                        departmentId,
+    const fetchLookups = useCallback(
+        async ({ silent = false } = {}) => {
+            try {
+                const response = await dispatch(
+                    getQuietHoursLookups(
+                        buildQuietHoursLookupsPayload({
+                            clientId,
+                            userId,
+                            departmentId,
                             channelId,
-                        includeAllCountries: true,
-                    }),
-                ),
-            );
-            const { status, countryRegions, messageTypes, queueExpiryOptions, message } =
-                normalizeQuietHoursLookupResponse(response);
+                            includeAllCountries: true,
+                        }),
+                    ),
+                );
+                const { status, countryRegions, messageTypes, queueExpiryOptions, message } =
+                    normalizeQuietHoursLookupResponse(response);
 
-            if (status && (countryRegions.length || messageTypes.length || queueExpiryOptions.length)) {
-                const mapped = { countryRegions, messageTypes, queueExpiryOptions };
-                setLookups(mapped);
-                return { data: mapped, success: true };
+                if (status && (countryRegions.length || messageTypes.length || queueExpiryOptions.length)) {
+                    const mapped = { countryRegions, messageTypes, queueExpiryOptions };
+                    setLookups(mapped);
+                    setLookupsError('');
+                    return { data: mapped, success: true };
+                }
+
+                setLookups(EMPTY_LOOKUPS);
+                if (!silent) {
+                    setLookupsError(message || UNABLE_TOLOAD_DATA);
+                    setFailedApi(QUIET_HOURS_API_KEYS.LOOKUPS, response);
+                }
+                return { data: EMPTY_LOOKUPS, success: false, message, response };
+            } catch (error) {
+                setLookups(EMPTY_LOOKUPS);
+                if (!silent) {
+                    setLookupsError(UNABLE_TOLOAD_DATA);
+                    setFailedApi(QUIET_HOURS_API_KEYS.LOOKUPS, error);
+                }
+                return { data: EMPTY_LOOKUPS, success: false, response: error };
             }
-
-            setLookups(EMPTY_LOOKUPS);
-            return { data: EMPTY_LOOKUPS, success: false, message };
-        } catch {
-            setLookups(EMPTY_LOOKUPS);
-            return { data: EMPTY_LOOKUPS, success: false };
-        }
-    }, [clientId, departmentId, dispatch, userId]);
-
-    const fetchRegulatoryBaselines = useCallback(async () => {
-        const response = await dispatch(
-            getQuietHoursSettings(
-                buildQuietHoursListPayload({
-                    clientId,
-                    userId,
-                    departmentId,
-                    channelId,
-                    pageNo: 1,
-                    pageSize: 500,
-                }),
-            ),
-        );
-        const { status, data } = parseQuietHoursApiResponse(response);
-        if (!status) return [];
-        return extractRegulatoryRowsFromList(data);
-    }, [channelId, clientId, departmentId, dispatch, userId]);
+        },
+        [channelId, clientId, departmentId, dispatch, setFailedApi, userId],
+    );
 
     const resolveGridRuleTypeApi = useCallback(() => {
         const ruleTypeRaw =
@@ -297,6 +269,7 @@ const QuietHoursCreate = ({ config, type, handleCancel, setFailedApi }) => {
                 formValues = alignQuietHoursFormLookups(formValues, lookupData, {
                     isRegulatory: formValues.ruleType === RULE_TYPES.REGULATORY,
                 });
+                formValues.channel = getChannelOptionForKey(channelKey);
 
                 const sourceRuleId = formValues.ruleId;
                 const duplicateName = isDuplicate
@@ -321,7 +294,7 @@ const QuietHoursCreate = ({ config, type, handleCancel, setFailedApi }) => {
                 return false;
             }
         },
-        [isDuplicate, reset],
+        [channelKey, isDuplicate, reset],
     );
 
     const checkDuplicateRuleNameOnce = useCallback(
@@ -403,13 +376,12 @@ const QuietHoursCreate = ({ config, type, handleCancel, setFailedApi }) => {
     ]);
 
     const bootstrapPage = useCallback(() => {
+        closeValidationModal();
         return pageLoadApi.refetch({
             fetcher: async () => {
-                setSubmitError('');
-
                 if (isUpdate || isDuplicate) {
                     const [lookupResult, detailResponse] = await Promise.all([
-                        fetchLookups(),
+                        fetchLookups({ silent: true }),
                         fetchQuietHoursDetailResponse(),
                     ]);
                     return { mode: 'edit', lookupResult, detailResponse };
@@ -420,19 +392,51 @@ const QuietHoursCreate = ({ config, type, handleCancel, setFailedApi }) => {
             },
             loaderConfig: fieldLoaderConfig,
             mode: isUpdate || isDuplicate ? 'edit' : 'create',
-            onSuccess: (result) => {
+            onSuccess: async (result) => {
                 if (result?.mode === 'edit') {
                     const { lookupResult, detailResponse } = result;
                     const lookupData = lookupResult?.data ?? EMPTY_LOOKUPS;
+                    let detailLoaded = false;
 
                     if (detailResponse?.data) {
-                        applyDetailToForm(detailResponse.data, lookupData);
+                        detailLoaded = applyDetailToForm(detailResponse.data, lookupData);
+                    }
+
+                    if (detailLoaded && isDuplicate) {
+                        await checkDuplicateRuleNameOnce(getValues('ruleName'));
+                    }
+
+                    if (!detailLoaded) {
+                        const failResponse = lookupResult?.success
+                            ? detailResponse?.response
+                            : lookupResult?.response;
+                        handleQuietHoursApiFailure(failResponse, {
+                            setFailedApi,
+                            showValidationModal,
+                            apiKey: lookupResult?.success
+                                ? QUIET_HOURS_API_KEYS.BY_ID
+                                : QUIET_HOURS_API_KEYS.LOOKUPS,
+                        });
+                    } else if (!lookupResult?.success) {
+                        setLookupsError(UNABLE_TOLOAD_DATA);
+                        setFailedApi(QUIET_HOURS_API_KEYS.LOOKUPS, lookupResult?.response);
                     }
                     return;
                 }
 
-                const lookupData = result?.lookupResult?.data ?? EMPTY_LOOKUPS;
-                reset(getFormInitialState(lookupData, channelKey).defaultValues);
+                const lookupResult = result?.lookupResult;
+                const lookupData = lookupResult?.data ?? EMPTY_LOOKUPS;
+
+                if (
+                    lookupResult?.success &&
+                    (lookupData?.countryRegions?.length || lookupData?.messageTypes?.length)
+                ) {
+                    reset(getFormInitialState(lookupData, channelKey).defaultValues);
+                    setLookupsError('');
+                } else {
+                    setLookupsError(UNABLE_TOLOAD_DATA);
+                    setFailedApi(QUIET_HOURS_API_KEYS.LOOKUPS, lookupResult?.response);
+                }
             },
         });
     }, [
@@ -447,6 +451,8 @@ const QuietHoursCreate = ({ config, type, handleCancel, setFailedApi }) => {
         isUpdate,
         pageLoadApi.refetch,
         reset,
+        setFailedApi,
+        showValidationModal,
     ]);
 
     useEffect(() => {
@@ -466,32 +472,6 @@ const QuietHoursCreate = ({ config, type, handleCancel, setFailedApi }) => {
         },
         [setFailedApi, showValidationModal],
     );
-
-    const fetchQuietHoursListSettings = useCallback(async () => {
-        try {
-            const response = await dispatch(
-                getQuietHoursSettings(
-                    buildQuietHoursListPayload({
-                        clientId,
-                        userId,
-                        departmentId,
-                        channelId,
-                        pageNo: 1,
-                        pageSize: 500,
-                    }),
-                ),
-            );
-            const { status, data } = parseQuietHoursApiResponse(response);
-            if (!status) {
-                setFailedApi(QUIET_HOURS_API_KEYS.LIST);
-                return null;
-            }
-            return data;
-        } catch {
-            setFailedApi(QUIET_HOURS_API_KEYS.LIST);
-            return null;
-        }
-    }, [channelId, clientId, departmentId, dispatch, setFailedApi, userId]);
 
     const closeFormAndRefreshGrid = useCallback(() => {
         handleCancel?.();
@@ -517,19 +497,8 @@ const QuietHoursCreate = ({ config, type, handleCancel, setFailedApi }) => {
             return;
         }
 
-        let baselines = regulatoryBaselines;
-        if (!baselines.length) {
-            baselines = await fetchRegulatoryBaselines();
-            setRegulatoryBaselines(baselines);
-        }
-
-        const brandWindowError = validateBrandWindowAgainstRegulatory(
-            formValues,
-            baselines,
-            QUIET_HOURS_BRAND_SHORTER_THAN_REGULATORY,
-        );
-        if (brandWindowError) {
-            setSubmitError(brandWindowError);
+        const isFormValid = await trigger();
+        if (!isFormValid) {
             return;
         }
 
@@ -542,13 +511,21 @@ const QuietHoursCreate = ({ config, type, handleCancel, setFailedApi }) => {
                 sourceRuleId: ruleMeta.sourceRuleId,
             });
 
-            const duplicateResponse = await dispatch(duplicateQuietHoursSettings(payload));
-            const parsed = parseQuietHoursApiResponse(duplicateResponse);
+            try {
+                const duplicateResponse = await saveApi.refetch({
+                    fetcher: () => dispatch(duplicateQuietHoursSettings(payload, false)),
+                    loaderConfig: fieldLoaderConfig,
+                    mode: 'create',
+                });
+                const parsed = parseQuietHoursApiResponse(duplicateResponse);
 
-            if (parsed.status) {
-                closeFormAndRefreshGrid();
-            } else {
-                handleSaveFailure(duplicateResponse, QUIET_HOURS_API_KEYS.DUPLICATE);
+                if (parsed.status) {
+                    closeFormAndRefreshGrid();
+                } else {
+                    handleSaveFailure(duplicateResponse, QUIET_HOURS_API_KEYS.DUPLICATE);
+                }
+            } catch (error) {
+                handleSaveFailure(error, QUIET_HOURS_API_KEYS.DUPLICATE);
             }
             return;
         }
@@ -610,17 +587,13 @@ const QuietHoursCreate = ({ config, type, handleCancel, setFailedApi }) => {
         [getValues, isReadOnly, isRegulatory, setValue],
     );
 
-    const handleWindowStartRemove = useCallback(() => {
-        runWindowFieldValidation();
-    }, [runWindowFieldValidation]);
+    const handleWindowStartChange = useCallback(() => {
+        handleQuietHoursWindowChange(QUIET_HOURS_WINDOW_FIELDS.START);
+    }, [handleQuietHoursWindowChange]);
 
-    const handleWindowEndRemove = useCallback(() => {
-        runWindowFieldValidation();
-    }, [runWindowFieldValidation]);
-
-    const handleWindowEndFocus = useCallback(() => {
-        windowEndInteractionAfterInvalidPairRef.current = true;
-    }, []);
+    const handleWindowEndChange = useCallback(() => {
+        handleQuietHoursWindowChange(QUIET_HOURS_WINDOW_FIELDS.END);
+    }, [handleQuietHoursWindowChange]);
 
     const canSave = !isReadOnly && isAdmin && (isCreate || isEditMode);
     const canEditWindowStart = isCreate || isEditMode;
@@ -630,44 +603,33 @@ const QuietHoursCreate = ({ config, type, handleCancel, setFailedApi }) => {
         () => ({
             required: canEditWindowStart ? 'Please select a start time.' : false,
             validate: (value) =>
-                validateQuietHoursWindowStartField(value, getValues('windowEnd')),
+                getQuietHoursWindowFieldError(
+                    QUIET_HOURS_WINDOW_FIELDS.START,
+                    value,
+                    getValues('windowEnd'),
+                    lastChangedWindowFieldRef.current,
+                ),
         }),
         [canEditWindowStart, getValues],
     );
 
     const windowEndRules = useMemo(
         () => ({
-            validate: (value) => {
-                const startError = getFieldState('windowStart').error;
-                const suppressRequired =
-                    startError?.type === 'invalidPair' &&
-                    !windowEndInteractionAfterInvalidPairRef.current;
-                if ((value == null || value === '') && canEditWindowEnd) {
-                    if (suppressRequired) {
-                        return true;
-                    }
-                    return 'Please select an end time.';
-                }
-                return validateQuietHoursWindowEndField(
+            required: canEditWindowEnd ? 'Please select an end time.' : false,
+            validate: (value) =>
+                getQuietHoursWindowFieldError(
+                    QUIET_HOURS_WINDOW_FIELDS.END,
                     getValues('windowStart'),
                     value,
-                );
-            },
+                    lastChangedWindowFieldRef.current,
+                ),
         }),
-        [canEditWindowEnd, getFieldState, getValues],
+        [canEditWindowEnd, getValues],
     );
 
     const formBoxClass = embedded ? 'quiet-hours-form' : 'box-design bd-top-border quiet-hours-form';
 
     const quietHoursFormAlertClass = 'alert mb15 mt10 align-items-stretch border-r7';
-
-    if (isPageLoading) {
-        return (
-            <div className="rsv-tabs-content">
-                <RSSkeletonTable count={6} isCustombox isAlertIcon={false} />
-            </div>
-        );
-    }
 
     if (lookupsError && !lookups.countryRegions.length) {
         return (
@@ -707,8 +669,6 @@ const QuietHoursCreate = ({ config, type, handleCancel, setFailedApi }) => {
                         </div>
                     </div>
 
-                    {submitError ? <div className="alert alert-danger mt10">{submitError}</div> : null}
-
                     {isBothMessageType ? (
                         <RSAlertWarning
                             show
@@ -723,79 +683,79 @@ const QuietHoursCreate = ({ config, type, handleCancel, setFailedApi }) => {
                     ) : null}
 
                     <Row>
-                        <Col md={10}>
-                    <Row className="form-group mt20">
-                        <Col sm={12}>
-                            {showNameExistsCheck ? (
-                                <ListNameExists
-                                    name="ruleName"
-                                    field="ruleName"
-                                    placeholder={RULENAME}
-                                    apiCallback={checkQuietHoursNameExists}
-                                    condition={(data) => !data?.status}
-                                    rules={{
-                                        required: 'Please enter a unique rule name.',
-                                        maxLength: {
-                                            value: 100,
-                                            message: 'Rule name must be 100 characters or fewer.',
-                                        },
+                        <Col md={12}>
+                            <Row className="form-group mt20">
+                                <Col
+                                    sm={6}
+                                    onKeyUpCapture={(event) => {
+                                        if (event.target?.name !== 'ruleName') return;
+                                        handleRuleNameChange(event.target.value);
                                     }}
-                                    customError="A rule with this name already exists for this channel."
-                                    extraPayload={{
-                                        channelId,
-                                        ...(isEditMode && ruleMeta.ruleId != null
-                                            ? { ruleId: ruleMeta.ruleId }
-                                            : {}),
-                                    }}
-                                    maxLength={100}
-                                    currentValue={initialRuleName}
-                                    noEmoji
-                                />
-                            ) : (
-                                <RSInput
-                                    control={control}
-                                    name="ruleName"
-                                    label={RULENAME}
-                                    disabled
-                                    maxLength={100}
-                                />
-                            )}
-                        </Col>
-                    </Row>
+                                >
+                                    {showNameExistsCheck ? (
+                                        <ListNameExists
+                                            name="ruleName"
+                                            field="ruleName"
+                                            classWrapper="quiet-hours-rule-name-input"
+                                            placeholder={RULENAME}
+                                            apiCallback={checkQuietHoursNameExists}
+                                            condition={(data) => !data?.status}
+                                            isSpecialCharacter={false}
+                                            callback={handleRuleNameChange}
+                                            customBlurValidator={validateQuietHoursRuleName}
+                                            customErrorMessage="Please enter a rule name."
+                                            rules={{
+                                                required: 'Please enter a rule name.',
+                                                maxLength: {
+                                                    value: 100,
+                                                    message: 'Rule name must be 100 characters or fewer.',
+                                                },
+                                            }}
+                                            validate={{
+                                                specialChar: (value) => validateQuietHoursRuleName(value),
+                                            }}
+                                            customError="A rule with this name already exists for this channel."
+                                            extraPayload={{
+                                                channelId,
+                                                ...(isEditMode && ruleMeta.ruleId != null
+                                                    ? { ruleId: ruleMeta.ruleId }
+                                                    : {}),
+                                            }}
+                                            maxLength={100}
+                                            currentValue={initialRuleName}
+                                            noEmoji
+                                        />
+                                    ) : (
+                                        <RSInput
+                                            control={control}
+                                            name="ruleName"
+                                            label={RULENAME}
+                                            required={showRegulatoryRequired}
+                                            disabled
+                                            maxLength={100}
+                                        />
+                                    )}
+                                </Col>
+                                <Col sm={6}>
+                                    <RSKendoDropDownList
+                                        control={control}
+                                        name="countryRegion"
+                                        label={QUIET_HOURS_COUNTRY_REGION}
+                                        data={countryOptions}
+                                        textField="label"
+                                        dataItemKey="countryRegionId"
+                                        disabled={isReadOnly || isRegulatory}
+                                        required={showRegulatoryRequired || (!isReadOnly && !isRegulatory)}
+                                        rules={
+                                            isReadOnly || isRegulatory
+                                                ? {}
+                                                : { required: QUIET_HOURS_SELECT_COUNTRY_REQUIRED }
+                                        }
+                                    />
+                                </Col>
+                            </Row>
 
-                    <Row className="form-group">
-                        <Col sm={6}>
-                            <RSKendoDropDownList
-                                control={control}
-                                name="channel"
-                                label={CHANNEL}
-                                data={[getChannelOptionForKey(channelKey)]}
-                                textField="channelName"
-                                dataItemKey="channelId"
-                                disabled
-                                required={!isReadOnly}
-                                rules={isReadOnly ? {} : { required: 'Channel cannot be empty.' }}
-                            />
-                        </Col>
-                        <Col sm={6}>
-                            <RSKendoDropDownList
-                                control={control}
-                                name="countryRegion"
-                                label={QUIET_HOURS_COUNTRY_REGION}
-                                data={countryOptions}
-                                textField="label"
-                                dataItemKey="countryRegionId"
-                                disabled={isReadOnly || isRegulatory}
-                                rules={
-                                    isReadOnly || isRegulatory
-                                        ? {}
-                                        : { required: 'Please select a country or region.' }
-                                }
-                            />
-                        </Col>
-                    </Row>
-
-                    <Row className="form-group">
+                            <Row className="form-group mb25">
                         <Col sm={6}>
                             <RSTimePicker
                                 control={control}
@@ -804,11 +764,11 @@ const QuietHoursCreate = ({ config, type, handleCancel, setFailedApi }) => {
                                 format="HH:mm"
                                 valueFormat="HH:mm"
                                 steps={{ hour: 1, minute: 1 }}
-                                required={canEditWindowStart}
+                                required={showRegulatoryRequired || canEditWindowStart}
                                 disabled={!canEditWindowStart}
-                                rules={{
-                                    required: canEditWindowStart ? 'Please select a start time.' : false,
-                                }}
+                                handleChange={handleWindowStartChange}
+                                handleOnBlur={handleWindowStartChange}
+                                rules={windowStartRules}
                             />
                         </Col>
                         <Col sm={6}>
@@ -819,17 +779,16 @@ const QuietHoursCreate = ({ config, type, handleCancel, setFailedApi }) => {
                                 format="HH:mm"
                                 valueFormat="HH:mm"
                                 steps={{ hour: 1, minute: 1 }}
-                                required={canEditWindowEnd}
+                                required={showRegulatoryRequired || canEditWindowEnd}
                                 disabled={!canEditWindowEnd}
-                                rules={{
-                                    required: canEditWindowEnd ? 'Please select an end time.' : false,
-                                }}
+                                handleChange={handleWindowEndChange}
+                                handleOnBlur={handleWindowEndChange}
+                                rules={windowEndRules}
                             />
                         </Col>
-                    </Row>
-                    <small className="text-muted d-block mb15">{QUIET_HOURS_ACCOUNT_TIMEZONE_NOTE}</small>
+                            </Row>
 
-                    <div className="form-group">
+                            <div className="form-group position-relative">
                         <Controller
                             control={control}
                             name="daysCustom"
@@ -1011,8 +970,8 @@ const QuietHoursCreate = ({ config, type, handleCancel, setFailedApi }) => {
                     {canSave ? (
                         <RSPrimaryButton
                             type="submit"
-                            disabled={isSaveLoading}
-                            isLoading={isSaveLoading || hasUiValidationErrors}
+                            disabled={isSaveLoading || hasUiValidationErrors}
+                            isLoading={isSaveLoading}
                             disabledClass={hasUiValidationErrors ? 'pe-none click-off' : ''}
                         >
                             {SAVE}

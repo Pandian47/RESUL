@@ -1,5 +1,5 @@
 import Subscription from './Tabs/Subscription';
-import _map from 'lodash/map';
+import { map as _map } from 'Utils/modules/lodashReplacements';
 // import UnSubscription from './Tabs/UnSubscription';
 
 export const SUB_UNSUB_TABBER_CONFIG = [

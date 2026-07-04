@@ -3,7 +3,7 @@ import { COMPLETED, GRID_VIEW, IN_PROGRESS, LIST_VIEW, SELECT_BU } from 'Constan
 import { circle_grid_fill_edge_large, circle_list_edge_large } from 'Constants/GlobalConstant/Glyphicons';
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { Container } from 'react-bootstrap';
-import { cloneDeep, get as _get, isEqual } from 'lodash';
+import { cloneDeep, get as _get, isEqual } from 'Utils/modules/lodashReplacements';
 
 import KendoGrid from 'Components/RSKendoGrid';
 import ResGrid from 'Pages/KendoDocs/CommonComponents/ResGrid';
@@ -52,48 +52,6 @@ import { globalStateSelector } from 'Utils/Selectors/app';
 import analyticsListingInitialState from 'Reducers/analytics/communicationAnalytics/initialState';
 
 const ANALYTICS_SCOPE_DROPDOWN_DATA = ['All communications', 'My communications'];
-
-/** “My communications” row under Select all in Created by — same as Communication List / Gallery advance panel. */
-function AnalyticsCreatedByScopeCheckboxRow({ checked, onToggle, disabled }) {
-    return (
-        <Dropdown.Item
-            as="div"
-            className={`bs-dd-item rs-ms-dd-item ${disabled ? 'rs-ms-dd-item--disabled' : ''}`}
-            onMouseDown={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-            }}
-            onClick={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-            }}
-        >
-            <div
-                className="position-relative mb-0"
-                onMouseDown={(e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                }}
-                onClick={(e) => e.stopPropagation()}
-            >
-                <div className="checkbox-wrapper">
-                    <label htmlFor="analytics-created-by-my-communications">
-                        <input
-                            id="analytics-created-by-my-communications"
-                            type="checkbox"
-                            name="analytics_created_by_my_communications"
-                            className="checkbox"
-                            checked={checked}
-                            onChange={(e) => onToggle(e.target.checked)}
-                            disabled={disabled}
-                        />
-                        <span className={`lbl ${disabled ? 'disable-cls' : ''}`}>My communications</span>
-                    </label>
-                </div>
-            </div>
-        </Dropdown.Item>
-    );
-}
 
 const omitPaginationForRestPayload = (p) => {
     if (!p) return {};

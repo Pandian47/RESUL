@@ -1,6 +1,5 @@
 import { CREDIT_CARD_PAYMENT } from 'Constants/GlobalConstant/Placeholders';
 import { Fragment, useEffect, useRef, useState } from 'react';
-import _get from 'lodash/get';
 import { useForm } from 'react-hook-form';
 import { Col, Row } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
@@ -22,7 +21,7 @@ const CreditCard = () => {
     // const { state } = useLocation();
     const state = useQueryParams('/payment');
     useEffect(() => {
-        const fromCompanies = _get(state, 'from', '');
+        const fromCompanies = state?.from ?? '';
         const productName = 'R$';
         const tenantShortCode = state?.tenantShortCode + '$';
         const clientName = btoa(state?.clientName) + '$'; // name have to check

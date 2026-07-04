@@ -1,3 +1,4 @@
+import _, { camelCase as _camelCase, cloneDeep as _cloneDeep, mapKeys as _mapKeys } from 'Utils/modules/lodashReplacements';
 import { useDrop } from 'react-dnd';
 import { memo, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import ReactFlow, { ReactFlowProvider, addEdge, useNodesState, useEdgesState, Background, BackgroundVariant, useReactFlow, useUpdateNodeInternals } from 'reactflow';
@@ -5,11 +6,6 @@ import ReactFlow, { ReactFlowProvider, addEdge, useNodesState, useEdgesState, Ba
 import { useDispatch, useSelector } from 'react-redux';
 
 import dagre from 'dagre';
-
-import _mapKeys from 'lodash/mapKeys';
-import _camelCase from 'lodash/camelCase';
-import _cloneDeep from 'lodash/cloneDeep';
-import _ from 'lodash';
 
 import Placeholder from '../Placeholder';
 import SourceItem from '../SourceItem';

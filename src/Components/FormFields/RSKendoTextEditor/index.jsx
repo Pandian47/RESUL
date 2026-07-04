@@ -1,6 +1,6 @@
 import { memo } from 'react';
 import { Controller } from 'react-hook-form';
-import _get from 'lodash/get';
+import { get as _get } from 'Utils/modules/lodashReplacements';
 import PropTypes from 'prop-types';
 import { EditorTools } from '@progress/kendo-react-editor';
 
@@ -42,8 +42,10 @@ const RSKendoTextEditor = ({
     className = '',
     customError = '',
     resTextEditorClassName = '',
+    height,
     ...rest
 }) => {
+    const editorHeight = height ?? (isOfferEditor ? 236 : 630);
     const handleEditorClick = (event) => {
         const targetParent = event.target.closest("[title='Insert hyperlink']");
         if (targetParent) {
@@ -97,7 +99,7 @@ const RSKendoTextEditor = ({
                                 onChangeData(html);
                             }}
                             onBlur={onBlur}
-                            height={630}
+                            height={editorHeight}
                             className={` ${resTextEditorClassName} ${isOfferEditor ? 'offer-editor-wrap' : ''} `}
                             editorClassName="errorContainer"
                             responsiveToolbar={isOfferEditor}

@@ -2,7 +2,7 @@ import { NOT_BRAND_LOGO, SELECT_DIFFERENT_ATTRIBUTE } from 'Constants/GlobalCons
 import { ARE_YOU_SURE_REMOVE } from 'Constants/GlobalConstant/Placeholders';
 import { circle_minus_fill_edge_medium } from 'Constants/GlobalConstant/Glyphicons';
 import { useEffect, useState } from 'react';
-import _get from 'lodash/get';
+import { get as _get } from 'Utils/modules/lodashReplacements';
 import { useForm } from 'react-hook-form';
 import { KendoIconDropdown } from 'Components/RSDropDown';
 import ResKendoDropdown from 'Pages/KendoDocs/CommonComponents/ResKendoDropdown';

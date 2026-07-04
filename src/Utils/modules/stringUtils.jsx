@@ -47,11 +47,6 @@ export function normalizeDisplayText(value) {
         .trim();
 }
 
-function findByProp(collection, key, value) {
-    if (!Array.isArray(collection)) return undefined;
-    return collection.find((item) => item?.[key] === value);
-}
-
 export function maskEmailBeforeAt(email = '') {
     if (typeof email !== 'string' || !email.includes('@')) return email;
     const [localPart, domainPart] = email.split('@');

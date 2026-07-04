@@ -7,7 +7,7 @@ import { FormProvider, useFieldArray, useForm } from 'react-hook-form';
 import Carousel from 'react-bootstrap/Carousel';
 import { Col, Row } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
-import _findIndex from 'lodash/findIndex';
+import { findIndex as _findIndex, uniqueId } from 'Utils/modules/lodashReplacements';
 import { THIS_FIELD_IS_REQUIRED, FORM_AT_LEAST_ONE_FIELD, FORM_ONE_MANDATORY, PROGRESSIVE_PROFILING_FIELD_COUNT_MISMATCH } from 'Constants/GlobalConstant/ValidationMessage';
 
 import {
@@ -43,7 +43,6 @@ import { getFormGeneratorsDatas } from 'Reducers/preferences/FormGenerator/reduc
 import SaveFormModal from './Components/SaveForm';
 import useQueryParams from 'Hooks/useQueryParams';
 import { useWindowSize } from 'Hooks/useWindowSize';
-import { uniqueId } from 'lodash';
 import MakeDefaultModal from './Components/MakeDefaultModal';
 import GenerateAndEmbedAPI from './Components/GenerateAndEmbedAPI';
 

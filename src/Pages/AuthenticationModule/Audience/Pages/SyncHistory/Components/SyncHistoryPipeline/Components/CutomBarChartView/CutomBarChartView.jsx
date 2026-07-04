@@ -3,24 +3,21 @@ import RSTooltip from 'Components/RSTooltip';
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 
 import { NoData } from 'Components/Skeleton/Skeleton';
-
 const capitalizeStatusFirstLetter = (status) => {
     if (status == null || status === '') return '';
     const s = String(status);
     return s.charAt(0).toUpperCase() + s.slice(1);
 };
 
-/** If ImportDescription is null/empty (or placeholder like NA), tooltip is only `dag_run_id - Status`. Otherwise append the description. */
 const getPipelineBarTooltipText = (item) => {
     const statusLabel = capitalizeStatusFirstLetter(item.Status ?? item.status);
     const base = `${item.dag_run_id} - ${statusLabel}`;
-    const rawDesc = item.ImportDescription ?? item.importDescription;
+    const rawDesc = item?.ImportDescription ?? item?.importDescription;
     if (rawDesc == null) return base;
     const desc = String(rawDesc).trim();
     if (desc === '' || desc.toUpperCase() === 'NA') return base;
     return `${base}\n${desc}`;
 };
-
 const SCROLL_EDGE_EPS = 2;
 
 const CustomBarChartView = ({ onItemClick, pipelineData, isLoading = false, centerBars = false }) => {
@@ -275,7 +272,7 @@ const CustomBarChartView = ({ onItemClick, pipelineData, isLoading = false, cent
                             : [...pipelineData].reverse().map((item) => (
                                 <RSTooltip
                                     key={item.dag_run_id}
-                                    text={item?.ImportDescription || item?.importDescription || 'NA'}
+                                    text={getPipelineBarTooltipText(item)}
                                     innerContent={false}
                                 >
                                     <li

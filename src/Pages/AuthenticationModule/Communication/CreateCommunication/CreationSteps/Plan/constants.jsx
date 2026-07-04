@@ -3,7 +3,7 @@ import { EVENT_TRIGGER, EVENT_TRIGGER_DESCRIPTION, MULTI_DIMENSION, MULTI_DIMENS
 import { communication_mdc_xlarge, communication_sdc_xlarge, communication_trigger_xlarge } from 'Constants/GlobalConstant/Glyphicons';
 import DeliveryMethod from './Tabs/DeliveryMethod';
 import { getDynamicList } from 'Reducers/communication/createCommunication/plan/request';
-import { debounce } from 'lodash';
+import { debounce } from 'Utils/modules/lodashReplacements';
 
 export const COMMUNICATION_NAME = 'Communication name';
 export const PRODUCT_TYPE = 'Product & sub product types';

@@ -5,7 +5,7 @@ import { BRAND_ID, CANCEL, EMAIL_NAME, EMAIL_NOT_DISPLAYING, LIVE_PREVIEW, SEND_
 import { add_events_medium, caret_mini, menu_dot_medium, printer_medium, retarget_list_medium, smiliey_4_medium, star_medium, undo_medium } from 'Constants/GlobalConstant/Glyphicons';
 import { Fragment, useEffect, useState } from 'react';
 import parse from 'html-react-parser';
-import _map from 'lodash/map';
+import { map as _map } from 'Utils/modules/lodashReplacements';
 import RSModal from 'Components/RSModal';
 import AdvanceSearch from 'Components/AdvanceSearch';
 import EdmContent from './Component/EdmConent';

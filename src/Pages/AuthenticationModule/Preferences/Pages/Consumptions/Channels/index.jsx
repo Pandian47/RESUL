@@ -5,7 +5,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import RenderComponent from './Components/RenderComponent';
 import useQueryParams from 'Hooks/useQueryParams';
 import { globalStateSelector } from 'Utils/Selectors/app';
-import { update_consumptionMonth, update_consumptionYear } from 'Reducers/globalState/reducer';
+import { update_consumptionMonth, update_consumptionYear, update_filteredChannels } from 'Reducers/globalState/reducer';
 const ConsumptionChannelDetail = () => {
     // const { state } = useLocation();
     // console.log('state: ', state);
@@ -15,6 +15,13 @@ const ConsumptionChannelDetail = () => {
     const currentDate = new Date().toDateString();
     const location = useQueryParams('/preferences/consumptions/consumption-channel');
     // console.log('location: ', location);
+
+    useEffect(() => {
+        if (location?.filteredChannels) {
+            dispatch(update_filteredChannels(location.filteredChannels));
+        }
+    }, [dispatch, location?.filteredChannels]);
+
     useEffect(() => {
         return () => {
             dispatch(update_consumptionYear(new Date().getFullYear()));

@@ -3,9 +3,7 @@ import { CANCEL, IGNORE_CHANNEL, NEXT, OK, ORM_PROFILE_CREATED, ORM_PROFILE_NAME
 import { circle_question_mark_mini } from 'Constants/GlobalConstant/Glyphicons';
 import { useEffect, useState } from 'react';
 import parse from 'html-react-parser';
-import _get from 'lodash/get';
-import _map from 'lodash/map';
-import _isEmpty from 'lodash/isEmpty';
+import { get as _get, map as _map, isEmpty as _isEmpty } from 'Utils/modules/lodashReplacements';
 import { Row, Col } from 'react-bootstrap';
 import { useForm, FormProvider } from 'react-hook-form';
 

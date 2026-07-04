@@ -1,6 +1,4 @@
 import { formatName } from 'Utils/modules/formatters';
-import PurchasePatternComponent from '../Components/PurchasePattern';
-import RangeCampareCard from '../Components/PurchasePattern/RangeCampareCard';
 
 const RECENCY = [
     {
@@ -243,13 +241,6 @@ export const buildPayloadPurchasePattern = (apidata, formState, currentUserDetai
     // console.log('finalPayloadData: ', finalPayloadData);
 };
 
-const handlePurchasePatternType = (data, patternSegementName) => {
-    const updatePatternData = data?.filter(
-        (item) => item?.patternSegment?.toLowerCase()?.trim() === patternSegementName?.toLowerCase()?.trim(),
-    );
-    return updatePatternData[0];
-};
-
 const handleSegementName = (name) => {
     let modifiedName = name.toLowerCase()?.trim();
     let finalName;
@@ -265,50 +256,4 @@ const handleSegementName = (name) => {
         default:
             return (finalName = '');
     }
-};
-
-export const purchasePatternComponents = (purchasePatternData) => {
-    return [
-        {
-            Component: PurchasePatternComponent,
-            props: {
-                name: 'recency',
-                head: 'Recent purchase',
-                title: 'By recency',
-                purchasePatternData: handlePurchasePatternType(purchasePatternData, 'recency'),
-            },
-        },
-        {
-            Component: RangeCampareCard,
-            props: {
-                name: 'frequency',
-                purchasePatternData: handlePurchasePatternType(purchasePatternData, 'frequency'),
-                head: 'Purchase frequency',
-                title: 'Times/',
-                DurationData: FREQUENCY_TIME_PURCHASE_PATTERN,
-            },
-        },
-        {
-            Component: RangeCampareCard,
-            props: {
-                name: 'worth',
-                purchasePatternData: handlePurchasePatternType(purchasePatternData, 'worth'),
-                head: 'Purchase worth',
-                title: 'Price range in ',
-                DurationData: worthLimit,
-                isWorth: true,
-            },
-        },
-        {
-            Component: RangeCampareCard,
-            props: {
-                name: 'grading',
-                purchasePatternData: handlePurchasePatternType(purchasePatternData, 'grading'),
-                head: 'Grading',
-                title: 'Total score',
-                DurationData: worthLimit,
-                isGrading: true,
-            },
-        },
-    ];
 };

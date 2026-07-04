@@ -1,8 +1,8 @@
 import { ATLEAST_OE_LOWERCASE, ATLEAST_ONE_NUMBER, ATLEAST_ONE_SPECIAL_CHARACTERS, ATLEAST_ONE_UPPERCASE, CHARS_OR_MORE } from 'Constants/GlobalConstant/Regex';
-import { checkbox_mini, circle_question_mark_mini, email_medium, eye_hide_medium, eye_medium } from 'Constants/GlobalConstant/Glyphicons';
+import { checkbox_mini, circle_question_mark_mini } from 'Constants/GlobalConstant/Glyphicons';
 import { isValidElement, memo, useEffect, useMemo, useRef, useState } from 'react';
 import { Controller } from 'react-hook-form';
-import get from 'lodash/get';
+import { get } from 'Utils/modules/lodashReplacements';
 import PropTypes from 'prop-types';
 
 import { stripEmojis } from 'Utils/modules/stringUtils';
@@ -42,6 +42,75 @@ const renderSmallTextContent = (content) => {
     );
 };
 
+const LoginEmailStatusIcon = ({ state, className = '' }) => (
+    <div className={`res-login-email-status-icon res-login-email-status-icon--${state} ${className}`}>
+        <svg
+            className="res-login-email-status-icon__svg"
+            xmlns="http://www.w3.org/2000/svg"
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            aria-hidden="true"
+            focusable="false"
+        >
+            <g className="res-login-email-status-icon__email">
+                <path
+                    className="res-login-email-status-icon__email-line res-login-email-status-icon__email-box"
+                    d="M3.25 6.35H20.75V17.65H3.25Z"
+                />
+                <path
+                    className="res-login-email-status-icon__email-line res-login-email-status-icon__email-flap"
+                    d="M3.65 6.75L12 13.15L20.35 6.75"
+                />
+                <path
+                    className="res-login-email-status-icon__email-line res-login-email-status-icon__email-fold"
+                    d="M3.85 17.25L9.35 11.1M20.15 17.25L14.65 11.1"
+                />
+            </g>
+            <circle className="res-login-email-status-icon__loader" cx="12" cy="12" r="7.75" />
+            <path
+                className="res-login-email-status-icon__tick"
+                d="M9.55,16.07c1.35-2.77,2.73-5.57,4.71-7.95,1.85-2.23,4.25-4.08,7.05-4.82.22-.06.52-.09.64.11.13.22-.06.48-.25.66-3.12,3.03-5.7,6.6-7.59,10.51-.77,1.6-1.43,3.25-2.28,4.8-.34.63-.82,1.31-1.53,1.37-.66.06-1.22-.45-1.7-.91-2-1.95-4.09-3.8-6.27-5.54-.17-.14-.36-.31-.34-.53,0-.1.06-.19.12-.28.44-.61,1.18-.98,1.94-1.02,1.5-.1,2.72.98,3.75,1.93"
+            />
+            <path className="res-login-email-status-icon__x res-login-email-status-icon__x-first" d="M6.6 6.6L17.4 17.4" />
+            <path className="res-login-email-status-icon__x res-login-email-status-icon__x-second" d="M17.4 6.6L6.6 17.4" />
+        </svg>
+    </div>
+);
+
+LoginEmailStatusIcon.propTypes = {
+    state: PropTypes.oneOf(['email', 'loading', 'valid', 'invalid']).isRequired,
+    className: PropTypes.string,
+};
+
+const PasswordVisibilityIcon = ({ hidden, className = '' }) => (
+    <span className={`res-password-visibility-icon ${hidden ? 'res-password-visibility-icon--hidden' : 'res-password-visibility-icon--visible'} ${className}`}>
+        <svg
+            className="res-password-visibility-icon__svg"
+            xmlns="http://www.w3.org/2000/svg"
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            aria-hidden="true"
+            focusable="false"
+        >
+            <g className="res-password-visibility-icon__eye">
+                <path d="M21.73,11.39s0,0,0,0c-6-8.43-12.77-8.5-19.42-.11-.3.4-.3.95,0,1.35,3.32,4.23,6.67,6.38,9.95,6.38s6.47-2.14,9.46-6.35c.26-.38.26-.89,0-1.26ZM3.36,11.95c6.06-7.58,11.79-7.57,17.28.08-5.48,7.65-11.23,7.6-17.28-.08Z" />
+                <path d="M12,8.02c-2.2,0-3.98,1.79-3.98,3.98s1.79,3.98,3.98,3.98,3.98-1.79,3.98-3.98-1.79-3.98-3.98-3.98ZM12,14.73c-1.51,0-2.73-1.22-2.73-2.73s1.22-2.73,2.73-2.73,2.73,1.22,2.73,2.73-1.22,2.73-2.73,2.73Z" />
+            </g>
+            <path
+                className="res-password-visibility-icon__slash"
+                d="M4.57 19.42L19.37 4.62"
+            />
+        </svg>
+    </span>
+);
+
+PasswordVisibilityIcon.propTypes = {
+    hidden: PropTypes.bool.isRequired,
+    className: PropTypes.string,
+};
+
 const ResInput = ({
     type = 'text',
     className = '',
@@ -61,6 +130,7 @@ const ResInput = ({
     meter,
     isError = true,
     isValidIcon = false,
+    isInvalidIcon = false,
     label = '',
     labelClassName = '',
     iconPlaceholder = false,
@@ -98,6 +168,7 @@ const ResInput = ({
     noEmoji = false,
     preserveConsecutiveSpaces = false,
     showTypeCount = false,
+    isHighlight,
     ...rest
 }) => {
     const [typevalue, setTypevalue] = useState(type);
@@ -121,6 +192,15 @@ const ResInput = ({
             return;
         }
 
+        if (loginEmailIcon && (isValidIcon || isInvalidIcon)) {
+            wasLoadingRef.current = false;
+            setShowElement(true);
+            const timer = setTimeout(() => {
+                setShowElement(false);
+            }, 5000);
+            return () => clearTimeout(timer);
+        }
+
         if (wasLoadingRef.current) {
             wasLoadingRef.current = false;
             if (isValidIcon) {
@@ -131,7 +211,7 @@ const ResInput = ({
                 return () => clearTimeout(timer);
             }
         }
-    }, [isValidIcon, isLoading]);
+    }, [isInvalidIcon, isLoading, isValidIcon, loginEmailIcon]);
 
     const passwordTracker = useMemo(
         () => ({
@@ -152,8 +232,8 @@ const ResInput = ({
         formFieldIcon ||
         iconPlaceholder ||
         isLoading ||
+        loginEmailIcon ||
         (!isLoading && viewEye) ||
-        (!isLoading && !showElement && loginEmailIcon) ||
         (isValidIcon && showElement);
 
     useEffect(() => {
@@ -180,6 +260,14 @@ const ResInput = ({
                     const inputTitle = field.value != null && String(field.value).trim() !== ''
                         ? String(field.value)
                         : undefined;
+                    const isPasswordHidden = maskValue ? isMaskedDisplay : typevalue === 'password';
+                    const loginEmailIconState = isLoading
+                        ? 'loading'
+                        : showElement && isValidIcon
+                            ? 'valid'
+                            : showElement && isInvalidIcon
+                                ? 'invalid'
+                                : 'email';
 
                     return (
                         <div
@@ -194,7 +282,7 @@ const ResInput = ({
                                     inputRef.current = el;
                                 }}
                                 name={name}
-                                value={isMaskedDisplay ? maskValue(field.value) : field.value || ''}
+                                value={isMaskedDisplay ? maskValue(field.value) : field.value ?? ''}
                                 onBlur={(e) => {
                                     setIsFocused(false);
                                     handleOnBlur(e);
@@ -229,7 +317,7 @@ const ResInput = ({
                                     }
 
                                     if (maxLength && maxLength > 0 && !disableMaxLengthWarning) {
-                                        const currentValue = field.value || '';
+                                        const currentValue = field.value ?? '';
                                         const selectionStart = e.target.selectionStart || 0;
                                         const selectionEnd = e.target.selectionEnd || 0;
                                         const selectedText = currentValue.substring(selectionStart, selectionEnd);
@@ -363,18 +451,22 @@ const ResInput = ({
                                     {required && <div className={INPUT_CLASS.borderBottomRequired} />}
                                 </>
                             )}
-                            {isLoading && (
+                            {loginEmailIcon && (
+                                <div className={`${INPUT_CLASS.iconWrapper} ${isCustomLoader ? 'mr23' : ''}`}>
+                                    <LoginEmailStatusIcon state={loginEmailIconState} />
+                                </div>
+                            )}
+                            {isLoading && !loginEmailIcon && (
                                 <div className={`${INPUT_CLASS.iconWrapper} ${isCustomLoader ? 'mr23' : ''}`}>
                                     <div className={INPUT_CLASS.segmentLoader} />
                                 </div>
                             )}
                             {!isLoading && viewEye && (
                                 <div className={INPUT_CLASS.iconWrapper}>
-                                    <i
-                                        className={`icon-md cursor-pointer color-primary-grey ${maskValue
-                                            ? (isMaskedDisplay ? eye_hide_medium : eye_medium)
-                                            : (typevalue === 'password' ? eye_hide_medium : eye_medium)
-                                        } `}
+                                    <button
+                                        type="button"
+                                        className="res-password-visibility-trigger cursor-pointer"
+                                        aria-label={isPasswordHidden ? 'Show password' : 'Hide password'}
                                         onClick={() => {
                                             if (maskValue) {
                                                 setIsMaskEnabled((prev) => !prev);
@@ -382,12 +474,9 @@ const ResInput = ({
                                                 setTypevalue(typevalue === 'text' ? 'password' : 'text');
                                             }
                                         }}
-                                    />
-                                </div>
-                            )}
-                            {!isLoading && !showElement && loginEmailIcon && (
-                                <div className={INPUT_CLASS.iconWrapper}>
-                                    <i className={`icon-md cursor-normal color-primary-grey ${email_medium} `} />
+                                    >
+                                        <PasswordVisibilityIcon hidden={isPasswordHidden} />
+                                    </button>
                                 </div>
                             )}
                             {!isLoading && iconPlaceholder && (
@@ -418,7 +507,7 @@ const ResInput = ({
                             {meter && (
                                 <div className={`${INPUT_CLASS.passwordMeter} bg${(passwordStrength / 5) * 100}`} />
                             )}
-                            {!isLoading && isValidIcon && showElement && (
+                            {!isLoading && !loginEmailIcon && isValidIcon && showElement && (
                                 <div className={`${INPUT_CLASS.validateSuccess} ${isCustomLoader ? 'mr23' : ''}`}>
                                     <i className={`${checkbox_mini} icon-xs color-primary-green pe-none`} />
                                 </div>
@@ -448,7 +537,7 @@ const ResInput = ({
                                             rightTooltip
                                         ) : (
                                             <ResTooltip text={String(rightTooltip)} position="top" className="lh0">
-                                                <i className={`${rightTooltipIcon} icon-xs color-primary-blue`} />
+                                                <i className={`${rightTooltipIcon} icon-xs color-primary-blue`} id='circle_question_mark' />
                                             </ResTooltip>
                                         )
                                     )}
@@ -493,6 +582,7 @@ ResInput.propTypes = {
     meter: PropTypes.bool,
     isError: PropTypes.bool,
     isValidIcon: PropTypes.bool,
+    isInvalidIcon: PropTypes.bool,
     label: PropTypes.string,
     labelClassName: PropTypes.string,
     iconName: PropTypes.string,

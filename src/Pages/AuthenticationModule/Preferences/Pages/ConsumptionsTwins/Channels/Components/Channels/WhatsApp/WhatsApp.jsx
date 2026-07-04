@@ -1,5 +1,5 @@
 import { encodeUrl } from 'Utils/modules/crypto';
-import { getUserCurrentFormat, getYYMMDD } from 'Utils/modules/dateTime';
+import { getUserCurrentFormat, getYYMM, getYYMMDD } from 'Utils/modules/dateTime';
 import { truncateTitle } from 'Utils/modules/displayCore';
 import { downloadCSVcommasFile } from 'Utils/modules/download';
 import { numberWithCommas } from 'Utils/modules/formatters';
@@ -9,7 +9,7 @@ import { Fragment, cloneElement, useCallback, useEffect, useMemo, useState } fro
 import { useSelector, useDispatch } from 'react-redux';
 import KendoGrid from 'Components/RSKendoGrid';
 import RSTooltip from 'Components/RSTooltip';
-import _map from 'lodash/map';
+import { map as _map } from 'Utils/modules/lodashReplacements';
 import { getSessionId } from 'Reducers/globalState/selector';
 import {
     getConsumptionChannelDetails,
@@ -22,6 +22,7 @@ import { updateAnalyticsDetail } from 'Reducers/analytics/communicationAnalytics
 import ConsumptionChannelHeader from '../../ConsumptionChannelHeader/ConsumptionChannelHeader';
 import { numericParentSumCell } from '../../../../constant';
 import TruncatedCell from 'Components/RSKendoGrid/TruncateCell';
+import {getFirstDayOfMonth, getCurrentDateOfMonth} from 'Utils/modules/dateTime.jsx'
 
 const ConsumptionWhatsApp = () => {
     const navigate = useNavigate();

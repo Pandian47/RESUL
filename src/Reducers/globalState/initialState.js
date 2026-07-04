@@ -9,6 +9,10 @@ const globalInitialState = {
     consumptionChannel: {},
     filteredChannels: null,
     showSessionModal: false,
+    /** Set when session modal opens; cleared after successful re-login recovery. */
+    pendingSessionRecovery: false,
+    /** Incremented after session-timeout re-login so mounted pages can refetch / remount. */
+    sessionRecoverySeq: 0,
     retryTime: 0,
     retryMethod: null,
     clientId: null,

@@ -3,8 +3,7 @@ import { LIST_NAME_CREATION, NUMBER_REGEX } from 'Constants/GlobalConstant/Regex
 import { CANCEL, COMM_REFERENCE_CONFIRM_CONTENT, COMMUNICATION_REFERENCE, SAVE } from 'Constants/GlobalConstant/Placeholders';
 import { close_mini, restart_medium, save_mini } from 'Constants/GlobalConstant/Glyphicons';
 import { Fragment, useEffect, useState } from 'react';
-import _get from 'lodash/get';
-import _map from 'lodash/map';
+import { get as _get, map as _map } from 'Utils/modules/lodashReplacements';
 import { FormProvider, useForm } from 'react-hook-form';
 
 import RSModal from 'Components/RSModal';

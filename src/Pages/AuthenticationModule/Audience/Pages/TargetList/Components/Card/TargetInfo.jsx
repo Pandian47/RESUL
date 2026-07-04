@@ -4,7 +4,7 @@ import { truncateTitle } from 'Utils/modules/displayCore';
 import { ADVANCED_DETAILS, AUDIENCE_BY_CHANNEL, CREATED_BY, DOWNLOAD, DOWNLOAD_ADVANCED_DETAILS, DOWNLOAD_LINK_DATA_SHORTLY, EMAIL_NAME, FACEBOOK, LIST_INFO, LIST_VIEW, MAX_5_ATTRIBUTES, MOBILE, MORE_THAN_5_ATTRIBUTES, NO_COMMUNICATION_LINKED, OPTIMIZED_CHANNELS, SELECT_COLUMNS, TARGET, TARGETINFO_ADVANCED_DETAILS, THANK_YOU_YOUR_REQUEST, VIEW_THE_GRID } from 'Constants/GlobalConstant/Placeholders';
 import { circle_analytics_fill_large, circle_arrow_right_medium, circle_list_large, circle_question_mark_mini, csv_download_large } from 'Constants/GlobalConstant/Glyphicons';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import _map from 'lodash/map';
+import { map as _map } from 'Utils/modules/lodashReplacements';
 import { Carousel, Col, Row } from 'react-bootstrap';
 
 import { useDispatch, useSelector } from 'react-redux';
@@ -463,7 +463,7 @@ const TargetInfo = ({ handleClose, audienceId, createdBy, bunchName, modifiedDat
         <>
             <RSModal
                 show={segmentInfoModal}
-                className={otpModal ? 'visually-hidden' : 'modal-w-carousel'}
+                className={otpModal ? 'visually-hidden' : 'modal-w-carousel target-list-info-modal'}
                 handleClose={() => {
                     stopTargetInfoRequests();
                     setAnalyticsClick(false);
@@ -471,12 +471,12 @@ const TargetInfo = ({ handleClose, audienceId, createdBy, bunchName, modifiedDat
                 }}
                 header={LIST_INFO}
                 size="xxlg"
+                bodyClassName = {'pt0'}
                 body={
-                    <>
-                        <div className={`${otpModalhide ? 'pe-none click-off' : ''} master-recip-data-popup-del`}>
+                        <div className={`${otpModalhide ? 'pe-none click-off' : ''} master-recip-data-popup-del `}>
                             <Row
                                 className={`${showbottomline ? 'listinfo-header-line' : ''} ${
-                                    analytics ? '' : 'mt-23 pb7'
+                                    !analytics ? 'py10' : 'pt15'
                                 }`}
                             >
                                 <Col md={6} className={'d-flex align-items-center gap-2'}>
@@ -579,7 +579,7 @@ const TargetInfo = ({ handleClose, audienceId, createdBy, bunchName, modifiedDat
                                     {(list?.listType === 5 || list?.listType === 0) && (
                                         <RSTooltip
                                             className={` ${countInfo[0]?.RecipientCount === 0 ? 'pe-none click-off' : ''}`}
-                                            position="top"
+                                            position={!analytics ? 'left' : "top" }
                                             text={
                                                 !analytics
                                                     ? TARGETINFO_ADVANCED_DETAILS
@@ -645,17 +645,19 @@ const TargetInfo = ({ handleClose, audienceId, createdBy, bunchName, modifiedDat
                                                         )}
                                                     </Col>
                                                     <Col sm={6} className="d-flex align-items-center">
-                                                        <KendoGrid
-                                                            data={attributeSummary}
-                                                            noBoxShadow
-                                                            isFailure={
-                                                                !isTargetInfoLoading &&
-                                                                (!attributeSummary || attributeSummary.length === 0)
-                                                            }
-                                                            settings={{ total: attributeSummary?.length || 0 }}
-                                                            column={getAttributeSummaryColumns()}
-                                                            isCustomBox
-                                                        />
+                                                        <div className="target-info-modal-grid w-100">
+                                                            <KendoGrid
+                                                                data={attributeSummary}
+                                                                noBoxShadow
+                                                                isFailure={
+                                                                    !isTargetInfoLoading &&
+                                                                    (!attributeSummary || attributeSummary.length === 0)
+                                                                }
+                                                                settings={{ total: attributeSummary?.length || 0 }}
+                                                                column={getAttributeSummaryColumns()}
+                                                                isCustomBox
+                                                            />
+                                                        </div>
                                                     </Col>
                                                 </Row>
                                             </Carousel.Item>
@@ -710,7 +712,7 @@ const TargetInfo = ({ handleClose, audienceId, createdBy, bunchName, modifiedDat
                                         </Col>
                                     </Row>
 
-                                    <div className="form-group">
+                                    <div className="form-group target-info-modal-grid">
                                         <KendoGrid
                                             data={getAdvAnalyticsGrid?.length > 0 ? getAdvAnalyticsGrid : []}
                                             noBoxShadow
@@ -727,7 +729,6 @@ const TargetInfo = ({ handleClose, audienceId, createdBy, bunchName, modifiedDat
                                 </div>
                             </div>
                         </div>
-                    </>
                 }
             />
             <DownloadCSV

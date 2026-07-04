@@ -16,10 +16,7 @@ import RSModal from 'Components/RSModal';
 import { RSSecondaryButton, RSPrimaryButton } from 'Components/Buttons';
 import AttributeRemoveModal from './AttributeRemoveModal';
 import { addOrRemoveAttr } from 'Reducers/communication/createCommunication/Mdc/Canvas/request';
-import _find from 'lodash/find';
-import _map from 'lodash/map';
-import _filter from 'lodash/filter';
-import _get from 'lodash/get';
+import { find as _find, map as _map, filter as _filter, get as _get } from 'Utils/modules/lodashReplacements';
 import { encodeUrl } from 'Utils/modules/crypto';
 import { onlyNumbersDecimalWithoutSpecialCharacters } from 'Utils/modules/inputValidators';
 

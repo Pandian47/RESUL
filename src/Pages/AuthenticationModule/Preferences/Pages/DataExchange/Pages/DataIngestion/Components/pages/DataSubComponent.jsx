@@ -32,7 +32,7 @@ import {
     GetGoogleAdsList,
     GetYoutubeAccountsList,
 } from 'Reducers/preferences/DataExchange/request';
-import _uniq from 'lodash/uniq';
+import { uniq as _uniq } from 'Utils/modules/lodashReplacements';
 
 
 import { parseDecryptedAudienceQuery } from 'Pages/AuthenticationModule/Audience/audienceDefaults';

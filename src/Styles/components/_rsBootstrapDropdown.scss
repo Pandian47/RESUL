@@ -431,6 +431,13 @@
                 &.open { transform: rotate(0deg); }
             }
 
+            .rs-tree-arrow-placeholder {
+                flex-shrink: 0;
+                width: 14px;
+                min-width: 14px;
+                display: inline-block;
+            }
+
             .rs-tree-name {
                 color: $primary-black;
                 font-size: 14px;
@@ -439,12 +446,20 @@
                 margin-top: -7px;
             }
 
+            &.rs-bu-item {
+                pointer-events: auto;
+                width: 100%;
+
+                .rs-tree-name {
+                    margin-left: 0;
+                    margin-top: 0;
+                }
+            }
+
             &.rs-parent-item {
                 cursor: pointer;
                 .rs-tree-name { color: $primary-black; }
             }
-
-            &.rs-bu-item { pointer-events: auto; }
 
             &.pe-none,
             &.click-off {
@@ -458,14 +473,76 @@
             }
 
             .checkbox-wrapper {
+                flex: 1;
+                min-width: 0;
                 display: flex;
                 align-items: center;
+
+                label {
+                    display: flex;
+                    align-items: center;
+                    margin-right: 0;
+                    margin-bottom: 0;
+                    width: 100%;
+                    cursor: pointer;
+                    white-space: nowrap;
+
+                    input.checkbox[type='checkbox'] {
+                        width: 15px;
+                        height: 15px;
+                        opacity: 0;
+                        position: absolute;
+                        top: 6px;
+                        z-index: 15;
+                        cursor: pointer;
+                        pointer-events: none;
+                    }
+
+                    .lbl {
+                        display: inline-flex;
+                        align-items: center;
+                        min-height: 15px;
+                        padding-left: 0;
+                        position: relative;
+
+                        &::before {
+                            content: ' ';
+                            display: inline-block;
+                            height: 15px;
+                            width: 15px;
+                            min-width: 15px;
+                            margin-right: 5px;
+                            border: 1px solid $secondary-black;
+                            box-sizing: border-box;
+                            vertical-align: middle;
+                            flex-shrink: 0;
+                        }
+
+                        .rs-tree-name {
+                            margin: 0;
+                        }
+                    }
+
+                    input.checkbox:checked + .lbl::before {
+                        background-image: url('data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiPz4NCjxzdmcgaWQ9ImEiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgdmVyc2lvbj0iMS4xIiB2aWV3Qm94PSIwIDAgMTUgMTUiPg0KICA8IS0tIEdlbmVyYXRvcjogQWRvYmUgSWxsdXN0cmF0b3IgMzAuMS4wLCBTVkcgRXhwb3J0IFBsdWctSW4gLiBTVkcgVmVyc2lvbjogMi4xLjEgQnVpbGQgMTM2KSAgLS0+DQogIDxkZWZzPg0KICAgIDxzdHlsZT4NCiAgICAgIC5zdDAgew0KICAgICAgICBmaWxsOiAjNWJhNTI5Ow0KICAgICAgfQ0KDQogICAgICAuc3QxIHsNCiAgICAgICAgZmlsbDogIzMzMzsNCiAgICAgIH0NCiAgICA8L3N0eWxlPg0KICA8L2RlZnM+DQogIDxwb2x5Z29uIGNsYXNzPSJzdDAiIHBvaW50cz0iNC40IDYuNiAzIDggNi43IDExLjcgMTQuNyAxLjcgMTMuNCAuMyA2LjcgOC44IDQuNCA2LjYiLz4NCiAgPHBvbHlnb24gY2xhc3M9InN0MSIgcG9pbnRzPSIxMyA1LjQgMTMgMTMgMiAxMyAyIDIgMTAuOCAyIDExLjUgMSAxIDEgMSAxNCAxNCAxNCAxNCA0LjEgMTMgNS40Ii8+DQo8L3N2Zz4=');
+                        background-position: center;
+                        background-size: contain;
+                        background-repeat: no-repeat;
+                        background-color: $white;
+                        border: none;
+                    }
+                }
             }
         }
 
         .rs-tree-children {
             position: relative;
             margin-left: 16px;
+            padding-left: 0;
+
+            > .rs-tree-node {
+                display: block;
+            }
 
             .rs-tree-node {
                 // vertical connector line
@@ -498,9 +575,57 @@
 
                 .rs-tree-row {
                     z-index: 2;
-                    .checkbox-wrapper { margin-top: -7px; }
+                    padding-left: 14px !important;
+
+                    .checkbox-wrapper {
+                        margin-top: 0;
+                    }
                 }
             }
         }
     }
+}
+
+// ── RSModal: dropdown menu (parity with ResKendoDropdown .k-animation-container) ──
+.rs-modal,
+.rs-modal.show,
+[role='dialog'] {
+    .rs-bootstrap-dropdown,
+    .rs-multi-select-new.rs-bootstrap-dropdown {
+        overflow: visible;
+
+        .rs-dropdown.show,
+        .dropdown.show {
+            z-index: 1101;
+        }
+
+        .dropdown-menu.show,
+        .dropdown-menu.rs-bootstrap-dropdown-menu {
+            z-index: 1101 !important;
+        }
+    }
+}
+
+.rs-modal .rsmd-content,
+.rs-modal.show .rsmd-content,
+.modal.show .rsmd-content {
+    overflow: visible !important;
+
+    > div:has(.rs-bootstrap-dropdown .rs-dropdown.show),
+    > div:has(.rs-bootstrap-dropdown .dropdown.show) {
+        overflow: visible !important;
+    }
+}
+
+.rs-modal.show .rsm-dialog,
+.rs-modal .rsm-dialog:has(.rs-bootstrap-dropdown .rs-dropdown.show),
+.rs-modal .rsm-dialog:has(.rs-bootstrap-dropdown .dropdown.show) {
+    overflow: visible;
+}
+
+.rs-modal .rsmdc-body:has(.rs-bootstrap-dropdown .rs-dropdown.show),
+.rs-modal .rsmdc-body:has(.rs-bootstrap-dropdown .dropdown.show),
+.rs-modal .modal-body:has(.rs-bootstrap-dropdown .dropdown.show),
+.modal.show .modal-body:has(.rs-bootstrap-dropdown .rs-dropdown.show) {
+    overflow: visible !important;
 }

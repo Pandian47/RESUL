@@ -1,7 +1,7 @@
 import { charNumatdotUnderScore, onlyNumbers } from 'Utils/modules/inputValidators';
 import { Fragment, useEffect, useState } from 'react';
 import { useFormContext } from 'react-hook-form';
-import _map from 'lodash/map';
+import { map as _map } from 'Utils/modules/lodashReplacements';
 import RSModal from 'Components/RSModal';
 import AdvanceSearch from 'Components/AdvanceSearch';
 import { RSPrimaryButton, RSSecondaryButton } from 'Components/Buttons';

@@ -371,11 +371,12 @@ const ResDDCustomUpload = ({
                     <p className={`${UPLOAD_CLASS.text} fs15`}>or</p>
                     <button
                         type="button"
-                        className={UPLOAD_CLASS.browseBtn}
+                        className={`${UPLOAD_CLASS.browseBtn} d-inline-flex align-items-center gap-2`}
                         onClick={handleBrowseClick}
-                        disabled={isZoneDisabled}
+                        disabled={isZoneDisabled || isProcessing}
                     >
-                        {browseButtonText}
+                        {isProcessing && <div className="segment_loader" style={{ width: 14, height: 14 }} />}
+                        {isProcessing ? 'Uploading...' : browseButtonText}
                     </button>
                     {formatsHint ?? (
                         <small className={`${UPLOAD_CLASS.formats} d-block`}>

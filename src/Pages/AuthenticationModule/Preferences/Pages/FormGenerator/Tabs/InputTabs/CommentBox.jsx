@@ -1,7 +1,7 @@
 import { formatName } from 'Utils/modules/formatters';
 import { SETTINGS } from 'Constants/GlobalConstant/Placeholders';
 import { memo, useContext, useEffect, useState } from 'react';
-import _find from 'lodash/find';
+import { find as _find } from 'Utils/modules/lodashReplacements';
 
 import { useFormContext, useWatch } from 'react-hook-form';
 

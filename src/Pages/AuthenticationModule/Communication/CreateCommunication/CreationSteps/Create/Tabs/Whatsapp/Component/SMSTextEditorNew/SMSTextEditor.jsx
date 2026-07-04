@@ -3,9 +3,7 @@ import { EDIT_CURLY_BRACES, LIVE_PREVIEW, MORE_THAN_ADDITIONAL_CHARGES, PERSONAL
 import { circle_question_mark_mini, editor_personalize_medium, editor_smart_link_medium, eye_medium } from 'Constants/GlobalConstant/Glyphicons';
 import { useRef, useState } from 'react';
 import RSTooltip from 'Components/RSTooltip';
-import _get from 'lodash/get';
-import _capitalize from 'lodash/capitalize';
-import _upperCase from 'lodash/upperCase';
+import { get as _get, capitalize as _capitalize, upperCase as _upperCase } from 'Utils/modules/lodashReplacements';
 
 import RSBootstrapdown from 'Components/FormFields/RSBootstrapdown';
 import InsertOffer from '../../../../Component/InsertOffer';
@@ -120,7 +118,7 @@ const SMSTextEditor = (props) => {
                     <Col sm={{ offset: 1, span: 6 }}>
                         <div className="rs-textarea-component-wrapper preview-mobile-editor position-relative ">
                             <div className="rstcw-top-icons">
-                                <ul className={`float-left ${isToolbarActive ? '' : 'click-off'}`}>
+                                <ul className={`float-left ${isToolbarActive ? '' : 'click-off pe-none'}`}>
                                     <li>
                                         <RSTooltip text={PERSONALIZATION} className="lh0">
                                             <RSBootstrapdown

@@ -1,8 +1,7 @@
 import { SELECT_CURRENCY, SELECT_DATE_FORMAT, SELECT_LANGUAGE, SELECT_TIMEZONE, SELECT_TIME_FORMAT } from 'Constants/GlobalConstant/ValidationMessage';
 import { BACK, SUBMIT } from 'Constants/GlobalConstant/Placeholders';
 import { Fragment, useEffect } from 'react';
-import _get from 'lodash/get';
-import _find from 'lodash/find';
+import { get as _get, find as _find } from 'Utils/modules/lodashReplacements';
 import { useForm } from 'react-hook-form';
 import { Row, Col } from 'react-bootstrap';
 import { useSelector, useDispatch } from 'react-redux';

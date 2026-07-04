@@ -29,16 +29,16 @@ const KeyMetricsNew = ({ data, infoIcon = true, middleDataHeader = true, pdfDown
     currsymbol = matchingCurrency ? matchingCurrency.currenySymbol : currsymbol;
 
     return (
-        <div className="csr-chart-portlet keymetrics-portlet portlet-container portlet-md p0">
+         <div className="csr-chart-portlet keymetrics-portlet portlet-container portlet-md p0">
             <h4>Key metrics</h4>
-            {!!data && length === 0 ? (
+            {!!data && data?.length === 0 ? (
                 <div className="p19">
                     <DetailKeyMetricSkeleton nodata={true} />
                 </div>
             ) : (
                 <>
                     <ul className="keymetrics-list key-border">
-                        {firstData?.map((item, index) => {
+                        {data?.firstData?.map((item, index) => {
                             item.isOpen = false;
                             return (
                                 <li key={`${item?.name ?? 'metric'}-${item?.value}-${index}`}>
@@ -54,19 +54,18 @@ const KeyMetricsNew = ({ data, infoIcon = true, middleDataHeader = true, pdfDown
                                                 >
                                                     <h3 className="pr5">
                                                         {formatNumber(item?.value || 0)}
-                                                        {item?.percent && <span className="font-xsm">%</span>}
-                                                        {item?.suffix && <span className="font-xsm">{item.suffix}</span>}
+                                                        {item?.percent && <span className="font-xs">%</span>}
+                                                        {item?.suffix && <span className="font-xs">{item.suffix}</span>}
                                                     </h3>
                                                 </RSTooltip>
                                             ) : (
                                                 <h3 className="pr5">
                                                     {formatNumber(item?.value || 0)}
-                                                    {item?.percent && <span className="font-xsm">%</span>}
-                                                    {item?.suffix && <span className="font-xsm">{item.suffix}</span>}
+                                                    {item?.percent && <span className="font-xs">%</span>}
+                                                    {item?.suffix && <span className="font-xs">{item.suffix}</span>}
                                                 </h3>
                                             )}
-                                            {(infoIcon && item?.name !== 'Total sent') && (
-                                             
+                                            {infoIcon && (
                                                 <RSTooltip
                                                     className="lh0"
                                                     text={
@@ -90,7 +89,7 @@ const KeyMetricsNew = ({ data, infoIcon = true, middleDataHeader = true, pdfDown
                                                                 setTitleVal(
                                                                     item?.name === 'Total sent'
                                                                         ? 'Pre-communication scrubbed before publish'
-                                                                        : 'Non-delivery counts',
+                                                                        : 'Still under delivery / Undelivered',
                                                                 );
                                                                 setIsOpenInfo((prevState) => {
                                                                     return {
@@ -128,16 +127,16 @@ const KeyMetricsNew = ({ data, infoIcon = true, middleDataHeader = true, pdfDown
                         )}
                     </ul>
 
-                    {middleDataHeader && <p className="text-center blue_medium">{middleDataTitle}</p>}
+                    {middleDataHeader && <p className="text-center blue_medium">{data?.middleDataTitle}</p>}
 
                     <ul className="keymetrics-list keymetrics-theme ml2 mr2 mb2">
-                        {middleDataBg.map((item, index) => {
+                        {data?.middleDataBg.map((item, index) => {
                             return (
                                 <li
                                     className={`${
                                         item?.color
                                             ? item.color
-                                            : middleDataBg?.length === 1
+                                            : data?.middleDataBg?.length === 1
                                             ? 'bg-male'
                                             : keyMetricsColors[index]
                                     }`}
@@ -172,10 +171,10 @@ const KeyMetricsNew = ({ data, infoIcon = true, middleDataHeader = true, pdfDown
                         })}
                     </ul>
 
-                    {lastDataHeader && <p className="text-center red_medium">{lastDataHeader}</p>}
+                    {data?.lastDataHeader && <p className="text-center red_medium">{data?.lastDataHeader}</p>}
 
                     <ul className="keymetrics-list key-border">
-                        {lastData.map((item, index) => {
+                        {data?.lastData.map((item, index) => {
                             //debugger
                             return (
                                 <li key={`${item?.name ?? 'last'}-${index}`}>
@@ -208,7 +207,7 @@ const KeyMetricsNew = ({ data, infoIcon = true, middleDataHeader = true, pdfDown
                                                             : !item?.value
                                                             ? formatNumber(item?.percent || 0)
                                                             : null}
-                                                        {item?.percent ? <span className="font-xsm">%</span> : null}
+                                                        {item?.percent ? <span className="font-xs">%</span> : null}
                                                     </>
                                                 </h3>
                                             </RSTooltip>
@@ -224,7 +223,7 @@ const KeyMetricsNew = ({ data, infoIcon = true, middleDataHeader = true, pdfDown
                                                         : !item?.value
                                                         ? formatNumber(item?.percent || 0)
                                                         : null}
-                                                    {item?.percent ? <span className="font-xsm">%</span> : null}
+                                                    {item?.percent ? <span className="font-xs">%</span> : null}
                                                 </>
                                             </h3>
                                         )}
@@ -273,16 +272,16 @@ const KeyMetricsNew = ({ data, infoIcon = true, middleDataHeader = true, pdfDown
                         )}
                     </ul>
 
-                    <p className={`text-center ${lastDataTitle === "Top location of participants" ? '' : 'red_medium' }`}>{lastDataTitle}</p>
+                    <p className={`text-center ${data?.lastDataTitle === "Top location of participants" ? '' : 'red_medium' }`}>{data?.lastDataTitle}</p>
 
                     <ul className="keymetrics-list keymetrics-theme br-b-r br-b-l ml2 mr2 mb2">
-                        {lastDataBg.map((item, index) => {
+                        {data?.lastDataBg.map((item, index) => {
                             return (
                                 <li
                                     className={`${
                                         item?.color
                                             ? item.color
-                                            : lastDataBg?.length === 1
+                                            : data?.lastDataBg?.length === 1
                                             ? 'bg-red-medium'
                                             : keyMetricsColorsLastData[index]
                                     } p-0 pt5`}

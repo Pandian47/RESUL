@@ -92,6 +92,19 @@
     &--over-login .loading-tick {
         pointer-events: auto;
     }
+    // Login boot / route suspense — show login-bg-scaled.svg through the overlay.
+    &--login-route#loading,
+    &--login-route .loading {
+        background-color: transparent;
+        pointer-events: none;
+    }
+    &--login-route#loading {
+        opacity: 1;
+    }
+    &--login-route .loading-content,
+    &--login-route .loading-tick {
+        pointer-events: auto;
+    }
 }
 @-ms-keyframes spin {
     from {

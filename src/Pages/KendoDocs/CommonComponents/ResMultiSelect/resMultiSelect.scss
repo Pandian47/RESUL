@@ -41,6 +41,7 @@ $res-ms-chip-remove-icon: url('../../../../Assets/Images/svg/rs-circle-minus-fil
 
     .k-list-item {
         font-size: $font-xsm;
+        color: $primary-black;
         padding: 3px 5px;
         box-shadow: none;
         word-break: break-all;
@@ -161,7 +162,7 @@ $res-ms-chip-remove-icon: url('../../../../Assets/Images/svg/rs-circle-minus-fil
         display: flex;
         align-items: center;
         justify-content: space-between;
-        padding: 5px 10px;
+        padding: 8px 10px;
         font-size: $font-xsm;
         cursor: pointer;
         box-sizing: border-box;
@@ -551,6 +552,7 @@ $res-ms-chip-remove-icon: url('../../../../Assets/Images/svg/rs-circle-minus-fil
                 padding: 4px 0;
                 margin-right: 1px;
                 max-width: 250px;
+                overflow: visible;
 
                 &:hover {
                     background-color: $tertiary-grey;
@@ -587,15 +589,20 @@ $res-ms-chip-remove-icon: url('../../../../Assets/Images/svg/rs-circle-minus-fil
 
                 .k-chip-actions {
                     flex-shrink: 0;
+                    overflow: visible;
 
                     .k-chip-remove-action {
+                        position: relative;
+                        overflow: visible;
 
                         .k-icon,
                         .k-svg-icon {
                             color: $primary-red;
                             font-size: $icon-xs;
-                            width: auto;
-                            height: auto;
+                            width: 15px;
+                            height: 15px;
+                            flex-shrink: 0;
+                            line-height: 1;
 
                             svg {
                                 display: none;
@@ -925,6 +932,7 @@ $res-ms-chip-remove-icon: url('../../../../Assets/Images/svg/rs-circle-minus-fil
 
                             .k-list-item,
                             >li {
+                                color: $primary-black;
                                 padding: 10px;
                                 border-radius: 0;
                                 box-shadow: none;
@@ -1031,6 +1039,46 @@ $res-ms-chip-remove-icon: url('../../../../Assets/Images/svg/rs-circle-minus-fil
     }
 }
 
+
+// Chip remove tooltip — portaled to <body>; arrow below label pointing at the icon (matches ResKendoGrid grouping tooltip).
+.tooltip.rs-multiselect-remove-tooltip {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: max-content;
+    padding: 0 0 0.35rem;
+    pointer-events: none;
+
+    .tooltip-inner {
+        order: 1;
+        max-width: none;
+        white-space: nowrap;
+        padding-bottom: 6px;
+    }
+
+    .tooltip-arrow {
+        order: 2;
+        position: absolute;
+        bottom: 0;
+        display: block;
+        width: 0.8rem;
+        height: 0.4rem;
+        margin: 0;
+        transform: translateX(-50%);
+
+        &::before {
+            position: absolute;
+            left: 50%;
+            top: 0;
+            transform: translateX(-50%);
+            content: '';
+            border-color: transparent;
+            border-style: solid;
+            border-width: 0.4rem 0.4rem 0;
+            border-top-color: $tooltip-bg-color;
+        }
+    }
+}
 
 // RSModal / dialog — portaled list popups must not be clipped (Kendo sets overflow:hidden inline)
 .rs-modal .k-animation-container,

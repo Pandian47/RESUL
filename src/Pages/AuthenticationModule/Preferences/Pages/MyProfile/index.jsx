@@ -7,7 +7,7 @@ import { EMAIL_RULES, FIRSTNAME_RULES, LASTNAME_RULES, ZIP_RULES } from 'Constan
 import { ADDRESS, BUSSINESS_EMAIL, CANCEL, CHANGE_PASSWORD, CITY, COUNTRY, CURRENCY, EDIT_PROFILE_PICTURE, FIRST_NAME, JOB_FUNCTION, LAST_NAME, LOCALIZATION_DETAILS, MOBILE_NUMBER, MY_PROFILE, NO_DATA_AVAILABEL, PERSONAL_DETAILS, STATE, UPDATE, UPDATE_MOBILE_NUMBER, USER_ROLE, ZIP } from 'Constants/GlobalConstant/Placeholders';
 import { circle_info_medium, popup_close_circle_fill_medium, popup_close_circle_medium } from 'Constants/GlobalConstant/Glyphicons';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import _find from 'lodash/find';
+import { find as _find } from 'Utils/modules/lodashReplacements';
 import { useNavigate } from 'react-router-dom';
 import { useForm, FormProvider } from 'react-hook-form';
 import { Container, Col, Row } from 'react-bootstrap';
@@ -38,7 +38,7 @@ import { getMyprofile, saveMyProfile } from 'Reducers/preferences/myProfile/requ
 
 import { resetOtpState, restProfileData, setWelcomeModal } from 'Reducers/preferences/myProfile/reducer';
 import useComponentWillUnmount from 'Hooks/useComponentWillUnMount';
-import RSFileUpload from 'Components/FormFields/RSFileUpload';
+import { useImageUpload } from 'Hooks/useImageUpload';
 import RSModal from 'Components/RSModal';
 import ImageCropModal from 'Components/ImageCropModal';
 import RSIcon from 'Components/RSIcon';
@@ -49,13 +49,10 @@ const MyProfile = ({ permissions }) => {
     const { updateAccess } = permissions || {};
 
     //use states
-    const [tempImageData, setTempImageData] = useState(null);
-    const [showFileUpload, setShowFileUpload] = useState(true);
     const [show, setIsShow] = useState({
         changePhoneNumberModal: false,
         changePasswordModal: false,
         profileUserEdit: true,
-        imageUploadModal: false,
     });
 
     //useRefs
@@ -91,6 +88,18 @@ const MyProfile = ({ permissions }) => {
 
     const methods = useForm(FORM_INITIAL_STATE);
     const { control, setError, setValue, clearErrors, handleSubmit, getValues, reset, formState, watch } = methods;
+
+    const {
+        fileInputRef,
+        imageModalState,
+        handleNativeFileChange,
+        openCropWithExistingImage,
+        handleCropComplete,
+        handleModalClose,
+        triggerUpload,
+        setTempImageData,
+    } = useImageUpload(setValue, setError, clearErrors, 'profilePath');
+
     const { errors } = formState; // isValid commented out
     // const [timeZoneWatch] = watch(['timezone']);
     // const allValues = getValues();
@@ -276,52 +285,7 @@ const MyProfile = ({ permissions }) => {
         dispatch(restProfileData());
     });
 
-    const handleImageUpload = (base64Image, fileName) => {
-        const fileExtension = fileName?.split('.').pop()?.toLowerCase() || 'jpeg';
-        const mimeType = fileExtension === 'png' ? 'image/png' : 'image/jpeg';
-        const dataUri = base64Image?.includes('data:image') ? base64Image : `data:${mimeType};base64,${base64Image}`;
-        setTempImageData(dataUri);
-        setShowFileUpload(false);
-    };
 
-    const handleCropComplete = (croppedImage) => {
-        previousProfilePath.current = croppedImage;
-        setValue('profilePath', croppedImage);
-        clearErrors('profilePath');
-        setIsShow((prev) => ({ ...prev, imageUploadModal: false }));
-        setTempImageData(null);
-    };
-
-    const handleModalClose = () => {
-        setIsShow((prev) => ({ ...prev, imageUploadModal: false }));
-        setTempImageData(null);
-        setShowFileUpload(true);
-        clearErrors('profilePath');
-        clearErrors('uploadImageName');
-    };
-
-    const handleOpenImageModal = (isEdit = false) => {
-        if (isEdit) {
-            const currentImage = watch('profilePath');
-            if (currentImage) {
-                let imageForCrop = currentImage;
-                if (!currentImage.includes('data:image')) {
-                    const isBase64Includes = currentImage?.includes('base64') || false;
-                    if (isBase64Includes) {
-                        imageForCrop = currentImage;
-                    } else {
-                        imageForCrop = `data:image/png;base64,${currentImage}`;
-                    }
-                }
-                setTempImageData(imageForCrop);
-                setShowFileUpload(false);
-            }
-        } else {
-            setTempImageData(null);
-            setShowFileUpload(true);
-        }
-        setIsShow((prev) => ({ ...prev, imageUploadModal: true }));
-    };
 
     const handleFormSubmit = (formState) => {
         if (!formState.profilePath) {
@@ -431,8 +395,8 @@ const MyProfile = ({ permissions }) => {
                                     <Col md={3} sm={4} xs={12} className="accountsetup-image-upload">
                                         <ProfileImageUploadButton
                                             value={watch('profilePath')}
-                                            onClick={() => handleOpenImageModal(false)}
-                                            onEdit={() => handleOpenImageModal(true)}
+                                            onClick={triggerUpload}
+                                            onEdit={() => openCropWithExistingImage(watch('profilePath'))}
                                             onRemove={() => {
                                                 setValue('profilePath', null);
                                                 // setError('profilePath', {
@@ -885,58 +849,36 @@ const MyProfile = ({ permissions }) => {
                     }}
                 />
             )}
-            {show.imageUploadModal && (
+            <input
+                type="file"
+                ref={fileInputRef}
+                accept=".png,.jpg,.jpeg"
+                style={{ display: 'none' }}
+                onChange={handleNativeFileChange}
+            />
+            {imageModalState.show && imageModalState.tempImageData && (
                 <RSModal
-                    show={show.imageUploadModal}
+                    show={imageModalState.show}
                     header={EDIT_PROFILE_PICTURE}
                     size="md"
                     handleClose={handleModalClose}
                     body={
                         <div className="image-upload-crop-container">
-                            {showFileUpload && (
-                                <Row className="mt11">
-                                    <Col>
-                                        <RSFileUpload
-                                            isbase64={true}
-                                            control={control}
-                                            name={'uploadImageName'}
-                                            text="Browse"
-                                            accept=".png,.jpg,.jpeg"
-                                            customInputClass={'upload-button-top-align ml20'}
-                                            size={512000}
-                                            isBase64Status={true}
-                                            base64Data={async (base64, fileName, contentLength) => {
-                                                handleImageUpload(base64, fileName);
-                                            }}
-                                            handleChange={(e) => {}}
-                                            required
-                                            watch={watch}
-                                            setError={setError}
-                                            clearErrors={clearErrors}
-                                        />
-                                        <small className="text-muted d-block mt5">
-                                            Allowed formats: .jpg,.jpeg,.png | maximum size: 500kb
-                                        </small>
-                                    </Col>
-                                </Row>
-                            )}
-
-                            {tempImageData && (
-                                <>
-                                    <ImageCropModal
-                                        imageSrc={tempImageData}
-                                        onCropComplete={handleCropComplete}
-                                        onCancel={handleModalClose}
-                                        aspectRatio={1}
-                                        cropShape="round"
-                                        showGrid={true}
-                                        height="250px"
-                                        setTempImageData={setTempImageData}
-                                        setShowFileUpload={setShowFileUpload}
-                                        setValue={setValue}
-                                    />
-                                </>
-                            )}
+                            <ImageCropModal
+                                imageSrc={imageModalState.tempImageData}
+                                onCropComplete={handleCropComplete}
+                                onCancel={handleModalClose}
+                                aspectRatio={1}
+                                cropShape="round"
+                                showGrid={true}
+                                height="250px"
+                                setTempImageData={setTempImageData}
+                                setShowFileUpload={() => {
+                                    handleModalClose();
+                                    triggerUpload();
+                                }}
+                                setValue={setValue}
+                            />
                         </div>
                     }
                 />

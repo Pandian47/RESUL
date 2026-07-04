@@ -8,7 +8,6 @@ import { useSelector } from 'react-redux';
 import { getSessionId } from 'Reducers/globalState/selector';
 import { ANALYTICS_TAB_CONFIG } from './constants';
 
-import _get from 'lodash/get';
 import useQueryParams from 'Hooks/useQueryParams';
 
 const Analytics = () => {
@@ -40,9 +39,9 @@ const Analytics = () => {
     // Sync tab from state or query param
     useEffect(() => {
         if (typeof state === 'object' && state !== null) {
-            setActiveTab(_get(state, 'index', 0));
+            setActiveTab(state?.index ?? 0);
         } else if (typeof locationQuery === 'object' && locationQuery !== null) {
-            setActiveTab(_get(locationQuery, 'index', 0));
+            setActiveTab(locationQuery?.index ?? 0);
         }
     }, [
         state && typeof state === 'object' ? state : null,

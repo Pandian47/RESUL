@@ -4,7 +4,7 @@ import { GetpopoverContentPlanner, PREVIEW_SOURCE, hasListingPreviewApiContent, 
 import { arrow_right_mini, list_mini } from 'Constants/GlobalConstant/Glyphicons';
 import { Col, Row } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
-
+import { ChannelPreviewSkeleton } from 'Components/Skeleton/Skeleton';
 import Icon from 'Components/Icon/Icon';
 import { tableComponent } from '../Constants';
 import RSModal from 'Components/RSModal';
@@ -21,7 +21,6 @@ import EmailListPreview from 'Pages/AuthenticationModule/Communication/Component
 import RSWebPreview from 'Pages/AuthenticationModule/Communication/Component/RSWebPreview';
 import RSMobileListPreview from 'Pages/AuthenticationModule/Communication/Component/RSMobileListPreview';
 import { buildAnalyticsReportReturnPath } from 'Pages/AuthenticationModule/Analytics/Pages/communicationAnalytics/DetailedAnalytics/constants';
-import { ChannelPreviewSkeleton } from 'Components/Skeleton/Skeleton';
 import KendoGrid from 'Components/RSKendoGrid';
 
 const CommunicationAnalysisTable = ({ list, stateVal, retarget, index }) => {

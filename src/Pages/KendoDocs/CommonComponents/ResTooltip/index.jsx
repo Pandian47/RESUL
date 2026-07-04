@@ -46,6 +46,7 @@ const ResTooltipFade = forwardRef((props, ref) => (
         {...props}
         ref={ref}
         timeout={180}
+        unmountOnExit={false}
         transitionClasses={{ exiting: TOOLTIP_EXITING_CLASS }}
     />
 ));
@@ -139,7 +140,9 @@ const ResTooltip = ({
     return (
         <OverlayTrigger {...overlayProps}>
             <WrapperTag className={wrapperClassName} ref={ref}>
-                {childContent}
+                <div className='w-100 tooltip-wrap'>
+                    {childContent}
+                </div>
             </WrapperTag>
         </OverlayTrigger>
     );

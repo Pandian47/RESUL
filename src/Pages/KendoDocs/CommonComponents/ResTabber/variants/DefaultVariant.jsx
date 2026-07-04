@@ -1,10 +1,9 @@
 import { memo, useRef, useState, useEffect, useCallback } from 'react';
-import _isNil from 'lodash/isNil';
 import { Col } from 'react-bootstrap';
 import { motion } from 'framer-motion';
 import RsTab from 'Components/RSTabber/Component/RSTab';
 import { useTabState } from '../hooks';
-import { mapResTabberClasses } from '../utils';
+import { mapResTabberClasses, renderTabPanel, shouldEnableSlidingIndicator } from '../utils';
 import TabContentTransition from './TabContentTransition';
 
 const DefaultVariant = ({
@@ -54,17 +53,23 @@ const DefaultVariant = ({
         defaultTab,
         tabData,
         callBack,
+        preserveNullDefault: isCreateCommunication,
     });
     const handleSelect = (index, isForceUpdate = false) => {
         setSelectedIndex(index, isForceUpdate);
     };
 
     // --- Sliding active tab indicator hook ---
-    const useTabIndicator = (ulRef, activeIdx, config) => {
+    const useTabIndicator = (ulRef, activeIdx, config, enabled) => {
         const [indicatorStyle, setIndicatorStyle] = useState(null);
         const [isTransparent, setIsTransparent] = useState(false);
 
         useEffect(() => {
+            if (!enabled) {
+                setIndicatorStyle(null);
+                return;
+            }
+
             const ulEl = ulRef.current;
             if (!ulEl) return;
 
@@ -100,16 +105,28 @@ const DefaultVariant = ({
                 ro.disconnect();
                 window.removeEventListener('resize', updateIndicator);
             };
-        }, [activeIdx, config]);
+        }, [activeIdx, config, enabled]);
 
         return { indicatorStyle, isTransparent };
     };
 
+    const isSlidingEnabled = shouldEnableSlidingIndicator(className, dynamicTab);
+
     const ulRef1 = useRef(null);
-    const { indicatorStyle: style1, isTransparent: trans1 } = useTabIndicator(ulRef1, selectedIdx, tabconfig);
+    const { indicatorStyle: style1, isTransparent: trans1 } = useTabIndicator(
+        ulRef1,
+        selectedIdx,
+        tabconfig,
+        isSlidingEnabled,
+    );
 
     const ulRef2 = useRef(null);
-    const { indicatorStyle: style2, isTransparent: trans2 } = useTabIndicator(ulRef2, selectedIdx, tabconfig);
+    const { indicatorStyle: style2, isTransparent: trans2 } = useTabIndicator(
+        ulRef2,
+        selectedIdx,
+        tabconfig,
+        isSlidingEnabled,
+    );
 
     const tabProps = {
         activeClass,
@@ -148,7 +165,7 @@ const DefaultVariant = ({
                 <div
                     className={mapResTabberClasses(
                         `rs-tabs-with-heading ${
-                            _isNil(selectedIdx)
+                            selectedIdx == null
                                 ? 'rs-tabs-closed-wrapper'
                                 : `rs-tabs-opened-wrapper${disableWrapperTransition ? '' : ' transition'}`
                         } ${extraClassName || ''}`,
@@ -163,7 +180,7 @@ const DefaultVariant = ({
                             }`,
                         )}
                     >
-                        {_isNil(selectedIdx) && isHeadingBlock ? (
+                        {selectedIdx == null && isHeadingBlock ? (
                             <Col sm={12}>
                                 <div className="ctabs-big-label mb30">
                                     <h3>{heading}</h3>
@@ -181,12 +198,14 @@ const DefaultVariant = ({
                             className={mapResTabberClasses(
                                 `${className} ${dynamicTab} ${or ? 'or-tab' : 'tstwh-tabs'} ${
                                     animate ? 'animate-tab' : ''
-                                } ${_isNil(selectedIdx) ? 'rsctf-closed' : 'rsctf-opened'} res-tab-sliding-enabled`,
+                                } ${selectedIdx == null ? 'rsctf-closed' : 'rsctf-opened'} ${
+                                    isSlidingEnabled ? 'res-tab-sliding-enabled' : ''
+                                }`,
                             )}
                         >
                             <RsTab {...tabProps} />
                             
-                            {style1 && (
+                            {isSlidingEnabled && style1 && (
                                 <motion.div
                                     className={`res-tab-active-indicator ${
                                         trans1 ? 'res-tab-indicator-transparent' : 'res-tab-indicator-solid'
@@ -211,7 +230,7 @@ const DefaultVariant = ({
                                 />
                             )}
                         </ul>
-                        {isCreateCommunication && _isNil(selectedIdx) ? (
+                        {isCreateCommunication && selectedIdx == null ? (
                             <ul className="infoContent">
                                 {tabData?.map((tab, ind) => (
                                     <li key={ind}>{tab?.infocontent}</li>
@@ -220,7 +239,7 @@ const DefaultVariant = ({
                         ) : null}
                     </div>
                     <TabContentTransition selectedIdx={selectedIdx}>
-                        {tabconfig?.[selectedIdx]?.component?.()}
+                        {renderTabPanel(tabconfig?.[selectedIdx])}
                     </TabContentTransition>
                 </div>
             ) : (
@@ -229,12 +248,14 @@ const DefaultVariant = ({
                         ref={ulRef2}
                         style={{ position: 'relative' }}
                         className={mapResTabberClasses(
-                            `${className} ${dynamicTab} ${or ? 'or-tab' : ''} ${animate ? 'animate-tab' : ''} res-tab-sliding-enabled`,
+                            `${className} ${dynamicTab} ${or ? 'or-tab' : ''} ${animate ? 'animate-tab' : ''} ${
+                                isSlidingEnabled ? 'res-tab-sliding-enabled' : ''
+                            }`,
                         )}
                     >
                         <RsTab {...tabProps} />
                         
-                        {style2 && (
+                        {isSlidingEnabled && style2 && (
                             <motion.div
                                 className={`res-tab-active-indicator ${
                                     trans2 ? 'res-tab-indicator-transparent' : 'res-tab-indicator-solid'
@@ -263,14 +284,14 @@ const DefaultVariant = ({
                         <div className="login-cont">
                             <div className={`${mapResTabberClasses('tabs-content')} ${componentClassName}`.trim()}>
                                 <TabContentTransition selectedIdx={selectedIdx}>
-                                    {tabconfig?.[selectedIdx]?.component?.()}
+                                    {renderTabPanel(tabconfig?.[selectedIdx])}
                                 </TabContentTransition>
                             </div>
                         </div>
                     ) : (
                         <div className={`${mapResTabberClasses('tabs-content')} ${componentClassName}`.trim()}>
                             <TabContentTransition selectedIdx={selectedIdx}>
-                                {tabconfig?.[selectedIdx]?.component?.()}
+                                {renderTabPanel(tabconfig?.[selectedIdx])}
                             </TabContentTransition>
                         </div>
                     )}

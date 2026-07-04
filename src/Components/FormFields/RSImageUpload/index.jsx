@@ -3,7 +3,7 @@ import { ALLOWED_FORMATS, FILE_NAME_EXTENSIONS_JPG_PNG_JPEG_1, FILE_SIZE500KB } 
 import { circle_minus_fill_medium, circle_pencil_medium, circle_plus_fill_medium } from 'Constants/GlobalConstant/Glyphicons';
 import { memo, useEffect, useState } from 'react';
 import { Controller } from 'react-hook-form';
-import _get from 'lodash/get';
+import { get as _get } from 'Utils/modules/lodashReplacements';
 import PropTypes from 'prop-types';
 
 import { IMG_SIZE_500KB, INVALID_FORMAT } from 'Constants/GlobalConstant/ValidationMessage';

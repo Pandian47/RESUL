@@ -1,7 +1,7 @@
 import { circle_question_mark_mini } from 'Constants/GlobalConstant/Glyphicons';
 import { memo, useMemo } from 'react';
 import { Controller } from 'react-hook-form';
-import { get, isNil } from 'lodash';
+import { get, isNil } from 'Utils/modules/lodashReplacements';
 import PropTypes from 'prop-types';
 
 import RSPPophover from 'Components/RSPPophover';

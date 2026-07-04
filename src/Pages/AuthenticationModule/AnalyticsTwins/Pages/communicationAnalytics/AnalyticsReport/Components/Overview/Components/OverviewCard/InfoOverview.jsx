@@ -1,9 +1,6 @@
 import { numberWithCommas } from 'Utils/modules/formatters';
 import { addTabKey } from '../../../../constants';
 import useQueryParams from 'Hooks/useQueryParams';
-import _filter from 'lodash/filter';
-import _get from 'lodash/get';
-import _map from 'lodash/map';
 import { getSummaryList } from 'Reducers/analyticsTwins/analyticsSummary/selector';
 import { useSelector } from 'react-redux';
 const InfoOverview = ({ audience, infoSelectedType }) => {
@@ -12,7 +9,7 @@ const InfoOverview = ({ audience, infoSelectedType }) => {
     const state = useQueryParams('/analyticsTwins/analytics-report');
     // console.log('state: ', state);
     const summary = useSelector((state) => getSummaryList(state));
-    const filterModals = _filter(Object.entries(_get(summary, 'factModel', {})), ([_, value]) => value !== null);
+    const filterModals = Object.entries(summary?.factModel ?? {}).filter(([_, value]) => value !== null);
     const filterModaldata = addTabKey(Object.fromEntries(filterModals));
     const getChannelKey = (type) => {
         switch (type) {
@@ -68,7 +65,7 @@ const InfoOverview = ({ audience, infoSelectedType }) => {
     };
     const channelKey = getChannelKey(infoSelectedType);
     const filteredFactData = channelKey ? filterModaldata[channelKey] || [] : [];
-    const factModals = _map(filteredFactData, (list) => ({
+    const factModals = filteredFactData.map((list) => ({
         id: list?.blastId,
         text: list?.blastName || list.blastId,
         data: list,

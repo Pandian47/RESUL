@@ -4,16 +4,13 @@ import { CITY_RULE, WEBSITE_RULES_SECURE, ZIP_RULES } from 'Constants/GlobalCons
 import { ADDRESS, ALLOWED_FORMATS, CITY, ENTER_COMPANY, FILE_NAME_EXTENSIONS_JPG_PNG_JPEG_1, FILE_SIZE500KB, PARENT_COMPANY, WEBSITE, ZIP } from 'Constants/GlobalConstant/Placeholders';
 import { circle_minus_fill_medium, circle_pencil_medium, circle_plus_fill_medium } from 'Constants/GlobalConstant/Glyphicons';
 import { Fragment, useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import _find from 'lodash/find';
-import _get from 'lodash/get';
-import _isEqual from 'lodash/isEqual';
-import _sortBy from 'lodash/sortBy';
+import { find as _find, get as _get, isEqual as _isEqual, sortBy as _sortBy } from 'Utils/modules/lodashReplacements';
 import { useForm } from 'react-hook-form';
 import { Row, Col } from 'react-bootstrap';
 import { useSelector, useDispatch } from 'react-redux';
+import { useImageUpload } from 'Hooks/useImageUpload';
 
 import RSInput from 'Components/FormFields/RSInput';
-import RSFileUpload from 'Components/FormFields/RSFileUpload';
 import RSKendoDropDownList from 'Components/FormFields/RSKendoDropdown';
 import RSMultiSelect from 'Components/FormFields/RSMultiSelect';
 import RSCheckbox from 'Components/FormFields/RSCheckbox';
@@ -52,11 +49,6 @@ const BrandDetails = ({ back, nextScreen }) => {
     const [pendingAccountType, setPendingAccountType] = useState(null);
     const [isParentCompanyAssociated, setIsParentCompanyAssociated] = useState(false);
     const previousAccountTypeRef = useRef(null);
-    const [imageModalState, setImageModalState] = useState({
-        show: false,
-        tempImageData: null,
-        showFileUpload: true,
-    });
     const [loading, setLoading] = useState({
         parentCompany: {
             loading: false,
@@ -131,6 +123,17 @@ const BrandDetails = ({ back, nextScreen }) => {
             // brandWebsite: 'https://'
         },
     });
+
+    const {
+        fileInputRef,
+        imageModalState,
+        handleNativeFileChange,
+        openCropWithExistingImage,
+        handleCropComplete,
+        handleModalClose,
+        triggerUpload,
+        setTempImageData,
+    } = useImageUpload(setValue, setError, clearErrors, 'brandProfile');
 
     const {
         brandProfile,
@@ -627,44 +630,7 @@ const BrandDetails = ({ back, nextScreen }) => {
 
     // console.log(selectedRegions, 'selectedRegions');
 
-    const handleImageUpload = (base64Image, fileName) => {
-        const fileExtension = fileName?.split('.').pop()?.toLowerCase() || 'jpeg';
-        const mimeType = fileExtension === 'png' ? 'image/png' : 'image/jpeg';
-        const dataUri = base64Image?.includes('data:image') ? base64Image : `data:${mimeType};base64,${base64Image}`;
-        setImageModalState((prev) => ({ ...prev, tempImageData: dataUri, showFileUpload: false }));
-    };
 
-    const handleCropComplete = (croppedImage) => {
-        setValue('brandProfile', croppedImage);
-        clearErrors('brandProfile');
-        setImageModalState({ show: false, tempImageData: null, showFileUpload: true });
-    };
-
-    const handleModalClose = () => {
-        setImageModalState({ show: false, tempImageData: null, showFileUpload: true });
-        clearErrors('brandProfile');
-        clearErrors('uploadImageName');
-    };
-
-    const handleOpenImageModal = (isEdit = false) => {
-        if (isEdit) {
-            const currentImage = watch('brandProfile');
-            if (currentImage) {
-                let imageForCrop = currentImage;
-                if (!currentImage.includes('data:image')) {
-                    const isBase64Includes = currentImage?.includes('base64') || false;
-                    if (isBase64Includes) {
-                        imageForCrop = currentImage;
-                    } else {
-                        imageForCrop = `data:image/png;base64,${currentImage}`;
-                    }
-                }
-                setImageModalState({ show: true, tempImageData: imageForCrop, showFileUpload: false });
-            }
-        } else {
-            setImageModalState({ show: true, tempImageData: null, showFileUpload: true });
-        }
-    };
 
     const BrandImageUploadButton = ({ value, onClick, onRemove, onEdit, error }) => {
         const [tooltip, setTooltip] = useState(false);
@@ -811,8 +777,8 @@ const BrandDetails = ({ back, nextScreen }) => {
                         <Col md={3} sm={4} className="accountsetup-image-upload">
                             <BrandImageUploadButton
                                 value={watch('brandProfile')}
-                                onClick={() => handleOpenImageModal(false)}
-                                onEdit={() => handleOpenImageModal(true)}
+                                onClick={triggerUpload}
+                                onEdit={() => openCropWithExistingImage(watch('brandProfile'))}
                                 onRemove={() => {
                                     setValue('brandProfile', null);
                                     setError('brandProfile', {
@@ -1412,7 +1378,14 @@ const BrandDetails = ({ back, nextScreen }) => {
                     />
                 )}
             </form>
-            {imageModalState.show && (
+            <input
+                type="file"
+                ref={fileInputRef}
+                accept=".png,.jpg,.jpeg"
+                style={{ display: 'none' }}
+                onChange={handleNativeFileChange}
+            />
+            {imageModalState.show && imageModalState.tempImageData && (
                 <RSModal
                     show={imageModalState.show}
                     header="Edit company logo"
@@ -1420,50 +1393,21 @@ const BrandDetails = ({ back, nextScreen }) => {
                     handleClose={handleModalClose}
                     body={
                         <div className="image-upload-crop-container">
-                            {imageModalState.showFileUpload && (
-                                <Row className="mt11">
-                                    <Col>
-                                        <RSFileUpload
-                                            isbase64={true}
-                                            control={control}
-                                            name={'uploadImageName'}
-                                            text="Browse"
-                                            accept=".png,.jpg,.jpeg"
-                                            customInputClass={'upload-button-top-align ml20'}
-                                            setError={setError}
-                                            size={512000}
-                                            isBase64Status={true}
-                                            base64Data={async (base64, fileName, contentLength) => {
-                                                handleImageUpload(base64, fileName);
-                                            }}
-                                            handleChange={(e) => {}}
-                                            required
-                                            watch={watch}
-                                            clearErrors={clearErrors}
-                                        />
-                                        <small className="text-muted d-block mt5">
-                                        Allowed formats: .jpg,.jpeg,.png | maximum size: 500kb
-                                        </small>
-                                    </Col>
-                                </Row>
-                            )}
-
-                            {imageModalState.tempImageData && (
-                                <>
-                                    <ImageCropModal
-                                        imageSrc={imageModalState.tempImageData}
-                                        onCropComplete={handleCropComplete}
-                                        onCancel={handleModalClose}
-                                        aspectRatio={1}
-                                        cropShape="round"
-                                        showGrid={true}
-                                        height="250px"
-                                        setTempImageData={(data) => setImageModalState((prev) => ({ ...prev, tempImageData: data }))}
-                                        setShowFileUpload={(show) => setImageModalState((prev) => ({ ...prev, showFileUpload: show }))}
-                                        setValue={setValue}
-                                    />
-                                </>
-                            )}
+                            <ImageCropModal
+                                imageSrc={imageModalState.tempImageData}
+                                onCropComplete={handleCropComplete}
+                                onCancel={handleModalClose}
+                                aspectRatio={1}
+                                cropShape="round"
+                                showGrid={true}
+                                height="250px"
+                                setTempImageData={setTempImageData}
+                                setShowFileUpload={() => {
+                                    handleModalClose();
+                                    triggerUpload();
+                                }}
+                                setValue={setValue}
+                            />
                         </div>
                     }
                 />

@@ -1,11 +1,10 @@
 import { cloneElement } from 'react';
 import { iconImage, iconTextField, iconUpload, placeholderImage } from 'Assets/Images';
 import { getBrandName } from 'Utils/modules/brandStorage';
-import { findDuplicates } from 'Utils/modules/dateTime';
 import { AGREE_TERMSCONDITIONS } from 'Constants/GlobalConstant/Placeholders';
 import { bookmark_medium, builder_add_participants_large, builder_checkbox_large, builder_combobox_large, builder_comment_box_large, builder_date_time_large, builder_hidden_filed_large, builder_matrix_rating_scale_large, builder_multiple_choice_large, builder_radio_large, builder_ranking_large, builder_rating_large, builder_slider_large, builder_text_large, builder_textfield_large, circle_question_mark_mini, colorpicker_bg_medium, eye_hide_medium, heart_fill_large, like_1_fill_large, mandatory_mini, pencil_edit_mini, refresh_medium, settings_medium, smiliey_1_large, social_facebook_ads_medium, social_linkedin_ads_medium, social_twitter_ads_medium, star_fill_large, subscription_kyc_xlarge, survey_xlarge, user_tell_a_friend_xlarge } from 'Constants/GlobalConstant/Glyphicons';
 import { v4 as uuid } from 'uuid';
-import { uniqueId } from 'lodash';
+import { uniqueId } from 'Utils/modules/lodashReplacements';
 
 
 
@@ -33,7 +32,6 @@ import Slider from './Tabs/InputTabs/Slider';
 import Matrix from './Tabs/InputTabs/Matrix';
 import Subscription from './Tabs/SubscriptionKYC/Subscription';
 import Survey from './Tabs/Survey/Survey';
-import { useSelector } from 'react-redux';
 export const SOCIAL_MEDIA = [
     {
         id: 1,
@@ -483,16 +481,6 @@ export const DESIGNATION = [
     'Director - risk advisory',
     'Senior asosiate',
 ];
-export const useDataAtt = () => {
-    const { dataCatalogueAttrs } = useSelector(({ dataCatalogueReducer }) => dataCatalogueReducer);
-    let dataAttributes = [...dataCatalogueAttrs];
-    dataAttributes.push({
-        dataAttributeId: dataCatalogueAttrs?.length + 1,
-        attributeName: 'New attributes',
-    });
-    return dataAttributes;
-};
-
 export const MAP_TO = [];
 
 export const COMBO_DROPDOWN = ['Drop down item 1', 'Drop down item 2', 'Drop down item 3'];
@@ -1394,19 +1382,6 @@ export const PARTICIPANT_LIST = [
     },
 ];
 
-export const findDublicateData = (obj, selectedData, index) => {
-    const mapData = Object.fromEntries(Object.entries(obj).filter(([key]) => key.includes('mapTo')));
-    const titleKey = Object.values(mapData);
-    const mapList = Object.entries(mapData);
-    const [status, ind] = findDuplicates(titleKey, 'title');
-    let indexTemp = findIndex(ind, mapList);
-    let indVal = indexTemp.charAt(5);
-    if (status && parseInt(indVal, 10) === index) {
-        return 'Duplicate title exists';
-    }
-    return true;
-};
-
 export const mapToItemRender = (li, itemProps, disabledItems, isRanking) => {
     let props = li.props;
     if (disabledItems?.includes(isRanking ? itemProps.dataItem : itemProps.dataItem?.title)) {
@@ -1418,16 +1393,6 @@ export const mapToItemRender = (li, itemProps, disabledItems, isRanking) => {
     const itemChildren = <span>{li.props.children}</span>;
 
     return cloneElement(li, props, itemChildren);
-};
-
-const findIndex = (ind, mapData) => {
-    let indexVal = '';
-    mapData.forEach((item, index) => {
-        if (index === ind) {
-            indexVal = item[0];
-        }
-    });
-    return indexVal;
 };
 
 // Tell A Friend

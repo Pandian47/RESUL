@@ -1,24 +1,18 @@
-import { Suspense, lazy } from 'react';
-import { CommunicationSettingsInnerTabLoadingBlock } from 'Components/Skeleton/Components/PreferencesSubPageRouteSkeleton';
+import { lazy } from 'react';
+import { renderEmbeddedLazyInner } from '../../../../constant';
 
 const AppsList = lazy(() => import('./Tabs/AppsList'));
 const Geofencing = lazy(() => import('./Tabs/Geofencing/Geofencing'));
 const LifetimeCap = lazy(() => import('./Tabs/LifetimeCap'));
 const UserDeviceSetup = lazy(() => import('./Tabs/UserDeviceSetup'));
 
-const renderLazyInner = (LazyComponent) => () => (
-    <Suspense fallback={<CommunicationSettingsInnerTabLoadingBlock />}>
-        <LazyComponent />
-    </Suspense>
-);
-
 export const MOBILE_FORM_ACTIONS_PORTAL_ID = 'pref-cs-mobile-form-actions';
 
 export const MOBILE_TABBER_CONFIG = [
-    { id: 1020, text: 'Apps list', disable: false, component: renderLazyInner(AppsList) },
-    { id: 1021, text: 'User device setup', disable: false, component: renderLazyInner(UserDeviceSetup) },
-    { id: 1023, text: 'Geofencing', disable: false, component: renderLazyInner(Geofencing) },
-    { id: 1024, text: 'Lifetime cap', disable: true, component: renderLazyInner(LifetimeCap) },
+    { id: 1020, text: 'Apps list', disable: false, component: renderEmbeddedLazyInner(AppsList) },
+    { id: 1021, text: 'User device setup', disable: false, component: renderEmbeddedLazyInner(UserDeviceSetup) },
+    { id: 1023, text: 'Geofencing', disable: false, component: renderEmbeddedLazyInner(Geofencing) },
+    { id: 1024, text: 'Lifetime cap', disable: true, component: renderEmbeddedLazyInner(LifetimeCap) },
 ];
 
 export const USERLIST = {

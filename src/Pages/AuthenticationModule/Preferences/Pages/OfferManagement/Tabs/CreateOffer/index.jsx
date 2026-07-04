@@ -253,8 +253,6 @@ const CreateOffer = () => {
             return "Min purchase must be ≥ discount value.";
         }
 
-        clearErrors(['minimumPurchaseValue', 'discountValue']);
-
         return true;
     };
     const validateMaxDiscountCap = (value) => {
@@ -279,8 +277,6 @@ const CreateOffer = () => {
         if (calculatedDiscount > numValue) {
             return "Calculated discount exceeds the Maximum Discount Cap.";
         }
-
-        clearErrors(['discountPercentage', 'minimumPurchaseValueFlatDiscount']);
 
         return true;
     };
@@ -2152,21 +2148,14 @@ const CreateOffer = () => {
         }
     };
 
-    const textEditorOnchange = (value) => {
+    const textEditorOnchange = () => {
         setOfferDescriptionError('');
-        setOfferDetailsError('')
-        clearErrors('description')
-        trigger('description')
-        // setTermsConditionError('');
-    }
+        setOfferDetailsError('');
+    };
 
-    const textEditorOnchange1 = (value) => {
-        // setOfferDescriptionError('');
-        // setOfferDetailsError('')
+    const textEditorOnchange1 = () => {
         setTermsConditionError('');
-        clearErrors('termsAndConditions')
-        trigger('termsAndConditions')
-    }
+    };
 
     // All three editors stay mounted (hidden inactive panels) so Kendo + RHF values persist when switching tabs.
     const renderOfferEditorPanel = useCallback(
@@ -2779,6 +2768,7 @@ const CreateOffer = () => {
                                                                         onKeyDown={onlyNumbers}
                                                                         maxLength={MAX_LENGTH5}
                                                                         required
+                                                                        handleOnchange={() => trigger('minimumPurchaseValue')}
                                                                         rules={{
                                                                             required: ENTER_DISCOUNT_VALUE,
                                                                             validate: (value) => validateNotZero(value) !== true ? validateNotZero(value) : validateDiscountNotExceedingMinPurchase(value, 'minimumPurchaseValue', true),
@@ -2807,6 +2797,7 @@ const CreateOffer = () => {
                                                                         placeholder="Min. purchase value"
                                                                         onKeyDown={onlyNumbers}
                                                                         maxLength={MAX_LENGTH5}
+                                                                        handleOnchange={() => trigger('discountValue')}
                                                                         //required
                                                                         rules={{
                                                                             //required: ENTER_MINIMUM_PURCHASE_VALUE,
@@ -2839,6 +2830,7 @@ const CreateOffer = () => {
                                                                         onKeyDown={onlyNumbers}
                                                                         maxLength={MAX_LENGTH5}
                                                                         required
+                                                                        handleOnchange={() => trigger('maximumDiscountCap')}
                                                                         rules={{
                                                                             required: ENTER_DISCOUNT_PERCENTAGE,
                                                                             validate: validateNotZero,
@@ -2875,6 +2867,7 @@ const CreateOffer = () => {
                                                                         onKeyDown={onlyNumbers}
                                                                         maxLength={MAX_LENGTH5}
                                                                         required
+                                                                        handleOnchange={() => trigger('maximumDiscountCap')}
                                                                         rules={{
                                                                             required: ENTER_MINIMUM_PURCHASE_VALUE,
                                                                             validate: validateNotZero,
@@ -3422,7 +3415,7 @@ const CreateOffer = () => {
                                                                                             handleBannerResetIconVisible(index, visible)
                                                                                         }
                                                                                     />
-                                                                                    <div className={`Left100 position-absolute top-3 lh0${bannerResetIconVisible[index] ? ' ml35' : ''}`}>
+                                                                                    <div className={`Left100 position-absolute top-2 lh0 ${bannerResetIconVisible[index] ? ' ml35' : ''}`}>
                                                                                         {showPlusOnBanner1 && (
                                                                                             <RSTooltip
                                                                                                 text={'Add'}

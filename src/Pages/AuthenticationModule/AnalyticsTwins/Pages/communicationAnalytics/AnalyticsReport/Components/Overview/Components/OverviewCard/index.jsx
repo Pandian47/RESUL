@@ -7,9 +7,6 @@ import { DetailOverviewHeadSkeleton, DetailOverviewSkeleton, HorizontalSkeleton 
 import { OFFLINE, ONLINE, TOTAL, TOTAL_COMMUNICATION_SENT } from 'Constants/GlobalConstant/Placeholders';
 import { bar_chart_medium, bar_filter_medium, circle_arrow_left_medium, circle_arrow_right_medium, circle_close_fill_medium, circle_info_medium, circle_info_mini, vertical_view_medium } from 'Constants/GlobalConstant/Glyphicons';
 import { useEffect, useMemo, useRef, useState } from 'react';
-import _get from 'lodash/get';
-import _map from 'lodash/map';
-import _replace from 'lodash/replace';
 
 import RSIcon from 'Components/RSIcon';
 import Icon, { Icons } from 'Components/Icon/Icon';
@@ -26,8 +23,7 @@ import { getPreBlast, getSummaryList } from 'Reducers/analyticsTwins/analyticsSu
 import { getCommunicationPreblast } from 'Reducers/analyticsTwins/analyticsSummary/request';
 import useQueryParams from 'Hooks/useQueryParams';
 import RSPPophover from 'Components/RSPPophover';
-import { CommonSkeleton } from 'Components/Skeleton/Components/SkeletonOverall';
-import RSSkeletonTable from 'Components/RSSkeleton/RSSkeletonTable';
+import { CommonSkeleton, ReportOverviewColumnChartSkeleton } from 'Components/Skeleton/Components/SkeletonOverall';
 const ChartCountLabel = ({ total, percent }) => (
     <span className='d-flex align-items-baseline'>
         {total} ({percent} <div className='ml-3 fs8'>%</div>)
@@ -43,17 +39,17 @@ const OverviewCard = ({ cardData, downloadUI }) => {
 
     const preBlast = useSelector((state) => getPreBlast(state));
     const summary = useSelector((state) => getSummaryList(state));
-    const getTotalValue = _get(summary, 'factModel') || 0;
+    const getTotalValue = summary?.factModel || 0;
 
     function getConversionStats(summary) {
         const toSafeNumber = (value) => (Number.isFinite(value) ? value : 0);
 
         const totalOnlineConversions =
-            Number(_get(summary, 'channelConversionInfo.totalOnlineConversionCount', 0)) || 0;
+            Number(summary?.channelConversionInfo?.totalOnlineConversionCount ?? 0) || 0;
         const totalOfflineConversions =
-            Number(_get(summary, 'channelConversionInfo.totalOfflineConversionCount', 0)) || 0;
-        const totalEngagements = Number(_get(summary, 'channelEngagementInfo.totalEngagementCount', 0)) || 0;
-        const totalReach = Number(_get(summary, 'channelReachInfo.totalReachCount', 0)) || 0;
+            Number(summary?.channelConversionInfo?.totalOfflineConversionCount ?? 0) || 0;
+        const totalEngagements = Number(summary?.channelEngagementInfo?.totalEngagementCount ?? 0) || 0;
+        const totalReach = Number(summary?.channelReachInfo?.totalReachCount ?? 0) || 0;
 
         const offlineRaw = totalReach > 0 ? (totalOfflineConversions / totalReach) * 100 : 0;
         const onlineRaw = totalEngagements > 0 ? (totalOnlineConversions / totalEngagements) * 100 : 0;
@@ -159,20 +155,20 @@ const OverviewCard = ({ cardData, downloadUI }) => {
     const [filterType, setFilterType] = useState('reach');
     const [columnChartData, setcolumnChartData] = useState([]);
 
-    const channelName = _get(currentName, 'name', null);
+    const channelName = currentName?.name ?? null;
     const audience = {
-        totalAudienceCnt: _get(channel, 'totalAudienceCnt', 0) ?? 0,
-        totalAudience: _get(channel, 'totalSentValue', 0) || 0,
-        uniqueAudience: _get(channel, 'uniqueAudienceCnt', 0) ?? 0,
-        spam: _get(channel, 'beforeSpamCnt', 0) ?? 0,
-        bounced: _get(channel, 'beforeBouncedCnt', 0) ?? 0,
+        totalAudienceCnt: channel?.totalAudienceCnt ?? 0,
+        totalAudience: channel?.totalSentValue || 0,
+        uniqueAudience: channel?.uniqueAudienceCnt ?? 0,
+        spam: channel?.beforeSpamCnt ?? 0,
+        bounced: channel?.beforeBouncedCnt ?? 0,
         unSubscribed: (channel?.beforeUnsubscribeCnt != null ? channel.beforeUnsubscribeCnt : channel?.unsubscribeCnt) ?? 0,
-        supressionList: _get(channel, 'suppressionListCnt', 0) ?? 0,
-        frequencyCap: _get(channel, 'beforeFrequencyCapCnt', 0) ?? 0,
-        sentCount: _get(channel, 'totalSentValue', 0) ?? 0,
-        cgCount: _get(channel, 'controlGroupCnt', 0) ?? 0,
-        dndCount: _get(channel, 'beforeDNDCnt', 0) ?? 0,
-        optedOut: _get(channel, 'optedOut', 0) ?? 0,
+        supressionList: channel?.suppressionListCnt ?? 0,
+        frequencyCap: channel?.beforeFrequencyCapCnt ?? 0,
+        sentCount: channel?.totalSentValue ?? 0,
+        cgCount: channel?.controlGroupCnt ?? 0,
+        dndCount: channel?.beforeDNDCnt ?? 0,
+        optedOut: channel?.optedOut ?? 0,
         afterdndCount: handleInfoCount(factModel, currentName?.name, 'dndCount', campaignType) || 0,
         deliveyCount: handleInfoCount(factModel, currentName?.name, 'deliveredCount', campaignType) || 0,
         messageCount: handleInfoCount(factModel, currentName?.name, 'messageCount', campaignType) || 0,
@@ -257,9 +253,9 @@ const OverviewCard = ({ cardData, downloadUI }) => {
                 return Number.isFinite(n) ? n : 0;
             };
             const countList = [
-                toPct(_get(summary, 'channelReachInfo.reachPercentage', 0)),
-                toPct(_get(summary, 'channelEngagementInfo.engagementPercentage', 0)),
-                toPct(_get(summary, 'channelConversionInfo.conversionPercentage', 0)),
+                toPct(summary?.channelReachInfo?.reachPercentage ?? 0),
+                toPct(summary?.channelEngagementInfo?.engagementPercentage ?? 0),
+                toPct(summary?.channelConversionInfo?.conversionPercentage ?? 0),
             ];
             setCounts(countList);
         } else {
@@ -278,10 +274,15 @@ const OverviewCard = ({ cardData, downloadUI }) => {
         }
         setDetailShow(!isDetailShow);
     };
+    useEffect(() => {
+            if (Number(summary?.channelConversionInfo?.totalOfflineConversionCount ?? 0) > 0) {
+                setFilterType('reach')
+            }
+        }, [summary]);
 
     const chartValues = useMemo(() => {
-        return _map(counts, (count) => {
-            const val = +_replace(count, '%', '');
+        return (counts || []).map((count) => {
+            const val = +String(count).replace('%', '');
             if (typeof val === 'number' && !isNaN(val)) return val;
             return 0;
         });
@@ -342,6 +343,8 @@ const OverviewCard = ({ cardData, downloadUI }) => {
     }, []);
 
     const conversionValues = getConversionStats(summary);
+    const isPaidMediaOnly = channelList?.includes(10) && channelList?.length === 1;
+    const columnChartRowCount = isPaidMediaOnly ? 2 : 3;
 
     return (
         <div className={`analytic-summary-card mb30 ${downloadUI ? 'active' : ''}`}>
@@ -452,7 +455,9 @@ const OverviewCard = ({ cardData, downloadUI }) => {
             )}
             {barchart ? (
                 <div className="">
-                    {checkForNonZeroElements(chartValues) ? (
+                    {summaryLoading ? (
+                        <ReportOverviewColumnChartSkeleton rowCount={columnChartRowCount} />
+                    ) : checkForNonZeroElements(chartValues) ? (
                         <>
                             <div className="attri-roi-contianer report-overview-port">
                                 <ul>
@@ -499,15 +504,16 @@ const OverviewCard = ({ cardData, downloadUI }) => {
                             /> */}
                         </>
                     ) : (
-                        <div className='p19 mt5'>
-                            <RSSkeletonTable text isCustombox count={6}/>
-                        </div>
+                        <ReportOverviewColumnChartSkeleton
+                            isError
+                            rowCount={columnChartRowCount}
+                        />
                     )}
                 </div>
             ) : (
                 <div className={`a-card-list-wrapper ${(channelList?.includes(10) && channelList?.length === 1) ? 'card-list-reach' : ''}`}>
-                    {_map(data)?.length ? (
-                        _map(data, (item, index) => {
+                    {data?.length ? (
+                        data.map((item, index) => {
                             const infoValue = truncateTitle(item?.percentage, item?.percentage?.length - 1);
                             if (channelList?.includes(10) && channelList?.length === 1 && item?.title === 'Reach') {
                                 return null;

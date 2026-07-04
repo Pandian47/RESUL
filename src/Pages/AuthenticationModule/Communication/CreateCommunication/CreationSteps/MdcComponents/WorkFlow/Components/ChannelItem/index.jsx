@@ -20,9 +20,7 @@ import ChannelFriendlyNameEdit from '../ChannelFriendlyNameEdit';
 import DeleteChannel from './DeleteChannel';
 import ChannelContentPopup from './ChannelContentPopup';
 
-import _cloneDeep from 'lodash/cloneDeep';
-import _get from 'lodash/get';
-import _find from 'lodash/find';
+import { cloneDeep as _cloneDeep, get as _get, find as _find } from 'Utils/modules/lodashReplacements';
 
 import { getSessionId } from 'Reducers/globalState/selector';
 import {

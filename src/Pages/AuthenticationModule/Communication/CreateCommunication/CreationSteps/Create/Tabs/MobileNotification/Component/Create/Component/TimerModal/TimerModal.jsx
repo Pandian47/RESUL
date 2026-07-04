@@ -11,7 +11,7 @@ import { useEffect, useState } from 'react';
 import { Col, Row } from 'react-bootstrap';
 import { useFormContext } from 'react-hook-form';
 import { useDispatch, useSelector } from 'react-redux';
-import _get from 'lodash/get';
+import { get as _get } from 'Utils/modules/lodashReplacements';
 import { RSPrimaryButton, RSSecondaryButton } from 'Components/Buttons';
 import RSColorPicker from 'Components/ColorPicker';
 

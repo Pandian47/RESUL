@@ -5,7 +5,7 @@ import NoDataAvailableRender from 'Components/FormFields/Component/NoDataAvailab
 const GridHead = () => (
     <ContentLoader
         style={{ width: '100%' }}
-        viewBox="0 0 100% 70"
+        viewBox="0 0 1000 70"
         backgroundColor={scolor1}
         foregroundColor={scolor2}
         height={50}
@@ -16,7 +16,7 @@ const GridHead = () => (
 const GridView = () => (
     <ContentLoader
         style={{ width: '100%' }}
-        viewBox="0 0 100% 70"
+        viewBox="0 0 1000 70"
         backgroundColor={scolor1}
         foregroundColor={scolor2}
         height={40}

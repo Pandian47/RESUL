@@ -1,8 +1,6 @@
 import { getStatus } from 'Utils/modules/communicationStatus';
 import { ACTION, CHANNEL, CONVERSION, DELIVERED, ENGAGEMENT, REACH, STATUS, TOTAL_SENT, UNDELIVERED } from './constants';
 import { Fragment, useMemo } from 'react';
-import _map from 'lodash/map';
-import _get from 'lodash/get';
 import CampaignDetailedStatus from './CampaignDetailedStatus';
 import { SUBSEGMENT_NAME, FRIENDLY_NAME } from 'Pages/AuthenticationModule/Communication/CommunicationLists/constants';
 
@@ -17,7 +15,7 @@ const AnalyticsDetail = ({ dataIndex, dataItem, onCollapse }) => {
     const isFailure = dataItem?.isFailure === true;
     const isChannelsLoading = dataItem?.channelsLoading === true;
 
-    const campaignType = _get(dataItem, 'campaignTypeValue', '').slice(0, 1);
+    const campaignType = (dataItem?.campaignTypeValue ?? '').slice(0, 1);
     const finalChannelDetail = dataItem?.channels?.filter((channel) => channel?.channelId > 0);
     const isSubsegment = finalChannelDetail?.some((item) => item?.subSegmentFriendlyName) || false;
     const { className } = getStatus(dataItem?.statusID);
@@ -180,7 +178,7 @@ const AnalyticsDetail = ({ dataIndex, dataItem, onCollapse }) => {
                         )}
                         {!showDetailSkeleton && !showDetailEmpty && (
                         <Fragment>
-                            {_map(groupedChannelDetail, (item, index) => {
+                            {groupedChannelDetail.map((item, index) => {
                                 const hasGrouping = item?.isGrouping;
                                 const resolveIdx = (row) =>
                                     sortedChannelDetail.findIndex(
@@ -202,6 +200,9 @@ const AnalyticsDetail = ({ dataIndex, dataItem, onCollapse }) => {
                                                 idx={idx >= 0 ? idx : index}
                                                 splitIndex={splitIndex}
                                                 hasGrouping={hasAnyGrouping}
+                                                hideTotalSent={hideTotalSent}
+                                                hideReachColumn={hideReachColumn}
+                                                hideReachDelivered={hideReachDelivered}
                                             />
                                         );
                                     });
@@ -214,6 +215,9 @@ const AnalyticsDetail = ({ dataIndex, dataItem, onCollapse }) => {
                                         key={`${dataItem?.campaignID ?? dataItem?.campaignId}-${index}`}
                                         idx={idx >= 0 ? idx : index}
                                         hasGrouping={hasAnyGrouping}
+                                        hideTotalSent={hideTotalSent}
+                                        hideReachColumn={hideReachColumn}
+                                        hideReachDelivered={hideReachDelivered}
                                     />
                                 );
                             })}

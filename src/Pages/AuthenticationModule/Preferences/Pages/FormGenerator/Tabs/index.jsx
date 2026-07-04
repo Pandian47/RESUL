@@ -2,8 +2,7 @@ import { getEnvironment } from 'Utils/modules/environment';
 import { useEffect, useState } from 'react';
 import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 
-import _isNil from 'lodash/isNil';
-import _get from 'lodash/get';
+import { isNil as _isNil, get as _get } from 'Utils/modules/lodashReplacements';
 import useQueryParams from 'Hooks/useQueryParams';
 import RSPageHeader from 'Components/RSPageHeader';
 import RSTabbar from 'Components/RSTabber';

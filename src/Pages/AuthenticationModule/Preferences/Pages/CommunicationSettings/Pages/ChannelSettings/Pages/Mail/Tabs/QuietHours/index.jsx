@@ -77,6 +77,9 @@ const QuietHours = ({ channelKey = QUIET_HOURS_CHANNEL_KEYS.EMAIL }) => {
         setGridCreate,
         gridListVersion,
         closeQuietHoursForm,
+        closeQuietHoursFormAfterSave,
+        consumePreloadedGridList,
+        refreshQuietHoursGrid: closeQuietHoursForm,
         ...channel,
     };
 

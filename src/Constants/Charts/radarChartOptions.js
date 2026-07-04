@@ -1,4 +1,4 @@
-import { commonColorCode } from 'Constants/Charts/commonFunction';
+import { commonColorCode, seriesNameField } from 'Constants/Charts/commonFunction';
 import { getUserCurrentFormat } from 'Utils/modules/dateTime';
 import { ch_color1, ch_color2, ch_color3, ch_color4, ch_color5, ch_color6, ch_primary_black } from 'Constants/GlobalConstant/Colors/colorsVariable';
 import PropTypes from 'prop-types';
@@ -57,7 +57,7 @@ const getTimeLabels = (series, categories) => {
     if (!dates.length) return [];
 
     const firstDay = getUserCurrentFormat(dates[0], { noConversion: true })?.dateFormat;
-    const sameDay = every(
+    const sameDay = dates.every(
         (date) => getUserCurrentFormat(date, { noConversion: true })?.dateFormat === firstDay,
     );
 
@@ -102,7 +102,9 @@ const getYScale = (series) => {
 };
 
 const getColorPalette = (items) => {
-    const mapped = commonColorCode(items.map((item) => ({ name: item?.name ?? item })));
+    const mapped = commonColorCode(
+        items.map((item) => ({ name: seriesNameField(item?.name ?? item) })),
+    );
     return items.map((_, index) => mapped[index] || SERIES_COLORS[index % SERIES_COLORS.length]);
 };
 
@@ -140,9 +142,15 @@ const radarChartOptions = (args = {}) => {
         });
 
     return {
-        chart: { type: 'area', polar: true, height: args.height ?? 330 },
+        chart: {
+            type: 'area',
+            polar: true,
+            height: args.height ?? 360,
+            marginBottom: 80,
+            spacingBottom: 16,
+        },
         boost: { enabled: false },
-        pane: { size: '90%' },
+        pane: { size: '82%' },
         xAxis: { categories: [...categories], tickmarkPlacement: 'on', lineWidth: 1 },
         yAxis: {
             min: 0,
@@ -157,6 +165,13 @@ const radarChartOptions = (args = {}) => {
             symbolHeight: 9,
             symbolWidth: 9,
             itemStyle: { color: ch_primary_black },
+            align: 'center',
+            verticalAlign: 'bottom',
+            y: 4,
+            margin: 20,
+            itemMarginTop: 6,
+            itemMarginBottom: 6,
+            padding: 8,
         },
         tooltip: {
             shared: false,

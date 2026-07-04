@@ -1,5 +1,5 @@
 import { popup_close_circle_fill_medium, popup_close_circle_medium } from 'Constants/GlobalConstant/Glyphicons';
-import { memo, useEffect, useRef, useState } from 'react';
+import { memo, useCallback, useEffect, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
 import { Modal } from 'react-bootstrap';
 
@@ -7,6 +7,9 @@ import RSIcon from 'Components/RSIcon';
 import RSTooltip from 'Components/RSTooltip';
 import useBodyPointerLock, { lockBodyScroll, unlockBodyScroll } from 'Hooks/useBodyPointerLock';
 import { useSelector } from 'react-redux';
+
+/** Matches `.modal-body.css-scrollbar { max-height: calc(100vh - 220px) }` in _rsModal.scss */
+const MODAL_BODY_SCROLL_MAX_HEIGHT_OFFSET_PX = 220;
 
 const RSModal = ({
     settings = {},
@@ -41,33 +44,60 @@ const RSModal = ({
     const [isVisible, setIsVisible] = useState(false);
     const [shouldRender, setShouldRender] = useState(false);
     const [contentHeight, setContentHeight] = useState(null);
+    const [hasBodyOverflow, setHasBodyOverflow] = useState(false);
     const innerRef = useRef(null);
+    const bodyRef = useRef(null);
     const didLockScrollRef = useRef(false);
     const showRef = useRef(show);
     const [enableHeightTransition, setEnableHeightTransition] = useState(false);
     const { failureApiErrors } = useSelector(({ globalstate }) => globalstate);
 
+    const syncBodyScrollbar = useCallback(() => {
+        if (!isCustomScroll) {
+            setHasBodyOverflow(false);
+            return;
+        }
+
+        const bodyEl = bodyRef.current;
+        if (!bodyEl) return;
+
+        const maxBodyHeight = Math.max(0, window.innerHeight - MODAL_BODY_SCROLL_MAX_HEIGHT_OFFSET_PX);
+        setHasBodyOverflow(bodyEl.scrollHeight > maxBodyHeight + 1);
+    }, [isCustomScroll]);
+
     useEffect(() => {
         if (!show) {
             setContentHeight(null);
             setEnableHeightTransition(false);
+            setHasBodyOverflow(false);
         }
     }, [show]);
 
     useEffect(() => {
         if (!innerRef.current || !isVisible) return;
 
-        const observer = new ResizeObserver((entries) => {
-            for (let entry of entries) {
-                const height = entry.target.offsetHeight;
+        const observer = new ResizeObserver(() => {
+            const height = innerRef.current?.offsetHeight;
+            if (height != null && height > 0) {
                 setContentHeight(height);
                 requestAnimationFrame(() => setEnableHeightTransition(true));
             }
+            requestAnimationFrame(syncBodyScrollbar);
         });
 
         observer.observe(innerRef.current);
-        return () => observer.disconnect();
-    }, [isVisible]);
+        if (bodyRef.current) {
+            observer.observe(bodyRef.current);
+        }
+
+        window.addEventListener('resize', syncBodyScrollbar);
+        requestAnimationFrame(syncBodyScrollbar);
+
+        return () => {
+            observer.disconnect();
+            window.removeEventListener('resize', syncBodyScrollbar);
+        };
+    }, [isVisible, syncBodyScrollbar, body]);
 
     useBodyPointerLock(isVisible && lockBackground);
 
@@ -202,8 +232,9 @@ const RSModal = ({
                     )}
                     {body && (
                         <Modal.Body
+                            ref={bodyRef}
                             className={`rsmdc-body ${bodyClassName} ${
-                                isCustomScroll ? 'Xcss-scrollbar' : ''
+                                isCustomScroll && hasBodyOverflow ? 'css-scrollbar' : ''
                             } modal-min-height`}
                         >
                             {body}

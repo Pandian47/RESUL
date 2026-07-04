@@ -3,11 +3,11 @@ import { getChannelId } from 'Utils/modules/communicationChannels';
 import { MAX_LENGTH60 } from 'Constants/GlobalConstant/Regex';
 import { ENTER_EDITOR_TEXT, ENTER_TITLE_TEXT } from 'Constants/GlobalConstant/ValidationMessage';
 import { BACKGROUND_COLOR, CHROME, FIREFOX, FONT_COLOR, OFFER_CODE, PERSONALIZATION, PREVIEW, TITLE_TEXT, UPLOAD_IMAGE } from 'Constants/GlobalConstant/Placeholders';
-import { colorpicker_bg_medium, colorpicker_text_medium, coupon_medium, editor_color_picker_medium, editor_personalize_medium, editor_text_color_medium, smart_link_medium, user_question_mark_edge_medium, user_question_mark_medium } from 'Constants/GlobalConstant/Glyphicons';
+import { colorpicker_bg_medium, colorpicker_text_medium, coupon_medium, editor_color_picker_medium, editor_personalize_medium, editor_text_color_medium, smart_link_medium, user_question_mark_edge_medium } from 'Constants/GlobalConstant/Glyphicons';
 import { Fragment, useEffect, useRef, useState } from 'react';
 import { Row, Col } from 'react-bootstrap';
 import { useFormContext, useWatch } from 'react-hook-form';
-import _get from 'lodash/get';
+import { get as _get } from 'Utils/modules/lodashReplacements';
 
 import RSTabber from 'Components/RSTabber';
 import RSEmojiPickerInput from 'Components/EmojiPickerInput';
@@ -185,45 +185,6 @@ const EmojiPickerMobile = (props) => {
         />
     );
 };
-const personalizationMobile = () => {
-    const { personalization, listTypeWisePersonlization } = useSelector(({ createCommunicationReducer }) => createCommunicationReducer);
-    const { control, setValue, watch, trigger, setError, getValues } = useFormContext();
-    const splitTest = useWatch({
-        name: 'splitTest',
-        control,
-    });
-
-    const { notification } = useSelector(({ createCommunicationReducer }) => createCommunicationReducer);
-    const editorTextName = splitTest ? `${notification?.mobile?.fieldNameIndex}.editorText` : 'editorText';
-
-    const [editorText] = watch([editorTextName]);
-
-    return (
-        <RSBootstrapdown
-            data={handlePersonalization(personalization, location?.audience?.length ? location?.audience : (watch('audience')?.length ? watch('audience') : getValues()?.audience), listTypeWisePersonlization)}
-            isObject
-            fieldKey="personalizationKey"
-            flatIcon
-            defaultItem={{
-                attributeName: '',
-                dataAttributeId: 0,
-                fallbackAttributeName: null,
-                personalizationKey: <i className={`${user_question_mark_medium} icon-md`} />,
-            }}
-            showUpdate={false}
-            className="no_caret"
-            onSelect={({ personalizationKey }) => {
-                const text = editorText || '';
-
-                setValue(editorTextName, text + personalizationKey);
-
-                trigger(editorTextName);
-            }}
-            showSearch
-        />
-    );
-};
-
 const Create = ({ isSplit, fieldName }) => {
     const notificationEditorMaxLength = 350;
     const inputRef = useRef();
@@ -378,6 +339,7 @@ const Create = ({ isSplit, fieldName }) => {
 
             const { status, data } = await dispatch(getSmartUrlDetailByChannel({ payload: channelPayload }));
             if (status) {
+                const { urlName, smartCode, blastSC } = data || {};
                 const text = editorText || '';
                 const smartURL = urlName + smartCode + blastSC;
                 let finalValue;
@@ -708,52 +670,52 @@ const Create = ({ isSplit, fieldName }) => {
                 </Row>
             </div>
             <div className="form-group">
-            <Row>
-                <Col sm={{ span: 12 }}>
-                    <div
-                        className={`rs-live-preview-wrapper wp-texteditor mt20 ${getValues('deliveryType')?.id === 3 ? 'overlayEle' : ''
-                            }`}
-                    >
-                        <Row>
-                            {/* Left column starts */}
-                            <Col
-                                sm={{ offset: 0, span: `${getValues('deliveryType')?.id === 3 ? 7 : 6}` }}
-                                className="webTooltip mdc_mobilepush_editors"
-                            >
-                                {getValues('deliveryType')?.id === 1 && (
-                                    <Fragment>
-                                        <div className="rs-textarea-component-wrapper">
-                                            <div className="rstcw-top-icons">
-                                                <ul>
-                                                    <li>
-                                                        <RSTooltip text="Personalization">
-                                                            <RSBootstrapdown
-                                                                data={handlePersonalization(personalization, location?.audience?.length ? location?.audience : (watch('audience')?.length ? watch('audience') : getValues()?.audience), listTypeWisePersonlization)}
-                                                                isObject
-                                                                fieldKey="personalizationKey"
-                                                                flatIcon
-                                                                defaultItem={{
-                                                                    attributeName: '',
-                                                                    dataAttributeId: 0,
-                                                                    fallbackAttributeName: null,
-                                                                    personalizationKey: (
-                                                                        <i
-                                                                            title={PERSONALIZATION}
-                                                                            className={`${editor_personalize_medium} icon-md`}
-                                                                        />
-                                                                    ),
-                                                                }}
-                                                                showUpdate={false}
-                                                                className="no_caret"
-                                                                onSelect={({ personalizationKey }) =>
-                                                                    handleChange(personalizationKey, 'static')
-                                                                }
-                                                                showSearch
-                                                            />
-                                                        </RSTooltip>
-                                                    </li>
+                <Row>
+                    <Col sm={{ span: 12 }}>
+                        <div
+                            className={`rs-live-preview-wrapper wp-texteditor mt20 ${getValues('deliveryType')?.id === 3 ? 'overlayEle' : ''
+                                }`}
+                        >
+                            <Row>
+                                {/* Left column starts */}
+                                <Col
+                                    sm={{ offset: 0, span: `${getValues('deliveryType')?.id === 3 ? 7 : 6}` }}
+                                    className="webTooltip mdc_mobilepush_editors"
+                                >
+                                    {getValues('deliveryType')?.id === 1 && (
+                                        <Fragment>
+                                            <div className="rs-textarea-component-wrapper">
+                                                <div className="rstcw-top-icons">
+                                                    <ul>
+                                                        <li>
+                                                            <RSTooltip text="Personalization">
+                                                                <RSBootstrapdown
+                                                                    data={handlePersonalization(personalization, location?.audience?.length ? location?.audience : (watch('audience')?.length ? watch('audience') : getValues()?.audience), listTypeWisePersonlization)}
+                                                                    isObject
+                                                                    fieldKey="personalizationKey"
+                                                                    flatIcon
+                                                                    defaultItem={{
+                                                                        attributeName: '',
+                                                                        dataAttributeId: 0,
+                                                                        fallbackAttributeName: null,
+                                                                        personalizationKey: (
+                                                                            <i
+                                                                                title={PERSONALIZATION}
+                                                                                className={`${editor_personalize_medium} icon-md`}
+                                                                            />
+                                                                        ),
+                                                                    }}
+                                                                    showUpdate={false}
+                                                                    className="no_caret"
+                                                                    onSelect={({ personalizationKey }) =>
+                                                                        handleChange(personalizationKey, 'static')
+                                                                    }
+                                                                    showSearch
+                                                                />
+                                                            </RSTooltip>
+                                                        </li>
 
-                                                    <Fragment>
+                                                        <Fragment>
                                                             <li className="emoji-top">
                                                                 <EmojiPicker
                                                                     onEmojiSelect={(e) =>
@@ -886,40 +848,40 @@ const Create = ({ isSplit, fieldName }) => {
                                                                 </RSTooltip>
                                                             </li>
                                                         </Fragment>
-                                                </ul>
+                                                    </ul>
+                                                </div>
+                                                <div className="rstcw-textarea-holder">
+                                                    <RSTextarea
+                                                        control={control}
+                                                        name={editorTextName}
+                                                        maxLength={notificationEditorMaxLength}
+                                                        onKeyUp={(e) => handleSelectionChange(e)}
+                                                        onClick={(e) => handleSelectionChange(e)}
+                                                        onKeyDown={(e) => handleSelectionChange(e)}
+                                                        rules={{
+                                                            required: ENTER_EDITOR_TEXT,
+                                                        }}
+                                                        handleOnchange={(e) => {
+                                                        }}
+                                                        customWebpushClassname="mdc"
+                                                    />
+                                                </div>
                                             </div>
-                                            <div className="rstcw-textarea-holder">
-                                                <RSTextarea
-                                                    control={control}
-                                                    name={editorTextName}
-                                                    maxLength={notificationEditorMaxLength}
-                                                    onKeyUp={(e) => handleSelectionChange(e)}
-                                                    onClick={(e) => handleSelectionChange(e)}
-                                                    onKeyDown={(e) => handleSelectionChange(e)}
-                                                    rules={{
-                                                        required: ENTER_EDITOR_TEXT,
-                                                    }}
-                                                    handleOnchange={(e) => {
-                                                    }}
-                                                    customWebpushClassname="mdc"
-                                                />
+                                            <div className="rs-editor-bottom-message">
+                                                <div className="editor-message-right">
+                                                    <small>
+                                                        <span className="emr-length">
+                                                            {/* {editorText?.replaceAll(' ', '')?.length} / {notificationEditorMaxLength} */}
+                                                            {editorText?.length} / {notificationEditorMaxLength}
+                                                        </span>
+                                                    </small>
+                                                </div>
                                             </div>
-                                        </div>
-                                        <div className="rs-editor-bottom-message">
-                                            <div className="editor-message-right">
-                                                <small>
-                                                    <span className="emr-length">
-                                                        {/* {editorText?.replaceAll(' ', '')?.length} / {notificationEditorMaxLength} */}
-                                                        {editorText?.length} / {notificationEditorMaxLength}
-                                                    </span>
-                                                </small>
-                                            </div>
-                                        </div>
-                                    </Fragment>
-                                )}
-                                {getValues('deliveryType')?.id === 3 && (
-                                    <div>
-                                        {/* {isSplit ? (
+                                        </Fragment>
+                                    )}
+                                    {getValues('deliveryType')?.id === 3 && (
+                                        <div>
+                                            {/* {isSplit ? (
                                                 <div className="rs-textarea-component-wrapper">
                                                     <div className="rstcw-top-icons">
                                                         <ul>
@@ -1041,138 +1003,138 @@ const Create = ({ isSplit, fieldName }) => {
                                                     </div>
                                                 </div>
                                             )} */}
-                                        <div>
-                                            {isEditorMaxLen && (
-                                                <small className="color-primary-red color-primary-red position-absolute top-20 fs11">
-                                                    Max. {notificationEditorMaxLength}
-                                                </small>
-                                            )}
-                                            <TextEditorMobile
-                                                isSplit={isSplit}
-                                                fieldName={fieldName}
-                                                onChange={(e) => {
-                                                    // debugger;
-                                                    // console.log('aa123', e);
-                                                    setValue(editorTextName, e);
-                                                    seIsEditorMaxLen(false)
-                                                    // console.log('Length ::: ', editorText?.length);
-                                                    if (editorTextLength >= notificationEditorMaxLength) {
-                                                        // console.log('Length ::: ', editorText?.length, 'ASASD');
-                                                        // setEditable(false);
-                                                    }
-                                                }}
-                                                // editable={editable}
-                                                // setEditable={setEditable}
-                                                tools={[
-                                                    [Bold, Italic, Underline, Strikethrough],
-
-                                                    [
-                                                        TextColorPicker,
-                                                        BackgroundColorPicker,
-                                                        //   CustomForeColor,
-                                                        //   CustomBackColor,
-                                                        ImageUploadMobile,
-                                                    ],
-
-                                                    [, (props) => (
-                                                        <EmojiPickerMobile
-                                                            {...props}
-                                                            maxLength={notificationEditorMaxLength}
-                                                            onEditorMaxLen={seIsEditorMaxLen}
-                                                        />
-                                                    ), (props) => (
-                                                        <Personalize
-                                                            {...props}
-                                                            maxLength={notificationEditorMaxLength}
-                                                            onEditorMaxLen={seIsEditorMaxLen}
-                                                        />
-                                                    ), (props) => (
-                                                        <InsertOffer
-                                                            {...props}
-                                                            maxLength={notificationEditorMaxLength}
-                                                            onEditorMaxLen={seIsEditorMaxLen}
-                                                        />
-                                                    ),],
-                                                ]}
-                                                handleChange={handleChange}
-                                                handleImageData={handleImageData}
-                                                editValue={editorText}
-                                                handleTextLength={handleEditorTextLengthForMobile}
-                                                onBlur={(e) => {
-                                                    seIsEditorMaxLen(false)
-                                                }}
-                                            />
-                                            <div className="rs-editor-bottom-message">
-                                                <div className="editor-message-right">
-                                                    <small>
-                                                        <span className="emr-length">
-                                                            {editorTextLenghtMobile} / {notificationEditorMaxLength}
-                                                        </span>
+                                            <div>
+                                                {isEditorMaxLen && (
+                                                    <small className="color-primary-red color-primary-red position-absolute top-20 fs11">
+                                                        Max. {notificationEditorMaxLength}
                                                     </small>
+                                                )}
+                                                <TextEditorMobile
+                                                    isSplit={isSplit}
+                                                    fieldName={fieldName}
+                                                    onChange={(e) => {
+                                                        // debugger;
+                                                        // console.log('aa123', e);
+                                                        setValue(editorTextName, e);
+                                                        seIsEditorMaxLen(false)
+                                                        // console.log('Length ::: ', editorText?.length);
+                                                        if (editorTextLength >= notificationEditorMaxLength) {
+                                                            // console.log('Length ::: ', editorText?.length, 'ASASD');
+                                                            // setEditable(false);
+                                                        }
+                                                    }}
+                                                    // editable={editable}
+                                                    // setEditable={setEditable}
+                                                    tools={[
+                                                        [Bold, Italic, Underline, Strikethrough],
+
+                                                        [
+                                                            TextColorPicker,
+                                                            BackgroundColorPicker,
+                                                            //   CustomForeColor,
+                                                            //   CustomBackColor,
+                                                            ImageUploadMobile,
+                                                        ],
+
+                                                        [, (props) => (
+                                                            <EmojiPickerMobile
+                                                                {...props}
+                                                                maxLength={notificationEditorMaxLength}
+                                                                onEditorMaxLen={seIsEditorMaxLen}
+                                                            />
+                                                        ), (props) => (
+                                                            <Personalize
+                                                                {...props}
+                                                                maxLength={notificationEditorMaxLength}
+                                                                onEditorMaxLen={seIsEditorMaxLen}
+                                                            />
+                                                        ), (props) => (
+                                                            <InsertOffer
+                                                                {...props}
+                                                                maxLength={notificationEditorMaxLength}
+                                                                onEditorMaxLen={seIsEditorMaxLen}
+                                                            />
+                                                        ),],
+                                                    ]}
+                                                    handleChange={handleChange}
+                                                    handleImageData={handleImageData}
+                                                    editValue={editorText}
+                                                    handleTextLength={handleEditorTextLengthForMobile}
+                                                    onBlur={(e) => {
+                                                        seIsEditorMaxLen(false)
+                                                    }}
+                                                />
+                                                <div className="rs-editor-bottom-message">
+                                                    <div className="editor-message-right">
+                                                        <small>
+                                                            <span className="emr-length">
+                                                                {editorTextLenghtMobile} / {notificationEditorMaxLength}
+                                                            </span>
+                                                        </small>
+                                                    </div>
                                                 </div>
                                             </div>
                                         </div>
-                                    </div>
-                                )}
-                            </Col>
-                            {/* /Left column ends */}
-                            {/* Right column starts */}
-                            <Col sm={`${getValues('deliveryType')?.id === 3 ? 5 : 6}`}>
-                                <div className="rsamp-text">{PREVIEW}</div>
-                                <div
-                                    className={` ${!editorText?.length ? 'rs-mobile-preview-disable' : 'rs-mobile-preview-enable'
-                                        }`}
-                                >
-                                    {/* {(title?.text || editorText || previewImage) && ( */}
+                                    )}
+                                </Col>
+                                {/* /Left column ends */}
+                                {/* Right column starts */}
+                                <Col sm={`${getValues('deliveryType')?.id === 3 ? 5 : 6}`}>
+                                    <div className="rsamp-text">{PREVIEW}</div>
+                                    <div
+                                        className={` ${!editorText?.length ? 'rs-mobile-preview-disable' : 'rs-mobile-preview-enable'
+                                            }`}
+                                    >
+                                        {/* {(title?.text || editorText || previewImage) && ( */}
 
-                                    <RSTabber
-                                        defaultClass={`col-md-2 tabTransparent `}
-                                        dynamicTab={`mb0 mini mt3`}
-                                        activeClass={`active`}
-                                        className="rs-tabs row rsamp-dropdown"
-                                        componentClassName={`webCreate-wrapper position-relative windows ${location?.campaignType === 'M' ? 'rs-web-mdc-preview' : ''} w-100`}
-                                        defaultTab={0}
-                                        tabData={[
-                                            {
-                                                id: 'chrome',
-                                                text: CHROME,
-                                                component: () => (
-                                                    <Preview
-                                                        type="chrome"
-                                                        {...previewProps}
-                                                        previewActive={
-                                                            !!title?.text || !!editorText || !!previewImage
-                                                        }
-                                                        channelType="web"
-                                                        deliveryType={layoutPosition}
-                                                    />
-                                                ),
-                                            },
-                                            {
-                                                id: 'firefox',
-                                                text: FIREFOX,
-                                                component: () => (
-                                                    <Preview
-                                                        type="firefox"
-                                                        {...previewProps}
-                                                        previewActive={
-                                                            !!title?.text || !!editorText || !!previewImage
-                                                        }
-                                                        channelType="web"
-                                                        deliveryType={layoutPosition}
-                                                    />
-                                                ),
-                                            },
-                                        ]}
-                                    />
-                                    {/* )} */}
-                                </div>
-                            </Col>
-                            {/* /Right column ends */}
-                        </Row>
-                    </div>
-                </Col>
-            </Row>
+                                        <RSTabber
+                                            defaultClass={`col-md-2 tabTransparent `}
+                                            dynamicTab={`mb0 mini mt3`}
+                                            activeClass={`active`}
+                                            className="rs-tabs row rsamp-dropdown"
+                                            componentClassName={`webCreate-wrapper position-relative windows ${location?.campaignType === 'M' ? 'rs-web-mdc-preview' : ''} w-100`}
+                                            defaultTab={0}
+                                            tabData={[
+                                                {
+                                                    id: 'chrome',
+                                                    text: CHROME,
+                                                    component: () => (
+                                                        <Preview
+                                                            type="chrome"
+                                                            {...previewProps}
+                                                            previewActive={
+                                                                !!title?.text || !!editorText || !!previewImage
+                                                            }
+                                                            channelType="web"
+                                                            deliveryType={layoutPosition}
+                                                        />
+                                                    ),
+                                                },
+                                                {
+                                                    id: 'firefox',
+                                                    text: FIREFOX,
+                                                    component: () => (
+                                                        <Preview
+                                                            type="firefox"
+                                                            {...previewProps}
+                                                            previewActive={
+                                                                !!title?.text || !!editorText || !!previewImage
+                                                            }
+                                                            channelType="web"
+                                                            deliveryType={layoutPosition}
+                                                        />
+                                                    ),
+                                                },
+                                            ]}
+                                        />
+                                        {/* )} */}
+                                    </div>
+                                </Col>
+                                {/* /Right column ends */}
+                            </Row>
+                        </div>
+                    </Col>
+                </Row>
             </div>
             <div>
                 {/* <div className="form-group">

@@ -42,7 +42,7 @@ const SplitHeader = (props) => {
     const advanceSearchFilterLoader = useApiLoader({ autoFetch: false, loaderConfig: ANALYTICS_FIELD_LOADER_CONFIG });
     const { userId, clientId } = useSelector((state) => getSessionId(state));
     const { defaultItemSplitHeader } = useSelector(({ analyticsDetails }) => analyticsDetails);
-    const { refAPIStatus } = useContext(DetailAnalyticsProvider) || {};
+    const { refAPIStatus, isPdfExporting } = useContext(DetailAnalyticsProvider) || {};
     const { control, setValue, getValues, watch } = useForm();
     const queryParams = useQueryParams('/analytics/analytics-report');
     const detailParams = useQueryParams('/analytics/detail-analytics');
@@ -103,14 +103,14 @@ const SplitHeader = (props) => {
             ?.filter(filter => filter.FilterType === selectedFilterList?.originalKey)
             ?.map(filter => filter.FilterValue);
         const allSelectedValues = [...new Set([...selectedValuesForCurrentType, ...searchList])];
-        return filterValues.filter(value => 
+        return filterValues.filter(value =>
             value && value.trim() !== '' && !allSelectedValues.includes(value)
         );
     };
 
     const availableFilterValues = getAvailableFilterValues(selectedFilterList?.filterList || []);
     const availableTempData = getAvailableFilterValues(tempData);
-    
+
     const filterValuesToShow = searchTypeField ? availableTempData : availableFilterValues;
     //debugger
     const defaultDropdown = props?.splitData.find(
@@ -220,8 +220,8 @@ const SplitHeader = (props) => {
     const filteredData =
         Array.isArray(props?.filterData) && props?.filterData?.length > 0
             ? props.filterData.filter((item) =>
-                  allowedAudienceListTypes.includes(String(item?.listType)),
-              )
+                allowedAudienceListTypes.includes(String(item?.listType)),
+            )
             : [];
 
     const shouldShowAudienceDropdown = filteredData?.length > 1;
@@ -237,20 +237,47 @@ const SplitHeader = (props) => {
     const defaultAudienceItem =
         filteredData?.find((item) => item?.listType === '0') || filteredData?.[0] || {};
 
+    const normalizeItem = (item) => {
+        if (!item || typeof item !== 'object') return item;
+        const subId = Number(item?.subchannelId ?? item?.subChannelId);
+        const nameStr = String(item?.channelFriendlyName || item?.name || item?.id || '').toLowerCase();
+        if (subId === 5 || nameStr.includes('pinterest') || nameStr.includes('pininterest')) {
+            return {
+                ...item,
+                id: 'pinterest',
+                channelFriendlyName: 'Pinterest',
+                name: 'Pinterest',
+            };
+        }
+        return item;
+    };
+
+    const normalizedHeaderTitle = normalizeItem(updateHeaderTitle);
+    const normalizedSplitData = Array.isArray(props.splitData)
+        ? props.splitData.map(normalizeItem)
+        : props.splitData;
+
     return (
         <>
             <div
                 className={`d-flex justify-content-between align-items-center splite_ab splite_ab_bg `}
                 style={{
-                    background: getBackgroundColor[updateHeaderTitle?.id],
+                    background:
+                        (Number(updateHeaderTitle?.subchannelId ?? updateHeaderTitle?.subChannelId) === 5 ||
+                         updateHeaderTitle?.channelFriendlyName?.toLowerCase() === 'pinterest' ||
+                         updateHeaderTitle?.id?.toLowerCase() === 'pinterest')
+                            ? '#e60023'
+                            : getBackgroundColor[updateHeaderTitle?.id] ||
+                              getBackgroundColor[updateHeaderTitle?.channelFriendlyName?.toLowerCase()] ||
+                              getBackgroundColor[updateHeaderTitle?.channelFriendlyName],
                 }}
             >
                 <div>
                     {props.colorfulHeader && (
                         <RSBootstrapdown
-                            data={props.splitData}
+                            data={normalizedSplitData}
                             flatIcon
-                            defaultItem={updateHeaderTitle}
+                            defaultItem={normalizedHeaderTitle}
                             className=""
                             isObject
                             fieldKey={
@@ -286,50 +313,50 @@ const SplitHeader = (props) => {
                         splitViewCGTG ||
                         isControlTargetMode ||
                         showSplitDropdownFromMultipleSplits) && (
-                        <RSBootstrapdown
-                            data={
-                                isControlTargetMode
-                                    ? splitDataFilterHeader
-                                    : props?.splitData
-                            }
-                            isObject={true}
-                            customAlignRight={true}
-                            fieldKey="splitType"
-                            idKey="splitType"
-                            defaultItem={
-                                isControlTargetMode
-                                    ? state?.splitSegment ||
-                                    splitDataFilterHeader.find((item) => item.splitType === 'Target group')
-                                    : defaultSplitItem
-                            }
-                            className="splitsize"
-                            onSelect={(item) => {
-                                //debugger
-                                if (refAPIStatus?.current) {
-                                    refAPIStatus.current.totalActivityAPI = false;
-                                    refAPIStatus.current.communicationStatusAPI = false;
+                            <RSBootstrapdown
+                                data={
+                                    isControlTargetMode
+                                        ? splitDataFilterHeader
+                                        : props?.splitData
                                 }
-                                const resolvedBlastShortCode = getResolvedBlastShortCode(item);
-                                setState((prev) => ({ ...prev, splitSegment: item }));
-                                setDefaultSplitItem(item);
-                                const currentSplit = item;
-                                let filterData = {
-                                    splitData: item?.splitType,
-                                    selectedDate: {
-                                        startDate: props?.startDate,
-                                        endDate: props?.endDate,
-                                    },
-                                    filterSelectedData: state?.filterSelectedData?.segmentId || 0,
-                                    blastShortCode: resolvedBlastShortCode,
-                                    isCG: item?.splitType === "Control group",
-                                    isTG: item?.splitType === "Target group",
-                                    filterValue: accumulatedFilterValues
-                                };
-                                callbackSplit(filterData);
-                            }}
-                            isActive
-                        />
-                    )}
+                                isObject={true}
+                                customAlignRight={true}
+                                fieldKey="splitType"
+                                idKey="splitType"
+                                defaultItem={
+                                    isControlTargetMode
+                                        ? state?.splitSegment ||
+                                        splitDataFilterHeader.find((item) => item.splitType === 'Target group')
+                                        : defaultSplitItem
+                                }
+                                className="splitsize"
+                                onSelect={(item) => {
+                                    //debugger
+                                    if (refAPIStatus?.current) {
+                                        refAPIStatus.current.totalActivityAPI = false;
+                                        refAPIStatus.current.communicationStatusAPI = false;
+                                    }
+                                    const resolvedBlastShortCode = getResolvedBlastShortCode(item);
+                                    setState((prev) => ({ ...prev, splitSegment: item }));
+                                    setDefaultSplitItem(item);
+                                    const currentSplit = item;
+                                    let filterData = {
+                                        splitData: item?.splitType,
+                                        selectedDate: {
+                                            startDate: props?.startDate,
+                                            endDate: props?.endDate,
+                                        },
+                                        filterSelectedData: state?.filterSelectedData?.segmentId || 0,
+                                        blastShortCode: resolvedBlastShortCode,
+                                        isCG: item?.splitType === "Control group",
+                                        isTG: item?.splitType === "Target group",
+                                        filterValue: accumulatedFilterValues
+                                    };
+                                    callbackSplit(filterData);
+                                }}
+                                isActive
+                            />
+                        )}
                 </div>
                 <div className="d-flex align-items-center">
                     {props?.filterDropdown && shouldShowAudienceDropdown && (
@@ -373,9 +400,8 @@ const SplitHeader = (props) => {
                     <span className={`${downloadUI ? 'download-UI' : ''}`}>
                         {props?.datePicker && (
                             <RSDateRangePicker
-                                key={`${updateHeaderTitle?.channelFriendlyName || ''}-${
-                                    state?.splitSegment?.splitType || ''
-                                }-${state?.filterSelectedData?.segmentId}`}
+                                key={`${updateHeaderTitle?.channelFriendlyName || ''}-${state?.splitSegment?.splitType || ''
+                                    }-${state?.filterSelectedData?.segmentId}`}
                                 selectedDateText={'All time'}
                                 // startDate={props.startDate !== undefined && new Date(props.startDate)}
                                 // endDate={props.endDate !== undefined && new Date(props.endDate)}
@@ -426,21 +452,38 @@ const SplitHeader = (props) => {
 
                     {props?.detailAnalytics && (
                         <Fragment>
-                            <RSTooltip text="Download PDF" position="top" show={state?.downloadShow}>
-                                <i
-                                    id="rs_data_download"
-                                    className={`${pdf_download_medium} icon-md ml10`}
-                                    onMouseEnter={() => {
-                                        setState((pre) => ({ ...pre, downloadShow: true }));
-                                    }}
-                                    onMouseLeave={() => {
-                                        setState((pre) => ({ ...pre, downloadShow: false }));
-                                    }}
-                                    onClick={() => {
-                                        setState((pre) => ({ ...pre, downloadShow: false }));
-                                        props.isDownloadUI?.(true);
-                                    }}
-                                />
+                            <RSTooltip
+                                text={isPdfExporting ? 'Preparing PDF...' : 'Download PDF'}
+                                position="top"
+                                show={state?.downloadShow && !isPdfExporting}
+                            >
+                                <span
+                                    className={`eye-icon-wrapper d-inline-flex align-items-center justify-content-center ml10 ${isPdfExporting ? 'pe-none click-off eye-icon-wrapper--loading' : 'cp'
+                                        }`}
+                                >
+                                    {isPdfExporting ? (
+                                        <span
+                                            className="segment_loader listing-preview-eye-loader"
+                                            aria-hidden="true"
+                                        />
+                                    ) : (
+                                        <i
+                                            id="rs_data_download"
+                                            className={`${pdf_download_medium} icon-md`}
+                                            onMouseEnter={() => {
+                                                setState((pre) => ({ ...pre, downloadShow: true }));
+                                            }}
+                                            onMouseLeave={() => {
+                                                setState((pre) => ({ ...pre, downloadShow: false }));
+                                            }}
+                                            onClick={() => {
+                                                if (isPdfExporting) return;
+                                                setState((pre) => ({ ...pre, downloadShow: false }));
+                                                props.isDownloadUI?.(true);
+                                            }}
+                                        />
+                                    )}
+                                </span>
                             </RSTooltip>
                         </Fragment>
                     )}
@@ -453,11 +496,10 @@ const SplitHeader = (props) => {
                                     position="top"
                                 >
                                     <div
-                                        className={`eye-icon-wrapper d-flex align-items-center justify-content-center ${
-                                            advancedSearchBlock || advanceSearchFilterLoader.isLoading
+                                        className={`eye-icon-wrapper d-flex align-items-center justify-content-center ${advancedSearchBlock || advanceSearchFilterLoader.isLoading
                                                 ? 'pe-none click-off'
                                                 : ''
-                                        } ${advanceSearchFilterLoader.isLoading ? 'eye-icon-wrapper--loading' : ''}`}
+                                            } ${advanceSearchFilterLoader.isLoading ? 'eye-icon-wrapper--loading' : ''}`}
                                     >
                                         {advanceSearchFilterLoader.isLoading ? (
                                             <span
@@ -466,9 +508,8 @@ const SplitHeader = (props) => {
                                             />
                                         ) : (
                                             <i
-                                                className={`${
-                                                    advancedSearchBlock ? filter_fill_large : filter_large
-                                                } click-on icon-md blue`}
+                                                className={`${advancedSearchBlock ? filter_fill_large : filter_large
+                                                    } click-on icon-md blue`}
                                                 onClick={async () => {
                                                     if (!advancedSearchBlock) {
                                                         const payload = {
@@ -657,96 +698,96 @@ const SplitHeader = (props) => {
                                 <span
                                     className={`${!hasFilterDropdownOptions ? 'pe-none click-off' : ''} lh0`}
                                 >
-                                <BootstrapDropdown
-                                    data={filterDropdownOptions}
-                                    defaultItem={
-                                        <i
-                                            className={`${bar_filter_medium} icon-md color-primary-blue`}
-                                            id="rs_SplitHeader_bar_filter"
-                                        />
-                                    }
-                                    alignRight
-                                    customAlignRight={true}
-                                    showUpdate={false}
-                                    title={<i className={`${filter_large}`} />}
-                                    className="mr15 no_caret"
-                                    disabled={!hasFilterDropdownOptions}
-                                    controlledShow={showFilterDropdown}
-                                    onToggle={(nextOpen) => {
-                                        if (!hasFilterDropdownOptions && nextOpen) return;
-                                        setShowFilterDropdown(nextOpen);
-                                    }}
-                                    onSelect={async (selectedDisplayItem) => {
-                                    setShowFilterDropdown(false);
-                                    setValue('selectedtype', '');
-                                    setValue('searchInput', '');
-                                    const selectedAnalytic = filteredAnalyticsList?.find(
-                                        item => item.display === selectedDisplayItem
-                                    );
-                                    const originalValue = selectedAnalytic
-                                        ? selectedAnalytic.original
-                                        : selectedDisplayItem;
-                                    const payload = {
-                                        attributeName: originalValue,
-                                        clientId,
-                                        userId,
-                                        departmentId,
-                                        partnerID: 0,
-                                    };
-
-                                    const response = await dispatch(getAttributeValues(payload, () => { }, '', 0));
-
-                                    try {
-                                        if (!response?.data) {
-                                            throw new Error('Response or response.data is undefined or null');
+                                    <BootstrapDropdown
+                                        data={filterDropdownOptions}
+                                        defaultItem={
+                                            <i
+                                                className={`${bar_filter_medium} icon-md color-primary-blue`}
+                                                id="rs_SplitHeader_bar_filter"
+                                            />
                                         }
-                                        const parsedOnce = safeParseJSON(response?.data, null);
-                                        const parsedTwice =
-                                            typeof parsedOnce === 'string'
-                                                ? safeParseJSON(parsedOnce, {})
-                                                : parsedOnce && typeof parsedOnce === 'object'
-                                                  ? parsedOnce
-                                                  : {};
-                                        if (
-                                            typeof parsedTwice !== 'object' ||
-                                            parsedTwice === null ||
-                                            Array.isArray(parsedTwice)
-                                        ) {
-                                            throw new Error('Parsed result is not a valid object');
-                                        }
-                                        const keys = Object.keys(parsedTwice);
-                                        setSelectedFilterList((prev) => ({
-                                            ...prev,
-                                            filterList: keys,
-                                            searchKey: selectedDisplayItem,
-                                            originalKey: originalValue,
-                                        }));
-                                    } catch (error) {
-                                        setSelectedFilterList((prev) => ({
-                                            ...prev,
-                                            filterList: [],
-                                            searchKey: selectedDisplayItem,
-                                            originalKey: originalValue,
-                                        }));
-                                    }
-                                    // const { data: advanceSearchData } = await dispatch(getDetailAdvanceSearch({
-                                    //         blastID,
-                                    //     campaignId:campaignID,
-                                    //         channelId,
-                                    //     departmentId
-                                    // }));
+                                        alignRight
+                                        customAlignRight={true}
+                                        showUpdate={false}
+                                        title={<i className={`${filter_large}`} />}
+                                        className="mr15 no_caret"
+                                        disabled={!hasFilterDropdownOptions}
+                                        controlledShow={showFilterDropdown}
+                                        onToggle={(nextOpen) => {
+                                            if (!hasFilterDropdownOptions && nextOpen) return;
+                                            setShowFilterDropdown(nextOpen);
+                                        }}
+                                        onSelect={async (selectedDisplayItem) => {
+                                            setShowFilterDropdown(false);
+                                            setValue('selectedtype', '');
+                                            setValue('searchInput', '');
+                                            const selectedAnalytic = filteredAnalyticsList?.find(
+                                                item => item.display === selectedDisplayItem
+                                            );
+                                            const originalValue = selectedAnalytic
+                                                ? selectedAnalytic.original
+                                                : selectedDisplayItem;
+                                            const payload = {
+                                                attributeName: originalValue,
+                                                clientId,
+                                                userId,
+                                                departmentId,
+                                                partnerID: 0,
+                                            };
 
-                                    // const matchedFilter = advanceSearchData.find(
-                                    //     (item) => item.displayName === selectedDisplayItem,
-                                    // );
+                                            const response = await dispatch(getAttributeValues(payload, () => { }, '', 0));
 
-                                    }}
-                                />
+                                            try {
+                                                if (!response?.data) {
+                                                    throw new Error('Response or response.data is undefined or null');
+                                                }
+                                                const parsedOnce = safeParseJSON(response?.data, null);
+                                                const parsedTwice =
+                                                    typeof parsedOnce === 'string'
+                                                        ? safeParseJSON(parsedOnce, {})
+                                                        : parsedOnce && typeof parsedOnce === 'object'
+                                                            ? parsedOnce
+                                                            : {};
+                                                if (
+                                                    typeof parsedTwice !== 'object' ||
+                                                    parsedTwice === null ||
+                                                    Array.isArray(parsedTwice)
+                                                ) {
+                                                    throw new Error('Parsed result is not a valid object');
+                                                }
+                                                const keys = Object.keys(parsedTwice);
+                                                setSelectedFilterList((prev) => ({
+                                                    ...prev,
+                                                    filterList: keys,
+                                                    searchKey: selectedDisplayItem,
+                                                    originalKey: originalValue,
+                                                }));
+                                            } catch (error) {
+                                                setSelectedFilterList((prev) => ({
+                                                    ...prev,
+                                                    filterList: [],
+                                                    searchKey: selectedDisplayItem,
+                                                    originalKey: originalValue,
+                                                }));
+                                            }
+                                            // const { data: advanceSearchData } = await dispatch(getDetailAdvanceSearch({
+                                            //         blastID,
+                                            //     campaignId:campaignID,
+                                            //         channelId,
+                                            //     departmentId
+                                            // }));
+
+                                            // const matchedFilter = advanceSearchData.find(
+                                            //     (item) => item.displayName === selectedDisplayItem,
+                                            // );
+
+                                        }}
+                                    />
                                 </span>
                             </RSTooltip>
                         </div>
 
-                        <div className={`mr55 ${accumulatedFilterValues?.length === 0 && !searchInput?.length ? 'pe-none click-off' : ''}`}>
+                        <div className={`mr55 ${accumulatedFilterValues?.length === 0 && !searchInput?.length || !hasFilterDropdownOptions ? 'pe-none click-off' : ''}`}>
                             <RSPrimaryButton
                                 onClick={() => {
                                     let finalFilterValues = [...accumulatedFilterValues];

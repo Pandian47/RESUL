@@ -17,6 +17,35 @@ export const getMobileAppId = createSelector(
     (state) => state.mobileAppId,
 );
 
+const FIRST_SMART_LINK_KEY = 'smartLink1';
+
+export const getMobileAppIdFromEditFlow = (editFlow = {}) => {
+    const linkArray = editFlow?.[FIRST_SMART_LINK_KEY];
+    if (!Array.isArray(linkArray)) return '';
+
+    for (const entry of linkArray.slice(1)) {
+        const appGuid = entry?.mobileApp?.appGuid || entry?.mobileAppName?.appGuid;
+        if (appGuid) return appGuid;
+    }
+    return '';
+};
+
+export const getMobileAppIdFromFormState = (formState = {}) => {
+    const sections = formState?.[FIRST_SMART_LINK_KEY];
+    if (!Array.isArray(sections)) return '';
+
+    for (const entry of sections.slice(1)) {
+        const appGuid = entry?.mobileApp?.appGuid || entry?.mobileAppName?.appGuid;
+        if (appGuid) return appGuid;
+    }
+    return '';
+};
+
+export const getResolvedMobileAppId = createSelector(
+    (state) => state.smartLinkReducer.editFlow,
+    (editFlow) => getMobileAppIdFromEditFlow(editFlow),
+);
+
 export const screenListSelector = createSelector(
     (state) => state.smartLinkReducer,
     (state) => state.screenList,
@@ -145,3 +174,26 @@ export const getGeneratedFlag = createSelector(
     (state) => state.smartLinkReducer,
     (state) => state.generateFlag,
 );
+
+export const isSmartLinkCacheValid = createSelector(
+    (state) => state.smartLinkReducer,
+    ({ isSmartLinkDetailFetched, fetchedCampaignId }) => ({
+        isSmartLinkDetailFetched,
+        fetchedCampaignId,
+    }),
+);
+
+export const getMobileSmartLinkOverlayMessage = ({
+    smartLink1,
+    smartLink = {},
+    editFlow = {},
+    noSmartLinkMessage,
+    mobileNotSetupMessage,
+}) => {
+    const hasSmartLinkUrl = Boolean(smartLink1 && Object.values(smartLink)[0]);
+    const resolvedMobileAppId = getMobileAppIdFromEditFlow(editFlow);
+
+    if (!hasSmartLinkUrl) return noSmartLinkMessage;
+    if (!resolvedMobileAppId) return mobileNotSetupMessage;
+    return noSmartLinkMessage;
+};

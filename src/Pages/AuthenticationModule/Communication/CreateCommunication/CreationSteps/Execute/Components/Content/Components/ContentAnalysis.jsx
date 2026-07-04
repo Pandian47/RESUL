@@ -3,7 +3,7 @@ import { LINK_VERIFICATION, SMART_LINK_SUMMARY } from 'Constants/GlobalConstant/
 import { circle_info_medium } from 'Constants/GlobalConstant/Glyphicons';
 import { useEffect, useState } from 'react';
 import { CONTENT_ANALYSIS_DATA, CONTENT_ANALYSIS_DATA_MAP } from '../constant';
-import _findIndex from 'lodash/findIndex';
+import { findIndex as _findIndex } from 'Utils/modules/lodashReplacements';
 import SDKStatus from './SDKStatus';
 import LinkVerification from './LinkVerification';
 import { useSelector } from 'react-redux';

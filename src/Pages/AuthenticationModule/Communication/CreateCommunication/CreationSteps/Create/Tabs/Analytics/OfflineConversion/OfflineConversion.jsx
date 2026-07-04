@@ -3,7 +3,7 @@ import { ENTER_CONVERSION_VALUE, ENTER_GRACE_PERIOD, ENTER_VALID_GRACE_PERIOD } 
 import { ARE_YOU_SURE_WANT_TO_RESET, CANCEL, IGNORE_CHANNEL, NEXT, OK, RESET, SAVE } from 'Constants/GlobalConstant/Placeholders';
 import { restart_medium } from 'Constants/GlobalConstant/Glyphicons';
 import { useContext, useEffect, useState } from 'react';
-import _map from 'lodash/map';
+import { map as _map } from 'Utils/modules/lodashReplacements';
 import { Row, Col } from 'react-bootstrap';
 import { useForm, FormProvider } from 'react-hook-form';
 

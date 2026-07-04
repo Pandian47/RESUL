@@ -13,14 +13,12 @@ export const audienceTargetListCardCriticalCss = `
     box-sizing: border-box;
     width: 100%;
     display: flex;
-    padding-left: 15px;
-    padding-right: 15px;
-    margin-bottom: 27px;
+    padding-left: 0;
+    padding-right: 0;
 }
 @media (min-width: 576px) {
     .aud-sk-target-list-card-col {
-        flex: 0 0 33.333333%;
-        max-width: 33.333333%;
+        max-width: 100%;
     }
 }
 .aud-sk-target-list-card-col--pl0 {

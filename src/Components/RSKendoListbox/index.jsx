@@ -1,4 +1,4 @@
-import { AVAILABLE_ATTRIBUTES, COUNT, LISTBOX_NOTES_TEXT, SELECTED_ATTRIBUTES, SELECT_LEFT_ATTRIBUTES } from 'Constants/GlobalConstant/Placeholders';
+import { AVAILABLE_ATTRIBUTES, COUNT, SELECTED_ATTRIBUTES, SELECT_LEFT_ATTRIBUTES } from 'Constants/GlobalConstant/Placeholders';
 import { circle_info_mini } from 'Constants/GlobalConstant/Glyphicons';
 import { Component, memo } from 'react';
 import PropTypes from 'prop-types';
@@ -11,15 +11,34 @@ import ListBoxNodataAvailable from 'Components/FormFields/Component/NoDataAvaila
 import KendoListboxSkeleton from 'Components/Skeleton/Components/KendoListboxSkeleton';
 
 class RSKendoListbox extends Component {
+    // Replaces the removed static defaultProps (unsupported for function
+    // components in React 19; dropped here too so props are sourced one way).
+    get defaultedProps() {
+        return {
+            rightColumnValues: this.props.rightColumnValues ?? [],
+            leftColumnValues: this.props.leftColumnValues ?? [],
+            getSelectedData: this.props.getSelectedData ?? (() => {}),
+            textField: this.props.textField ?? 'name',
+            rightColumnName: this.props.rightColumnName ?? 'rightColumnValues',
+            leftColumnName: this.props.leftColumnName ?? 'leftColumnValues',
+            leftNotes: this.props.leftNotes ?? '',
+            rightNotes: this.props.rightNotes ?? '',
+            selectedField: this.props.selectedField ?? 'selected',
+            rightColumnProps: this.props.rightColumnProps ?? {},
+            listBoxHeader: this.props.listBoxHeader ?? 'columns / attributes',
+            loading: this.props.loading ?? false,
+        };
+    }
+
     state = {
-        leftColumnValues: this.props.leftColumnValues,
-        rightColumnValues: this.props.rightColumnValues,
+        leftColumnValues: this.defaultedProps.leftColumnValues,
+        rightColumnValues: this.defaultedProps.rightColumnValues,
         draggedItem: {},
         searchInput: '',
         isSearchOpen: false,
         leftAttributes: '',
         rightAttributes: '',
-        listBoxHeader: this.props.listBoxHeader || '',
+        listBoxHeader: this.defaultedProps.listBoxHeader,
         clickedItems: [],
         setSelectedLength: this.props.setSelectedLength,
         customText: this.props.customText,
@@ -68,8 +87,8 @@ class RSKendoListbox extends Component {
             prevProps.rightColumnValues !== this.props.rightColumnValues
         ) {
             this.setState({
-                leftColumnValues: this.props.leftColumnValues,
-                rightColumnValues: this.props.rightColumnValues,
+                leftColumnValues: this.defaultedProps.leftColumnValues,
+                rightColumnValues: this.defaultedProps.rightColumnValues,
             });
         }
     };
@@ -85,7 +104,7 @@ class RSKendoListbox extends Component {
                 this.state?.setSelectedLength(this.state?.clickedItems?.length);
             },
         );
-        const { selectedField, textField } = this.props;
+        const { selectedField, textField } = this.defaultedProps;
         this.setState({
             [data]: this.state[data].map((attr) => {
                 if (attr[textField] === event.dataItem[textField]) {
@@ -102,7 +121,7 @@ class RSKendoListbox extends Component {
         });
     };
     handleToolBarClick = (e, data, connectedData) => {
-        const { selectedField, getSelectedData } = this.props;
+        const { selectedField, getSelectedData } = this.defaultedProps;
         let result = processListBoxData(this.state[data], this.state[connectedData], e.toolName, selectedField);
         this.setState({
             [data]: result.listBoxOneData,
@@ -125,7 +144,7 @@ class RSKendoListbox extends Component {
     };
 
     applyListBoxDrop = (dropDataItem, dropListKey) => {
-        const { textField, getSelectedData, leftColumnName, rightColumnName, selectedField } = this.props;
+        const { textField, getSelectedData, leftColumnName, rightColumnName, selectedField } = this.defaultedProps;
         const draggedItem = this._draggedItem || this.state.draggedItem;
         const dragListKey = draggedItem?.dataCollection;
         if (!dragListKey || !dropListKey) return;
@@ -186,7 +205,7 @@ class RSKendoListbox extends Component {
 
     handleEmptyRightNativeDrop = (e) => {
         e.preventDefault();
-        this.applyListBoxDrop(null, this.props.rightColumnName);
+        this.applyListBoxDrop(null, this.defaultedProps.rightColumnName);
     };
 
     handleEmptyRightDragEnter = (e) => {
@@ -202,7 +221,7 @@ class RSKendoListbox extends Component {
     };
 
     handleItemDoubleClick = (event, data, connectedData) => {
-        const { selectedField, textField, getSelectedData } = this.props;
+        const { selectedField, textField, getSelectedData, leftColumnName, rightColumnName } = this.defaultedProps;
         const list = this.state[data] || [];
         const clicked = event?.dataItem;
         if (!clicked) return;
@@ -215,25 +234,26 @@ class RSKendoListbox extends Component {
             [selectedField]: index === clickedIndex,
         }));
         const result = processListBoxData(
-            data === this.props.leftColumnName ? markedList : this.state[connectedData],
-            data === this.props.leftColumnName ? this.state[connectedData] : markedList,
-            data === this.props.leftColumnName ? 'transferTo' : 'transferFrom',
+            data === leftColumnName ? markedList : this.state[connectedData],
+            data === leftColumnName ? this.state[connectedData] : markedList,
+            data === leftColumnName ? 'transferTo' : 'transferFrom',
             selectedField,
         );
 
         this.setState({
-            [this.props.leftColumnName]: result.listBoxOneData,
-            [this.props.rightColumnName]: result.listBoxTwoData,
+            [leftColumnName]: result.listBoxOneData,
+            [rightColumnName]: result.listBoxTwoData,
         });
         getSelectedData({
-            [this.props.leftColumnName]: result.listBoxOneData,
-            [this.props.rightColumnName]: result.listBoxTwoData,
+            [leftColumnName]: result.listBoxOneData,
+            [rightColumnName]: result.listBoxTwoData,
         });
     };
 
     render() {
         const { leftColumnValues, rightColumnValues, listBoxHeader, searchClassName } = this.state;
-        const { textField, rightColumnName, leftColumnName, selectedField, leftNotes, rightNotes, loading } = this.props;
+        const { textField, rightColumnName, leftColumnName, selectedField, leftNotes, rightNotes, loading, rightColumnProps } =
+            this.defaultedProps;
 
         if (loading) {
             return <KendoListboxSkeleton />;
@@ -271,16 +291,18 @@ class RSKendoListbox extends Component {
             <div className="kendolist-wrapper">
                 <div className="multiSelect">
                     <div className="multiClm multiLftClm">
-                        <h4 className="m0 py10">{AVAILABLE_ATTRIBUTES}</h4>
-                        {leftColumnValues?.length > 6 && (
-                            <RSSearchField
-                                searchedText={(text) => {
-                                    this.setState({ leftAttributes: text });
-                                }}
-                                debounceOnChange={true}
-                                searchClassName={searchClassName}
-                            />
-                        )}
+                        <div className="d-flex justify-content-between align-items-center">
+                            <h4 className="m0">{AVAILABLE_ATTRIBUTES}</h4>
+                            {leftColumnValues?.length > 6 && (
+                                <RSSearchField
+                                    searchedText={(text) => {
+                                        this.setState({ leftAttributes: text });
+                                    }}
+                                    debounceOnChange={true}
+                                    searchClassName={searchClassName}
+                                />
+                            )}
+                        </div>
                         <div className="position-relative">
                             <div onKeyUp={(e) => this.handleKeyDown(e)}>
                                 <ListBox
@@ -317,7 +339,7 @@ class RSKendoListbox extends Component {
                                         <i
                                             className={`${circle_info_mini} icon-xs color-primary-blue mr5 cursor-default`}
                                         ></i>
-                                        <small>{LISTBOX_NOTES_TEXT}</small>
+                                        <small>{`Hold ${this.state.isMac ? 'Cmd' : 'Ctrl'} to select multiple items`}</small>
                                     </div>
                                 </div>
                             </div>
@@ -355,7 +377,7 @@ class RSKendoListbox extends Component {
                                     onDragStart={this.handleDragStart}
                                     onDrop={this.handleDrop}
                                     name={rightColumnName}
-                                    {...this.props.rightColumnProps}
+                                    {...rightColumnProps}
                                 />
                                 <small className="float-end">
                                     {COUNT}: {numberWithCommas(searchedAttrs('right')?.length || 0)}{' '}
@@ -384,21 +406,6 @@ class RSKendoListbox extends Component {
         );
     }
 }
-
-RSKendoListbox.defaultProps = {
-    rightColumnValues: [],
-    leftColumnValues: [],
-    getSelectedData: () => { },
-    textField: 'name',
-    rightColumnName: 'rightColumnValues',
-    leftColumnName: 'leftColumnValues',
-    leftNotes: '',
-    rightNotes: '',
-    selectedField: 'selected',
-    rightColumnProps: {},
-    listBoxHeader: 'columns / attributes',
-    loading: false,
-};
 
 RSKendoListbox.propTypes = {
     rightColumnValues: PropTypes.array.isRequired,

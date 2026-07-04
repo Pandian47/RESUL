@@ -1,16 +1,17 @@
 import { encodeUrl } from 'Utils/modules/crypto';
-import { getUserCurrentFormat, getYYMMDD } from 'Utils/modules/dateTime';
+import { getUserCurrentFormat, getYYMM, getYYMMDD } from 'Utils/modules/dateTime';
 import { truncateTitle } from 'Utils/modules/displayCore';
 import { downloadCSVcommasFile } from 'Utils/modules/download';
 import { numberWithCommas } from 'Utils/modules/formatters';
 import { csv_download_large, trophy_medium } from 'Constants/GlobalConstant/Glyphicons';
 import { cloneElement, useCallback, useEffect, useMemo, useState } from 'react';
-import _map from 'lodash/map';
+import { map as _map } from 'Utils/modules/lodashReplacements';
 import KendoGrid from 'Components/RSKendoGrid';
 
 
 import RSTooltip from 'Components/RSTooltip';
 import { globalStateSelector } from 'Utils/Selectors/app';
+import {getFirstDayOfMonth, getCurrentDateOfMonth} from 'Utils/modules/dateTime.jsx'
 import { getSessionId } from 'Reducers/globalState/selector';
 import {
     getConsumptionChannelDetails,

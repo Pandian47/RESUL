@@ -1,18 +1,21 @@
-import { HTTPS_REGEX } from 'Constants/GlobalConstant/Regex';
+import { HTTPS_REGEX, MAX_LENGTH75 } from 'Constants/GlobalConstant/Regex';
 import { ENTER_VALID_URL } from 'Constants/GlobalConstant/ValidationMessage';
-import { useEffect, useRef, useState } from 'react';
-import { Controller, useFormContext } from 'react-hook-form';
+import { cloneElement, memo, useEffect, useMemo, useRef, useState } from 'react';
+import { Controller, FormProvider, useForm, useFormContext } from 'react-hook-form';
 // import { Editor } from '@tinymce/tinymce-react';
-import { Editor, EditorTools, ProseMirror } from '@progress/kendo-react-editor';
+import { Editor, EditorTools, EditorUtils, ProseMirror } from '@progress/kendo-react-editor';
 import { ButtonGroup } from '@progress/kendo-react-buttons';
 import RSColorPicker from 'Components/ColorPicker';
+import ResKendoDropdown from 'Pages/KendoDocs/CommonComponents/ResKendoDropdown';
+import { TOOLBAR_ICON_CONFIG } from 'Pages/KendoDocs/CommonComponents/ResTextEditor/config';
+import RSModal from 'Components/RSModal';
+import RSInput from 'Components/FormFields/RSInput';
+import RSCheckbox from 'Components/FormFields/RSCheckbox';
+import { RSPrimaryButton, RSSecondaryButton } from 'Components/Buttons';
 const {
     Bold,
     Italic,
     Underline,
-    FontName,
-    FontSize,
-    Link,
     Unlink,
     AlignLeft,
     AlignCenter,
@@ -22,8 +25,459 @@ const {
 } = EditorTools;
 const { EditorState, Plugin, PluginKey } = ProseMirror;
 class EditorView extends ProseMirror.EditorView { }
-import { get } from 'lodash';
+import { get } from 'Utils/modules/lodashReplacements';
 import PropTypes from 'prop-types';
+
+const EDITOR_FONT_FAMILY_ITEMS = [
+    { text: 'Arial', value: 'Arial, sans-serif', fontFamily: 'Arial, sans-serif' },
+    { text: 'Courier New', value: '"Courier New", Courier, monospace', fontFamily: '"Courier New", Courier, monospace' },
+    { text: 'Georgia', value: 'Georgia, serif', fontFamily: 'Georgia, serif' },
+    { text: 'Helvetica', value: 'Helvetica, Arial, sans-serif', fontFamily: 'Helvetica, Arial, sans-serif' },
+    { text: 'Impact', value: 'Impact, Haettenschweiler, sans-serif', fontFamily: 'Impact, Haettenschweiler, sans-serif' },
+    { text: 'Lucida Console', value: '"Lucida Console", Monaco, monospace', fontFamily: '"Lucida Console", Monaco, monospace' },
+    { text: 'Tahoma', value: 'Tahoma, Geneva, sans-serif', fontFamily: 'Tahoma, Geneva, sans-serif' },
+    { text: 'Times New Roman', value: '"Times New Roman", Times, serif', fontFamily: '"Times New Roman", Times, serif' },
+    { text: 'Trebuchet MS', value: '"Trebuchet MS", Helvetica, sans-serif', fontFamily: '"Trebuchet MS", Helvetica, sans-serif' },
+    { text: 'Verdana', value: 'Verdana, Geneva, sans-serif', fontFamily: 'Verdana, Geneva, sans-serif' },
+];
+
+const EDITOR_FONT_SIZE_ITEMS = [
+    '8pt', '9pt', '10pt', '11pt', '12pt', '14pt', '16pt', '18pt', '20pt', '22pt', '24pt', '26pt', '28pt', '36pt', '48pt', '72pt',
+].map((size) => ({ text: size, value: size }));
+
+const EDITOR_TOOLTIP_BY_ARIA_LABEL = {
+    Bold: 'Bold',
+    Italic: 'Italic',
+    Underline: 'Underline',
+    'Align text left': 'Align left',
+    'Center text': 'Align center',
+    'Align text right': 'Align right',
+    Justify: 'Justify',
+    'Insert image': 'Insert image',
+    Link: 'Link',
+    'Remove link': 'Remove Link',
+};
+
+const applyRsIconReplacement = (iconElement, iconClass) => {
+    if (!iconElement || iconElement.hasAttribute('data-rs-icon-replaced')) return;
+
+    const svg = iconElement.querySelector('svg');
+    if (svg) svg.style.display = 'none';
+
+    const isLegacyKendoIcon = [...iconElement.classList].some((cls) => cls.startsWith('k-i-'));
+    if (isLegacyKendoIcon) {
+        iconElement.style.fontSize = '0';
+        iconElement.style.lineHeight = '0';
+        iconElement.style.display = 'inline-flex';
+        iconElement.style.alignItems = 'center';
+        iconElement.style.justifyContent = 'center';
+    }
+
+    if (!iconElement.querySelector(`.${iconClass}`)) {
+        const iconEl = document.createElement('i');
+        iconEl.className = `${iconClass} icon-md`;
+        iconElement.appendChild(iconEl);
+    }
+
+    iconElement.setAttribute('data-rs-icon-replaced', 'true');
+};
+
+const replaceToolbarButtonWithRsIcon = (button, iconClass) => {
+    if (!button || button.hasAttribute('data-rs-button-icon-replaced')) return;
+
+    const iconHost =
+        button.querySelector('.k-button-icon, .k-icon, [class*="k-svg-i-"], [class*="k-i-"]') || null;
+
+    if (iconHost) {
+        applyRsIconReplacement(iconHost, iconClass);
+    }
+
+    button.setAttribute('data-rs-button-icon-replaced', 'true');
+};
+
+const applyPopupToolbarIconReplacements = (root, config) => {
+    const toolbar = root?.querySelector?.('.k-button-group');
+    if (!toolbar) return;
+
+    config.forEach(({ className, legacyClassName, iconClass }) => {
+        [className, legacyClassName].filter(Boolean).forEach((cls) => {
+            toolbar.querySelectorAll(`.${cls}, [class~="${cls}"]`).forEach((iconElement) => {
+                if (iconElement.closest('.rs-builder-colorpicker-container, .rs-colorpicker-wrapper')) return;
+                applyRsIconReplacement(iconElement, iconClass);
+            });
+        });
+    });
+
+    toolbar.querySelectorAll('.k-button').forEach((button) => {
+        if (button.closest('.rs-builder-colorpicker-container, .rs-colorpicker-wrapper')) return;
+
+        const buttonLabel = (button.getAttribute('title') || button.getAttribute('aria-label') || '').trim();
+        const matchedEntry =
+            config.find(({ className, legacyClassName }) =>
+                [className, legacyClassName].filter(Boolean).some((cls) =>
+                    button.querySelector(`.${cls}, [class~="${cls}"]`),
+                ),
+            ) || config.find(({ buttonTitle }) => buttonTitle && buttonTitle === buttonLabel);
+
+        if (matchedEntry) {
+            replaceToolbarButtonWithRsIcon(button, matchedEntry.iconClass);
+        }
+    });
+};
+
+const fontFamilyItemRender = (li, itemProps) => {
+    const { dataItem } = itemProps;
+    return cloneElement(
+        li,
+        { ...li.props, title: dataItem?.text },
+        <span className="list-item" style={{ fontFamily: dataItem?.fontFamily }}>
+            {dataItem?.text}
+        </span>,
+    );
+};
+
+const fontNameValueRender = (element, value) =>
+    cloneElement(
+        element,
+        { ...element.props, title: value?.text || 'Font name' },
+        <span className="k-input-value-text">{value?.text || 'Font name'}</span>,
+    );
+
+const fontSizeValueRender = (element, value) =>
+    cloneElement(
+        element,
+        { ...element.props, title: value?.text || 'Font size' },
+        <span className="k-input-value-text">{value?.text || 'Font size'}</span>,
+    );
+
+const EditorFontNameTool = ({ view }) => {
+    const viewRef = useRef(view);
+    viewRef.current = view;
+
+    const { control, setValue } = useForm({ defaultValues: { editorFontName: null } });
+
+    const selectedItem = useMemo(() => {
+        if (!view?.state) return null;
+
+        const fontFamily = EditorUtils.getInlineStyles(view.state)?.['font-family'];
+        if (!fontFamily) return null;
+
+        return (
+            EDITOR_FONT_FAMILY_ITEMS.find(
+                (item) => item.value === fontFamily || item.text === fontFamily,
+            ) ?? null
+        );
+    }, [view?.state]);
+
+    useEffect(() => {
+        setValue('editorFontName', selectedItem, { shouldDirty: false });
+    }, [selectedItem, setValue]);
+
+    return (
+        <div className="rs-editor-font-name-tool" onMouseDown={(event) => event.preventDefault()}>
+            <ResKendoDropdown
+                control={control}
+                name="editorFontName"
+                data={EDITOR_FONT_FAMILY_ITEMS}
+                textField="text"
+                dataItemKey="value"
+                label="Font name"
+                placeholder="Font name"
+                isError={false}
+                useErrorContainer={false}
+                filterable={false}
+                isCustomRender
+                itemRender={fontFamilyItemRender}
+                valueRender={fontNameValueRender}
+                handleChange={(event) => {
+                    const editorView = viewRef.current;
+                    const item = event?.value;
+                    if (!editorView || !item?.value) return;
+
+                    EditorUtils.applyInlineStyle(editorView, {
+                        style: 'font-family',
+                        value: item.value,
+                    });
+                    editorView.focus();
+                }}
+            />
+        </div>
+    );
+};
+
+const EditorFontSizeTool = ({ view }) => {
+    const viewRef = useRef(view);
+    viewRef.current = view;
+
+    const { control, setValue } = useForm({ defaultValues: { editorFontSize: null } });
+
+    const selectedItem = useMemo(() => {
+        if (!view?.state) return null;
+
+        const fontSize = EditorUtils.getInlineStyles(view.state)?.['font-size'];
+        if (!fontSize) return null;
+
+        return EDITOR_FONT_SIZE_ITEMS.find((item) => item.value === fontSize) ?? null;
+    }, [view?.state]);
+
+    useEffect(() => {
+        setValue('editorFontSize', selectedItem, { shouldDirty: false });
+    }, [selectedItem, setValue]);
+
+    return (
+        <div className="rs-editor-font-size-tool" onMouseDown={(event) => event.preventDefault()}>
+            <ResKendoDropdown
+                control={control}
+                name="editorFontSize"
+                data={EDITOR_FONT_SIZE_ITEMS}
+                textField="text"
+                dataItemKey="value"
+                label="Font size"
+                placeholder="Font size"
+                isError={false}
+                useErrorContainer={false}
+                filterable={false}
+                valueRender={fontSizeValueRender}
+                handleChange={(event) => {
+                    const editorView = viewRef.current;
+                    const item = event?.value;
+                    if (!editorView || !item?.value) return;
+
+                    EditorUtils.applyInlineStyle(editorView, {
+                        style: 'font-size',
+                        value: item.value,
+                    });
+                    editorView.focus();
+                }}
+            />
+        </div>
+    );
+};
+
+EditorFontNameTool.propTypes = { view: PropTypes.object };
+EditorFontSizeTool.propTypes = { view: PropTypes.object };
+
+const MemoEditorFontNameTool = memo(EditorFontNameTool);
+const MemoEditorFontSizeTool = memo(EditorFontSizeTool);
+
+const HYPERLINK_FORM_DEFAULTS = {
+    url: '',
+    title: '',
+    openInNewWindow: true,
+};
+
+const getLinkInfoFromSelection = (state, editorView) => {
+    if (!state?.selection || state.selection.empty) return null;
+
+    const { from, to } = state.selection;
+    const linkMarkType = state.schema.marks.link;
+    let linkMarkFound = state.doc.resolve(from).marks().find((mark) => mark.type === linkMarkType);
+
+    if (!linkMarkFound) {
+        state.doc.nodesBetween(from, to, (node) => {
+            if (!node.marks) return;
+            const found = node.marks.find((mark) => mark.type === linkMarkType);
+            if (found) {
+                linkMarkFound = found;
+                return false;
+            }
+        });
+    }
+
+    if (linkMarkFound) {
+        return {
+            href: linkMarkFound.attrs.href || '',
+            title: linkMarkFound.attrs.title || state.doc.textBetween(from, to) || '',
+            openInNewWindow: linkMarkFound.attrs.target === '_blank',
+        };
+    }
+
+    if (editorView) {
+        try {
+            const startPos = editorView.domAtPos(from);
+            const endPos = editorView.domAtPos(to);
+            const range = document.createRange();
+            range.setStart(startPos.node, startPos.offset);
+            range.setEnd(endPos.node, endPos.offset);
+            const container = range.commonAncestorContainer;
+            const anchor =
+                container.nodeType === Node.ELEMENT_NODE
+                    ? container.closest('a')
+                    : container.parentElement?.closest('a');
+
+            if (anchor) {
+                return {
+                    href: anchor.getAttribute('href') || '',
+                    title: anchor.getAttribute('title') || anchor.textContent || '',
+                    openInNewWindow: anchor.getAttribute('target') === '_blank',
+                };
+            }
+        } catch (_error) {
+            // Fall through to selected text defaults
+        }
+    }
+
+    return {
+        href: '',
+        title: state.doc.textBetween(from, to) || '',
+        openInNewWindow: true,
+    };
+};
+
+const EditorLinkTool = ({ view }) => {
+    const viewRef = useRef(view);
+    viewRef.current = view;
+
+    const [showHyperlinkModal, setShowHyperlinkModal] = useState(false);
+    const hyperlinkMethods = useForm({ defaultValues: HYPERLINK_FORM_DEFAULTS });
+    const watchedUrl = hyperlinkMethods.watch('url');
+    const urlFieldError = hyperlinkMethods.formState.errors.url;
+
+    const handleModalClose = () => {
+        setShowHyperlinkModal(false);
+        hyperlinkMethods.reset(HYPERLINK_FORM_DEFAULTS);
+    };
+
+    const handleOpenHyperlinkModal = () => {
+        const editorView = viewRef.current;
+        if (!editorView?.state) return;
+
+        const linkInfo = getLinkInfoFromSelection(editorView.state, editorView);
+        hyperlinkMethods.reset({
+            url: linkInfo?.href || '',
+            title: linkInfo?.title || '',
+            openInNewWindow: linkInfo?.openInNewWindow ?? true,
+        });
+        setShowHyperlinkModal(true);
+    };
+
+    const handleInsertHyperlink = () => {
+        const formData = hyperlinkMethods.getValues();
+        const trimmedUrl = formData.url?.trim();
+
+        if (!trimmedUrl) return;
+
+        if (!HTTPS_REGEX.test(trimmedUrl)) {
+            hyperlinkMethods.setError('url', {
+                type: 'pattern',
+                message: ENTER_VALID_URL,
+            });
+            return;
+        }
+
+        const editorView = viewRef.current;
+        if (!editorView?.state) return;
+
+        const { state, dispatch } = editorView;
+        const { selection, schema } = state;
+
+        if (selection.empty) {
+            hyperlinkMethods.setError('url', {
+                type: 'manual',
+                message: 'Select text to create a link',
+            });
+            return;
+        }
+
+        const linkMark = schema.marks.link;
+        const attrs = {
+            href: trimmedUrl,
+            target: formData.openInNewWindow ? '_blank' : '_self',
+        };
+
+        if (formData.title?.trim()) {
+            attrs.title = formData.title.trim();
+        }
+
+        const transaction = state.tr;
+        transaction.removeMark(selection.from, selection.to, linkMark);
+        transaction.addMark(selection.from, selection.to, linkMark.create(attrs));
+        dispatch(transaction);
+        editorView.focus();
+        handleModalClose();
+    };
+
+    return (
+        <>
+            <button
+                type="button"
+                className="k-button k-icon-button"
+                aria-label="Link"
+                style={{ width: 'auto', height: '30px' }}
+                onMouseDown={(event) => {
+                    event.preventDefault();
+                    handleOpenHyperlinkModal();
+                }}
+            >
+                <i className="icon-rs-editor-link-medium icon-md" />
+            </button>
+
+            <RSModal
+                show={showHyperlinkModal}
+                handleClose={handleModalClose}
+                header="Insert hyperlink"
+                size="md"
+                className="formEditor-popup"
+                footer={
+                    <div className="buttons-holder mt0">
+                        <RSSecondaryButton onClick={handleModalClose}>Cancel</RSSecondaryButton>
+                        <RSPrimaryButton
+                            className={!watchedUrl?.trim() ? 'click-off pe-none' : ''}
+                            onClick={handleInsertHyperlink}
+                            disabled={!watchedUrl?.trim() || !!urlFieldError}
+                        >
+                            Insert
+                        </RSPrimaryButton>
+                    </div>
+                }
+                body={
+                    <FormProvider {...hyperlinkMethods}>
+                        <div className="form-group">
+                            <RSInput
+                                name="url"
+                                type="text"
+                                placeholder="Web address"
+                                maxLength={MAX_LENGTH75}
+                                control={hyperlinkMethods.control}
+                                className="form-control"
+                                required
+                                rules={{
+                                    pattern: {
+                                        value: HTTPS_REGEX,
+                                        message: ENTER_VALID_URL,
+                                    },
+                                }}
+                            />
+                        </div>
+
+                        <div>
+                            <RSInput
+                                name="title"
+                                type="text"
+                                placeholder="Link title"
+                                control={hyperlinkMethods.control}
+                                className="form-control"
+                            />
+                        </div>
+
+                        <div>
+                            <RSCheckbox
+                                name="openInNewWindow"
+                                control={hyperlinkMethods.control}
+                                labelName="Open link in new window"
+                                defaultValue={true}
+                            />
+                        </div>
+                    </FormProvider>
+                }
+            />
+        </>
+    );
+};
+
+EditorLinkTool.propTypes = { view: PropTypes.object };
+
+const MemoEditorLinkTool = memo(EditorLinkTool);
 
 // import { APIKEY_TINYMCE } from './constant';
 
@@ -48,6 +502,11 @@ const RSEditorPopup = ({
     ...rest
 }) => {
     const { getValues, setValue, watch, setError, clearErrors } = useFormContext();
+    const resolvedInitialValue = (() => {
+        if (typeof initialValue === 'string') return initialValue;
+        if (initialValue?.buttonText) return `<p>${initialValue.buttonText}</p>`;
+        return defaultValue || '';
+    })();
     const [val] = watch([name]);
     const [view, setView] = useState(undefined);
     const [showTools, setShowTools] = useState(false);
@@ -55,6 +514,7 @@ const RSEditorPopup = ({
     const [nodeChange, setNodeChange] = useState({});
     const onScroll = () => setShowTools(false);
     const divRef = useRef(null);
+    const editorToolsRef = useRef(null);
     const [warningModal, setWarningModal] = useState({
         show: false,
     });
@@ -110,12 +570,7 @@ const RSEditorPopup = ({
         const observerCallback = (mutationsList) => {
             for (let mutation of mutationsList) {
                 if (mutation.type === 'childList' || mutation.type === 'subtree') {
-                    const checkbox = document.getElementById('k-editor-link-target');
-                    if (checkbox && !checkbox.checked) {
-                        checkbox.checked = true;
-                    }
                     replaceCloseIcons();
-                    addPlaceholders();
                 }
             }
         };
@@ -126,7 +581,6 @@ const RSEditorPopup = ({
             subtree: true,
         });
         replaceCloseIcons();
-        addPlaceholders();
 
         return () => {
             observer.disconnect();
@@ -157,62 +611,6 @@ const RSEditorPopup = ({
                 button.setAttribute('data-icon-replaced', 'true');
             }
         });
-    };
-
-    const addPlaceholders = () => {
-        const urlInput = document.getElementById('k-editor-link-url');
-        if (urlInput && !urlInput.getAttribute('data-placeholder-added')) {
-            createFloatingLabel(urlInput, 'Web address');
-            urlInput.setAttribute('data-placeholder-added', 'true');
-            // Add webaddress class for specific styling
-            urlInput.classList.add('webaddress');
-            if (urlInput.parentElement) {
-                urlInput.parentElement.classList.add('webaddress-wrapper', 'position-relative');
-            }
-        }
-        const textInput = document.getElementById('k-editor-link-text');
-        if (textInput && !textInput.getAttribute('data-placeholder-added')) {
-            createFloatingLabel(textInput, 'Title');
-            textInput.setAttribute('data-placeholder-added', 'true');
-        }
-
-        const linkDialog = document.querySelector('.k-widget.k-window.k-dialog');
-        if (linkDialog) {
-            const labels = linkDialog.querySelectorAll('.k-edit-label');
-            labels.forEach((label) => {
-                label.style.display = 'none';
-            });
-
-        }
-    };
-
-    const createFloatingLabel = (input, labelText) => {
-        input.placeholder = '';
-
-        let wrapper = input.parentElement;
-        if (!wrapper.hasAttribute('data-has-floating-wrapper')) {
-            wrapper = document.createElement('div');
-            wrapper.setAttribute('data-has-floating-wrapper', 'true');
-
-            input.parentNode.insertBefore(wrapper, input);
-            wrapper.appendChild(input);
-        }
-        const label = document.createElement('label');
-        label.textContent = labelText;
-        label.className = 'floating-label';
-        wrapper.appendChild(label);
-
-        const updateLabel = () => {
-            if (input.value || input === document.activeElement) {
-                wrapper.classList.add('floating-label-wrapper');
-            } else {
-                wrapper.classList.remove('floating-label-wrapper');
-            }
-        };
-        input.addEventListener('focus', updateLabel);
-        input.addEventListener('blur', updateLabel);
-        input.addEventListener('input', updateLabel);
-        updateLabel();
     };
 
     const selectionToolsPlugin = () => {
@@ -255,7 +653,7 @@ const RSEditorPopup = ({
         // console.log('Event :: ', event);
         // const state = event?.target?.state?.view?.state;
         const plugins = [...state.plugins, selectionToolsPlugin()];
-        setValue(name, initialValue);
+        setValue(name, resolvedInitialValue);
         const viewInstance = new EditorView(
             {
                 mount: event.dom,
@@ -277,8 +675,8 @@ const RSEditorPopup = ({
         return viewInstance;
     };
     useEffect(() => {
-        setValue(name, initialValue);
-    }, [initialValue]);
+        setValue(name, resolvedInitialValue);
+    }, [resolvedInitialValue]);
 
     // Handle hover on editor elements
     useEffect(() => {
@@ -690,61 +1088,30 @@ const RSEditorPopup = ({
         };
 
         useEffect(() => {
-            const iconMappings = {
-                'k-i-bold': ['k-bold', 'icon-rs-editor-bold-medium', 'icon-md'],
-                'k-i-italic': ['k-italic', 'icon-rs-editor-italic-medium', 'icon-md'],
-                'k-i-strikethrough': ['k-strikethrough', 'icon-rs-editor-strikethrough-medium', 'icon-md'],
-                'k-i-subscript': ['k-subscript', 'icon-rs-editor-sup-script-medium', 'icon-md'],
-                'k-i-superscript': ['k-superscript', 'icon-rs-editor-super-script-medium', 'icon-md'],
-                'k-i-underline': ['k-underline', 'icon-rs-editor-underline-medium', 'icon-md'],
-                'k-i-link-horizontal': ['k-link-horizontal', 'icon-rs-editor-link-blink-medium', 'icon-md'],
-                'k-i-unlink-horizontal': ['k-unlink-horizontal', 'icon-rs-editor-remove-link-medium', 'icon-md'],
-                'k-i-list-ordered': ['k-list-ordered', 'icon-rs-editor-unoredred-numbers-list-medium', 'icon-md'],
-                'k-i-list-unordered': ['k-list-unordered', 'icon-rs-editor-unoredred-list-medium', 'icon-md'],
-                'k-i-align-left': ['k-align-left', 'icon-rs-editor-align-left-medium', 'icon-md'],
-                'k-i-align-center': ['k-align-center', 'icon-rs-editor-align-center-medium', 'icon-md'],
-                'k-i-align-right': ['k-align-right', 'icon-rs-editor-align-right-medium', 'icon-md'],
-                'k-i-align-justify': ['k-align-justify', 'icon-rs-editor-align-justify-medium', 'icon-md'],
-                'k-i-background': ['k-background', 'icon-rs-colorpicker-bg-medium', 'icon-md'],
-                'k-i-foreground-color': ['k-foreground-color', 'icon-rs-editor-text-color-medium', 'icon-md'],
+            if (!showTools) return undefined;
+
+            const applyIcons = () => {
+                const root = editorToolsRef.current;
+                if (!root) return;
+                applyPopupToolbarIconReplacements(root, TOOLBAR_ICON_CONFIG);
             };
 
-            Object.entries(iconMappings).forEach(([iconClass, replacementClasses]) => {
-                const elements = document.getElementsByClassName(iconClass);
-                Array.from(elements).forEach((element) => {
-                    replacementClasses.forEach((className) => {
-                        element.classList.remove(className);
-                    });
-                    element.classList.add(...replacementClasses.filter((cls) => cls !== iconClass));
-                });
-            });
-        }, [renderTools]);
+            applyIcons();
+            const root = editorToolsRef.current;
+            if (!root) return undefined;
 
-        // Add tooltips similar to RSKendoTextEditor
+            const observer = new MutationObserver(applyIcons);
+            observer.observe(root, { childList: true, subtree: true });
+            return () => observer.disconnect();
+        }, [showTools, view]);
+
         useEffect(() => {
-            const tooltips = {
-                'k-i-bold': 'Bold',
-                'k-i-italic': 'Italic',
-                'k-i-underline': 'Underline',
-                'k-i-link-horizontal': 'Link',
-                'k-i-unlink-horizontal': 'Remove Link',
-                'k-i-align-left': 'Align left',
-                'k-i-align-center': 'Align center',
-                'k-i-align-right': 'Align right',
-                'k-i-align-justify': 'Justify',
-                'k-i-image': 'Insert image',
-            };
+            if (!showTools) return undefined;
 
-            const addTooltip = (iconElement, tooltipText) => {
-                // Check if tooltip already exists on this specific element
-                if (iconElement.hasAttribute('data-tooltip-added')) return;
+            const addTooltip = (hostElement, tooltipText) => {
+                if (!hostElement || hostElement.hasAttribute('data-tooltip-added')) return;
 
-                // Remove native title attribute from the icon and its parent button
-                iconElement.removeAttribute('title');
-                const parentButton = iconElement.closest('button');
-                if (parentButton) {
-                    parentButton.removeAttribute('title');
-                }
+                hostElement.removeAttribute('title');
 
                 const tooltip = document.createElement('div');
                 tooltip.setAttribute('role', 'tooltip');
@@ -753,41 +1120,47 @@ const RSEditorPopup = ({
                     <div class="tooltip-arrow" style="position: absolute; left: 0; transform: translate(17px, 0px);"></div>
                     <div class="tooltip-inner">${tooltipText}</div>`;
 
-                iconElement.addEventListener('mouseover', () => {
+                const showTooltip = () => {
                     tooltip.classList.add('fade', 'show');
                     tooltip.style.cssText = 'position: absolute; inset: auto auto 0px 0px; transform: translate(-7px, -33px)';
-                    iconElement.insertAdjacentElement('afterend', tooltip);
+                    hostElement.insertAdjacentElement('afterend', tooltip);
+                };
+
+                const hideTooltip = () => tooltip.remove();
+
+                hostElement.addEventListener('mouseover', showTooltip);
+                hostElement.addEventListener('mouseout', hideTooltip);
+                hostElement.querySelectorAll('.icon-md, .k-button-icon').forEach((el) => {
+                    el.addEventListener('mouseover', showTooltip);
+                    el.addEventListener('mouseout', hideTooltip);
                 });
 
-                iconElement.addEventListener('mouseout', () => {
-                    tooltip.remove();
-                });
-
-                // Mark this element as having a tooltip
-                iconElement.setAttribute('data-tooltip-added', 'true');
+                hostElement.setAttribute('data-tooltip-added', 'true');
             };
 
-            Object.keys(tooltips).forEach((iconClass) => {
-                const icons = document.getElementsByClassName(iconClass);
-                Array.from(icons).forEach((icon) => {
-                    addTooltip(icon, tooltips[iconClass]);
+            const bindTooltips = () => {
+                const toolbar = editorToolsRef.current?.querySelector('.k-button-group');
+                if (!toolbar) return;
+
+                toolbar.querySelectorAll('button[aria-label]').forEach((button) => {
+                    const ariaLabel = button.getAttribute('aria-label')?.trim();
+                    const tooltipText = EDITOR_TOOLTIP_BY_ARIA_LABEL[ariaLabel];
+                    if (tooltipText) {
+                        addTooltip(button, tooltipText);
+                    }
                 });
-            });
+            };
 
-            // Also remove title attributes from all toolbar buttons and dropdowns
-            const allToolbarButtons = document.querySelectorAll('.text-editor button, .text-editor .k-dropdown');
-            allToolbarButtons.forEach((button) => {
-                button.removeAttribute('title');
-            });
+            bindTooltips();
+            const root = editorToolsRef.current;
+            if (!root) return undefined;
 
-            // Remove title from dropdown spans and inputs
-            const dropdownElements = document.querySelectorAll('.text-editor .k-dropdown-wrap, .text-editor .k-input');
-            dropdownElements.forEach((element) => {
-                element.removeAttribute('title');
-            });
+            const observer = new MutationObserver(bindTooltips);
+            observer.observe(root, { childList: true, subtree: true });
+            return () => observer.disconnect();
         }, [showTools]);
 
-        const [hyperlink, setHyperlink] = useState(false);
+        const [imageDialogOpen, setImageDialogOpen] = useState(false);
 
         useEffect(() => {
             const checkElements = () => {
@@ -826,19 +1199,17 @@ const RSEditorPopup = ({
 
             return () => {
                 input?.removeEventListener('input', checkElements);
-                setHyperlink(false);
+                setImageDialogOpen(false);
             };
-        }, [hyperlink]);
-
-        const handleHyperlinkChange = () => {
-            setHyperlink(true);
-        };
+        }, [imageDialogOpen]);
 
         const handleClickOutside = (event) => {
             if (
                 divRef.current &&
                 !divRef.current.contains(event.target) &&
                 !event.target.closest('.k-widget.k-window.k-dialog') &&
+                !event.target.closest('.rs-modal') &&
+                !event.target.closest('.modal') &&
                 !event.target.closest('.formEditor-popup') &&
                 !event.target.closest('.color-picker-popup') &&
                 !event.target.closest('.k-animation-container')
@@ -916,54 +1287,12 @@ const RSEditorPopup = ({
                     }
                 });
             });
-        }, [hyperlink, urlInputs1]);
-
-        // Hyperlink URL validation
-        const linkUrlInputs = document.querySelectorAll('#k-editor-link-url');
-        useEffect(() => {
-            const hyperlinkInputs = document.querySelectorAll('#k-editor-link-url');
-            hyperlinkInputs.forEach((item) => {
-                item.addEventListener('blur', (e) => {
-                    const url = e.target.value;
-                    const editFieldDiv = e.target.closest('.k-edit-field');
-                    const button = document.querySelector('.k-button-solid-primary');
-                    const floatingLabel = editFieldDiv.querySelector('.floating-label');
-
-                    let errorParagraph = editFieldDiv.querySelector('.custom-error');
-
-                    if (!errorParagraph) {
-                        errorParagraph = document.createElement('p');
-                        errorParagraph.className = 'custom-error';
-                        errorParagraph.style.color = 'red';
-                        errorParagraph.style.fontSize = '12px';
-                        errorParagraph.style.position = 'absolute';
-                        errorParagraph.style.top = '-13px';
-                        editFieldDiv.appendChild(errorParagraph);
-                    }
-
-                    // Validate URL against HTTPS_REGEX
-                    if (url !== '' && !HTTPS_REGEX.test(url)) {
-                        errorParagraph.textContent = ENTER_VALID_URL;
-                        button?.classList.add('click-off');
-                        // Hide floating label when showing error
-                        if (floatingLabel) {
-                            floatingLabel.classList.add('d-none');
-                        }
-                    } else {
-                        errorParagraph.textContent = '';
-                        button?.classList.remove('click-off');
-                        // Show floating label when no error
-                        if (floatingLabel) {
-                            floatingLabel.classList.remove('d-none');
-                        }
-                    }
-                });
-            });
-        }, [hyperlink, linkUrlInputs]);
+        }, [imageDialogOpen, urlInputs1]);
 
         return (
             showTools && (
                 <span
+                    ref={editorToolsRef}
                     style={{
                         position: 'absolute',
                         backgroundColor: 'white',
@@ -973,8 +1302,8 @@ const RSEditorPopup = ({
                     className="box-design text-editor"
                 >
                     <ButtonGroup>
-                        <FontName {...toolProps} />
-                        <FontSize {...toolProps} />
+                        <MemoEditorFontNameTool view={view} />
+                        <MemoEditorFontSizeTool view={view} />
                         <Bold {...toolProps} onClick={handleBold} />
                         <Italic {...toolProps} onClick={handleItalic} />
                         <Underline {...toolProps} onClick={handleUnderline} />
@@ -985,13 +1314,11 @@ const RSEditorPopup = ({
                         <AlignCenter {...toolProps} onClick={handleAlignCenter} />
                         <AlignRight {...toolProps} onClick={handleAlignRight} />
                         <AlignJustify {...toolProps} onClick={handleAlignJustify} />
-                        <span onClick={handleHyperlinkChange}>{isFooter && <InsertImage {...toolProps} />}</span>
+                        <span onClick={() => setImageDialogOpen(true)}>{isFooter && <InsertImage {...toolProps} />}</span>
                         {/* </span> */}
                         {!hideLinkTools && (
                             <>
-                                <span onClick={handleHyperlinkChange}>
-                                    <Link {...toolProps} />
-                                </span>
+                                <MemoEditorLinkTool view={view} />
                                 <Unlink {...toolProps} />
                             </>
                         )}
@@ -1147,7 +1474,7 @@ const RSEditorPopup = ({
                                         contentStyle={{
                                             height: 'auto',
                                         }}
-                                        defaultContent={initialValue}
+                                        defaultContent={resolvedInitialValue}
                                         defaultEditMode="div"
                                         onMount={onMount}
                                         onChange={(e) => {

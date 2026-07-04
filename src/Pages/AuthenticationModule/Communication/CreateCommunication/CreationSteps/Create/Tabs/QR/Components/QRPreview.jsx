@@ -7,6 +7,12 @@ import { INPUT_TYPES } from 'Pages/AuthenticationModule/Preferences/Pages/FormGe
 import AgreeCancel from 'Pages/AuthenticationModule/Preferences/Pages/FormGenerator/Tabs/FormTypes/Components/AgreeCancel';
 import FormButtons from 'Pages/AuthenticationModule/Preferences/Pages/FormGenerator/Tabs/InputTabs/FormButtons';
 
+const normalizeButtonHtml = (value, fallback) => {
+    if (typeof value === 'string' && value.trim()) return value;
+    if (value?.buttonText) return `<p>${value.buttonText}</p>`;
+    return fallback;
+};
+
 const QRPreviewContent = ({ dropAble, selectedColor, previewTemp, updateFormStates, isQrCaptcha }) => {
     const renderField = (item, index, dropItems) => {
         try {
@@ -172,8 +178,8 @@ const QRPreview = ({ show, onHide, dropAble, selectedColor, previewTemp, preview
         AgreeCheckbox: false,
     };
 
-    const submitButton = previewFormstate?.Submit || defaults.Submit;
-    const cancelButton = previewFormstate?.CancelView || defaults.CancelView;
+    const submitButton = normalizeButtonHtml(previewFormstate?.Submit, defaults.Submit);
+    const cancelButton = normalizeButtonHtml(previewFormstate?.CancelView, defaults.CancelView);
 
     const updateFormStates = {
         ...defaults,

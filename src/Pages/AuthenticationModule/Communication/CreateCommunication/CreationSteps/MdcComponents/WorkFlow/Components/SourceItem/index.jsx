@@ -2,10 +2,7 @@
 import { memo, useContext, useEffect, useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { Handle, Panel, Position } from 'reactflow';
-import _cloneDeep from 'lodash/cloneDeep';
-import _get from 'lodash/get';
-import filter from 'lodash/filter';
-import sum from 'lodash/sum';
+import { cloneDeep as _cloneDeep, get as _get, filter, sum } from 'Utils/modules/lodashReplacements';
 
 import { BootstrapDropdown } from 'Components/RSBootstrapDropDown';
 
@@ -327,13 +324,10 @@ export default memo(({ data, isConnectable }) => {
         let subSegmentObj = handleSubSegmentPlaceholderObject(formState);
         let placeholderObj = handleCommonPlaceholder(formState, isCGTGEnabled);
         const { audienceList, isAutoRefresh, isJourney, isGroupedCampaign } = formState;
-        const isSubsegmentJoureny = _get(canvasState, 'dataSource.isSubsegmentJoureny', false);
         const {
-            Campaign,
             subSegment: { subSegmentList },
             nodeState,
             dataSource,
-            defaultEle,
         } = canvasState;
 
         const otherPayload = {
@@ -347,21 +341,28 @@ export default memo(({ data, isConnectable }) => {
 
         const SourceItem = nodeState.find((x) => x.type === 'SourceItem');
         const { MDCTemplate } = SourceRemove({ mdcCanvas: canvasState });
-        if (subSegmentList?.length > 0 && !isJourney && !isSubsegmentJoureny) {
-                    dispatchState({
-                        type: 'UPDATE_SUBSEGMENT_CHANGE',
-                        payload: {
-                            selectedAudienceList: audienceList,
-                            MDCTemplate: MDCTemplate,
-                            dataSource: dataSource,
-                            SourceItem: SourceItem,
-                            placeholderObj: placeholderObj,
-                            isCGTGEnabled: isCGTGEnabled,
-                            data: {
-                                ...otherPayload,
-                            },
+        if (subSegmentList?.length > 0 && !isJourney) {
+            const response = await handleSubSegmentSaveApi(formState);
+
+            if (response?.status) {
+                dispatchState({
+                    type: 'UPDATE_SUBSEGMENT_CHANGE',
+                    payload: {
+                        selectedAudienceList: audienceList,
+                        MDCTemplate: MDCTemplate,
+                        dataSource: dataSource,
+                        SourceItem: SourceItem,
+                        placeholderObj: placeholderObj,
+                        isCGTGEnabled: isCGTGEnabled,
+                        data: {
+                            ...otherPayload,
                         },
-                    });
+                    },
+                });
+                saveAudienceApiError.current = '';
+            } else {
+                saveAudienceApiError.current = response.message || 'Exception has occured';
+            }
         } else {
             const response = await handleSubSegmentSaveApi(formState);
 

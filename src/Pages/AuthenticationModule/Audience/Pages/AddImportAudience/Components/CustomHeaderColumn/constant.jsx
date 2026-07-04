@@ -1,4 +1,4 @@
-import _find from 'lodash/find';
+import { find as _find } from 'Utils/modules/lodashReplacements';
 import { SELECT_DIFFERENT_ATTRIBUTE } from 'Constants/GlobalConstant/ValidationMessage';
 import { AUDIENCE_GLYPH as G } from 'Pages/AuthenticationModule/Audience/audienceGlyphs';
 

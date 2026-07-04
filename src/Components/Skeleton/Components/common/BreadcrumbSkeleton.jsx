@@ -2,7 +2,7 @@ import { memo } from 'react';
 import PropTypes from 'prop-types';
 import { Container } from 'react-bootstrap';
 import { useLocation } from 'react-router-dom';
-import _capitalize from 'lodash/capitalize';
+import { capitalize as _capitalize } from 'Utils/modules/lodashReplacements';
 
 import { pages_tab_config } from 'Components/RSHeader/constant';
 import { getRouteTabIndex } from '../getRouteTabIndex';

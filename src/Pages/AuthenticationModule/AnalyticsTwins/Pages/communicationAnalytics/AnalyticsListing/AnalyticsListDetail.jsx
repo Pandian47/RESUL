@@ -1,8 +1,7 @@
 import { getStatus } from 'Utils/modules/communicationStatus';
 import { ACTION, CHANNEL, CONVERSION, DELIVERED, ENGAGEMENT, REACH, STATUS, TOTAL_SENT, UNDELIVERED } from './constants';
 import { Fragment, useMemo } from 'react';
-import _map from 'lodash/map';
-import _get from 'lodash/get';
+import { map as _map,get as _get } from 'Utils/modules/lodashReplacements';
 import CampaignDetailedStatus from './CampaignDetailedStatus';
 import { SUBSEGMENT_NAME, FRIENDLY_NAME } from 'Pages/AuthenticationModule/Communication/CommunicationLists/constants';
 
@@ -194,6 +193,9 @@ const AnalyticsDetail = ({ dataIndex, dataItem, onCollapse }) => {
                                                 idx={idx >= 0 ? idx : index}
                                                 splitIndex={splitIndex}
                                                 hasGrouping={hasAnyGrouping}
+                                                hideTotalSent={hideTotalSent}
+                                                hideReachColumn={hideReachColumn}
+                                                hideReachDelivered={hideReachDelivered}
                                             />
                                         );
                                     });
@@ -206,6 +208,9 @@ const AnalyticsDetail = ({ dataIndex, dataItem, onCollapse }) => {
                                         key={`${dataItem?.campaignID ?? dataItem?.campaignId}-${index}`}
                                         idx={idx >= 0 ? idx : index}
                                         hasGrouping={hasAnyGrouping}
+                                        hideTotalSent={hideTotalSent}
+                                        hideReachColumn={hideReachColumn}
+                                        hideReachDelivered={hideReachDelivered}
                                     />
                                 );
                             })}

@@ -129,13 +129,12 @@ export const getCommunicationSubProducts =
                 loading: isLoading,
                 ok: ({ data }) => {
                     const { status, data: res } = data;
+                    if (!status || res == null) return;
+
                     const prev = getState()?.communicationPlanReducer?.communicationOptions || {};
-                    dispatch(
-                        updateCommunicationOptions({
-                            ...prev,
-                            product: status ? res : [],
-                        }),
-                    );
+                    const existing = prev.subProducts || [];
+                    const incoming = Array.isArray(res) ? res : [];
+                    dispatch(updateSubProductOptions([...existing, ...incoming]));
                 },
             }),
         );

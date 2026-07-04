@@ -3,7 +3,7 @@ import { memo, useEffect, useState } from 'react';
 import RSTooltip from 'Components/RSTooltip';
 
 import { useTabState } from '../hooks';
-import { mapResTabberClasses } from '../utils';
+import { mapResTabberClasses, renderTabPanel } from '../utils';
 
 const ChartTabberVariant = ({
     defaultTab = 0,
@@ -91,11 +91,19 @@ const ChartTabberVariant = ({
                 </div>
             </div>
             <div className="portlet-body">
-                {gridView && gridCompo ? gridView : tabconfig[selectedIdx]?.component?.()}
+                {gridView && gridCompo ? gridView : renderTabPanel(tabconfig[selectedIdx])}
                 {smallText && <small className="portlet-info-text">{smallText}</small>}
             </div>
 
-            {footer && tabconfig[selectedIdx]?.footer}
+            {footer &&
+                tabconfig[selectedIdx]?.footer &&
+                (tabconfig[selectedIdx]?.footer?.props?.className?.includes?.('portlet-footer') ? (
+                    tabconfig[selectedIdx]?.footer
+                ) : (
+                    <div className="portlet-footer portlet-two-label">
+                        {tabconfig[selectedIdx]?.footer}
+                    </div>
+                ))}
 
             {expandView && (
                 <div

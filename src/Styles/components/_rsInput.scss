@@ -942,6 +942,10 @@ input[type='range']::-webkit-slider-thumb {
 
         }
 
+        .custome-dropdown-scroll.v1-dropdown-data {
+            border-radius: 0 !important;
+        }
+
         .v1-dropdown-data {
             >div:last-child>a:last-child {
                 border-bottom-left-radius: var(--globalBorderRadius);
@@ -961,6 +965,16 @@ input[type='range']::-webkit-slider-thumb {
         margin: 0 10px;
         padding: 4px 0;
 
+        &:focus-visible {
+            outline: none;
+        }
+
+        input:focus-visible,
+        .form-control:focus-visible {
+            outline: none;
+            box-shadow: none;
+        }
+
         input {
             padding: 0;
         }
@@ -978,3 +992,58 @@ input[type='range']::-webkit-slider-thumb {
 }
 
 // Bootstrap dropdown search icon ui end
+
+// ── RSModal: phone country list (parity with ResKendoDropdown .k-animation-container) ──
+.rs-modal,
+.rs-modal.show,
+[role='dialog'] {
+    .rs-phone-input {
+        overflow: visible;
+
+        .react-tel-input {
+            overflow: visible;
+
+            .flag-dropdown {
+                overflow: visible;
+
+                &.open {
+                    z-index: 1101;
+                }
+
+                .country-list,
+                .country-list.rs-phone-input-country-list {
+                    z-index: 1101 !important;
+                }
+            }
+        }
+    }
+}
+
+.rs-modal .rsmd-content,
+.rs-modal.show .rsmd-content,
+.modal.show .rsmd-content {
+    overflow: visible !important;
+
+    > div:has(.react-tel-input .flag-dropdown.open) {
+        overflow: visible !important;
+    }
+}
+
+.rs-modal.show .rsm-dialog,
+.rs-modal .rsm-dialog:has(.react-tel-input .flag-dropdown.open) {
+    overflow: visible;
+}
+
+.rs-modal .rsmdc-body:has(.react-tel-input .flag-dropdown.open),
+.rs-modal .modal-body:has(.react-tel-input .flag-dropdown.open),
+.modal.show .modal-body:has(.react-tel-input .flag-dropdown.open) {
+    overflow: visible !important;
+}
+
+.rs-modal .rsmdc-body,
+.rs-modal .modal-body,
+.modal.show .modal-body {
+    &:has(.rs-phone-input) {
+        overflow: visible;
+    }
+}

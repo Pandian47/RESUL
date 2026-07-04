@@ -17,9 +17,4 @@ const STATE_REDUCER = (state, action) => {
     }
 };
 
-const addTabType = (arr, type) => {
-    let _arr = arr?.map((e) => ({ ...e, type }));
-    return _arr;
-};
-
 export {  INITIAL_STATE, STATE_REDUCER };

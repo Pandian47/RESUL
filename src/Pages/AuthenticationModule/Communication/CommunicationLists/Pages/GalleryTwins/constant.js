@@ -1,6 +1,6 @@
 import { STATUS_LIST } from 'Utils/modules/communicationChannels';
 import { CHANNELSSOCIAL_LIST } from 'Constants/GlobalConstant/channelSocialList';
-import uniqBy from 'lodash/uniqBy';
+import { uniqBy } from 'Utils/modules/lodashReplacements';
 
 export const communicationGalleryInfoDetails = {
     data: {

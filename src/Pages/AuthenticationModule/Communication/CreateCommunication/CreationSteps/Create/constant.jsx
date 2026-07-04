@@ -38,7 +38,7 @@ import WebinarAnalytics from './Tabs/Analytics/WebinarAnalytics/WebinarAnalytics
 import OfflineConversion from './Tabs/Analytics/OfflineConversion/OfflineConversion';
 
 import MobileNotification from './Tabs/MobileNotification/MobileNotification';
-import { debounce, get } from 'lodash';
+import { debounce,  get as _get,find as _find } from 'Utils/modules/lodashReplacements';
 import {
     getAudienceList,
     getPersonalizationFields,
@@ -47,8 +47,6 @@ import {
 import { getRecipientList } from 'Reducers/communication/createCommunication/Mdc/Canvas/request';
 import { AUTHORING_FIELD_LOADER_CONFIG } from 'Components/Skeleton/pages/communication/authoring';
 import { setTabforEdit, updateTab, updateVerticalTab } from 'Reducers/communication/createCommunication/Create/reducer';
-import _get from 'lodash/get';
-import _find from 'lodash/find';
 import RCS from './Tabs/RCS/RCS';
 import { AUDIENCE, NEW_AUDIENCE_LIST, SELECT_SEGMENT_LIST } from 'Constants/GlobalConstant/Placeholders';
 import { MORE_THAN_5_LISTS } from 'Constants/GlobalConstant/ValidationMessage';
@@ -144,6 +142,16 @@ function isNotificationStyleChannelId(channelId) {
         channelId === COMMUNICATION_CHANNEL_ID.MOBILE_NOTIFICATION
     );
 }
+export const shouldHandleEditCallApi = (location, savedChannel) => {
+    if (!savedChannel) {
+        return false;
+    }
+    const campaignType = _get(location, 'campaignType', 'S');
+    if (campaignType === 'S' || campaignType === 'T') {
+        return true;
+    }
+    return _get(location, 'mode', 'create') === 'edit';
+};
 
 const NOTIFICATION_CAROUSEL_TAB_TO_FORM_KEY = {
     cauroselA: 'splitA',
@@ -327,12 +335,6 @@ export const hasMismatchedChannelAudienceForOfflineConversion = (channelAudience
     return allAudiences.some((aud) => Number(aud?.listType) === 1);
 };
 
-export const requestApprovalPayload = (approvalSettings) => {
-    const { requestApproval, testEmail, ...rest } = approvalSettings;
-    if (!requestApproval) return { isRequestForApproval: false };
-    else return { requestApproval: { ...rest }, isRequestForApproval: true };
-};
-
 export const formatDateScheculer = (day) => {
     return moment(day).format('YYYY-MM-DD HH:mm:ss');
 };
@@ -412,15 +414,6 @@ export const getPastPlanDurationBlockedState = ({ location = {}, timezone, curre
         profileGmtOffset,
         currentUtcTime,
     });
-};
-
-export const hasPastPlanDurationScheduleError = (errors = {}, { splitTest = false, splitTabList = [] } = {}) => {
-    if (splitTest && splitTabList?.length) {
-        return splitTabList.some(
-            (tab) => _get(errors, `${tab}.schedule.type`) === PAST_PLAN_DURATION_ERROR_TYPE,
-        );
-    }
-    return _get(errors, 'schedule.type') === PAST_PLAN_DURATION_ERROR_TYPE;
 };
 
 export const validatePastPlanDurationOnSubmit = ({
@@ -1404,7 +1397,7 @@ export const handlesubSegmentClickOff = (audience) => {
 };
 
 export const handleMDCExtraPayload = (location) => {
-    const mdcContentSetupDetails = get(location, 'mdcContentSetupDetails', {});
+    const mdcContentSetupDetails = _get(location, 'mdcContentSetupDetails', {});
 
     return {
         subSegmentId: mdcContentSetupDetails?.subSegmentId ?? 0,
@@ -2074,65 +2067,6 @@ export const handleAllChannelPayload = (channelType, formState) => {
     return payload;
 };
 
-export const getMdcChannelDetailIdFromLocation = (location) =>
-    Number(_get(location, 'mdcContentSetupDetails.channelDetailId', 0)) || 0;
-
-export const isGenie = (location) => {
-    if (location?.isFromGenie === true) {
-        return true;
-    }
-    if (typeof window !== 'undefined') {
-        return new URLSearchParams(window.location.search).get('isGen') === 'true';
-    }
-    return false;
-};
-
-export const shouldLoadMdcEditCampaignFromGenie = ({ location, isMDCEditMode, savedChannel }) => {
-    if (!isGenie(location)) {
-        return false;
-    }
-    if (_get(location, 'campaignType', '') !== 'M') {
-        return false;
-    }
-    if (isMDCEditMode?.toLowerCase() !== 'edit') {
-        return false;
-    }
-    if (getMdcChannelDetailIdFromLocation(location) <= 0) {
-        return false;
-    }
-    if (!savedChannel) {
-        return false;
-    }
-    if (_get(location, 'mode', 'create') !== 'edit') {
-        return false;
-    }
-    return (_get(location, 'campaignId', 0) || 0) > 0;
-};
-
-export const getIsMDChannelDetailForMdcEdit = (location, isMDCEditMode, mdcChannelDetailId = 0) => {
-    if (_get(location, 'campaignType', 'S') !== 'M') {
-        return true;
-    }
-    if (isMDCEditMode?.toLowerCase() !== 'edit') {
-        return true;
-    }
-    const detailId = isGenie(location)
-        ? getMdcChannelDetailIdFromLocation(location)
-        : Number(mdcChannelDetailId) || 0;
-    return detailId > 0;
-};
-
-export const shouldHandleEditCallApi = (location, savedChannel) => {
-    if (!savedChannel) {
-        return false;
-    }
-    const campaignType = _get(location, 'campaignType', 'S');
-    if (campaignType === 'S' || campaignType === 'T') {
-        return true;
-    }
-    return _get(location, 'mode', 'create') === 'edit';
-};
-
 export const handleMDCQueryParamsUpdate = (contentDetails, location, sourceAndChannelList) => {
     const audienceList = contentDetails?.audience?.length
         ? contentDetails.audience
@@ -2230,9 +2164,6 @@ export const eligibleStatusIdAudienceUpdateCount = [5, 9];
 export const getRecipientCountFieldForNumericChannelId = (channelId) =>
     EDIT_RESTORE_COUNT_FIELD_BY_CHANNEL_ID[Number(channelId)];
 
-export const getAudienceTextFieldForNumericChannelId = (channelId) =>
-    AUDIENCE_TEXT_FIELD_BY_CHANNEL_ID[Number(channelId)];
-
 export const handleUpdateEditAudienceCount = ({ channelId, audience, savedAudienceCountList, statusId }) => {
     if (!savedAudienceCountList?.length) return audience;
     if (!eligibleStatusIdAudienceUpdateCount?.includes(statusId)) return audience;
@@ -2292,5 +2223,42 @@ export const resolveLocalBlastDateTime = ({
         return new Date();
     } else {
         return isValidDate(schedule) ? formatDateScheculer(schedule) : '';
+    }
+};
+
+export const parseMdcScheduleDate = (dateVal) => {
+    if (!dateVal) return null;
+    if (dateVal instanceof Date) return dateVal;
+    if (typeof dateVal === 'string' && dateVal.includes(',')) {
+        const parts = dateVal.split(',');
+        if (parts.length >= 5) {
+            const [d, m, y, h, min] = parts;
+            return new Date(Number(y), Number(m) - 1, Number(d), Number(h), Number(min));
+        }
+    }
+    const d = new Date(dateVal);
+    return !isNaN(d.getTime()) ? d : null;
+};
+
+export const resolveMdcSchedule = (formState, location, levelNumber, campaignType, dataSource, currentSchedule) => {
+    if (campaignType !== 'M') return currentSchedule;
+    
+    if (levelNumber > 1) {
+        const mdcScheduleDate = location?.state?.mdcContentSetupDetails?.ScheduleDate || 
+                               location?.state?.mdcContentSetupDetails?.scheduleDate ||
+                               location?.mdcContentSetupDetails?.ScheduleDate || 
+                               location?.mdcContentSetupDetails?.scheduleDate;
+        const parsed = parseMdcScheduleDate(currentSchedule) || parseMdcScheduleDate(mdcScheduleDate);
+        return parsed || new Date();
+    } else {
+        if (dataSource === 'DL') {
+            return new Date();
+        }
+        const campaignStart = location?.startDate || 
+                             location?.state?.startDate || 
+                             formState?.campaignDetails?.startDate || 
+                             formState?.campaign?.startDate;
+        const parsed = parseMdcScheduleDate(currentSchedule) || parseMdcScheduleDate(campaignStart);
+        return parsed || new Date();
     }
 };

@@ -1,6 +1,6 @@
 import { Fragment, useState, useMemo, useEffect, useRef } from 'react';
 import PropTypes from 'prop-types';
-import _isEmpty from 'lodash/isEmpty';
+import { isEmpty as _isEmpty } from 'Utils/modules/lodashReplacements';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { Container } from 'react-bootstrap';
 import { useDispatch, useSelector } from 'react-redux';
@@ -16,6 +16,7 @@ import { validateIsCustomNavigate } from 'Utils/modules/navigation';
 import CacheManager from 'Utils/cacheManager';
 import { updateBuAndDepId, update_consumptionChannel, update_Dashboard, update_isWebAppId, update_isMobileAppId, update_isWebAppData, update_isMobileAppData, latest_consumptionMonth, latest_consumptionYear, updatedisLicenseId, resetGlobalState, updateBUByClientCompany, updateBUByClient, updateIndustryId, decrement_global_loading, getGlobalStateValue, reset_updateRenewalData } from 'Reducers/globalState/reducer';
 import Icon from 'Components/Icon/Icon';
+import { motion, AnimatePresence } from 'framer-motion';
 import {
     getGlobalAccountAdmin,
     getGlobalBUList,
@@ -505,10 +506,23 @@ const RSPageHeader = ({
                 <Container className={`mhw-container ${subHeading ? '' : ' '}`}>
                     <div className="mhwc-left">
                         {issubHeading && (
-                            <h1 className="repo-title">
+                            <h1 className="repo-title 2444">
                                 <div className="sh">{subHeading}</div>
                                 <div className="mh-wrapper d-flex">
-                                    <span className="mh-text">{title}</span>
+                                    <span className="mh-text" style={{ display: 'block', overflow: 'hidden' }}>
+                                        <AnimatePresence mode="wait">
+                                            <motion.span
+                                                key={typeof title === 'string' ? title : undefined}
+                                                initial={{ opacity: 0, y: -5 }}
+                                                animate={{ opacity: 1, y: 0 }}
+                                                exit={{ opacity: 0, y: 5 }}
+                                                transition={{ duration: 0.15 }}
+                                                style={{ display: 'inline-block' }}
+                                            >
+                                                {title}
+                                            </motion.span>
+                                        </AnimatePresence>
+                                    </span>
                                     {issubHeadingDropDown && (
                                         <RSBootstrapdown
                                             data={SUB_HEADING_DROPDOWN_DATA}
@@ -541,7 +555,26 @@ const RSPageHeader = ({
                                         <CommonSkeleton box width={500} height={40} />
                                     ) : (
                                         <>
-                                            <h1 className={`${titleCls ? titleCls : ''}`}>{title}</h1>
+                                        <h1
+                                        className={titleCls || ''}
+                                        style={
+                                            titleCls
+                                            ? undefined
+                                            : { display: 'block', overflow: 'hidden' }
+                                        }
+                                       > <AnimatePresence mode="wait">
+                                                    <motion.span
+                                                        key={typeof title === 'string' ? title : undefined}
+                                                        initial={{ opacity: 0, y: -5 }}
+                                                        animate={{ opacity: 1, y: 0 }}
+                                                        exit={{ opacity: 0, y: 5 }}
+                                                        transition={{ duration: 0.15 }}
+                                                        style={{ display: 'inline-block' }}
+                                                    >
+                                                        {title}
+                                                    </motion.span>
+                                                </AnimatePresence>
+                                            </h1>
                                             <div className={`report-head ${starClass ? starClass : ''}`}>
                                                 <span className={`${downloadUI ? 'position-relative top-3' : ''}`}>
                                                     {star ? (

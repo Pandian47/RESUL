@@ -8,10 +8,7 @@ import { SELECT_PROVIDER } from 'Constants/GlobalConstant/ValidationMessage';
 import { AUDIENCE_CHANGE_CONFIRMATION, AUDIENCE_COUNT_ZERO_ENABLE_AUTO_REFRESH, AUTO_REFRESH, AUTO_REFRESH_POP_HOVER_TEXT, CANCEL, COMMUNICATION_SCHEDULED, IGNORE_CHANNEL, OK, PROVIDER, SAVE, SEND, VMS_CONTENT, VOICE_MESSAGE, WARNING } from 'Constants/GlobalConstant/Placeholders';
 import { circle_question_mark_mini, refresh_medium, restart_medium } from 'Constants/GlobalConstant/Glyphicons';
 import { Fragment, useEffect, useMemo, useRef, useState } from 'react';
-import _get from 'lodash/get';
-import _find from 'lodash/find';
-import _isEmpty from 'lodash/isEmpty';
-import _cloneDeep from 'lodash/cloneDeep';
+import { get as _get, find as _find, isEmpty as _isEmpty, cloneDeep as _cloneDeep } from 'Utils/modules/lodashReplacements';
 import { Row, Col } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
@@ -847,7 +844,7 @@ const VMS = ({ mCampType, channelId }) => {
             >
             <form className="rsv-tabs-content position-relative">
                 <div className="box-design bd-top-border ">
-                    <div className="form-group mt20">
+                    <div className="form-group mt30">
                         <Row>
                             <Col sm={{ offset: 1, span: 2 }}>
                                 <label className="control-label-left">{PROVIDER}</label>
@@ -957,13 +954,14 @@ const VMS = ({ mCampType, channelId }) => {
                     )}
                     {provider && (
                         <Row>
+                            <Col sm={{span:10, offset:1}}>
                             <RSTabber
                                 refresh
                                 flatTabs
                                 disableOtherTabs
                                 defaultTab={defaultTab}
                                 heading="VMS content"
-                                extraClassName={'col-md-10 offset-md-1'}
+                             //   extraClassName="col-sm-12"
                                 isRefreshConfirmation
                                 activeClass={`active`}
                                 onRefresh={() => {
@@ -983,7 +981,8 @@ const VMS = ({ mCampType, channelId }) => {
                                 callBack={(_, index) => {
                                     setValue('currentTab', index);
                                 }}
-                            />
+                                extraClassName={'mx0'}
+                            /></Col>
                         </Row>
                     )}
                     {currentTab !== null && (

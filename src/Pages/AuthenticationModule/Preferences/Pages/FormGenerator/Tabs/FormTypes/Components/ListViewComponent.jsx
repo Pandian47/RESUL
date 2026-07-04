@@ -8,7 +8,7 @@ import { useSelector } from 'react-redux';
 import RSTooltip from 'Components/RSTooltip';
 import { getAttribute } from 'Pages/AuthenticationModule/Audience/Pages/AddImportAudience/constant';
 import AgreeCancel from './AgreeCancel';
-import { uniqueId } from 'lodash';
+import { uniqueId } from 'Utils/modules/lodashReplacements';
 
 const ListViewComponent = ({
     componentsData,

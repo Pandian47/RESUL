@@ -1,20 +1,16 @@
-import { Suspense, lazy } from 'react';
-import { CommunicationSettingsInnerTabLoadingBlock } from 'Components/Skeleton/Components/PreferencesSubPageRouteSkeleton';
+import { lazy } from 'react';
+import { renderEmbeddedLazyInner } from '../../../../constant';
 
 const WebTab = lazy(() => import('./Tabs/Web'));
 const LifetimeCap = lazy(() => import('./Tabs/LifetimeCap'));
-
-const renderLazyInner = (LazyComponent) => () => (
-    <Suspense fallback={<CommunicationSettingsInnerTabLoadingBlock />}>
-        <LazyComponent />
-    </Suspense>
-);
+const CustomEvent = lazy(() => import('./Tabs/CustomEvent'));
 
 export const WEB_FORM_ACTIONS_PORTAL_ID = 'pref-cs-web-form-actions';
 
 export const TABBER_CONFIG = [
-    { id: 1010, text: 'Web', disable: false, component: renderLazyInner(WebTab) },
-    { id: 1012, text: 'Lifetime cap', disable: true, component: renderLazyInner(LifetimeCap) },
+    { id: 1010, text: 'Web', disable: false, component: renderEmbeddedLazyInner(WebTab) },
+    { id: 1012, text: 'Lifetime cap', disable: true, component: renderEmbeddedLazyInner(LifetimeCap) },
+    { id: 1013, text: 'Custom events', disable: false, component: renderEmbeddedLazyInner(CustomEvent) },
 ];
 
 export const ACTION_INITIAL_STATE = {

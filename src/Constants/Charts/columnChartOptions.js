@@ -1,44 +1,47 @@
 import { chartSizing, commonColorCode, seriesNameField } from 'Constants/Charts/commonFunction';
 import { truncateTitle } from 'Utils/modules/displayCore';
 import PropTypes from 'prop-types';
-import { chartFormatNumber, chartPercentageAxisLabelHtml, chartPercentageDataLabelHtml, chartPercentageTooltipPercentHtml, numberWithCommas } from 'Utils/modules/formatters';
+import * as utils from 'Utils';
+import * as func from './commonFunction';
+import { createCategoryAxisTickPositioner } from './dynamicDateAxisLabels';
+import {
+    attachMouseWheelXZoom,
+    detachMouseWheelXZoom,
+    getChartXAxisZoomOptions,
+    mergeChartZoomEvents,
+} from './chartXAxisZoom';
 import { ch_legendtextSize, ch_primary_black } from 'Constants/GlobalConstant/Colors/colorsVariable';
 
-const getStackedColumnMaxY = (series) => {
-    const categoryCount = Math.max(...(series ?? []).map((s) => s?.data?.length ?? 0), 0);
-    let stackedMax = 0;
-    for (let i = 0; i < categoryCount; i++) {
-        const total = (series ?? []).reduce((sum, s) => sum + (s?.data?.[i]?.y ?? 0), 0);
-        stackedMax = Math.max(stackedMax, total);
+const getStackedColumnMaxY = (paddedSeries) => {
+    let max = 0;
+    if (!paddedSeries || !paddedSeries.length) return max;
+    const len = paddedSeries[0]?.data?.length || 0;
+    for (let i = 0; i < len; i++) {
+        let sum = 0;
+        paddedSeries.forEach(s => {
+            sum += s.data?.[i]?.y || 0;
+        });
+        if (sum > max) max = sum;
     }
-    return stackedMax;
+    return max;
 };
 
-/** Fewer y-axis ticks + headroom so bar-top % labels are not clipped. */
-const getPercentageStackedYAxisScale = (maxValue) => {
-    const max = Math.max(0, maxValue);
-    const tickInterval =
-        max <= 50 ? 10 : max <= 100 ? 20 : max <= 200 ? 50 : max <= 400 ? 100 : 200;
-    const labelHeadroom = tickInterval * 0.15;
-    const yMax =
-        max === 0
-            ? tickInterval
-            : Math.ceil((max + labelHeadroom) / tickInterval) * tickInterval;
-
-    return { tickInterval, max: yMax };
+const getPercentageStackedYAxisScale = (stackedMax) => {
+    const max = Math.max(10, Math.ceil(stackedMax / 10) * 10);
+    return { tickInterval: max / 10, max };
 };
 
 const formatColumnTooltipValueHtml = (point, isPercent) => {
     const count = point?.count;
     if (count != null) {
-        return `<span class="font-xs">${chartFormatNumber(count)}</span>`;
+        return `<span class="font-xs">${utils.chartFormatNumber(count)}</span>`;
     }
     const val = point?.originalValue ?? point?.y;
     if (isPercent) {
-        return chartPercentageTooltipPercentHtml(val, 1);
+        return utils.chartPercentageTooltipPercentHtml(val, 1);
     }
     if (typeof val === 'number') {
-        return `<span class="font-xs">${chartFormatNumber(val)}</span>`;
+        return `<span class="font-xs">${utils.chartFormatNumber(val)}</span>`;
     }
     return `<span class="font-xs">${val ?? ''}</span>`;
 };
@@ -48,11 +51,46 @@ const buildColumnTooltipHtml = ({ pointKey, seriesName, color, point, isPercent,
     let html = `<span class="font-xs">${pointKey}<br/><hr />`;
     if (isBenchmark) {
         const pct = point?.originalValue ?? point?.y;
-        html += `<span class="font-monospace" style="color:${color}">\u25CF</span>&nbsp;<span class="font-xs">${chartFormatNumber(pct)}</span><sub class="fs11 percent-xs">%</sub>`;
+        html += `<span class="font-monospace" style="color:${color}">\u25CF</span>&nbsp;<span class="font-xs">${utils.chartFormatNumber(pct)}</span><sub class="fs11 percent-xs">%</sub>`;
     } else {
         html += `<span class="font-monospace" style="color:${color}">\u25CF</span>&nbsp;<span class="font-xs">${seriesName}: </span>${formatColumnTooltipValueHtml(point, isPercent)}`;
     }
     return `${html}</span>`;
+};
+
+const buildSharedColumnTooltipHtml = ({ pointKey, points, isPercent, isBenchmark }) => {
+    let html = `<span class="font-xs">${pointKey}<br/><hr />`;
+    const visiblePoints = (points ?? []).filter((pt) => (pt?.y ?? 0) > 0);
+
+    visiblePoints.forEach((pt, index) => {
+        const seriesName = func.seriesNameField(pt.series?.name ?? '');
+        const color = pt.color ?? pt.series?.color ?? '';
+        if (isBenchmark) {
+            const pct = pt?.originalValue ?? pt?.y;
+            html += `<span class="font-monospace" style="color:${color}">\u25CF</span>&nbsp;<span class="font-xs">${utils.chartFormatNumber(pct)}</span><sub class="fs11 percent-xs">%</sub>`;
+        } else {
+            html += `<span class="font-monospace" style="color:${color}">\u25CF</span>&nbsp;<span class="font-xs">${seriesName}: </span>${formatColumnTooltipValueHtml(pt, isPercent)}`;
+        }
+        if (index < visiblePoints.length - 1) {
+            html += '<br/>';
+        }
+    });
+
+    return `${html}</span>`;
+};
+
+const getColumnTooltipPointKey = (ctx, categories = []) => {
+    const categoryIndex = ctx.point?.x ?? ctx.points?.[0]?.x;
+    if (categoryIndex != null && categories[categoryIndex] != null) {
+        return String(categories[categoryIndex]);
+    }
+    return String(
+        ctx.point?.category ??
+        ctx.points?.[0]?.category ??
+        ctx.point?.key ??
+        ctx.x ??
+        '',
+    );
 };
 
 const columnChartOptions = ({ ...args }) => {
@@ -121,8 +159,8 @@ const columnChartOptions = ({ ...args }) => {
     } else {
         adjustedYAxisMax = Math.ceil(maxYValue / 10) * 10;
     }
-
-    let effectiveTickInterval = yAxis?.tickInterval ?? null;
+    const enableXAxisZoom = args?.enableXAxisZoom === true;
+  let effectiveTickInterval = yAxis?.tickInterval ?? null;
     let effectiveYAxisMax = yAxis?.max ?? adjustedYAxisMax ?? null;
     if (yAxis?.showAsPercentage && args?.stacking) {
         const stackedMax = getStackedColumnMaxY(paddedSeries);
@@ -130,13 +168,18 @@ const columnChartOptions = ({ ...args }) => {
         effectiveTickInterval = tickInterval;
         effectiveYAxisMax = yAxis?.max ?? max;
     }
-
     return {
         chart: {
             type: 'column',
-            height: args?.height ?? chartSizing['column'],
+            spacingTop: args?.chart?.spacingTop ?? 25,
+            height: args?.height ?? func.chartSizing['column'],
             className: `columnchart-default-render ${args?.isCustomDataLabelStyle ? 'data-label-customStyle' : ''}`,
-            ...(args?.isCustomDataLabelStyle && args?.dataLabels ? { spacingTop: 20 } : {}),
+            ...(enableXAxisZoom ? getChartXAxisZoomOptions() : {}),
+            events: mergeChartZoomEvents(
+                args?.chart?.events,
+                enableXAxisZoom ? function onChartLoad() { attachMouseWheelXZoom(this); } : undefined,
+                enableXAxisZoom ? function onChartDestroy() { detachMouseWheelXZoom(this); } : undefined,
+            ),
         },
         title: {
             text: '',
@@ -150,7 +193,7 @@ const columnChartOptions = ({ ...args }) => {
                 pointWidth: args?.pointWidth ?? 27,
                 stacking: args?.stacking ?? false,
                 colorByPoint: colors?.length > 0 ? true : false,
-                turboThreshold: 1000,
+                turboThreshold: enableXAxisZoom ? 0 : 1000,
                 states: {
                     hover: {
                         enabled: args?.hover ? true : false,
@@ -160,6 +203,7 @@ const columnChartOptions = ({ ...args }) => {
             },
         },
         xAxis: {
+            minRange: enableXAxisZoom && categories?.length > 1 ? 2 : undefined,
             title: {
                 text: xAxis?.title ?? '',
                 y: xAxis?.y ?? 0,
@@ -168,7 +212,12 @@ const columnChartOptions = ({ ...args }) => {
             labels: {
                 enabled: xAxis?.labels?.enabled ?? true,
             },
-            tickInterval: 1,
+            tickInterval: args?.useDynamicDateLabels ? undefined : 1,
+            ...(args?.useDynamicDateLabels
+                ? {
+                    tickPositioner: createCategoryAxisTickPositioner(categories.length),
+                }
+                : {}),
         },
         yAxis: {
             title: {
@@ -187,9 +236,9 @@ const columnChartOptions = ({ ...args }) => {
                 },
                 formatter: function () {
                     if (yAxis?.showAsPercentage) {
-                        return chartPercentageAxisLabelHtml(this.value);
+                        return utils?.chartPercentageAxisLabelHtml(this.value);
                     }
-                    return chartFormatNumber(this.value);
+                    return utils.chartFormatNumber(this.value);
                 },
             },
             tickInterval: effectiveTickInterval,
@@ -273,10 +322,22 @@ const columnChartOptions = ({ ...args }) => {
                 args?.tooltip?.formatter ??
                 (args?.fullDates
                     ? function () {
+                        if (args?.tooltip?.shared && this.points?.length) {
+                            const fullDate =
+                                args.fullDates[this.points[0]?.x] ||
+                                this.points[0]?.category ||
+                                getColumnTooltipPointKey(this, categories);
+                            return buildSharedColumnTooltipHtml({
+                                pointKey: fullDate,
+                                points: this.points,
+                                isPercent: args?.tooltip?.percent,
+                                isBenchmark: args?.tooltip?.isBenchmark,
+                            });
+                        }
                         const fullDate = args.fullDates[this.point.x] || this.point.category;
                         return buildColumnTooltipHtml({
                             pointKey: fullDate,
-                            seriesName: this.series?.name ?? '',
+                            seriesName: func.seriesNameField(this.series?.name ?? ''),
                             color: this.point?.color ?? '',
                             point: this.point,
                             isPercent: args?.tooltip?.percent,
@@ -284,31 +345,16 @@ const columnChartOptions = ({ ...args }) => {
                         });
                     }
                     : function () {
-                          const isPercent = args?.tooltip?.percent;
-                          const isBenchmark = args?.tooltip?.isBenchmark;
-                          const isShared = args?.tooltip?.shared ?? false;
+                        const pointKey = getColumnTooltipPointKey(this, categories);
 
-                          if (isShared && Array.isArray(this.points) && this.points.length > 0) {
-                              const pointKey = String(
-                                  this.points[0]?.category ?? this.points[0]?.key ?? this.x ?? '',
-                              );
-                              let html = `<span class="font-xs">${pointKey}<br/><hr />`;
-                              this.points.forEach((point) => {
-                                  const seriesName = point.series?.name ?? '';
-                                  const color = point.color ?? '';
-                                  if (isBenchmark) {
-                                      const pct = point?.originalValue ?? point?.y;
-                                      html += `<span class="font-monospace" style="color:${color}">\u25CF</span>&nbsp;<span class="font-xs">${chartFormatNumber(pct)}</span><sub class="fs11 percent-xs">%</sub><br/>`;
-                                  } else {
-                                      html += `<span class="font-monospace" style="color:${color}">\u25CF</span>&nbsp;<span class="font-xs">${seriesName}: </span>${formatColumnTooltipValueHtml(point, isPercent)}<br/>`;
-                                  }
-                              });
-                              return `${html}</span>`;
-                          }
-
-                        const pointKey = String(
-                            this.point?.category ?? this.point?.key ?? this.x ?? '',
-                        );
+                        if (args?.tooltip?.shared && this.points?.length) {
+                            return buildSharedColumnTooltipHtml({
+                                pointKey,
+                                points: this.points,
+                                isPercent: args?.tooltip?.percent,
+                                isBenchmark: args?.tooltip?.isBenchmark,
+                            });
+                        }
 
                         if (args?.tooltip?.head) {
                             return `${args.tooltip.head}<br/><hr />${formatColumnTooltipValueHtml(this.point, args?.tooltip?.percent)}</span>`;
@@ -316,7 +362,7 @@ const columnChartOptions = ({ ...args }) => {
 
                         return buildColumnTooltipHtml({
                             pointKey,
-                            seriesName: this.series?.name ?? '',
+                            seriesName: func.seriesNameField(this.series?.name ?? ''),
                             color: this.point?.color ?? '',
                             point: this.point,
                             isPercent: args?.tooltip?.percent,

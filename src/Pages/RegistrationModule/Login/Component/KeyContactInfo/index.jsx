@@ -5,13 +5,13 @@ import { ALLOWED_FORMATS, BACK, CONFIRM_PASSWORD, EDIT_PROFILE_PICTURE, EMAIL, F
 import { circle_minus_fill_medium, circle_pencil_medium, circle_plus_fill_medium, circle_question_mark_mini } from 'Constants/GlobalConstant/Glyphicons';
 import { Fragment, useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
+import { useImageUpload } from 'Hooks/useImageUpload';
 import { Col, Row } from 'react-bootstrap';
 import { useForm } from 'react-hook-form';
 
 import RSTooltip from 'Components/RSTooltip';
 import RSInput from 'Components/FormFields/RSInput';
 import RSPhoneInput from 'Components/FormFields/RSPhoneInput';
-import RSFileUpload from 'Components/FormFields/RSFileUpload';
 import ConfirmMobileNumber from './Component/ConfirmMobileNumberModal';
 import RSKendoDropDownList from 'Components/FormFields/RSKendoDropdown';
 import RSModal from 'Components/RSModal';
@@ -71,11 +71,16 @@ const KeyContactInfo = ({ nextScreen, back, type }) => {
         countryDetails: {},
     });
 
-    const [imageModalState, setImageModalState] = useState({
-        show: false,
-        tempImageData: null,
-        showFileUpload: true,
-    });
+    const {
+        fileInputRef,
+        imageModalState,
+        handleNativeFileChange,
+        openCropWithExistingImage,
+        handleCropComplete,
+        handleModalClose,
+        triggerUpload,
+        setTempImageData,
+    } = useImageUpload(setValue, setError, clearErrors, 'profile');
 
     useEffect(() => {
         setPhoneState(() => ({
@@ -118,44 +123,7 @@ const KeyContactInfo = ({ nextScreen, back, type }) => {
         }
     }, [phoneState?.setFocus]);
 
-    const handleImageUpload = (base64Image, fileName) => {
-        const fileExtension = fileName?.split('.').pop()?.toLowerCase() || 'jpeg';
-        const mimeType = fileExtension === 'png' ? 'image/png' : 'image/jpeg';
-        const dataUri = base64Image?.includes('data:image') ? base64Image : `data:${mimeType};base64,${base64Image}`;
-        setImageModalState((prev) => ({ ...prev, tempImageData: dataUri, showFileUpload: false }));
-    };
 
-    const handleCropComplete = (croppedImage) => {
-        setValue('profile', croppedImage);
-        clearErrors('profile');
-        setImageModalState({ show: false, tempImageData: null, showFileUpload: true });
-    };
-
-    const handleModalClose = () => {
-        setImageModalState({ show: false, tempImageData: null, showFileUpload: true });
-        clearErrors('profile');
-        clearErrors('uploadImageName');
-    };
-
-    const handleOpenImageModal = (isEdit = false) => {
-        if (isEdit) {
-            const currentImage = watch('profile');
-            if (currentImage) {
-                let imageForCrop = currentImage;
-                if (!currentImage.includes('data:image')) {
-                    const isBase64Includes = currentImage?.includes('base64') || false;
-                    if (isBase64Includes) {
-                        imageForCrop = currentImage;
-                    } else {
-                        imageForCrop = `data:image/png;base64,${currentImage}`;
-                    }
-                }
-                setImageModalState({ show: true, tempImageData: imageForCrop, showFileUpload: false });
-            }
-        } else {
-            setImageModalState({ show: true, tempImageData: null, showFileUpload: true });
-        }
-    };
 
     const ProfileImageUploadButton = ({ value, onClick, onRemove, onEdit, error }) => {
         const [tooltip, setTooltip] = useState(false);
@@ -273,8 +241,8 @@ const KeyContactInfo = ({ nextScreen, back, type }) => {
                             <Col>
                                 <ProfileImageUploadButton
                                     value={watch('profile')}
-                                    onClick={() => handleOpenImageModal(false)}
-                                    onEdit={() => handleOpenImageModal(true)}
+                                    onClick={triggerUpload}
+                                    onEdit={() => openCropWithExistingImage(watch('profile'))}
                                     onRemove={() => {
                                         setValue('profile', null);
                                         setError('profile', {
@@ -534,7 +502,14 @@ const KeyContactInfo = ({ nextScreen, back, type }) => {
                     }));
                 }}
             />
-            {imageModalState.show && (
+            <input
+                type="file"
+                ref={fileInputRef}
+                accept=".png,.jpg,.jpeg"
+                style={{ display: 'none' }}
+                onChange={handleNativeFileChange}
+            />
+            {imageModalState.show && imageModalState.tempImageData && (
                 <RSModal
                     show={imageModalState.show}
                     header={EDIT_PROFILE_PICTURE}
@@ -542,50 +517,21 @@ const KeyContactInfo = ({ nextScreen, back, type }) => {
                     handleClose={handleModalClose}
                     body={
                         <div className="image-upload-crop-container">
-                            {imageModalState.showFileUpload && (
-                                <Row className="mt11">
-                                    <Col>
-                                        <RSFileUpload
-                                            isbase64={true}
-                                            control={control}
-                                            name={'uploadImageName'}
-                                            text="Browse"
-                                            accept=".png,.jpg,.jpeg"
-                                            customInputClass={'upload-button-top-align ml20'}
-                                            size={512000}
-                                            setError={setError}
-                                            isBase64Status={true}
-                                            base64Data={async (base64, fileName, contentLength) => {
-                                                handleImageUpload(base64, fileName);
-                                            }}
-                                            handleChange={(e) => {}}
-                                            required
-                                            watch={watch}
-                                            clearErrors={clearErrors}
-                                        />
-                                        <small className="text-muted d-block mt5">
-                                        Allowed formats: .jpg,.jpeg,.png | maximum size: 500kb
-                                        </small>
-                                    </Col>
-                                </Row>
-                            )}
-
-                            {imageModalState.tempImageData && (
-                                <>
-                                    <ImageCropModal
-                                        imageSrc={imageModalState.tempImageData}
-                                        onCropComplete={handleCropComplete}
-                                        onCancel={handleModalClose}
-                                        aspectRatio={1}
-                                        cropShape="round"
-                                        showGrid={true}
-                                        height="250px"
-                                        setTempImageData={(data) => setImageModalState((prev) => ({ ...prev, tempImageData: data }))}
-                                        setShowFileUpload={(show) => setImageModalState((prev) => ({ ...prev, showFileUpload: show }))}
-                                        setValue={setValue}
-                                    />
-                                </>
-                            )}
+                            <ImageCropModal
+                                imageSrc={imageModalState.tempImageData}
+                                onCropComplete={handleCropComplete}
+                                onCancel={handleModalClose}
+                                aspectRatio={1}
+                                cropShape="round"
+                                showGrid={true}
+                                height="250px"
+                                setTempImageData={setTempImageData}
+                                setShowFileUpload={() => {
+                                    handleModalClose();
+                                    triggerUpload();
+                                }}
+                                setValue={setValue}
+                            />
                         </div>
                     }
                 />

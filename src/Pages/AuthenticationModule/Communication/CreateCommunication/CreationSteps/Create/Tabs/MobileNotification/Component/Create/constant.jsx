@@ -74,18 +74,3 @@ export const CustomForeColor = (props) => {
         </div>
     );
 };
-
-const GetHexColorFormat = (rgb) => {
-    const parts = rgb
-        .replace(/^rgba\(/, '')
-        .replace(/\)$/, '')
-        .split(',');
-    const hex = parts
-        .slice(0, 3)
-        .map((x) => parseInt(x, 10).toString(16).padStart(2, '0'))
-        .join('');
-    const alpha = Math.round(parseFloat(parts[3]) * 255)
-        .toString(16)
-        .padStart(2, '0');
-    return `#${hex}`;
-};

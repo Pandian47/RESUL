@@ -1,6 +1,6 @@
 import { decryptWithAES } from 'Utils/modules/crypto';
 import { formatName } from 'Utils/modules/formatters';
-import _get from 'lodash/get';
+import { get as _get } from 'Utils/modules/lodashReplacements';
 import { setEditFlowData } from 'Reducers/audience/addAudience/reducer';
 import { returnToAddAudience } from 'Reducers/audience/addAudience/request';
 import { getChildListings } from 'Reducers/preferences/datacatalogue/request';

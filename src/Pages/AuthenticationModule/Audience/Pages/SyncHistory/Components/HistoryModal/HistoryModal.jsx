@@ -256,25 +256,25 @@ const HistoryModal = ({ show, setHistoryModal, invalidAudiences, warningCount, d
                                     {isStatusDropdownLoading ? (
                                         <CommonSkeleton width={360} height={28} box stopAnimation />
                                     ) : (
-                                        <h4 className="m0 d-flex align-items-center">
-                                            <span>{getSummaryTitle(selectedStatus)}:</span>
-                                            {isAudienceGridLoading && selectedStatus ? (
-                                                <CommonSkeleton
-                                                    width={32}
-                                                    height={26}
-                                                    box
-                                                    stopAnimation
-                                                    mainClass="d-inline-flex ml5 mb0"
-                                                />
-                                            ) : (
-                                                !isAudienceGridLoading &&
-                                                dataAvailable && (
+                                        dataAvailable && (
+                                            <h4 className="m0 d-flex align-items-center">
+                                                <span>{getSummaryTitle(selectedStatus)}:</span>
+
+                                                {isAudienceGridLoading && selectedStatus ? (
+                                                    <CommonSkeleton
+                                                        width={32}
+                                                        height={26}
+                                                        box
+                                                        stopAnimation
+                                                        mainClass="d-inline-flex ml5 mb0"
+                                                    />
+                                                ) : (
                                                     <span className="font-bold font-md ml5">
-                                                        {numberWithCommas(displayCount)}
+                                                        {numberWithCommas(displayCount || 0)}
                                                     </span>
-                                                )
-                                            )}
-                                        </h4>
+                                                )}
+                                            </h4>
+                                        )
                                     )}
                                 </div>
                                 <div className="d-flex align-items-center headerRightContent">

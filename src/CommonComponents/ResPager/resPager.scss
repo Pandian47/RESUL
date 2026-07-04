@@ -196,6 +196,10 @@
                         color: $white;
                     }
                 }
+                
+                .k-button-text {
+                    line-height: 1.5;
+                }
             }
 
             // Fallback for case where Kendo renders active item as a direct child without .k-link/.k-button
@@ -337,7 +341,11 @@
     width: 50px !important;
     max-width: 50px !important;
     position: fixed;
-    z-index: 1103;
+    z-index: 10010;
+    visibility: visible !important;
+    opacity: 1 !important;
+    overflow: visible !important;
+    pointer-events: auto !important;
 
     &.showing-below {
         .k-popup,

@@ -1,5 +1,4 @@
 import AppListDetail from './Component/AppListDetail/AppListDetail';
-import AppListRowCell from './Component/AppListRowCell/AppListRowCell';
 
 export const MOBILEPUSH_APPLIST_INITIALSTATE = {
     dataResult: null,
@@ -27,7 +26,4 @@ export const MOBILEPUSH_APPLIST_INITIALSTATE = {
 
 export const GridDetailComponent = (props, disabled, getData, onCollapse) => {
     return <AppListDetail {...props} disabled={disabled} getData={getData} onCollapse={onCollapse}/>;
-};
-export const RowDetailComponent = (props, getData,healthCheckData) => {
-    return <AppListRowCell {...props} getData={getData} getTenantId={getTenantId} healthCheckData={healthCheckData}/>;
 };

@@ -302,12 +302,12 @@ ListDemoSection.propTypes = {
  * Defaults: RESGRID_DEMO_DEFAULTS (all statuses + channel token colours).
  */
 const ResGridDocsPreview = ({
-    communication,
-    analytics,
-    app,
-    brand,
-    showLoadingSections,
-    showEmptySections,
+    communication = RESGRID_DEMO_DEFAULTS.communication,
+    analytics = RESGRID_DEMO_DEFAULTS.analytics,
+    app = RESGRID_DEMO_DEFAULTS.app,
+    brand = RESGRID_DEMO_DEFAULTS.brand,
+    showLoadingSections = RESGRID_DEMO_DEFAULTS.showLoadingSections,
+    showEmptySections = RESGRID_DEMO_DEFAULTS.showEmptySections,
 }) => {
     const sections = [communication, analytics, app, brand].filter(Boolean);
 
@@ -333,7 +333,5 @@ ResGridDocsPreview.propTypes = {
     showLoadingSections: PropTypes.bool,
     showEmptySections: PropTypes.bool,
 };
-
-ResGridDocsPreview.defaultProps = RESGRID_DEMO_DEFAULTS;
 
 export default ResGridDocsPreview;

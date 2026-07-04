@@ -1,8 +1,9 @@
 import { NO_RESULTS_FOUND } from 'Constants/GlobalConstant/ValidationMessage';
 import { memo, useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
-import _get from 'lodash/get';
+import { get as _get } from 'Utils/modules/lodashReplacements';
 import { DropdownButton, Dropdown } from 'react-bootstrap';
+import { RS_BOOTSTRAP_DROPDOWN_POPPER_CONFIG } from 'Components/FormFields/RSBootstrapdown';
 const RSMultiSelectNew = ({
     data = [],
     fieldKey = 'name',
@@ -49,6 +50,7 @@ const RSMultiSelectNew = ({
                 align={alignRight ? 'end' : 'start'}
                 disabled={disabled}
                 renderMenuOnMount
+                popperConfig={RS_BOOTSTRAP_DROPDOWN_POPPER_CONFIG}
             >
                 <div className="css-scrollbar custome-dropdown-scroll">
                     {data.length > 0 ? (

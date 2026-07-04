@@ -8,7 +8,6 @@ import { ENTER_IMPORT_DESCRIPTION, SELECT_LIST_TYPE } from 'Constants/GlobalCons
 import { ARE_YOU_SURE_WANT_TO_RESET, ENTER_LIST_NAME, FILTER_GROUP_TEXT, IMPORT_DESCRIPTION, LIST_TYPE, RESET, SELECT } from 'Constants/GlobalConstant/Placeholders';
 import { circle_question_mark_mini, restart_medium } from 'Constants/GlobalConstant/Glyphicons';
 import { Fragment, useEffect, useMemo, useRef, useState } from 'react';
-import _find from 'lodash/find';
 import { Col, Row } from 'react-bootstrap';
 import { useFormContext } from 'react-hook-form';
 import { useDispatch, useSelector } from 'react-redux';
@@ -84,7 +83,7 @@ const CSV = ({ audRefData, fetchAudienceInsight }) => {
         ({ addAudienceReducer }) => addAudienceReducer,
     );
 
-    const hasUploadError = !!_find(csvFiles, ['isValid', false]) || false;
+    const hasUploadError = !!csvFiles?.find((item) => item['isValid'] === false) || false;
 
     const {
         control,
@@ -277,12 +276,12 @@ const CSV = ({ audRefData, fetchAudienceInsight }) => {
                         <Col md={1} className="pl0">
                             <RSTooltip
                                 position="top"
-                                className="d-inline-flex lh0 position-relative top6"
+                                className="d-inline-flex position-relative"
                                 text={RESET}
                             >
                                 <i
                                     id="rs_data_refresh"
-                                    className={`${restart_medium} icon-md color-primary-blue`}
+                                    className={`${restart_medium} icon-md color-primary-blue mt-9`}
                                     onClick={() => {
                                         setIsReset({
                                             show: true,

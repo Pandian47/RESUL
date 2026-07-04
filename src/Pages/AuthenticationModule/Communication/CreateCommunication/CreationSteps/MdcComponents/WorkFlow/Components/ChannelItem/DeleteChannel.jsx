@@ -4,7 +4,7 @@ import { AUDIENCE_LIST_WILL_BE_REMOVED, CANCEL, CANVAS_WILL_BE_RESET, DELETE_AUD
 import { useContext, useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { Row, Col } from 'react-bootstrap';
-import _cloneDeep from 'lodash/cloneDeep';
+import { cloneDeep as _cloneDeep } from 'Utils/modules/lodashReplacements';
 import Proptypes from 'prop-types';
 import RSModal from 'Components/RSModal';
 import { RSPrimaryButton, RSSecondaryButton } from 'Components/Buttons';

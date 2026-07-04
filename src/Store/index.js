@@ -66,9 +66,5 @@ export default async function createReduxStore() {
 
     store.__setFullReducer = setFullReducer;
 
-    if (typeof localStorage !== 'undefined' && localStorage.getItem('accessToken')) {
-        void setFullReducer();
-    }
-
     return { store, persistor, setFullReducer };
 }

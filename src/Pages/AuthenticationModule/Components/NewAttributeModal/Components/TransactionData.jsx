@@ -6,7 +6,7 @@ import { Fragment, memo, useEffect, useState } from 'react';
 import { useFormContext } from 'react-hook-form';
 import { useDispatch, useSelector } from 'react-redux';
 import { Col } from 'react-bootstrap';
-import _find from 'lodash/find';
+import { find as _find } from 'Utils/modules/lodashReplacements';
 
 import RSTooltip from 'Components/RSTooltip';
 import RSKendoDropdown from 'Components/FormFields/RSKendoDropdown';

@@ -367,10 +367,10 @@ const TargetHeaderView = ({ targetListViewLen }) => {
 
         const {
             isAdvanceSearch,
-            filteration: { listName, searchValue },
+            filteration: { listName, searchValue, listType },
         } = params;
         
-        const hasActiveFilters = isAdvanceSearch || listName || searchValue;
+        const hasActiveFilters = isAdvanceSearch || listName || searchValue || listType;
         
         if (!status && hasActiveFilters) {
             const pagination = applyPaginationClearDefaults();
@@ -407,16 +407,17 @@ const TargetHeaderView = ({ targetListViewLen }) => {
         setNameSuggestLoading(false);
         const {
             isAdvanceSearch,
-            filteration: { listName, searchValue },
+            filteration: { listName, searchValue, listType },
         } = params;
         
-        if (!status && searchValue) {
+        if (!status && (searchValue || listType)) {
             const pagination = applyPaginationReset();
             setSearchValueSync((prev) => ({ rev: prev.rev + 1, value: '' }));
             setParams((prev) => ({
                 ...prev,
                 filteration: {
                     ...prev.filteration,
+                    listType: '',
                     searchBy: '',
                     isContains: false,
                     searchValue: '',
@@ -680,10 +681,10 @@ const TargetHeaderView = ({ targetListViewLen }) => {
     }, []);
 
     const listHeaderDisabled =
-        isAudience === 0 &&
-        !listLoading &&
-        !totalListCount &&
-        !targetListView?.length;
+        listLoading ||
+        (isAudience === 0 && !totalListCount && !targetListView?.length);
+
+    const isTargetListAddDisabled = !addAccess || listLoading || isAudience === 0;
 
     const persistAudienceTargetFiltersKey = useMemo(
         () => buildAdvanceSearchPersistStorageKey('audience-target', clientId, userId, departmentId),
@@ -717,6 +718,7 @@ const TargetHeaderView = ({ targetListViewLen }) => {
             </div>
             <RSAdvanceSearchNew
                 key={departmentId}
+                disabled={listHeaderDisabled}
                 initialActiveFilters={AUDIENCE_DEFAULT_INITIAL_ACTIVE_FILTERS}
                 persistActiveFilters
                 persistActiveFiltersStorageKey={persistAudienceTargetFiltersKey}
@@ -779,12 +781,12 @@ const TargetHeaderView = ({ targetListViewLen }) => {
                 searchValueSync={searchValueSync}
                 minCharsForSearchSubmit={LIST_NAME_SUGGEST_MIN_CHARS}
                 dateRangeComponent={
-                    <span className={''}>
+                    <span className={listHeaderDisabled ? 'pe-none click-off' : ''}>
                         <RSDateRangePicker onDatePickerClosed={(date) => handleDateChange(date)} isTemplate />
                     </span>
                 }
                 createButtonComponent={
-                    <span className="d-inline-flex align-items-center rs-asn-audience-actions">
+                    <span className="d-inline-flex align-items-center rs-asn-audience-actions rs-asn-audience-actions-target-list">
                         <RSTooltip
                             text={!listTypeView ? CARD_VIEW : GRID_VIEW}
                             position="top"
@@ -803,6 +805,7 @@ const TargetHeaderView = ({ targetListViewLen }) => {
                         <RSBootstrapdown
                             data={CreateList}
                             flatIcon
+                            alignRight
                             defaultItem={{
                                 name: (
                                     <i
@@ -816,7 +819,7 @@ const TargetHeaderView = ({ targetListViewLen }) => {
                             isObject
                             fieldKey="name"
                             onSelect={(value) => {
-                                if (!addAccess) return;
+                                if (isTargetListAddDisabled) return;
                                 const selectedItem = CreateList.find((item) => item.type === value.type);
                                 if (selectedItem && selectedItem?.isQuery) {
                                     const encodedData = encodeUrl(selectedItem?.queryState);
@@ -825,8 +828,7 @@ const TargetHeaderView = ({ targetListViewLen }) => {
                                     navigate(selectedItem.link, selectedItem?.queryState);
                                 }
                             }}
-                            className={`${!addAccess ? 'pe-none click-off ' : ''} no_caret`}
-                            
+                            className={`${isTargetListAddDisabled ? 'pe-none click-off ' : ''} no_caret`}
                         />
                     </span>
                 }

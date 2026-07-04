@@ -13,13 +13,7 @@ import { EXCEPTION_OCCURRED, Select_SENDER_NAME, SELECT_TEMPLATE_LANGUAGE, SELEC
 import { ADD_SENDER_ID, ADJUST_SPLIT_SIZE, ARE_YOU_SURE_REFRESH, ARE_YOU_SURE_WANT_TO_RESET, AUDIENCE, AUDIENCE_CHANGE_CONFIRMATION, AUDIENCE_COUNT_ZERO_ENABLE_AUTO_REFRESH, AUTO_REFRESH, AUTO_REFRESH_POP_HOVER_TEXT, AUTO_SCHEDULE_SPLITS, CANCEL, CHECK_START_DATE_AND_END_DATE, COMMUNICATION_SCHEDULED, CONFIRMATION, GIVEN_DATE_IS_EXCEEDS, IGNORE_CHANNEL, LABLE_SPLIT_AB, LANGUAGE, MINIMUM_DIFFERENCE_SPLITS, MOBILE_NUMBER, NEXT, OK, RESET, SAVE, SENDER, SENDER_NAME, SPLIT_AB_TOOLTIP_TEXT, SPLIT_AB_TURNOFF, TEMPLATE_LANGUAGE, TEMPLATE_NAME, TEMPLATE_TYPE, WARNING } from 'Constants/GlobalConstant/Placeholders';
 import { adjust_split_medium, circle_minus_fill_large, circle_minus_fill_medium, circle_plus_edge_medium, circle_plus_medium, circle_question_mark_medium, circle_question_mark_mini, restart_medium, timer_medium } from 'Constants/GlobalConstant/Glyphicons';
 import { Fragment, useEffect, useMemo, useRef, useState } from 'react';
-import _map from 'lodash/map';
-import _get from 'lodash/get';
-import _find from 'lodash/find';
-import _filter from 'lodash/filter';
-import _uniqBy from 'lodash/uniqBy';
-import _cloneDeep from 'lodash/cloneDeep';
-import _forEach from 'lodash/forEach';
+import { map as _map, get as _get, find as _find, filter as _filter, uniqBy as _uniqBy, cloneDeep as _cloneDeep, forEach as _forEach } from 'Utils/modules/lodashReplacements';
 import { Col, Row } from 'react-bootstrap';
 import { useDispatch, useSelector } from 'react-redux';
 import { useForm, FormProvider } from 'react-hook-form';
@@ -55,7 +49,7 @@ import { SCHEDULE_START_TIME_MENU } from '../Email/constant';
 
 import { ensureArray, ensureObject, sanitizeChannelCount, sumAudienceCountByField, normalizeChannelCampaignData, hasCampaignDetails, getCampaignStatusId } from 'Pages/AuthenticationModule/Communication/CreateCommunication/communicationDefaults';
 import { RSPrimaryButton, RSSecondaryButton } from 'Components/Buttons';
-import { SPLIT_AB_NAME, availableTabs, communicationChannels, getNextEligibleTabIndex, MESSAGING_TAB_CHANNEL_MAP, handleAutoRefreshClickOff, handlePersonalizationFetchApiCall, calculateDefaultSplittedCount, AudienceFieldRenderComponent, audienceTypeList, handleMDCQueryParamsUpdate, handleCheckCTGT, validateAudienceCount, mergeChannelAudiences, handleUpdateEditAudienceCount, handleTotalAudienceCount, handleCGTGModalCheck, editActionIdFromCommunicationResponse, getPastPlanDurationBlockedState, validatePastPlanDurationOnSubmit, PAST_PLAN_DURATION_CLICK_OFF_CLASS, getMdcChannelDetailIdFromLocation, getIsMDChannelDetailForMdcEdit, shouldHandleEditCallApi, isGenie } from '../../constant';
+import { SPLIT_AB_NAME, availableTabs, communicationChannels, getNextEligibleTabIndex, MESSAGING_TAB_CHANNEL_MAP, handleAutoRefreshClickOff, handlePersonalizationFetchApiCall, calculateDefaultSplittedCount, AudienceFieldRenderComponent, audienceTypeList, handleMDCQueryParamsUpdate, handleCheckCTGT, validateAudienceCount, mergeChannelAudiences, handleUpdateEditAudienceCount, handleTotalAudienceCount, handleCGTGModalCheck, editActionIdFromCommunicationResponse, getPastPlanDurationBlockedState, validatePastPlanDurationOnSubmit, PAST_PLAN_DURATION_CLICK_OFF_CLASS } from '../../constant';
 import { COUNTRY_MASK } from '../VMS/constant';
 import {
   updateDirtyState,
@@ -484,88 +478,105 @@ const Messaging = ({ type = 'whatsapp', mCampType, channelId }) => {
     };
   }, []);
 
-    const handleEditCallApi = () => shouldHandleEditCallApi(location, savedChannel);
-
-    function numberToLetter(n) {
-        if (n < 1 || n > 26) return null;
-        return String.fromCharCode(96 + n);
+  const handleEditCallApi = () => {
+    const isMDC = _get(location, 'campaignType', 'S') === 'M';
+    if (savedChannel || isMDC) {
+      if (_get(location, 'campaignType', 'S') === 'S' || _get(location, 'campaignType', 'S') === 'T') {
+        return true;
+      } else {
+        if (_get(location, 'mode', 'create') === 'edit') {
+          return true;
+        } else {
+          return false;
+        }
+      }
+    } else {
+      return false;
     }
+  };
+  function numberToLetter(n) {
+    if (n < 1 || n > 26) return null;
+    return String.fromCharCode(96 + n);
+  }
+  useEffect(() => {
+    async function fetchEditFlow() {
+      const payload = {
+        userId,
+        clientId,
+        departmentId,
+        campaignId: _get(location, 'campaignId', 0)
+      };
+      const editPayload = {
+        ...payload,
+        levelNumber,
+        actionId,
+        waChannelDetailId: mdcChannelDetailId
+      };
+      let isMDChannelDetail;
+      if (_get(location, 'campaignType', 'S') === 'M') {
+        if (isMDCEditMode?.toLowerCase() === 'edit') {
+          if (mdcChannelDetailId > 0) {
+            isMDChannelDetail = true;
+          } else {
+            isMDChannelDetail = false;
+          }
+        } else {
+          isMDChannelDetail = true;
+        }
+      } else {
+        isMDChannelDetail = true;
+      }
+      if (
+      _get(location, 'campaignId', 0) > 0 &&
+      formTypeRef.current === null &&
+      !isAlreadyEditCallRef.current &&
+      isMDChannelDetail)
+      {
+        const shouldCallEditApi = handleEditCallApi();
+        isAlreadyEditCallRef.current = true;
+        if (isSavedChannel && shouldCallEditApi) {
+          beginEditSkeleton();
+        }
+        try {
+          const editApiResult = await Promise.all([
+            senderNameLoader.refetch({
+              fetcher: ({ payload: senderPayload } = {}) =>
+                dispatch(getSenderName({ payload: { ...senderPayload, senderId: 0 }, loading: false })),
+              mode: savedChannel ? 'edit' : 'create',
+              loaderConfig: editFieldLoaderConfig,
+              params: { payload },
+            }),
 
-    useEffect(() => {
-        async function fetchEditFlow() {
-            const payload = {
-                userId,
-                clientId,
-                departmentId,
-                campaignId: _get(location, 'campaignId', 0),
-            };
-            const isFromGenie = isGenie(location);
-            const editPayload = {
-                ...payload,
-                levelNumber,
-                actionId,
-                waChannelDetailId: isFromGenie
-                    ? getMdcChannelDetailIdFromLocation(location)
-                    : mdcChannelDetailId,
-            };
-            const isMDChannelDetail = getIsMDChannelDetailForMdcEdit(location, isMDCEditMode, mdcChannelDetailId);
-            if (
-                _get(location, 'campaignId', 0) > 0 &&
-                formTypeRef.current === null &&
-                !isAlreadyEditCallRef.current &&
-                isMDChannelDetail
-            ) {
-                const shouldCallEditApi = handleEditCallApi();
-                if (isFromGenie) {
-                    if (shouldCallEditApi) {
-                        isAlreadyEditCallRef.current = true;
-                    }
-                } else {
-                    isAlreadyEditCallRef.current = true;
-                }
-                if (isSavedChannel && shouldCallEditApi) {
-                    beginEditSkeleton();
-                }
-                try {
-                    const editApiResult = await Promise.all([
-                        senderNameLoader.refetch({
-                            fetcher: ({ payload: senderPayload } = {}) =>
-                                dispatch(getSenderName({ payload: senderPayload, loading: false })),
-                            mode: savedChannel ? 'edit' : 'create',
-                            loaderConfig: editFieldLoaderConfig,
-                            params: { payload: { ...payload, senderId: 0 } },
-                        }),
+            location?.campaignType === 'S' &&
+              audienceList?.length === 0 &&
+              audienceLoader.refetch({
+                fetcher: ({ payload: audPayload, isFilter = false } = {}) =>
+                  dispatch(getAudienceList({ payload: audPayload, isFilter, loading: false })),
+                mode: savedChannel ? 'edit' : 'create',
+                loaderConfig: editFieldLoaderConfig,
+                params: {
+                  payload: {
+                    ...payload,
+                    searchText: '',
+                    segmentIds: [],
+                    channelType: 'WA',
+                  },
+                },
+              }),
 
-                        location?.campaignType === 'S' &&
-                            audienceList?.length === 0 &&
-                            audienceLoader.refetch({
-                                fetcher: ({ payload: audPayload, isFilter = false } = {}) =>
-                                    dispatch(getAudienceList({ payload: audPayload, isFilter, loading: false })),
-                                mode: savedChannel ? 'edit' : 'create',
-                                loaderConfig: editFieldLoaderConfig,
-                                params: {
-                                    payload: {
-                                        ...payload,
-                                        searchText: '',
-                                        segmentIds: [],
-                                        channelType: 'WA',
-                                    },
-                                },
-                            }),
-
-                        shouldCallEditApi &&
-                            dispatch(
-                                getMessagingCampaignByIdNew({
-                                    payload: editPayload,
-                                    type,
-                                    campaignType: _get(location, 'campaignType', 'S'),
-                                    isEnableLoader: false,
-                                }),
-                            ),
-                    ]);
-                    const [{ data: smsSenderList } = {}, { data: audienceData } = {}, { status, data } = {}] =
-                        editApiResult || [];
-                    if (status && hasCampaignDetails(data)) {
+            shouldCallEditApi &&
+              dispatch(
+                getMessagingCampaignByIdNew({
+                  payload: editPayload,
+                  type,
+                  campaignType: _get(location, 'campaignType', 'S'),
+                  isEnableLoader: false,
+                }),
+              ),
+          ]);
+          const [{ data: smsSenderList } = {}, { data: audienceData } = {}, { status, data } = {}] =
+            editApiResult || [];
+          if (status && hasCampaignDetails(data)) {
                     const normalizedData = normalizeChannelCampaignData(data, ['smsSplit', 'smsAutoSchedule', 'waSplit', 'waAutoSchedule']);
                     // console.log(data, 'data');
                     const state = {
@@ -812,152 +823,146 @@ const Messaging = ({ type = 'whatsapp', mCampType, channelId }) => {
           const senderName = _find(smsSenderList, ['clientWASenderId', senderId]);
           temp.senderName = senderName;
 
-                    // Handle test phone number from API response
-                    let testPhoneNumberToSet = '';
-                    let dialCode = ''
-                    if (testWaMobileNo && countryCodeMobile) {
-                        dialCode = countryCodeMobile?.includes('+') ? countryCodeMobile : `+${countryCodeMobile}`;
-                        testPhoneNumberToSet = `${dialCode} ${testWaMobileNo}`;
-                    }
-                    if (waAutoSchedule?.autoSchedule) {
-                        const tempSchedule = {};
-                        const { autoSchedule, startIn, periodRange } = waAutoSchedule;
-                        tempSchedule.autoSchedule = autoSchedule;
-                        tempSchedule.time = _find(SCHEDULE_START_TIME_MENU, ['id', Number(periodRange)]);
-                        tempSchedule.duration = startIn;
-                        tempSchedule.communicationPerformanceBy = 'Content';
-                        temp.splitscehdule = tempSchedule;
-                        setEditAutoScheduleDetails(tempSchedule);
-                    } else {
-                        temp.splitscehdule = {
-                            autoSchedule: false,
-                            communicationPerformanceBy: 'Content',
-                            duration: '8',
-                            time: { id: 1, value: 'Hour(s)' },
-                        };
-                        setEditAutoScheduleDetails({
-                            autoSchedule: false,
-                            communicationPerformanceBy: 'Content',
-                            duration: '8',
-                            time: { id: 1, value: 'Hour(s)' },
-                        });
-                    }
-                    if (sanitizeChannelCount(waSplit?.splitAudience, 0) > 0) {
-                        const tempSplitAudience = {};
-                        const { splitAudience, splitPercentage, totalAudience: totalCount, splitWidth } =
-                            ensureObject(waSplit);
-                        tempSplitAudience.count = sanitizeChannelCount(splitAudience, 0);
-                        tempSplitAudience.totalCount = sanitizeChannelCount(totalCount, 0);
-                        tempSplitAudience.audienceCount = sanitizeChannelCount(totalAudience, 0);
-                        tempSplitAudience.percentage = sanitizeChannelCount(splitPercentage, 0);
-                        tempSplitAudience.width = sanitizeChannelCount(splitWidth, 0);
-                        tempSplitAudience.tabs = _map(ensureArray(content), ({ splitType }) => `split${splitType}`);
-                        setSliderState((prev) => ({ ...prev, splittedCount: tempSplitAudience }));
-                    }
-                    const matchAudienceType = audienceTypeList?.filter((typeList) =>
-                        ensureArray(audience)?.map((aud) => aud?.listType)?.includes(typeList?.id),
-                    );
-                    audience = _uniqBy(ensureArray(audience), 'segmentationListId');
-                    audience = handleUpdateEditAudienceCount({
-                        channelId: 21,
-                        audience,
-                        savedAudienceCountList: ensureArray(normalizedData?.savedAudienceCountList),
-                        statusId: content?.[0]?.statusId,
-                    });
-                    reset((formState) => ({
-                        ...formState,
-                        editActionId: editActionIdFromCommunicationResponse(data),
-                        audience,
-                        audienceType: matchAudienceType?.length ? matchAudienceType : [audienceTypeList[0]],
-                        isAutoRefereshenabled,
-                        flashMessage: isFlashMessageEnabled,
-                        sendTimeRecommendation: isSendTimeOptEnable,
-                        splitTest: isSplitAbEnabled,
-                        isCGTGEnabled: isCGTGEnabled ?? false,
-                        approvalList: {
-                            ...formState.approvalList,
-                            ...(isWorkflowEnabled && {
-                                name: _map(approvarList, ({ approvarName, flag }) => {
-                                    const approver = _find(approvalList, ['email', approvarName]);
-                                    const name = !approver ? approvarName : approver;
-                                    const isMandatory = flag ? flag : false;
-                                    return { approverName: name, mandatory: isMandatory, isCustom: !approver };
-                                }),
-                            }),
-                            followHierarchy: requestForApproval?.isFollowHierarchy,
-                            requestApproval: isWorkflowEnabled,
-                            approvalFrom: requestForApproval.approvalFrom,
-                            ...(testPhoneNumberToSet
-                                ? { testPhoneNumber: testPhoneNumberToSet, dialCode: dialCode }
-                                : { testPhoneNumber: '', dialCode: '' }),
-                        },
-                        ...temp,
-                    }));
-                    dispatch(updateDirtyState(false));
-                    location?.campaignType === 'M' &&
-                        handleMDCQueryParamsUpdate(
-                            {
-                                ...mdcContentSetupDetails,
-                                ...watch(),
-                                ...campaignDetails,
-                                ...data,
-                            },
-                            location,
-                        );
-                    } else {
-                        setIsEditMessaging(true);
-                    }
-                } catch {
-                    dispatch(updateSmsList({ data: {}, field: 'campaignDetails' }));
-                    setIsEditMessaging(true);
-                } finally {
-                    finishEditSkeleton();
-                }
-            }
-        }
-        fetchEditFlow();
-    }, [
-        location,
-        mdcChannelDetailId,
-        type,
-        // audienceList?.length,
-        // mdcChannelDetailId,
-        // smsSettings?.length,
-        // senderName?.length,
-        isAlreadyEditCallRef,
-    ]);
-    // console.log('Messaging ::::: ', watch());
-    const resetState = (resetCampaign = false) => {
-        resetAuthoringChannelEditSession(isAlreadyEditCallRef, resetEditLoading);
-        let initialState = FORM_INITIAL_STATE.defaultValues;
-        reset((formState) => ({
+          // Handle test phone number from API response
+          let testPhoneNumberToSet = '';
+          let dialCode = '';
+          if (testWaMobileNo && countryCodeMobile) {
+            dialCode = countryCodeMobile?.includes('+') ? countryCodeMobile : `+${countryCodeMobile}`;
+            testPhoneNumberToSet = `${dialCode} ${testWaMobileNo}`;
+          }
+          if (waAutoSchedule?.autoSchedule) {
+            const tempSchedule = {};
+            const { autoSchedule, startIn, periodRange } = waAutoSchedule;
+            tempSchedule.autoSchedule = autoSchedule;
+            tempSchedule.time = _find(SCHEDULE_START_TIME_MENU, ['id', Number(periodRange)]);
+            tempSchedule.duration = startIn;
+            tempSchedule.communicationPerformanceBy = 'Content';
+            temp.splitscehdule = tempSchedule;
+            setEditAutoScheduleDetails(tempSchedule);
+          } else {
+            temp.splitscehdule = {
+              autoSchedule: false,
+              communicationPerformanceBy: 'Content',
+              duration: '8',
+              time: { id: 1, value: 'Hour(s)' }
+            };
+            setEditAutoScheduleDetails({
+              autoSchedule: false,
+              communicationPerformanceBy: 'Content',
+              duration: '8',
+              time: { id: 1, value: 'Hour(s)' }
+            });
+          }
+          if (waSplit?.splitAudience > 0) {
+            const tempSplitAudience = {};
+            const { splitAudience, splitPercentage, totalAudience: totalCount, splitWidth } = waSplit;
+            tempSplitAudience.count = splitAudience;
+            tempSplitAudience.totalCount = totalCount;
+            tempSplitAudience.audienceCount = totalAudience;
+            tempSplitAudience.percentage = splitPercentage;
+            tempSplitAudience.width = splitWidth;
+            tempSplitAudience.tabs = _map(content, ({ splitType }) => `split${splitType}`);
+            setSliderState((prev) => ({ ...prev, splittedCount: tempSplitAudience }));
+          }
+          const matchAudienceType = audienceTypeList?.filter((typeList) =>
+          audience?.map((aud) => aud?.listType)?.includes(typeList?.id)
+          );
+          audience = _uniqBy(audience, 'segmentationListId');
+          audience = handleUpdateEditAudienceCount({
+            channelId: 21,
+            audience,
+            savedAudienceCountList: data?.savedAudienceCountList || [],
+            statusId: content[0]?.statusId
+          });
+          reset((formState) => ({
             ...formState,
-            ...initialState,
+            editActionId: editActionIdFromCommunicationResponse(data),
+            audience,
+            audienceType: matchAudienceType?.length ? matchAudienceType : [audienceTypeList[0]],
+            isAutoRefereshenabled,
+            flashMessage: isFlashMessageEnabled,
+            sendTimeRecommendation: isSendTimeOptEnable,
+            splitTest: isSplitAbEnabled,
+            isCGTGEnabled: isCGTGEnabled ?? false,
             approvalList: {
-                ...initialState?.approvalList,
-                dialCode: formState?.approvalList?.dialCode,
-                testPhoneNumber: formState?.approvalList?.testPhoneNumber,
+              ...formState.approvalList,
+              ...(isWorkflowEnabled && {
+                name: _map(approvarList, ({ approvarName, flag }) => {
+                  const approver = _find(approvalList, ['email', approvarName]);
+                  const name = !approver ? approvarName : approver;
+                  const isMandatory = flag ? flag : false;
+                  return { approverName: name, mandatory: isMandatory, isCustom: !approver };
+                })
+              }),
+              followHierarchy: requestForApproval?.isFollowHierarchy,
+              requestApproval: isWorkflowEnabled,
+              approvalFrom: requestForApproval.approvalFrom,
+              ...(testPhoneNumberToSet ?
+              { testPhoneNumber: testPhoneNumberToSet, dialCode: dialCode } :
+              { testPhoneNumber: '', dialCode: '' })
             },
-        }));
-        // reset(FORM_INITIAL_STATE.defaultValues);
-        setSplitTabs(SPLIT_TABS);
-        setCarouselTabs({});
-        setState(_cloneDeep(INITIAL_STATE));
-        if (resetCampaign) {
-            dispatch(updateSmsList({ data: {}, field: 'campaignDetails' }));
+            ...temp
+          }));
+          dispatch(updateDirtyState(false));
+          location?.campaignType === 'M' &&
+          handleMDCQueryParamsUpdate(
+            {
+              ...mdcContentSetupDetails,
+              ...watch(),
+              ...campaignDetails,
+              ...data
+            },
+            location
+          );
+          } else {
+            setIsEditMessaging(true);
+          }
+        } catch {
+          dispatch(updateSmsList({ data: {}, field: 'campaignDetails' }));
+          setIsEditMessaging(true);
+        } finally {
+          finishEditSkeleton();
         }
-        setSliderState({
-            show: false,
-            splittedCount: {},
-        });
-        setSplitTabConfig({
-            currentTab: 0,
-            splitTabs: ['splitA', 'splitB'],
-        });
-        setTemplateName(0);
-        dispatch(updateAudience([]));
-        dispatch(updateFilterAudience([]));
-    };
+      }
+    }
+    fetchEditFlow();
+  }, [
+  location,
+  mdcChannelDetailId,
+  type,
+  isAlreadyEditCallRef]
+  );
+  // console.log('Messaging ::::: ', watch());
+  const resetState = (resetCampaign = false) => {
+    let initialState = FORM_INITIAL_STATE.defaultValues;
+    reset((formState) => ({
+      ...formState,
+      ...initialState,
+      approvalList: {
+        ...initialState?.approvalList,
+        dialCode: formState?.approvalList?.dialCode,
+        testPhoneNumber: formState?.approvalList?.testPhoneNumber
+      }
+    }));
+    // reset(constant.FORM_INITIAL_STATE.defaultValues);
+    setSplitTabs(SPLIT_TABS);
+    setCarouselTabs({});
+    setState(_cloneDeep(INITIAL_STATE));
+    if (resetCampaign) {
+      dispatch(updateSmsList({ data: {}, field: 'campaignDetails' }));
+    }
+    setSliderState({
+      show: false,
+      splittedCount: {}
+    });
+    setSplitTabConfig({
+      currentTab: 0,
+      splitTabs: ['splitA', 'splitB']
+    });
+    setTemplateName(0);
+    dispatch(updateAudience([]));
+    dispatch(updateFilterAudience([]));
+  };
 
   useEffect(() => {
     if (!isSplitABEnable && splitTest) refreshSplitABTab();

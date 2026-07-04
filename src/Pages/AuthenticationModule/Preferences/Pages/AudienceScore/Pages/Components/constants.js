@@ -29,6 +29,22 @@ const RECENCY = [
 const FREQUENCY_TIME = ['Week', 'Month', 'Quarter', 'Half year', 'Year'];
 const FREQUENCY_AMOUNT = ['Thousand(s)', 'Million(s)', 'Billion(s)'];
 const GRADE = ['A', 'B', 'C', 'D', 'E'];
+
+/** Failed / null API list payloads normalize to []. */
+export const asAudienceScoreList = (data) => (Array.isArray(data) ? data : []);
+
+/** Failed / null API object payloads normalize to {}. */
+export const asAudienceScoreObject = (data) =>
+    data && typeof data === 'object' && !Array.isArray(data) ? data : {};
+
+/** Standard list response — returns [] when status is false or data is invalid. */
+export const getAudienceScoreListFromResponse = (response) =>
+    response?.status ? asAudienceScoreList(response?.data) : [];
+
+/** Standard object response — returns {} when status is false or data is invalid. */
+export const getAudienceScoreObjectFromResponse = (response) =>
+    response?.status ? asAudienceScoreObject(response?.data) : [];
+
 const INITIAL_STATE = {
     defaultValues: {
         frequency: [{ less: '2', more: '5', score: '' }],

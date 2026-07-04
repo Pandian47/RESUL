@@ -1,8 +1,6 @@
 import { getDateFormat } from 'Utils/modules/dateTime';
 import { memo, useEffect, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
-import _get from 'lodash/get';
-import _find from 'lodash/find';
 
 import { Controller } from 'react-hook-form';
 import { DatePicker } from '@progress/kendo-react-dateinputs';
@@ -55,11 +53,9 @@ const ResDatePicker = ({
     const { dateFormatList } = getmasterData();
     const { dateFormatId } = getUserDetails();
     const { dateFormatId: configuredFormatId } = getDateFormat();
-    let dateFormat = _get(
-        _find(dateFormatList, ['dateFormatID', configuredFormatId || dateFormatId]),
-        'dateformat',
-        'MM-DD-YYYY',
-    );
+    let dateFormat =
+        dateFormatList.find((item) => item?.dateFormatID === (configuredFormatId || dateFormatId))
+            ?.dateformat ?? 'MM-DD-YYYY';
 
     function normalizeDateFormat(dateFormat) {
         const lower = dateFormat.toLowerCase();
@@ -164,25 +160,25 @@ const ResDatePicker = ({
             });
         };
     }, []);
-    const datePickerInput = document.querySelectorAll('.k-datepicker input');
+    useEffect(() => {
+        const wrapper = datePickerWrapper.current;
+        if (!wrapper) return;
 
-    const buttonDatePicker = document.querySelectorAll('[aria-label="Toggle calendar"]');
+        wrapper.querySelectorAll('[aria-label="Toggle calendar"]').forEach((item) => (item.title = 'Calendar'));
 
-    if (buttonDatePicker) {
-        buttonDatePicker.forEach((item) => (item.title = 'Calendar'));
-    }
+        // Block only the mouse wheel from spinning the focused date segment.
+        // Typing/arrow keys must stay enabled so the user can edit the date manually.
+        const handleWheel = (e) => {
+            e.stopImmediatePropagation();
+            e.preventDefault();
+        };
+        const datePickerInput = wrapper.querySelectorAll('.k-datepicker input');
+        datePickerInput.forEach((input) => input.addEventListener('wheel', handleWheel));
 
-    if (datePickerInput) {
-        datePickerInput.forEach((input) => {
-            // Block only the mouse wheel from spinning the focused date segment.
-            // Typing/arrow keys must stay enabled so the user can edit the date manually.
-            input.addEventListener('wheel', (e) => {
-                e.stopImmediatePropagation();
-                e.preventDefault();
-                return;
-            });
-        });
-    }
+        return () => {
+            datePickerInput.forEach((input) => input.removeEventListener('wheel', handleWheel));
+        };
+    });
 
     return (
         <Controller
@@ -191,7 +187,7 @@ const ResDatePicker = ({
             name={name}
             defaultValue={defaultValue instanceof Date || !defaultValue ? defaultValue : new Date(defaultValue)}
             render={({ field: { onChange, onBlur, value, ...field }, fieldState: { error } }) => {
-                const _isEmpty = _get(error, 'message', '')?.length > 0;
+                const _isEmpty = (error?.message ?? '')?.length > 0;
                 const dateValue =
                     value instanceof Date || value == null ? value : value ? new Date(value) : null;
                 return (
@@ -204,7 +200,7 @@ const ResDatePicker = ({
                         )}
                         {_isEmpty && (
                             <div className="validation-message" onClick={() => setDatepicker(true)}>
-                                {_get(error, 'message', '')}
+                                {error?.message ?? ''}
                             </div>
                         )}
 

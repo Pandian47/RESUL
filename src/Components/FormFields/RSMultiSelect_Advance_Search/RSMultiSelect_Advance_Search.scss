@@ -38,13 +38,14 @@
                 .checkbox-wrapper label,
                 .checkbox-wrapper .lbl,
                 .checkbox-wrapper .lbl span {
-                   // color: $white !important;
+                    // color: $white !important;
                 }
             }
 
             &:hover,
             &.active:hover {
                 background-color: $tertiary-blue !important;
+
                 .checkbox-wrapper,
                 .checkbox-wrapper label,
                 .checkbox-wrapper .lbl,
@@ -65,8 +66,15 @@
         .k-list-filter {
             padding: 8px 10px 4px;
 
-            .k-searchbox {
+            .k-searchbox,
+            .rs-ms-searchbox {
                 width: 100%;
+                border: none !important;
+                border-bottom: 1px solid $quaternary-blue !important;
+                border-radius: 0 !important;
+                box-shadow: none !important;
+                background: transparent !important;
+                padding-bottom: 5px;
             }
 
             .k-input-inner {
@@ -74,7 +82,7 @@
                 box-sizing: border-box;
                 border: none;
                 background: transparent;
-                padding: 6px 36px 6px 8px;
+                padding: 0;
                 font-size: $font-xs;
                 font-family: $rs-font-regular;
                 color: $secondary-black;
@@ -83,6 +91,31 @@
                 &::placeholder {
                     color: $secondary-grey;
                 }
+            }
+        }
+    }
+
+    .k-list-filter {
+        padding: 0 !important;
+        margin: 0 -5px;
+
+        .k-input,
+        .k-input.k-input-solid {
+            border-radius: 0;
+            border: 0;
+
+            &:focus-within {
+                box-shadow: none;
+            }
+
+        }
+        >span {
+            >span {
+                top: 0 !important;
+                padding: 2px 5px 2px 2px;
+            }
+            .k-input-inner{
+                padding-left: 14px !important;
             }
         }
     }

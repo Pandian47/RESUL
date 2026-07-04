@@ -2,7 +2,7 @@ import { getChannelId } from 'Utils/modules/communicationChannels';
 import { getCommunicationType } from 'Utils/modules/communicationStatus';
 import { truncateTitle } from 'Utils/modules/displayCore';
 import { numberWithCommas } from 'Utils/modules/formatters';
-import _get from 'lodash/get';
+import { get as _get } from 'Utils/modules/lodashReplacements';
 import RSTooltip from 'Components/RSTooltip';
 
 
@@ -21,11 +21,7 @@ export function normalizeSummaryCommunicationTypeToIds(value, attributeRows = []
     const rows = Array.isArray(attributeRows) ? attributeRows : [];
     const idKeys = ['campaignAttributeId', 'CampaignAttributeId', 'CampaignAttributeID', 'id', 'ID'];
     const nameOf = (row) =>
-        String(
-            _get(row, 'attributename', '') ||
-                _get(row, 'attributeName', '') ||
-                _get(row, 'AttributeName', ''),
-        )
+        String(_get(row, 'attributename', '') || _get(row, 'attributeName', '') || _get(row, 'AttributeName', ''))
             .trim()
             .toLowerCase();
     const numericIdOf = (row) => {
@@ -279,28 +275,41 @@ export function pickCommunicationSummaryRequestPayload(p) {
     }
     delete out.productCategoryId;
 
-    const toInt = (val) => {
-        if (val === 0 || val === null || val === undefined || val === '') {
-            return 0;
+    const toCommaSeparatedString = (val) => {
+        if (val === null || val === undefined || val === '' || val === 0 || val === '0') {
+            return '';
         }
-        const parsed = Number(val);
-        return Number.isFinite(parsed) ? parsed : 0;
+        if (Array.isArray(val)) {
+            return val.filter((item) => item !== null && item !== undefined && item !== '').join(',');
+        }
+        return String(val).trim();
     };
 
-    const getDeliveryMethodId = (val) => {
-        if (val === 0 || val === null || val === undefined || val === '') return 0;
-        const s = String(val).toLowerCase();
-        if (s === '1' || s === 's' || s.includes('single')) return 1;
-        if (s === '2' || s === 'm' || s.includes('multi')) return 2;
-        if (s === '3' || s === 't' || s.includes('trigger') || s.includes('event')) return 3;
-        return 0;
+    const getDeliveryMethodString = (val) => {
+        if (val === null || val === undefined || val === '' || val === 0 || val === '0') {
+            return '';
+        }
+        const values = String(val).split(',');
+        const codes = values
+            .map((v) => {
+                const s = v.trim().toLowerCase();
+                if (s === '1' || s === 's' || s.includes('single')) return 'S';
+                if (s === '2' || s === 'm' || s.includes('multi')) return 'M';
+                if (s === '3' || s === 't' || s.includes('trigger') || s.includes('event')) return 'T';
+                return '';
+            })
+            .filter(Boolean);
+
+        return codes.join(',');
     };
 
-    out.deliveryMethod = getDeliveryMethodId(out.deliveryMethod);
-    out.communicationType = toInt(out.communicationType);
-    out.channelType = toInt(out.channelType);
-    out.statusId = toInt(out.statusId);
-    out.productType = toInt(out.productType);
+    out.deliveryMethod = getDeliveryMethodString(out.deliveryMethod);
+    out.communicationType = toCommaSeparatedString(out.communicationType);
+    out.channelType = toCommaSeparatedString(out.channelType);
+    out.statusId = toCommaSeparatedString(out.statusId);
+    out.productType = toCommaSeparatedString(out.productType);
+    out.tags = toCommaSeparatedString(out.tags);
+    out.createdBy = toCommaSeparatedString(out.createdBy);
 
     return out;
 }

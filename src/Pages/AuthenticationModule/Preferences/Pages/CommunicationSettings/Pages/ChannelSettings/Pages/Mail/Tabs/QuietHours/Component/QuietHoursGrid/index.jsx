@@ -25,7 +25,7 @@ const QuietHoursGrid = () => {
     const context = useContext(QuietHoursProvider);
     const dispatch = useDispatch();
     const { departmentId, clientId, userId } = useSelector((state) => getSessionId(state));
-    const { channelId, gridListVersion = 0 } = context || {};
+    const { channelId, gridListVersion = 0, consumePreloadedGridList } = context || {};
     const roleId = getUserDetails()?.roleId;
     const isAdmin = isQuietHoursAdminRole(roleId);
 
@@ -93,7 +93,7 @@ const QuietHoursGrid = () => {
         });
 
         return gridApi.refetch({
-            fetcher: () => dispatch(getQuietHoursSettings(payload)),
+            fetcher: () => dispatch(getQuietHoursSettings(payload, { loading: false })),
             loaderConfig: noLoaderConfig,
             mode: 'create',
             onSuccess: (response) => {
@@ -114,6 +114,13 @@ const QuietHoursGrid = () => {
     }, [applyGridRows, channelId, clientId, departmentId, dispatch, gridApi.refetch, userId]);
 
     useEffect(() => {
+        const preloaded = consumePreloadedGridList?.();
+        if (preloaded != null) {
+            applyGridRows(preloaded);
+            setHasLoaded(true);
+            return undefined;
+        }
+
         if (
             !isQuietHoursSessionReady({
                 channelId,
@@ -122,7 +129,6 @@ const QuietHoursGrid = () => {
                 userId,
             })
         ) {
-            setHasLoaded(true);
             return undefined;
         }
 
@@ -132,7 +138,17 @@ const QuietHoursGrid = () => {
             gridApi.reset();
             setHasLoaded(false);
         };
-    }, [handleGridData, gridListVersion, gridApi.reset, channelId, clientId, departmentId, userId]);
+    }, [
+        applyGridRows,
+        channelId,
+        clientId,
+        consumePreloadedGridList,
+        departmentId,
+        handleGridData,
+        gridListVersion,
+        gridApi.reset,
+        userId,
+    ]);
 
     const handleStatusChange = async (checked, dataItem) => {
         if (!isAdmin || isRegulatory(dataItem) || dataItem?.ruleId == null) return;

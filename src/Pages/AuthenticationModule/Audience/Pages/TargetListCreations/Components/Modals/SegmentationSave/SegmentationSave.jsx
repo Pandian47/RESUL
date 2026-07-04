@@ -1,9 +1,10 @@
 import { encodeUrl } from 'Utils/modules/crypto';
+import { navigateBackToCommunicationCreation } from 'Utils/modules/navigation';
 import { numberWithCommas } from 'Utils/modules/formatters';
 import { ALL, CANCEL, CONFIRMATION, ENTER_LIST_NAME, POTENTIAL_AUDIENCE, SAVE } from 'Constants/GlobalConstant/Placeholders';
-import { Fragment, useContext, useEffect, useState } from 'react';
+import { Fragment, useContext, useEffect, useMemo, useState } from 'react';
 import { useFormContext } from 'react-hook-form';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 
 import RSModal from 'Components/RSModal';
 import { RSInput } from 'Components/RSInput';
@@ -29,7 +30,18 @@ const BASE_TYPE_OPTIONS = [
 ];
 
 const SegmentationSave = ({ show, handleClose, partnerData = false, isUniqueID = '', filterGroupRef = null, isUpdate = false }) => {
-    const locationState = useQueryParams('/audience');
+    const location = useLocation();
+    const queryParams = useQueryParams('/audience');
+    const locationState = useMemo(() => {
+        const navigationState = location.state || {};
+        if (!queryParams) {
+            return Object.keys(navigationState).length ? navigationState : null;
+        }
+        if (queryParams.__v === 2 && queryParams.__sid) {
+            return Object.keys(navigationState).length ? navigationState : null;
+        }
+        return { ...queryParams, ...navigationState };
+    }, [queryParams, location.state]);
     const dispatch = useDispatch();
     const navigate = useNavigate();
     const { getValues, setValue } = useFormContext();
@@ -44,9 +56,9 @@ const SegmentationSave = ({ show, handleClose, partnerData = false, isUniqueID =
     const { attributeTypes, isZeroDayFiles, filterGroups, isBQAudienceCount, calculateLater, lookAlikeRecAtts } = targetListState;
 
     const [potentialCount, setPotentialCount] = useState(0);
-    const [isSaving, setIsSaving] = useState(false);
     const [finalAudCount, setFinalAudCount] = useState(0);
     const [selectedBaseType, setSelectedBaseType] = useState(BASE_TYPE_OPTIONS[0]);
+    const [isSaving, setIsSaving] = useState(false);
     const attributes = getValues();
     const {
         segmentation: { listName },
@@ -111,10 +123,8 @@ const SegmentationSave = ({ show, handleClose, partnerData = false, isUniqueID =
     };
 
     const saveTargetList = async () => {
-        if (isSaving) return;
         setIsSaving(true);
         try {
-        // API CALL
         let transformedData_SubSegmentExp = [],
             listType = 0;
         if (locationState?.isMDCSubSegment && SubSegmentExp_List?.length > 0) {
@@ -162,10 +172,10 @@ const SegmentationSave = ({ show, handleClose, partnerData = false, isUniqueID =
             );
         }
         const res = partnerData
-            ? await dispatch(updateAndSaveTargetList_Partner(finalData))
+            ? await dispatch(updateAndSaveTargetList_Partner(finalData, false))
             : locationState?.isMDCSubSegment
-            ? await dispatch(saveSubSegment_Rule(finalData))
-            : await dispatch(updateAndSaveTargetList(finalData));
+            ? await dispatch(saveSubSegment_Rule(finalData, false))
+            : await dispatch(updateAndSaveTargetList(finalData, false));
         setWarningMessage(res?.message);
         if (res?.status) {
             dispatchState({
@@ -184,8 +194,30 @@ const SegmentationSave = ({ show, handleClose, partnerData = false, isUniqueID =
                     subSegmentGUID: finalData?.SubSegmentGUID ?? '',
                 };
                 const pageFrom = encodeUrl(queryParamData);
-                navigate(`/communication/mdc-workflow?q=${pageFrom}`);
-            } else {
+                navigate(`/communication/mdc-workflow?q=${pageFrom}`, { state: queryParamData });
+            } else if(locationState?.backNavigationDetails?.isCustomNavigate && locationState?.backNavigationDetails?.backPathName){
+                const navDetails = locationState?.backNavigationDetails;
+                const backPath = navDetails?.backPathName
+                if (navDetails?.locationState) {
+                    const encryptState = encodeUrl(navDetails.locationState);
+                    return navigate(`${backPath}?q=${encryptState}`, {
+                        state: navDetails.locationState,
+                    });
+                } else {
+                    return navigate(backPath, {
+                        state: {},
+                    });
+                }
+            } else if (
+                !navigateBackToCommunicationCreation({
+                    dispatch,
+                    navigate,
+                    navigationState: locationState,
+                    extraReturnState: {
+                        savedSegmentationListId: res?.data ?? 0,
+                    },
+                })
+            ) {
                 const url = '/audience';
                 const index = 1;
                 const state1 = { index };
@@ -263,13 +295,27 @@ const SegmentationSave = ({ show, handleClose, partnerData = false, isUniqueID =
                             }
                             footer={
                                 <div className="d-flex justify-content-end">
-                                    <RSSecondaryButton onClick={() => handleClose(false)}>
+                                    <RSSecondaryButton
+                                        onClick={() => handleClose(false)}
+                                        blockInteraction={isSaving}
+                                    >
                                         {CANCEL}
                                     </RSSecondaryButton>
-                                    <RSPrimaryButton onClick={saveTargetList}>{SAVE}</RSPrimaryButton>
+                                    <RSPrimaryButton
+                                        onClick={saveTargetList}
+                                        isLoading={isSaving}
+                                        blockBodyPointerEvents={isSaving}
+                                    >
+                                        {SAVE}
+                                    </RSPrimaryButton>
                                 </div>
                             }
-                            handleClose={() => handleClose(false)}
+                            handleClose={() => {
+                                if (isSaving) return;
+                                handleClose(false);
+                            }}
+                            isCloseDisabled={isSaving}
+                            lockBackground={isSaving}
                         />
                     ))}
             </div>

@@ -1017,23 +1017,6 @@ export const FormatAudienceConversionChartData = (data) => {
     };
 };
 
-export const FormatAudienceConversionPyramidChartData = (data) => {
-    const keys = safeObjectKeys(data?.[0]);
-
-    let series = [];
-
-    keys.forEach((key) => {
-        series.push({
-            name: key,
-            y: data[0][key],
-        });
-    });
-
-    return {
-        series,
-    };
-};
-
 export const FormatKnownRetentionData = (data) => {
     let title;
 

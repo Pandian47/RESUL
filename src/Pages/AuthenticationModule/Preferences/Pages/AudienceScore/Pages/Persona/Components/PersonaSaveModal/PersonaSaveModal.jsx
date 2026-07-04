@@ -3,7 +3,7 @@ import { ENTER_PERSONA_NAME } from 'Constants/GlobalConstant/ValidationMessage';
 import { LIST_NAME_RULES } from 'Constants/GlobalConstant/Rules';
 import { PERSONA_DESC, PERSONA_NAME } from 'Constants/GlobalConstant/Placeholders';
 import { Fragment, useContext, useEffect, useRef } from 'react';
-import _get from 'lodash/get';
+import { get as _get } from 'Utils/modules/lodashReplacements';
 import RSModal from 'Components/RSModal';
 import { useFormContext } from 'react-hook-form';
 import { RSPrimaryButton, RSSecondaryButton } from 'Components/Buttons';

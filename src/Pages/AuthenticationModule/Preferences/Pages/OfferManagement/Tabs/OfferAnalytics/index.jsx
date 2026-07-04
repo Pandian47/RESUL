@@ -8,7 +8,7 @@ import { DOWNLOAD_CSV, LAST_24_HOURS } from 'Constants/GlobalConstant/Placeholde
 import { csv_download_large, star_fill_mini } from 'Constants/GlobalConstant/Glyphicons';
 import { useState, useMemo, useEffect } from 'react';
 import { Col, Container, Row } from 'react-bootstrap';
-import _map from 'lodash/map';
+import { map as _map } from 'Utils/modules/lodashReplacements';
 import useQueryParams from 'Hooks/useQueryParams';
 import { useDispatch, useSelector } from 'react-redux';
 import { getSessionId } from 'Reducers/globalState/selector';

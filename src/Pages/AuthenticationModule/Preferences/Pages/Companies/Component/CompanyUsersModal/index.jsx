@@ -11,15 +11,15 @@ const CompanyUsersModalSkeleton = () => (
     <div className="cum-body cum-modal-skeleton" aria-hidden="true">
         <div className="cum-section">
             <div className="cum-section-title">
-                <CommonSkeleton box height={16} width="55%" stopAnimation />
+                <CommonSkeleton box height={24} width="55%" stopAnimation />
             </div>
             <div className="cum-user-list">
                 {Array.from({ length: USER_ROW_SKELETON_COUNT }, (_, idx) => (
                     <div key={idx} className={`cum-user-row ${idx % 2 !== 0 ? 'alt' : ''}`}>
                         <div className="cum-user-info">
-                            <CommonSkeleton box height={20} width={140} stopAnimation />
+                            <CommonSkeleton box height={24} width={140} stopAnimation />
                         </div>
-                        <CommonSkeleton box height={26} width={72} stopAnimation mainClass="cum-user-role-skeleton" />
+                        <CommonSkeleton box height={24} width={72} stopAnimation mainClass="cum-user-role-skeleton" />
                     </div>
                 ))}
             </div>

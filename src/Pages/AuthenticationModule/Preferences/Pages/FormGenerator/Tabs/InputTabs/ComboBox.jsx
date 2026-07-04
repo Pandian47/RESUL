@@ -2,7 +2,7 @@ import { formatName } from 'Utils/modules/formatters';
 import { FORMS_COMBO_BOX, MAP_TO, SETTINGS, SET_MANDATORY } from 'Constants/GlobalConstant/Placeholders';
 import { memo, useContext, useEffect, useState } from 'react';
 import { useFormContext, useWatch } from 'react-hook-form';
-import _find from 'lodash/find';
+import { find as _find } from 'Utils/modules/lodashReplacements';
 
 import RSKendoDropDownList from 'Components/FormFields/RSKendoDropdown';
 

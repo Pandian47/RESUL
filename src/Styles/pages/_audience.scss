@@ -224,6 +224,7 @@
             align-items: center;
             justify-content: space-between;
             padding-top: 5px;
+            font-size: 15px;
             &:first-child {
                 margin-top: 0;
             }
@@ -723,6 +724,57 @@ body:has(.pref-dedupe-settings-modal.show) {
         z-index: 10010 !important;
     }
 }
+
+// Target list "List info" modal — keep pager inside modal; dropdown portals to body
+.rs-modal.target-list-info-modal,
+.modal.target-list-info-modal {
+    .modal-content {
+        overflow: hidden;
+    }
+
+    // Let modal grow with grid rows; RSModal inline height + overflow:visible was clipping pager outside
+    .rsmd-content > div {
+        height: auto !important;
+        max-height: calc(100vh - 120px);
+        overflow: hidden;
+    }
+
+    .modal-body {
+        max-height: calc(100vh - 220px);
+        overflow-x: hidden;
+        overflow-y: auto;
+    }
+
+    .target-info-crossfade-wrapper {
+        overflow: hidden;
+    }
+
+    .target-info-pane.is-active,
+    .carousel-item {
+        overflow: visible;
+    }
+
+    .target-info-modal-grid {
+        overflow: visible;
+    }
+
+    .reskendogrid-pager {
+        overflow: visible;
+        position: relative;
+        z-index: 2;
+        padding-bottom: 8px;
+        margin-bottom: 4px;
+    }
+}
+
+body:has(.target-list-info-modal.show) {
+    .k-animation-container.respager-sizes-popup,
+    .k-animation-container:has(.k-popup.k-dropdownlist-popup .k-list-ul) {
+        z-index: 10010 !important;
+        overflow: visible !important;
+        pointer-events: auto !important;
+    }
+}
 .timermodal-date-timer {
 /* [Kendo disabled]
     .k-input-button {
@@ -814,17 +866,6 @@ body:has(.pref-dedupe-settings-modal.show) {
 .upload-button-top-align {
     position: relative;
     bottom: 11px;
-}
-.Session-model-open {
-    .session-timeout-popup.modal.show {
-        display: block !important;
-        & + .modal-backdrop {
-            display: none !important;
-        }
-    }
-    .fade.rs-modal {
-        display: none !important;
-    }
 }
 .targetListGroupBlock {
     .attributeList {
@@ -1121,6 +1162,7 @@ content: unset;
     grid-template-columns: 100%;
     grid-template-rows: auto;
     width: 100%;
+    position: relative;
     overflow: hidden;
 }
 
@@ -1137,10 +1179,18 @@ content: unset;
         transform 700ms cubic-bezier(0.16, 1, 0.3, 1),
         visibility 700ms;
 
+    &:not(.is-active) {
+        position: absolute;
+        top: 0;
+        left: 0;
+    }
+
     &.is-active {
+        position: relative;
         opacity: 1;
         visibility: visible;
-        transform: translateY(0) scale(1);
+        // transform:none — avoids a fixed-position containing block that clips ResPager dropdown
+        transform: none;
         pointer-events: auto;
         transition-delay: 250ms;
     }
@@ -1164,7 +1214,7 @@ content: unset;
             .target-info-advanced-action {
                 flex-shrink: 0;
                 line-height: 0;
-                margin-bottom: -2px;
+               // margin-bottom: -2px;
             }
         }
     }
@@ -1175,3 +1225,26 @@ content: unset;
         right:20%;
     }
 }
+.rs-asn-audience-actions-target-list{
+    .rs-bootstrap-dropdown .rs-dropdown .dropdown-menu[x-placement=bottom-end]:before{
+        right:14px;
+    }
+}
+//03-07-2026 customized css start
+.rs-targetList-rightSide{
+    .targetListGroupBlock{
+        ul.attributeList{
+            li{
+                .segment_loader{
+                    width: 22px;
+                    height: 22px;
+                    max-width: 22px;
+                    max-height: 22px;
+                }
+            }
+
+        }
+    }
+}
+
+//03-07-2026 customized css end

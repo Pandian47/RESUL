@@ -10,10 +10,3 @@ const CLIENT_BRANCH_SUFFIX = {
     3: 'LOC',
 };
 
-export const getClientBranchTypeMessage = (clientBranchTypeID, clientName = '') => {
-    const branch = CLIENT_BRANCH_SUFFIX[clientBranchTypeID];
-    if (clientName && branch) {
-        return `Client name already exists in ${branch}.`;
-    }
-    return CLIENT_BRANCH_TYPE_MESSAGES[clientBranchTypeID] || 'Client name already exists.';
-};

@@ -10,11 +10,11 @@ import ReactDOM from 'react-dom';
 import { Col, Row } from 'react-bootstrap';
 import { useTranslation } from 'react-i18next';
 import { useDispatch, useSelector } from 'react-redux';
-import _key from 'lodash/keys';
-import _get from 'lodash/get';
+import { keys as _key,get as _get } from 'Utils/modules/lodashReplacements';
 
 import { BootstrapDropdown } from 'Components/RSBootstrapDropDown';
 import RSHighchartsContainer from 'Components/Highcharts';
+import { ReactChartsPie } from 'Constants/ReCharts';
 
 import {
     sanitizeMdmChartValue,
@@ -44,6 +44,9 @@ const getChannelDisplayLabel = (channelName) => {
         return channelName;
     }
 };
+
+const hasBindAudienceSeriesName = (rawName, displayLabel) =>
+    Boolean(String(rawName ?? '')?.trim() && String(displayLabel ?? '')?.trim());
 
 const getBindAudienceChartType = (bindAudienceList) => {
     if (!Array.isArray(bindAudienceList)) return '';
@@ -120,7 +123,7 @@ const Overview = ({ show = {}, handleInfo = () => {} }) => {
 
             if (tmp?.length === 2) {
                 chart = tmp[1];
-            } else if (tmp?.length > 2) {
+            } else if (tmp?.length > 2 && hasBindAudienceSeriesName(tmp[0], channelLabel)) {
                 series.push({
                     name: channelLabel,
                     y: sanitizeMdmChartValue(tmp[1]),
@@ -146,7 +149,7 @@ const Overview = ({ show = {}, handleInfo = () => {} }) => {
 
             if (tmp?.length === 2) {
                 chart = tmp[1];
-            } else if (tmp?.length > 2) {
+            } else if (tmp?.length > 2 && hasBindAudienceSeriesName(tmp[0], channelLabel)) {
                 series.push({
                     name: channelLabel,
                     y: sanitizeMdmChartValue(tmp[2]),
@@ -350,6 +353,8 @@ const Overview = ({ show = {}, handleInfo = () => {} }) => {
                 />
             );
         }
+        // [TEST] Recharts pie chart – replaces Highcharts for testing purposes.
+        // Old Highcharts code kept below for easy rollback:
         return (
             <RSHighchartsContainer
                 type="pie"
@@ -357,11 +362,23 @@ const Overview = ({ show = {}, handleInfo = () => {} }) => {
                 options={getPieChartOptionsSafe(chartData?.pieChart)}
             />
         );
+        // return (
+        //     <ReactChartsPie
+        //         key={`recharts-pie-${chartAttr ?? 'default'}`}
+        //         args={{
+        //             ...chartData?.pieChart,
+        //             seriesName: overviewOptions || chartAttr || 'Count',
+        //             innerSize: '47%',
+        //             dataLabels: { enabled: true },
+        //             legend: { enabled: true },
+        //         }}
+        //     />
+        // );
     };
 
     return (
         <Row className="position-relative">
-            <Col sm={6}>
+            <Col sm={12} md={6}>
                 <div className="portlet-container portlet-md mdm-overview-chart-portlet">
                     <div className="portlet-header">
                         <h4>{overviewOptions || chartAttr || ''}</h4>
@@ -397,9 +414,9 @@ const Overview = ({ show = {}, handleInfo = () => {} }) => {
                     </div>
                 </div>
             </Col>
-            <Col sm={6}>
+            <Col sm={12} md={6}>
                 <Row>
-                    <Col sm={6}>
+                    <Col sm={6} md={6}>
                         <OverviewInfo
                             label={'Total'}
                             count={numberWithCommas(totalRecipients)}
@@ -430,7 +447,7 @@ const Overview = ({ show = {}, handleInfo = () => {} }) => {
                             }}
                         />
                     </Col>
-                    <Col sm={6}>
+                    <Col sm={6} md={6}>
                         <OverviewInfo
                             label={'Email'}
                             count={numberWithCommas(emailRecipients)}
@@ -456,7 +473,7 @@ const Overview = ({ show = {}, handleInfo = () => {} }) => {
                         />
                     </Col>
 
-                    <Col sm={6}>
+                    <Col sm={6} md={6}>
                         <OverviewInfo
                             label={'Mobile'}
                             count={numberWithCommas(mobileRecipients)}
@@ -481,7 +498,7 @@ const Overview = ({ show = {}, handleInfo = () => {} }) => {
                             }}
                         />
                     </Col>
-                    <Col sm={6}>
+                    <Col sm={6} md={6}>
                         <OverviewInfo
                             label={isSocialNotification && !isNotification ? 'Social' : 'Notifications'}
                             count={numberWithCommas(

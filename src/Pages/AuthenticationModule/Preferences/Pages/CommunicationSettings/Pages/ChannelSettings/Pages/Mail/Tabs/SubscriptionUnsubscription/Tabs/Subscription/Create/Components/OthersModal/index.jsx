@@ -9,6 +9,7 @@ import RSModal from 'Components/RSModal';
 import { RSPrimaryButton, RSSecondaryButton } from 'Components/Buttons';
 
 import RSCheckbox from 'Components/FormFields/RSCheckbox';
+import { UpdateState } from 'Utils/modules/misc';
 
 const OthersModal = ({ tags = '', show, isEditContent, handleClose, onSubmit, modalName }) => {
     const [isShow, setIsShow] = useState(false);

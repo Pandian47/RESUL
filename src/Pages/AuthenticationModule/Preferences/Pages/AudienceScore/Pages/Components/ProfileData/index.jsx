@@ -11,9 +11,12 @@ import RSTooltip from 'Components/RSTooltip';
 
 import { HorizontalSkeleton } from 'Components/Skeleton/Skeleton';
 import { updateName } from '../../ProfileData/constant';
-import { handleProfileDataGradingTotal } from '../constants';
+import { handleProfileDataGradingTotal, asAudienceScoreList } from '../constants';
 
 const ProfileDataCard = ({ name, head, profileData, dropDownData, title, cardicons, isWorth, keyMapping }) => {
+    const safeProfileData =
+        profileData && typeof profileData === 'object' && !Array.isArray(profileData) ? profileData : {};
+    const safeDropDownData = asAudienceScoreList(dropDownData);
     // console.log('dropDownData: ', dropDownData);
     // console.log('profileData: ', profileData);
     const {
@@ -104,9 +107,10 @@ const ProfileDataCard = ({ name, head, profileData, dropDownData, title, cardico
     };
 
     const handleBindData = (data) => {
-        const modifiedData = data?.dataSegmentRule?.map((item, index) => {
-            const filterDropData = dropDownData?.find(
-                (drop) => updateName(drop[keyMapping?.textField]) === updateName(item[keyMapping?.campareId]),
+        const segmentRules = asAudienceScoreList(data?.dataSegmentRule);
+        const modifiedData = segmentRules.map((item) => {
+            const filterDropData = safeDropDownData?.find(
+                (drop) => updateName(drop?.[keyMapping?.textField]) === updateName(item?.[keyMapping?.campareId]),
             );
             if (!isWorth) {
                 return {
@@ -133,25 +137,25 @@ const ProfileDataCard = ({ name, head, profileData, dropDownData, title, cardico
     };
 
     useEffect(() => {
-        if (profileData?.dataSegmentRule?.length) {
-            handleBindData(profileData);
+        if (safeProfileData?.dataSegmentRule?.length) {
+            handleBindData(safeProfileData);
             setShowFullDetail(true);
         } else {
             setShowFullDetail(false);
         }
-    }, [profileData?.dataSegmentRule]);
+    }, [safeProfileData?.dataSegmentRule, safeDropDownData]);
 
     useEffect(() => {
-        setValue(`${name}Profile[Total]`, profileData?.dataSegmentScore ?? 0);
-    }, [profileData?.dataSegmentScore]);
+        setValue(`${name}Profile[Total]`, safeProfileData?.dataSegmentScore ?? 0);
+    }, [safeProfileData?.dataSegmentScore, name, setValue]);
 
     useEffect(() => {
         if (!showFullDetail) {
-            handleBindData(profileData);
+            handleBindData(safeProfileData);
         }
-        setValue(`${name}Profile[Total]`, profileData?.dataSegmentScore ?? 0);
+        setValue(`${name}Profile[Total]`, safeProfileData?.dataSegmentScore ?? 0);
         setValue(`${name}ToggleValue`, showFullDetail);
-    }, [showFullDetail]);
+    }, [showFullDetail, safeProfileData, name, setValue]);
 
     return (
         <Col sm={6}>
@@ -212,7 +216,7 @@ const ProfileDataCard = ({ name, head, profileData, dropDownData, title, cardico
                                                     <RSKendoDropDownList
                                                         control={control}
                                                         name={`${name}Profile[${ind}].type`}
-                                                        data={dropDownData}
+                                                        data={safeDropDownData}
                                                         rules={{
                                                             required: ENTER_VALID_DATA,
                                                             validate: (value) => {

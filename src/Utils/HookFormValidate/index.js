@@ -1,8 +1,5 @@
 import { COMMUNICATION_NAME, MIN_LENGTH, NAME_CREATION } from 'Constants/GlobalConstant/Regex';
 import { MINLENGTH, PARAMETER_ALREADY_EXISTS, SPECIAL_CHATACTERS_NOT_ALlOWED } from 'Constants/GlobalConstant/ValidationMessage';
-import _findIndex from 'lodash/findIndex';
-import _forEach from 'lodash/forEach';
-import _get from 'lodash/get';
 
 export const channelTypeValidator = ({ name, getValues, index, error }) => {
     const channelLength = getValues(name)?.filter((e) => e.selected === true);
@@ -12,11 +9,11 @@ export const channelTypeValidator = ({ name, getValues, index, error }) => {
 };
 
 export const analyticsTypeValidator = ({ name, getValues, index, primaryGoal, secondaryGoal, error }) => {
-    const isNotificationSelected = _get(getValues('channelTypes')[2], 'selected');
+    const isNotificationSelected = getValues('channelTypes')[2]?.selected;
     const analyticsTypes = getValues(name);
     const isConversion = primaryGoal === 'Conversion' || secondaryGoal === 'Conversion';
     // Offline store purchase
-    const findIndex = _findIndex(getValues(name), (item) => item.selected === true);
+    const findIndex = getValues(name).findIndex((item) => item.selected === true);
 
     // return result ? result : errorMessage;
     // return (findIndex === -1 && index === 0) ||
@@ -89,7 +86,7 @@ export const audienceListValidator = (audience, knownAudienceFlag) => {
         findAutoList = 0,
         findTLList = 0;
     //Seperating the audience based on start text
-    _forEach(audience, (list) => {
+    audience.forEach((list) => {
         if (list.recipientsBunchName.toLowerCase().startsWith('al_')) findALList++;
         else if (list.recipientsBunchName.toLowerCase().startsWith('sl_')) findSLList++;
         else if (list.recipientsBunchName.toLowerCase().startsWith('auto_')) findAutoList++;
@@ -100,7 +97,7 @@ export const audienceListValidator = (audience, knownAudienceFlag) => {
         targetList = 0,
         matchList = 0,
         supressionList = 0;
-    _forEach(audience, (list) => {
+    audience.forEach((list) => {
         if (list.listType === 1) adhoclist++;
         else if (list.listType === 2) matchList++;
         else if (list.listType === 3) seedList++;
@@ -113,7 +110,7 @@ export const audienceListValidator = (audience, knownAudienceFlag) => {
     //         aud.recipientsBunchName.includes('All Audience (Known and Identified)') ||
     //         aud.recipientsBunchName.includes('Known Audience'),
     // );
-    const findKnownIndex = _findIndex(audience, (aud) => [-1, -2].includes(aud.segmentationListId));
+    const findKnownIndex = audience.findIndex((aud) => [-1, -2].includes(aud.segmentationListId));
     //Throwing Error based on the below condition
     if (knownAudienceFlag && findKnownIndex !== -1 && audience?.length > 1) {
         return 'Cannot add all or known list with other lists';
@@ -331,7 +328,6 @@ export const audienceScoreCommonCardTotalScoreValidation = (name, getValues, val
 };
 
 export const isSorted = (arr) => arr.every((v, i, a) => !i || a[i - 1] <= v);
-export const allUnique = (arr) => arr?.length === new Set(arr).size;
 
 export const audienceScorevalidateScoreGrade = (_, getValues) => {
     const grades = getValues('gradingScores');

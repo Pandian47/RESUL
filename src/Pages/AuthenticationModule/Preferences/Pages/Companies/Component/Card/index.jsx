@@ -5,7 +5,7 @@ import { ACCOUNT_ACIVATION_MESSAGE, ACCOUNT_ACTIVATED, ACCOUNT_ACTIVATION_INPROG
 import { circle_info_mini, settings_mini, users_mini } from 'Constants/GlobalConstant/Glyphicons';
 import { useState } from 'react';
 import { Col } from 'react-bootstrap';
-import _find from 'lodash/find';
+import { find as _find } from 'Utils/modules/lodashReplacements';
 
 import RSTooltip from 'Components/RSTooltip';
 import { clientbranchtype, licenseTypeIcon, licenseType } from '../../constants';
@@ -169,7 +169,7 @@ const CompaniesCard = ({ list, onNavigate, hasChildren = false, onDrillDown, cou
                   
 
                     {isActivated &&
-          <div className="d-flex align-items-center justify-content-between mt5">
+          <div className="d-flex align-items-center justify-content-between mb5">
                             <div className="d-flex align-items-center text-left rc-stats-wrapper">
                                 {visibleStats.map((s) =>
               <div key={s.key} className="rc-stat">

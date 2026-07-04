@@ -6,7 +6,7 @@ import moment from 'moment';
 
 
 import { updateActionList, updateListAnalysis, updateLoading, updateSynchistory } from './reducer';
-import { capitalize } from 'lodash';
+import { capitalize } from 'Utils/modules/lodashReplacements';
 
 let syncHistoryListRequestSeq = 0;
 
@@ -71,13 +71,6 @@ const dispatchSyncHistoryListRequest = async (dispatch, { url, payload }) => {
         throw err;
     }
 };
-
-export const getSyncHistory = (payload) => async (dispatch) =>
-    dispatchSyncHistoryListRequest(dispatch, { url: GET_SYNC_HISTORY, payload });
-
-/** Export tab — same payload shape as import; `requestMode` should be `"Export"`. */
-export const getExportSyncHistory = (payload) => async (dispatch) =>
-    dispatchSyncHistoryListRequest(dispatch, { url: GET_EXPORT_SYNC_HISTORY, payload });
 
 /** Import / Export list — picks endpoint from `requestMode` on payload. */
 export const getSyncHistoryList = (payload) => async (dispatch) => {

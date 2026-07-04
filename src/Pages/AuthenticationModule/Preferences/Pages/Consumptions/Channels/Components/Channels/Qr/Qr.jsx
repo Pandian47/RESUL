@@ -9,7 +9,7 @@ import KendoGrid from 'Components/RSKendoGrid';
 
 import RSTooltip from 'Components/RSTooltip';
 
-import _map from 'lodash/map';
+import { map as _map } from 'Utils/modules/lodashReplacements';
 import { getSessionId } from 'Reducers/globalState/selector';
 import { getConsumptionChannelDetails } from 'Reducers/preferences/consumptions/request';
 import useQueryParams from 'Hooks/useQueryParams';
@@ -18,6 +18,7 @@ import { updateAnalyticsDetail } from 'Reducers/analytics/communicationAnalytics
 import { useNavigate } from 'react-router-dom';
 import { LAST30DAYS_DATEFILTER } from 'Constants/GlobalConstant/Regex';
 import { commonConsumptionColumns } from '../../../../constant';
+import {getFirstDayOfMonth, getCurrentDateOfMonth} from 'Utils/modules/dateTime.jsx'
 
 const ConsumptionQr = () => {
     const { u_consumptionMM, u_consumptionYY, consumptionYY, consumptionMM, consumptionChannel } = useSelector(

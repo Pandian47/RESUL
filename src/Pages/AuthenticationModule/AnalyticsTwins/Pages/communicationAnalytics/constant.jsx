@@ -2,9 +2,8 @@ import { getChannelId } from 'Utils/modules/communicationChannels';
 import { getCommunicationType } from 'Utils/modules/communicationStatus';
 import { truncateTitle } from 'Utils/modules/displayCore';
 import { numberWithCommas } from 'Utils/modules/formatters';
-import _get from 'lodash/get';
+import { get as _get } from 'Utils/modules/lodashReplacements';
 import RSTooltip from 'Components/RSTooltip';
-
 
 export function normalizeSummaryCommunicationTypeToIds(value, attributeRows = []) {
     if (value == null || value === '') return '';
@@ -17,11 +16,7 @@ export function normalizeSummaryCommunicationTypeToIds(value, attributeRows = []
     const rows = Array.isArray(attributeRows) ? attributeRows : [];
     const idKeys = ['campaignAttributeId', 'CampaignAttributeId', 'CampaignAttributeID', 'id', 'ID'];
     const nameOf = (row) =>
-        String(
-            _get(row, 'attributename', '') ||
-                _get(row, 'attributeName', '') ||
-                _get(row, 'AttributeName', ''),
-        )
+        String(_get(row, 'attributename', '') || _get(row, 'attributeName', '') || _get(row, 'AttributeName', ''))
             .trim()
             .toLowerCase();
     const numericIdOf = (row) => {
@@ -277,19 +272,19 @@ export function pickCommunicationSummaryRequestPayload(p) {
 
     const toInt = (val) => {
         if (val === 0 || val === null || val === undefined || val === '') {
-            return 0;
+            return '';
         }
         const parsed = Number(val);
-        return Number.isFinite(parsed) ? parsed : 0;
+        return Number.isFinite(parsed) ? parsed : '';
     };
 
     const getDeliveryMethodId = (val) => {
-        if (val === 0 || val === null || val === undefined || val === '') return 0;
+        if (val === 0 || val === null || val === undefined || val === '') return '';
         const s = String(val).toLowerCase();
         if (s === '1' || s === 's' || s.includes('single')) return 1;
         if (s === '2' || s === 'm' || s.includes('multi')) return 2;
         if (s === '3' || s === 't' || s.includes('trigger') || s.includes('event')) return 3;
-        return 0;
+        return '';
     };
 
     out.deliveryMethod = getDeliveryMethodId(out.deliveryMethod);

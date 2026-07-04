@@ -10,7 +10,7 @@ import { CANCEL, SAVE, TEMPLATE_CATEGORY, TEMPLATE_NAME } from 'Constants/Global
 import { useEffect, useState } from 'react';
 import { useFormContext } from 'react-hook-form';
 import { useNavigate } from 'react-router-dom';
-import _get from 'lodash/get';
+import { get as _get } from 'Utils/modules/lodashReplacements';
 import { baseURL, LANDING_BUILDER_REDIRECT_URL } from 'Constants/EndPoints/index';
 import RSModal from 'Components/RSModal';
 import { RSPrimaryButton, RSSecondaryButton } from 'Components/Buttons';

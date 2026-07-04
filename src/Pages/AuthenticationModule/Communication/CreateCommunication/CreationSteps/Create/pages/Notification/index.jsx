@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import _get from 'lodash/get';
-import _findIndex from 'lodash/findIndex';
+import { get as _get,findIndex as _findIndex } from 'Utils/modules/lodashReplacements';
 
 import RSTabbar from 'Components/RSTabber';
 

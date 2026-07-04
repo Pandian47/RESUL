@@ -1,11 +1,11 @@
 import moment from 'moment';
-import _get from 'lodash/get';
+import { get as _get } from './lodashReplacements.js';
 import { getUserDetails } from './crypto';
 import { getmasterData } from './masterData';
 import { getTimezoneAbbreviation } from './timeZone';
 
 const options = { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' };
-const fallbackDate = 'DD MMM YYYY';
+const fallbackDate = 'MMM DD, YYYY';
 const fallbackTime = 'HH:mm A';
 const fallbackTimeWithSeconds = 'HH:mm:ss';
 const fallbackTwelveHrs = 'hh:mm A';
@@ -19,7 +19,7 @@ function findByProp(collection, key, value) {
 }
 
 export function getDateFormat() {
-    const defaultDate = 'DD MMM YYYY';
+    const defaultDate = 'MMM DD, YYYY';
     const defaultTime = 'HH:mm A';
     const defaultTimeWithSeconds = 'HH:mm:ss';
     const defaultTwelveHours = 'hh:mm A';
@@ -48,7 +48,7 @@ export function getDateFormat() {
         timeZoneId = parseInt(localStorage.getItem('timeZoneId'), 10);
     }
     let { timeZoneList, timeFormatList, dateFormatList } = getmasterData();
-    dateFormatList = findByProp(dateFormatList, 'dateFormatID', dateFormatId || 1);
+    dateFormatList = findByProp(dateFormatList, 'dateFormatID', dateFormatId || 4);
     timeZoneList = findByProp(timeZoneList, 'timeZoneID', timeZoneId || 1);
     timeFormatList = findByProp(timeFormatList, 'timeFormatID', timeFormatId || 1);
     const timeFormat = timeFormatList?.timeformat === '12 hours' ? defaultTwelveHours : defaultHourMinute;
@@ -61,7 +61,7 @@ export function getDateFormat() {
         dateFormatList,
         timeFormatSeconds,
         timeFormatId,
-        dateFormatId,
+        dateFormatId: dateFormatId || 4,
         timeZoneId,
         timezoneName,
     };
@@ -71,12 +71,12 @@ export function momentIsValid(data) {
 }
 
 export function getDisplayDateMonth(inputFormat) {
-    if (inputFormat.startsWith('DD-MM') || inputFormat.startsWith('DD/MM')) return 'DD-MM';
+    if (inputFormat.startsWith('DD-MM') || inputFormat.startsWith('DD/MM')) return 'DD-MMM';
     if (inputFormat.startsWith('MMM-DD') || inputFormat.startsWith('MMM DD') || inputFormat.startsWith('MMM, DD'))
         return 'MMM DD';
-    if (inputFormat.startsWith('YYYY-MM') || inputFormat.startsWith('YYYY/MM')) return 'MM-DD';
+    if (inputFormat.startsWith('YYYY-MM') || inputFormat.startsWith('YYYY/MM')) return 'MMM-DD';
     if (inputFormat.includes('MMM')) return 'MMM DD';
-    return 'MM-DD';
+    return 'MMM-DD';
 }
 export function extractOffsetFromLabel(label) {
     if (!label || typeof label !== 'string') return null;
@@ -107,7 +107,7 @@ export function convertToUTC(localDateTime, gmtLabel) {
     if (!offset) {
         // Fallback: if GMT label extraction fails, return the date in local format
         const { configuredFormat, timeFormat } = getDateFormat();
-        const formatString = `${configuredFormat || 'DD MMM YYYY'}, ${timeFormat || 'HH:mm A'}`;
+        const formatString = `${configuredFormat || 'MMM DD, YYYY'}, ${timeFormat || 'HH:mm A'}`;
 
         if (moment.isMoment(localDateTime)) {
             return localDateTime.format(formatString);
@@ -118,7 +118,7 @@ export function convertToUTC(localDateTime, gmtLabel) {
     }
 
     const { configuredFormat, timeFormat } = getDateFormat();
-    const formatString = `${configuredFormat || 'DD MMM YYYY'}, ${timeFormat || 'HH:mm A'}`;
+    const formatString = `${configuredFormat || 'MMM DD, YYYY'}, ${timeFormat || 'HH:mm A'}`;
 
     let date;
 
@@ -685,7 +685,7 @@ export function getUserDateTimeFormat(date = new Date(), type = 'date') {
         timeZoneId = parseInt(localStorage.getItem('timeZoneId'), 10);
     }
     let { timeZoneList, timeFormatList, dateFormatList } = getmasterData();
-    dateFormatList = findByProp(dateFormatList, 'dateFormatID', dateFormatId || 1);
+    dateFormatList = findByProp(dateFormatList, 'dateFormatID', dateFormatId || 4);
     timeZoneList = findByProp(timeZoneList, 'timeZoneID', timeZoneId || 1);
     timeFormatList = findByProp(timeFormatList, 'timeFormatID', timeFormatId || 1);
 
@@ -736,7 +736,7 @@ export function getCreatedDate(inputDate, campaign) {
         timeZoneId = parseInt(localStorage.getItem('timeZoneId'), 10);
     }
     let { timeZoneList, timeFormatList, dateFormatList } = getmasterData();
-    dateFormatList = findByProp(dateFormatList, 'dateFormatID', dateFormatId || 1);
+    dateFormatList = findByProp(dateFormatList, 'dateFormatID', dateFormatId || 4);
     timeZoneList = findByProp(timeZoneList, 'timeZoneID', timeZoneId || 1);
     timeFormatList = findByProp(timeFormatList, 'timeFormatID', timeFormatId || 1);
 

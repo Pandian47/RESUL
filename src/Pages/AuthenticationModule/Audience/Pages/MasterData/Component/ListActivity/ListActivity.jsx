@@ -19,8 +19,7 @@ import { ACTIVITY_TYPE_MAP } from './constant';
 import RSBootstrapdown from 'Components/FormFields/RSBootstrapdown';
 import Charts from './Components/Charts';
 import RSTooltip from 'Components/RSTooltip';
-import _isEmpty from 'lodash/isEmpty';
-import _groupBy from 'lodash/groupBy';
+import { isEmpty as _isEmpty,groupBy as _groupBy } from 'Utils/modules/lodashReplacements';
 
 import { ensureArray } from 'Pages/AuthenticationModule/Audience/audienceDefaults';
 

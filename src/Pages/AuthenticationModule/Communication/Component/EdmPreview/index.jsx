@@ -199,11 +199,11 @@ export const EdmPreview = ({ show, onHide, selectedItem, isPreviewLoading = fals
             header="Click map"
             handleClose={onHide}
             body={renderBody()}
-            footer={
-                <>
-                    <RSSecondaryButton onClick={onHide}>Close</RSSecondaryButton>
-                </>
-            }
+            // footer={
+            //     <>
+            //         <RSSecondaryButton onClick={onHide}>Close</RSSecondaryButton>
+            //     </>
+            // }
         />
     );
 };

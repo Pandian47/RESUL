@@ -7,8 +7,7 @@ import { ENTER_EDITOR_TEXT, ENTER_TEMPLATE_ID, SELECT_AUDIENCE, SELECT_SENDER_ID
 import { EDIT_CURLY_BRACES, LIVE_PREVIEW, PERSONALIZATION, PREVIEW, SENDER_TEMPLATEID, SMART_LINK_POPUP, SMS_AUDIENCE_COUNT, TEMPLATE_ID } from 'Constants/GlobalConstant/Placeholders';
 import { alert_mini, circle_plus_fill_medium, circle_question_mark_mini, close_medium, editor_personalize_medium, editor_smart_link_medium, eye_medium, question_mark_mini } from 'Constants/GlobalConstant/Glyphicons';
 import { Fragment, useContext, useEffect, useMemo, useRef, useState } from 'react';
-import _get from 'lodash/get';
-import _upperCase from 'lodash/upperCase';
+import { get as _get, upperCase as _upperCase } from 'Utils/modules/lodashReplacements';
 import { useDispatch, useSelector } from 'react-redux';
 import { Row, Col } from 'react-bootstrap';
 import { useFormContext } from 'react-hook-form';
@@ -235,8 +234,8 @@ const SplitAB = ({ fieldName, isSplitTabs = true, templateType = 1, channelTabNa
             const allowed = isEmoji
                 ? canInsertEmojiIntoTextarea(ta, 'single')
                 : isSmartLink
-                  ? canInsertSmartLinkIntoTextarea(ta, 'single')
-                  : canInsertPersonalizationIntoTextarea(ta, 'single');
+                    ? canInsertSmartLinkIntoTextarea(ta, 'single')
+                    : canInsertPersonalizationIntoTextarea(ta, 'single');
             if (!allowed) return null;
             return { start: ta.selectionStart, end: ta.selectionEnd };
         }
@@ -247,8 +246,8 @@ const SplitAB = ({ fieldName, isSplitTabs = true, templateType = 1, channelTabNa
             const allowedAt = isEmoji
                 ? canInsertEmojiAt(text, start, end, 'single')
                 : isSmartLink
-                  ? canInsertSmartLinkAt(text, start, end, 'single')
-                  : canInsertPersonalizationAt(text, start, end, 'single');
+                    ? canInsertSmartLinkAt(text, start, end, 'single')
+                    : canInsertPersonalizationAt(text, start, end, 'single');
             if (!allowedAt) {
                 return null;
             }
@@ -410,6 +409,7 @@ const SplitAB = ({ fieldName, isSplitTabs = true, templateType = 1, channelTabNa
                     params: { payload: channelPayload },
                 })) || {};
             if (status) {
+                const { urlName, smartCode, blastSC } = data || {};
                 const smartURL = urlName + smartCode + blastSC;
                 insertContentAtCursor(smartURL, { isSmartLink: true });
             }
@@ -476,7 +476,7 @@ const SplitAB = ({ fieldName, isSplitTabs = true, templateType = 1, channelTabNa
             />
         ) : null;
 
-        if (watch(isCustomTemplateWatch) ) {
+        if (watch(isCustomTemplateWatch)) {
             return (
                 <div className="form-group mt20">
                     <Row>
@@ -527,12 +527,12 @@ const SplitAB = ({ fieldName, isSplitTabs = true, templateType = 1, channelTabNa
                                 label={SENDER_TEMPLATEID}
                                 isLoading={isSmsTemplateListLoading}
                                 required
-                                rules={ smsTemplateList?.length ? {
+                                rules={smsTemplateList?.length ? {
                                     required: 'Select template'
                                 } : {}}
                                 footer={footer}
-                                handleChange={(e)=>{
-                                    setValue(name,e.target.value.templateContent || '')
+                                handleChange={(e) => {
+                                    setValue(name, e.target.value.templateContent || '')
                                 }}
                             />
                         ) : (
@@ -577,7 +577,7 @@ const SplitAB = ({ fieldName, isSplitTabs = true, templateType = 1, channelTabNa
                             <div className="rs-textarea-component-wrapper preview-mobile-editor position-relative ">
                                 <SmartLinkInsertingOverlay isLoading={smartLinkInsertLoader.isLoading} />
                                 <div className="rstcw-top-icons">
-                                    <ul className={`float-left ${isToolbarActive ? '' : 'click-off'}`}>
+                                    <ul className={`float-left ${isToolbarActive ? '' : 'click-off pe-none'}`}>
                                         <li>
                                             <RSTooltip text={PERSONALIZATION} className="lh0">
                                                 <RSBootstrapdown
@@ -588,8 +588,8 @@ const SplitAB = ({ fieldName, isSplitTabs = true, templateType = 1, channelTabNa
                                                             location?.audience?.length
                                                                 ? location?.audience
                                                                 : watch('audience')?.length
-                                                                  ? watch('audience')
-                                                                  : getValues()?.audience,
+                                                                    ? watch('audience')
+                                                                    : getValues()?.audience,
                                                         ),
                                                         listTypeWisePersonlization,
                                                     )}
@@ -879,6 +879,7 @@ const SplitAB = ({ fieldName, isSplitTabs = true, templateType = 1, channelTabNa
                 {(!levelNumber || levelNumber < 2) && (
                     <>
                         {campaignType === 'S' || (campaignType === 'M' && dataSource === 'TL') ? (
+                            <div className='form-group'>
                             <Scheduler
                                 utcTime_Data={utcTimeData}
                                 isSplitTabs={isSplitTabs}
@@ -890,6 +891,7 @@ const SplitAB = ({ fieldName, isSplitTabs = true, templateType = 1, channelTabNa
                                 splitABminDate={getMinDateForScheduler}
                                 isRfaEnabled={true}
                             />
+                            </div>
                         ) : null}
                     </>
                 )}

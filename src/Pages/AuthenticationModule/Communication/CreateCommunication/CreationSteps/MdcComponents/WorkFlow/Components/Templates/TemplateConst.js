@@ -1,9 +1,8 @@
-import _cloneDeep from 'lodash/cloneDeep';
 import { eachDeep } from 'deepdash-es/standalone';
 import { GetAudienceBasedOnChannel, GetChannelStyleAttributes } from '../../constant';
 export const targetCode = { Reach: 'R', Engagement: 'E', Conversion: 'C' };
 export const convertTemplate = (TempMdcTemplate) => {
-        const mdcTemplate = _cloneDeep(TempMdcTemplate);
+        const mdcTemplate = structuredClone(TempMdcTemplate);
 
     mdcTemplate['MdcType'] = 'RecursivelyTraverse_React_Template';
     mdcTemplate['ReceipientCount'] = '';
@@ -121,7 +120,7 @@ export const clearParentJson = (activeChannel) => {
 };
 
 export const ConvertRecursivelyTraverseToReact = (tempJson) => {
-    let mdcTemplate = _cloneDeep(tempJson);
+    let mdcTemplate = structuredClone(tempJson);
     const {
         Campaign: {
             CanvasChannel: { activeChannel, Placeholder, IsChannelSwitched, switchCond },

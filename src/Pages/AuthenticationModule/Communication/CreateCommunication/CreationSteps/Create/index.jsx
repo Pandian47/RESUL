@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Container } from 'react-bootstrap';
 import { useDispatch, useSelector } from 'react-redux';
-import _get from 'lodash/get';
+import { get as _get } from 'Utils/modules/lodashReplacements';
 
 import RSTabbar from 'Components/RSTabber';
 import { AuthoringCreateChannelSkeletonBlock } from 'Components/Skeleton/pages/communication/authoring';

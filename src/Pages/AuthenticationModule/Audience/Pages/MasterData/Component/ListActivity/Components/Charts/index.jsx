@@ -5,57 +5,35 @@ import { areasplineChartOptions } from 'Constants/Charts';
 import { AUDIENCE_CHART_COLORS } from 'Pages/AuthenticationModule/Audience/audienceChartColors';
 import { Fragment, memo, useMemo, useState } from 'react';
 import { useSelector } from 'react-redux';
-import Highcharts from 'highcharts';
 
 import RSHighchartsContainer from 'Components/Highcharts';
+import rsNotesMiniIconSvg from 'Assets/Images/svg/rs-notes-mini.svg?raw';
 
 import MakeAcquisition from '../MakeAcquisition/MakeAcquisition';
 import NoDataAvailableRender from 'Components/FormFields/Component/NoDataAvailableRender';
 import { transformListAcquisitionData, MDM_LIST_ACTIVITY_CHART_HEIGHT, getListActivityChannelDisplayLabel } from '../../constant';
-const NOTES_BOOKMARK_COLOR = AUDIENCE_CHART_COLORS.ch_primary_blue;
+const NOTES_ICON_SIZE = 15;
+const NOTES_PRIMARY_BLUE = AUDIENCE_CHART_COLORS.ch_primary_blue;
+
+const getNotesIconSymbolUrl = (fillColor = NOTES_PRIMARY_BLUE) => {
+    const coloredSvg = rsNotesMiniIconSvg.replace('<path d=', `<path fill="${fillColor}" d=`);
+    return `url(data:image/svg+xml,${encodeURIComponent(coloredSvg)})`;
+};
 
 const BOOKMARK_MARKER = {
-    symbol: 'bookmark',
-    radius: 7,
-    fillColor: NOTES_BOOKMARK_COLOR,
-    lineColor: NOTES_BOOKMARK_COLOR,
-    lineWidth: 1,
+    symbol: getNotesIconSymbolUrl(),
+    width: NOTES_ICON_SIZE,
+    height: NOTES_ICON_SIZE,
     states: {
         hover: {
-            fillColor: NOTES_BOOKMARK_COLOR,
-            lineColor: NOTES_BOOKMARK_COLOR,
-            lineWidth: 2,
-            radius: 8,
+            width: NOTES_ICON_SIZE + 2,
+            height: NOTES_ICON_SIZE + 2,
         },
     },
 };
 
 const hasNonZeroSeriesValues = (seriesData = []) =>
     seriesData.some((value) => Number(value) !== 0);
-
-// Register custom bookmark symbol with Highcharts
-if (typeof Highcharts !== 'undefined') {
-    Highcharts.SVGRenderer.prototype.symbols.bookmark = function (x, y, w, h) {
-        // Bookmark shape: rectangle with triangle on top
-        // x, y: top-left corner
-        // w: width, h: height
-        const triangleHeight = h * 0.3; // Triangle takes 30% of height
-        const rectHeight = h * 0.7; // Rectangle takes 70% of height
-        const triangleWidth = w * 0.6; // Triangle width is 60% of total width
-        const triangleOffset = (w - triangleWidth) / 2; // Center the triangle
-        
-        return [
-            'M', x + triangleOffset, y, // Move to top-left of triangle
-            'L', x + w / 2, y + triangleHeight, // Line to triangle point
-            'L', x + triangleOffset + triangleWidth, y, // Line to top-right of triangle
-            'L', x + w, y, // Line to top-right of rectangle
-            'L', x + w, y + h, // Line to bottom-right
-            'L', x, y + h, // Line to bottom-left
-            'L', x, y, // Line to top-left
-            'Z' // Close path
-        ];
-    };
-}
 
 const Charts = ({ type = '', chartType = 'LIST_ACTIVITY', activityType = 'activity', fromDate, toDate }) => {
     const {

@@ -5,6 +5,7 @@ import {
     increment_global_loading,
 } from 'Reducers/globalState/reducer';
 import { isRequestAborted } from 'Utils/Http';
+import { SESSION_RECOVERED_EVENT } from 'Utils/modules/postLoginShell';
 import { LOADER_TYPE, DEFAULT_LOADER_CONFIG } from './loaderTypes';
 
 export { isRequestAborted, pickRequestSignal, withHttpSignal, resolveRequestSignal } from 'Utils/Http';
@@ -142,6 +143,8 @@ const useApiLoader = ({
     const onErrorRef = useRef(onError);
     const onSettledRef = useRef(onSettled);
     const abortableRef = useRef(abortable);
+    const lastRefetchParamsRef = useRef(null);
+    const hasAttemptedFetchRef = useRef(false);
 
     useEffect(() => {
         fetcherRef.current = resolvedFetcher;
@@ -218,6 +221,8 @@ const useApiLoader = ({
             const useGlobal = currentLoaderType === LOADER_TYPE.GLOBAL;
             const requestId = requestIdRef.current + 1;
             requestIdRef.current = requestId;
+            lastRefetchParamsRef.current = options.params;
+            hasAttemptedFetchRef.current = true;
             setActiveLoaderType(currentLoaderType);
             setStatus(API_STATUS.LOADING);
             setError(null);
@@ -305,6 +310,16 @@ const useApiLoader = ({
         refetch();
     }, [autoFetch, enabled, ...deps]);
 
+    useEffect(() => {
+        const onSessionRecovered = () => {
+            if (!hasAttemptedFetchRef.current || lastRefetchParamsRef.current === undefined) return;
+            refetch(lastRefetchParamsRef.current);
+        };
+
+        window.addEventListener(SESSION_RECOVERED_EVENT, onSessionRecovered);
+        return () => window.removeEventListener(SESSION_RECOVERED_EVENT, onSessionRecovered);
+    }, [refetch]);
+
     const isFetching = status === API_STATUS.LOADING;
 
     if (!apiRef.current) {
@@ -334,5 +349,23 @@ const useApiLoader = ({
 export const resetAbortableRequests = (...requests) => {
     requests.forEach((request) => request?.reset?.());
 };
+
+/**
+ * Re-run `callback` when the session-timeout modal closes after successful re-authentication.
+ * Use for page-level useEffect fetches that are not covered by route remount.
+ */
+export function useSessionRecoveryRefetch(callback, deps = []) {
+    const callbackRef = useRef(callback);
+    callbackRef.current = callback;
+
+    useEffect(() => {
+        const onSessionRecovered = () => {
+            callbackRef.current?.();
+        };
+
+        window.addEventListener(SESSION_RECOVERED_EVENT, onSessionRecovered);
+        return () => window.removeEventListener(SESSION_RECOVERED_EVENT, onSessionRecovered);
+    }, deps);
+}
 
 export default useApiLoader;

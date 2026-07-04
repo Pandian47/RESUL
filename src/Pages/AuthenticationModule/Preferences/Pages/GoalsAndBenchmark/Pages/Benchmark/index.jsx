@@ -26,7 +26,7 @@ import { communicationNamevalidtor } from 'Utils/HookFormValidate';
 import { useDispatch, useSelector } from 'react-redux';
 import { getSessionId } from 'Reducers/globalState/selector';
 
-import _find from 'lodash/find';
+import { find as _find } from 'Utils/modules/lodashReplacements';
 import ListNameExists from 'Components/ListNameExists';
 import NewAttributeBtn from 'Pages/AuthenticationModule/Audience/Pages/AddImportAudience/Components/CustomHeaderColumn/NewAttributeBtn';
 import RSKendoDropdown from 'Components/FormFields/RSKendoDropdown';

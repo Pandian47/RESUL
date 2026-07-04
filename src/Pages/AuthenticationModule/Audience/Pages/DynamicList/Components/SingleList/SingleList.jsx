@@ -590,7 +590,7 @@ const SingleList = ({ list, type, duplicate, setDuplicate, setPageState, params,
                                                 <i
                                                     id="rs_data_menu_dot"
                                                     className={`${menu_dot_medium} 
-                                                        } color-primary-blue icon-md`}
+                                                        color-primary-blue icon-md`}
                                                 />
                                             </RSTooltip>
                                         }

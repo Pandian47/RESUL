@@ -9,10 +9,7 @@ import { DOMAIN_URL as DOMAIN_URL_MSG, ENTER_ADAPTIVE, ENTER_DEVICE_TYPE, ENTER_
 import { ADAPTIVE_URL, ADD_MOBILE_DEVICE, ALL, ANDROID, APP_SCREEN, CLOSE, COPIED_SUCCESSFULLY, DEEP_LINK, DEF_DEEP_LINKING, DELETE, DEVICE_TYPE, DOMAIN_URL, ENTER_AN_URL, ENTER_NEW_SUB_SCREEN, FRIENDLY_NAME, GENERATE, IOS, MOBILE_ADAPTIVE, MOBILE_APP, MOBILE_PLATFORM as MOBILE_PLATFORM_PH, MULTIPLE_PERSONALIZATIONS, PROCEED, REMOVE, SMART_URL, SUB_APP_SCREEN, URI_PARAMETER, URL_PARAMETER, URL_PERSONALIZATION, UTM_PARAMETER, WOULD_YOU_LIKE_TO_REMOVE, YOUR_SITE_IS_NOT_SECURE } from 'Constants/GlobalConstant/Placeholders';
 import { circle_arrow_down_medium, circle_arrow_up_medium, circle_minus_fill_medium, circle_plus_fill_edge_medium, circle_plus_fill_medium, close_mini, copy_medium, delete_medium, user_question_mark_medium } from 'Constants/GlobalConstant/Glyphicons';
 import { Fragment, useContext, useEffect, useMemo, useRef, useState } from 'react';
-import _get from 'lodash/get';
-import _find from 'lodash/find';
-import _findIndex from 'lodash/findIndex';
-import { cloneDeep } from 'lodash';
+import { get as _get,find as _find,findIndex as _findIndex,cloneDeep } from 'Utils/modules/lodashReplacements';
 import { useLocation } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { Accordion, Row, Col, Container } from 'react-bootstrap';
@@ -34,6 +31,7 @@ import RSDropdownFooterBtn from 'Components/DropdownFooterBtn';
 import UTMParameters from './UTMParameter/UTMParameters';
 import {
     getGeneratedLink,
+    getMobileAppIdFromFormState,
     getMobileList,
     screenListSelector,
     smartlinkEdit,
@@ -41,7 +39,7 @@ import {
 } from 'Reducers/communication/createCommunication/smartlink/selectors';
 import { getSessionId } from 'Reducers/globalState/selector';
 import { getScreenList, getSubScreenList, saveSmartLink } from 'Reducers/communication/createCommunication/smartlink/request';
-import { buildSmartLinkPayload, getExistingLinks } from '../../constant';
+import { buildSmartLinkPayload, getExistingLinks, isSmartLinkViewOnly } from '../../constant';
 import {
     deleteGeneratedSmartLink,
     updateEventTrack,
@@ -54,8 +52,15 @@ import useApiLoader from 'Hooks/useApiLoader';
 import { updateName } from 'Pages/AuthenticationModule/Preferences/Pages/AudienceScore/Pages/ProfileData/constant';
 import { AUTHORING_FIELD_LOADER_CONFIG, AUTHORING_SAVE_LOADER_CONFIG } from 'Components/Skeleton/pages/communication/authoring';
 const GenerateSmartLink = ({ fieldName, isEdit, tab, statusId, canEditExistingSmartLink = true, canAddnewSmartLink = true }) => {
-    const { tabs, allTabs, setAllTabs, isMobileAppsLoading = false, generateSmartLinkLoader } =
-        useContext(SmartLinkProvider);
+    const {
+        tabs,
+        allTabs,
+        setAllTabs,
+        isMobileAppsLoading = false,
+        generateSmartLinkLoader,
+        onSyncFormToReducer,
+        isSmartLinkViewOnly: isSmartLinkViewOnlyFromContext,
+    } = useContext(SmartLinkProvider);
     const dispatch = useDispatch();
     const domainRef = useRef();
     const LocationPath = useLocation();
@@ -70,6 +75,7 @@ const GenerateSmartLink = ({ fieldName, isEdit, tab, statusId, canEditExistingSm
         setError,
         formState: { isValid, submitCount, errors, isDirty, dirtyFields },
         getValues,
+        reset,
         resetField,
         watch,
         clearErrors,
@@ -122,7 +128,8 @@ const GenerateSmartLink = ({ fieldName, isEdit, tab, statusId, canEditExistingSm
     const [activeIndex, setActiveIndex] = useState(0);
     const [currentIndex, setCurrentIndex] = useState(0);
     const [isMobileAdaptive, setMobileAdaptive] = useState(false);
-    const isPreCampaign = LocationPath?.pathname === '/communication/execute';
+    const isSmartLinkReadOnly =
+        isSmartLinkViewOnlyFromContext ?? isSmartLinkViewOnly(LocationPath?.pathname);
     // const [isGenerateLink, setIsGenerateLink] = useState(false);
     const [isCopied, setCopied] = useState(false);
     const [isConfirm, setConfirm] = useState({
@@ -149,7 +156,6 @@ const GenerateSmartLink = ({ fieldName, isEdit, tab, statusId, canEditExistingSm
 
     const smartLinkNameField = `${fieldName}_friendlyName`;
     const watchedSmartLinkName = useWatch({ control, name: smartLinkNameField });
-
 
     const [defaultChecked, setDefaultChecked] = useState({
         isAndroid: false,
@@ -260,8 +266,11 @@ const GenerateSmartLink = ({ fieldName, isEdit, tab, statusId, canEditExistingSm
     }, [fields]);
 
     useEffect(() => {
-        setValue('generateFlag', false);
-    }, [JSON.stringify(dirtyFields)]);
+        const hasDirtyFields = Boolean(dirtyFields && Object.keys(dirtyFields).length);
+        if (hasDirtyFields) {
+            setValue('generateFlag', false);
+        }
+    }, [dirtyFields, setValue]);
 
     useEffect(() => {
             const tempPlatforms = [...MOBILE_PLATFORM];
@@ -752,6 +761,20 @@ const GenerateSmartLink = ({ fieldName, isEdit, tab, statusId, canEditExistingSm
 
     const isDomainValid = _get(errors?.[fieldName]?.[0], 'domain.message', '');
 
+    const hasPendingGenerateChanges = Boolean(
+        dirtyFields?.[fieldName] || dirtyFields?.[smartLinkNameField],
+    );
+    const hasDomainValue = Boolean(String(domain ?? '').trim());
+    const isGenerateDisabled =
+        !isEditable ||
+        isSmartLinkReadOnly ||
+        !hasDomainValue ||
+        !isValid ||
+        Boolean(isDomainValid) ||
+        generateLoader.isFetching ||
+        !hasPendingGenerateChanges ||
+        generateFlag;
+
     const callback = (val) => {
         // let { smartLink1, smartLink2, smartLink3, smartLink4, smartLink5 } = getValues();
         setValue('generateFlag', false);
@@ -940,6 +963,7 @@ const GenerateSmartLink = ({ fieldName, isEdit, tab, statusId, canEditExistingSm
         }
     };
     const handleGenerate = async () => {
+        if (isSmartLinkReadOnly) return;
         const formState = {
             ...getValues(),
             userId,
@@ -959,20 +983,17 @@ const GenerateSmartLink = ({ fieldName, isEdit, tab, statusId, canEditExistingSm
             params: { payload },
         });
         if (res?.status) {
-            if (formState?.smartLink1?.length >= 2) {
-                if (formState?.smartLink1[1]?.mobileApp?.appGuid ?? formState?.smartLink1[1]?.mobileAppName?.appGuid) {
-                    dispatch(
-                        updateMobileAppId(
-                            formState?.smartLink1[1]?.mobileApp?.appGuid ??
-                                formState?.smartLink1[1]?.mobileApp?.appGuid,
-                        ),
-                    );
-                }
-            } else {
-                dispatch(updateMobileAppId(''));
-            }
-            setValue('saveFlag', true);
-            setValue('generateFlag', true);
+            const resolvedMobileAppId = getMobileAppIdFromFormState(formState);
+            dispatch(updateMobileAppId(resolvedMobileAppId || ''));
+            const values = getValues();
+            setValue('generateFlag', true, { shouldDirty: false });
+            setValue('saveFlag', true, { shouldDirty: false });
+            reset({
+                ...values,
+                generateFlag: true,
+                saveFlag: true,
+            });
+            onSyncFormToReducer?.(getValues());
             handleDeleteEventTrack();
             dispatch(
                 updateMobileChangeConfirm({
@@ -1046,7 +1067,7 @@ const GenerateSmartLink = ({ fieldName, isEdit, tab, statusId, canEditExistingSm
         <Fragment>
             <div className="form-group pl30 my35 smartlink-name-field">
                 <Row>
-                    <Col sm={6} className='pr40'>
+                    <Col sm={6} className={`pr40 ${isSmartLinkReadOnly ? 'pe-none click-off' : ''}`}>
  <RSInput
                     name={smartLinkNameField}
                     control={control}
@@ -1057,6 +1078,7 @@ const GenerateSmartLink = ({ fieldName, isEdit, tab, statusId, canEditExistingSm
                     handleOnchange={(e) => {
                         const next = e?.target?.value ?? '';
                         const sanitizedValue = String(next).replace(/[^A-Za-z0-9_-]/g, '').replace(/ +/g, ' ');
+                        setValue('generateFlag', false);
                         if (sanitizedValue !== next) {
                             setTimeout(() => {
                                 setValue(smartLinkNameField, sanitizedValue, {
@@ -1077,12 +1099,6 @@ const GenerateSmartLink = ({ fieldName, isEdit, tab, statusId, canEditExistingSm
                                       )
                                     : prev,
                             );
-                            const isDuplicate = allTabs?.some(
-                            (item) =>
-                                item?.id !== fieldName &&
-                                    (item?.friendlyName || '').trim().toLowerCase() === trimmed.toLowerCase()
-                            );
-                            setValue('saveFlag', !isDuplicate);
                         }
                         
                     }}
@@ -1123,7 +1139,8 @@ const GenerateSmartLink = ({ fieldName, isEdit, tab, statusId, canEditExistingSm
                     const appScreen = _get(currentLink, 'appScreen.screenName', '');
                     let title = _get(state.tabs?.[idx], 'title', '');
                     // console.log('Screen list ::::::::::::: ', screenList);
-                    const appScreenList = [..._get(screenList, mobileAppOne, [])];
+                    const screenListValue = _get(screenList, mobileAppOne, []);
+                    const appScreenList = Array.isArray(screenListValue) ? screenListValue : [];
                     // let appFlagValue = getValues(`${currentName}.isappScreenNew`) || currentLink?.customAppScreen;
                     let appFlagValue = currentLink?.customAppScreen;
                     const handleEnterNewAppScreen = () => {
@@ -1135,8 +1152,14 @@ const GenerateSmartLink = ({ fieldName, isEdit, tab, statusId, canEditExistingSm
                     };
                     // console.log('appFlagValue: ', appFlagValue);
                     return (
-                        <Row className="mb10" key={field.id}>
-                            <Col className="px46 position-relative">
+                        <Row
+                            className={
+                                fields?.length - 1 === idx && fields?.length < 5 ? 'mb30' : 'mb10'
+                            }
+                            key={field.id}
+                        >
+                            <Col className="px46">
+                                <div className="position-relative">
                                 <Accordion activeKey={activeIndex} key={field.id} className="no-box-shadow p0">
                                     <Accordion.Item eventKey={idx}>
                                         <Accordion.Header
@@ -1159,7 +1182,7 @@ const GenerateSmartLink = ({ fieldName, isEdit, tab, statusId, canEditExistingSm
                                                 <div className={`${
                                                             !isEditable ||
                                                             (isAppEventTrack && idx === 1) ||
-                                                            isPreCampaign
+                                                            isSmartLinkReadOnly
                                                                 ? 'pe-none click-off'
                                                                 : ''
                                                         }`}>
@@ -1203,7 +1226,7 @@ const GenerateSmartLink = ({ fieldName, isEdit, tab, statusId, canEditExistingSm
                                                 className={`${
                                                     !isEditable ||
                                                     (isAppEventTrack && idx === 1) ||
-                                                    isPreCampaign
+                                                    isSmartLinkReadOnly
                                                         ? 'pe-none click-off'
                                                         : ''
                                                 }`}
@@ -1212,8 +1235,9 @@ const GenerateSmartLink = ({ fieldName, isEdit, tab, statusId, canEditExistingSm
                                                     <Fragment>
                                                         <div className="form-group mt20">
                                                             <Row>
-                                                                <Col sm={12} className='pr55'>
-                                                            <RSInput
+                                                                <Col sm={12}>
+                                                                <div className='d-flex align-items-end'>
+                                                                <RSInput
                                                                 id="rs_GenerateSmartLink_DomainURL"
                                                                 control={control}
                                                                 name={`${currentName}.domain`}
@@ -1253,6 +1277,31 @@ const GenerateSmartLink = ({ fieldName, isEdit, tab, statusId, canEditExistingSm
                                                                     // },
                                                                 }}
                                                             />
+
+                                                                       <RSTooltip
+                                                                text={ADAPTIVE_URL}
+                                                                position="top"
+                                                                className="lh0 ml15 position-relative top2"
+                                                               
+                                                            >
+                                                                <div
+                                                                    className={
+                                                                        isDomainValid || !domain || isMobileAdaptive
+                                                                            ? 'pe-none click-off'
+                                                                            : ''
+                                                                    }
+                                                                >
+                                                                    <i
+                                                                        id="rs_data_circle_plus_fill"
+                                                                        className={`${circle_plus_fill_medium} icon-md color-primary-blue`}
+                                                                        onClick={() =>
+                                                                            setMobileAdaptive(!isMobileAdaptive)
+                                                                        }
+                                                                    />
+                                                                </div>
+                                                            </RSTooltip>
+                                                                </div>
+                                                          
                                                             {/* <ListNameExists
                                                                 name={`${currentName}.domain`}
                                                                 field="Website"
@@ -1273,7 +1322,7 @@ const GenerateSmartLink = ({ fieldName, isEdit, tab, statusId, canEditExistingSm
                                                                 }}
                                                                 callback={callback}
                                                             /> */}
-                                                            <div className="d-flex justify-content-between generate-smartlink-dropdown">
+                                                            <div className="d-flex justify-content-between generate-smartlink-dropdown pr40">
                                                                 <RSBootstrapdown
                                                                     defaultItem={{
                                                                         key: (
@@ -1359,27 +1408,7 @@ const GenerateSmartLink = ({ fieldName, isEdit, tab, statusId, canEditExistingSm
                                                                     />
                                                                 </div>
                                                             </div>
-                                                            <RSTooltip
-                                                                text={ADAPTIVE_URL}
-                                                                position="top"
-                                                                className={`position-absolute lh0 right0 top5`}
-                                                            >
-                                                                <div
-                                                                    className={
-                                                                        isDomainValid || !domain || isMobileAdaptive
-                                                                            ? 'pe-none click-off'
-                                                                            : ''
-                                                                    }
-                                                                >
-                                                                    <i
-                                                                        id="rs_data_circle_plus_fill"
-                                                                        className={`${circle_plus_fill_medium} icon-md color-primary-blue`}
-                                                                        onClick={() =>
-                                                                            setMobileAdaptive(!isMobileAdaptive)
-                                                                        }
-                                                                    />
-                                                                </div>
-                                                            </RSTooltip>
+                                                         
                                                             </Col>
                                                             </Row>
                                                         </div>
@@ -2335,24 +2364,23 @@ const GenerateSmartLink = ({ fieldName, isEdit, tab, statusId, canEditExistingSm
                                     </Accordion.Item>
                                 </Accordion>
                                 {fields?.length - 1 === idx && fields?.length < 5 && (
-                                    <RSTooltip
-                                        text={ADD_MOBILE_DEVICE}
-                                        position="top"
-                                        className="rs-sl-add-icon position-absolute bottom0 right15 lh0"
-                                    >
-                                        <div  className={`${
-                                                !isEditable || isPreCampaign ? 'pe-none click-off' : ''
-                                            }`}>
-                                        <i
-                                            id="rs_data_circle_plus_fill_edge"
-                                            className={`${
-                                                circle_plus_fill_edge_medium
-                                            } icon-md color-primary-blue`}
-                                            onClick={() => addPlaform(idx)}
-                                        />
-                                        </div>
-                                    </RSTooltip>
+                                    <div className="rs-sl-add-icon lh0">
+                                        <RSTooltip text={ADD_MOBILE_DEVICE} position="top">
+                                            <div
+                                                className={`${
+                                                    !isEditable || isSmartLinkReadOnly ? 'pe-none click-off' : ''
+                                                }`}
+                                            >
+                                                <i
+                                                    id="rs_data_circle_plus_fill_edge"
+                                                    className={`${circle_plus_fill_edge_medium} icon-md color-primary-blue`}
+                                                    onClick={() => addPlaform(idx)}
+                                                />
+                                            </div>
+                                        </RSTooltip>
+                                    </div>
                                 )}
+                                </div>
                             </Col>
                         </Row>
                     );
@@ -2360,14 +2388,9 @@ const GenerateSmartLink = ({ fieldName, isEdit, tab, statusId, canEditExistingSm
                 <Row className="justify-content-end mx0 mt21 pr14">
                     <RSPrimaryButton
                         className={`bg-secondary-blue float-end no-box-shadow w-auto rs-bg-secondary-blue`}
-                         disabledClass={`${
-                            !isEditable || isPreCampaign
-                                ? 'pe-none click-off'
-                                : // !isDirty ||
-                                !isValid || isDomainValid || generateFlag || generateLoader.isFetching
-                                ? 'pe-none'
-                                : ''
-                        }`}
+                        disabledClass={
+                            isGenerateDisabled ? 'pe-none click-off' : ''
+                        }
                         onClick={async () => {
                             // console.log('AAAAA ::: ', isValid, isDomainValid, generateFlag);
                             // debugger;

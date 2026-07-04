@@ -34,6 +34,13 @@ const OverviewList = ({ dataObj, isFooter = true }) => {
         <>
         <Row>
             {dataObj?.map((item, index) => {
+                const footerValue = item?.footer?.value;
+                const hasFooterComparison =
+                    footerValue !== 'NA' &&
+                    footerValue !== '' &&
+                    footerValue !== undefined &&
+                    footerValue !== null;
+
                 return (
                     <Col key={item?.name + index}>
                         <div className="csr-reach-portlet">
@@ -120,27 +127,26 @@ const OverviewList = ({ dataObj, isFooter = true }) => {
                                 </div>
                                 <div className="d-flex align-items-center">
                                     <span className="total-value">
-                                        {item?.footer?.value && item?.footer?.value !== 'NA'
-                                            ? <>{item?.footer?.value}<span className='font-xsm'>%</span> </>
-                                            : item?.footer?.value === 'NA'
-                                                ? item?.footer?.value
+                                        {hasFooterComparison
+                                            ? <>{footerValue}<span className='font-xsm'>%</span> </>
+                                            : footerValue === 'NA'
+                                                ? footerValue
                                                 : 'N/A'}
-                                        <i
-                                            className={`${arrow_up_bold_mini} icon-sm white position-relative  cursor-default`}
-                                        ></i>
+                                        {/* {hasFooterComparison && (
+                                            <i
+                                                className={`${arrow_up_bold_mini} icon-sm white position-relative  cursor-default`}
+                                            ></i>
+                                        )} */}
                                     </span>
-                                    {item?.footer?.value !== 'NA' ||
-                                        ((item?.footer?.value === undefined || item?.footer?.value === null) && (
+                                    {footerValue !== 'NA' ||
+                                        ((footerValue === undefined || footerValue === null) && (
                                             <small className="d-inline-block white font-xsm position-relative top1">
                                                 %
                                             </small>
                                         ))}
-                                    {item?.footer?.value === 'NA' ||
-                                        item?.footer?.value === '' ||
-                                        item?.footer?.value === undefined ||
-                                        item?.footer?.value === null ? null : (
+                                    {hasFooterComparison ? (
                                         <>
-                                            {item?.performance ? (
+                                            {item?.footer?.performance ? (
                                                 <i
                                                     className={`${arrow_up_bold_medium} icon-md white position-relative top-1 cursor-default`}
                                                 ></i>
@@ -150,7 +156,7 @@ const OverviewList = ({ dataObj, isFooter = true }) => {
                                                 ></i>
                                             )}
                                         </>
-                                    )}
+                                    ) : null}
                                 </div>
                             </div>}
                         </div>

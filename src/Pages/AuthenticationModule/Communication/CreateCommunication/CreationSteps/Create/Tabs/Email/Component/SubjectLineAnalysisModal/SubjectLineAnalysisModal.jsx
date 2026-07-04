@@ -2,7 +2,7 @@ import { HorizontalSkeleton, PieChartSkeleton } from 'Components/Skeleton/Skelet
 import { CTR, PROJECTED_CTR, SUBJECT_LINE_ANALYSIS, SUBJECT_LINE_LENGTH, TOP3_SUBJECT_LINES } from 'Constants/GlobalConstant/Placeholders';
 import { useEffect } from 'react';
 import { Container } from 'react-bootstrap';
-import _get from 'lodash/get';
+import { get as _get } from 'Utils/modules/lodashReplacements';
 import { useDispatch, useSelector } from 'react-redux';
 import RSHighchartsContainer from 'Components/Highcharts';
 import RSModal from 'Components/RSModal';
@@ -124,12 +124,12 @@ let cons = {
             size="lg"
             header={SUBJECT_LINE_ANALYSIS}
             body={
-                <Container className="emojifont">
-                    <p className="fs19">{subjectLineText}</p>
+                <div className="emojifont">
+                    <p className="d-inline-block fs19 mb30 text-break w-100">{subjectLineText}</p>
                     <>
-                        <div
-                            className={`sla-modal-content mt32 ${
-                                emailList?.subjectLine_Analysis[0]?.openRate || emailList?.subjectLine_Analysis?.unifiedPerformanceScore? '' : 'mb32 align-items-baseline'
+                            <div
+                            className={`sla-modal-content align-items-baseline ${
+                                emailList?.subjectLine_Analysis[0]?.openRate || emailList?.subjectLine_Analysis?.originalAnalysis?.unifiedPerformanceScore ? '' : 'mb30'
                             } `}
                         >
                             <div className="slamc-block slamcb-left">
@@ -178,7 +178,7 @@ let cons = {
                                 </div>
                                 {resultTop3lines?.length > 0 && (
                                     <div className="slamciw-block slamciw-right">
-                                        <h3 className="slamci-heading text-center">
+                                        <h3 className="slamci-heading text-right">
                                             {CTR}
                                             {/* <span className="font-xsm">%</span> */}
                                         </h3>
@@ -189,10 +189,10 @@ let cons = {
                                 <>
                                     {resultTop3lines.map((subject) => (
                                         <div className="slamci-wrapper" key={subject.id}>
-                                            <div className="slamciw-block slamciw-left">{subject.text}</div>
+                                            <div className="slamciw-block slamciw-left lh-sm">{subject.text}</div>
                                             <div className="slamciw-block slamciw-right divider">
                                                 {subject.percent || 0}
-                                                <span className="percentage">%</span>
+                                                <small className="percentage fs16">%</small>
                                             </div>
                                         </div>
                                     ))}
@@ -204,7 +204,7 @@ let cons = {
                             )}
                         </div>
                     </>
-                </Container>
+                </div>
             }
             footer={false}
         />

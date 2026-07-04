@@ -1,8 +1,7 @@
 import { ENTER_ATTRIBUTE_NAME } from 'Constants/GlobalConstant/ValidationMessage';
 import { ATTRIBUTE } from 'Constants/GlobalConstant/Placeholders';
 import { Fragment } from 'react';
-import _findIndex from 'lodash/findIndex';
-import _get from 'lodash/get';
+import { findIndex as _findIndex,get as _get } from 'Utils/modules/lodashReplacements';
 import { Row, Col } from 'react-bootstrap';
 import { useFormContext, useFieldArray, useWatch } from 'react-hook-form';
 

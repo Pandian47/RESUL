@@ -1,5 +1,6 @@
 import { Suspense, memo, useMemo } from 'react';
 import { Routes, Route, useLocation } from 'react-router-dom';
+import { useSelector } from 'react-redux';
 
 import { ProtectedLayout } from 'Hoc/ProtectedRoutes';
 import { PublicLayout } from 'Hoc/NonProtectedRoute';
@@ -15,6 +16,7 @@ import {
 
 const MainRoutes = () => {
     const { pathname } = useLocation();
+    const sessionRecoverySeq = useSelector((state) => state.globalstate?.sessionRecoverySeq ?? 0);
     const sectionClassName = useMemo(() => {
         const isLoginPage = pathname === '/';
         const isGenieShell = pathname === '/genie' || pathname.startsWith('/genie/');
@@ -26,7 +28,7 @@ const MainRoutes = () => {
     return (
         <section className={sectionClassName}>
             <Suspense fallback={<RouteSuspenseFallback />}>
-                <Routes>
+                <Routes key={sessionRecoverySeq}>
                     <Route element={<PublicLayout />}>
                         {renderRouteNodes(PUBLIC_APP_ROUTE_TREE, 'public', PublicPages)}
                     </Route>

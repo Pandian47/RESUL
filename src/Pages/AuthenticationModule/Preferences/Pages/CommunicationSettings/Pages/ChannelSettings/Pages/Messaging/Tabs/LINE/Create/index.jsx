@@ -4,7 +4,7 @@ import { useCallback, useEffect } from 'react';
 import { Row, Col } from 'react-bootstrap';
 import { useForm } from 'react-hook-form';
 import { RSPrimaryButton, RSSecondaryButton } from 'Components/Buttons';
-import _isNumber from 'lodash/isNumber';
+import { isNumber as _isNumber } from 'Utils/modules/lodashReplacements';
 import { useDispatch, useSelector } from 'react-redux';
 import RSKendoDropDownList from 'Components/FormFields/RSKendoDropdown';
 import RSInput from 'Components/FormFields/RSInput';

@@ -5,9 +5,7 @@ import { ItemTypes } from './ItemTypes.js';
 import { Card, ListGroup } from 'react-bootstrap';
 import CanvasWarning from '../Modal/CanvasWarning';
 import CreateWorkFlowContext from '../../context';
-import _cloneDeep from 'lodash/cloneDeep';
-import filter from 'lodash/filter';
-import some from 'lodash/some';
+import { cloneDeep as _cloneDeep, filter, some } from 'Utils/modules/lodashReplacements';
 import { getMdcGlyph, rootNodeLength, checkChannelExistInRoot, GenerateNodeId, GenerateNodePosition } from '../../constant';
 const style = {
     border: '1px dashed gray',

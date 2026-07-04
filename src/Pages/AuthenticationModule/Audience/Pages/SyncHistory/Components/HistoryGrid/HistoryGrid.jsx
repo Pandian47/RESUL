@@ -2,7 +2,7 @@ import { getUserCurrentFormat } from 'Utils/modules/dateTime';
 import { numberWithCommas } from 'Utils/modules/formatters';
 import { data_attributes_schema_medium, list_analytics_medium } from 'Constants/GlobalConstant/Glyphicons';
 import { Fragment, useContext, useState } from 'react';
-import _get from 'lodash/get';
+import { get as _get } from 'Utils/modules/lodashReplacements';
 
 import { getListAnalysis } from 'Reducers/audience/syncHistory/request';
 import KendoGrid from 'Components/RSKendoGrid';
@@ -219,7 +219,7 @@ const HistoryGrid = ({ columnData }) => {
                                 const airFlowRunId = getAirFlowDagRunId(props?.dataItem);
                                 const pipelineEnabled = airFlowRunId != null && String(airFlowRunId).trim() !== '';
                                 return (
-                                    <td className="d-flex">
+                                    <td className="d-flex align-items-center">
                                         <div onClick={() => handleListAnalysis(props?.dataItem)}>
                                             <RSTooltip
                                                 text={'List analysis'}

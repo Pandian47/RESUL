@@ -11,8 +11,12 @@ import { useNavigate } from 'react-router-dom';
 import { getSessionId } from 'Reducers/globalState/selector';
 import { useDispatch, useSelector } from 'react-redux';
 import { getPersonabyId } from 'Reducers/preferences/audienceScore/request';
+import { asAudienceScoreObject } from '../../Pages/Components/constants';
 
 const PersonaCard = ({ list, setIsShowPersona, grade }) => {
+    const safeGrade = asAudienceScoreObject(grade);
+    const gradeOptions = Object.keys(safeGrade);
+    const personaRules = Array.isArray(list?.personaRule) ? list.personaRule : [];
     const { departmentId, clientId, userId } = useSelector((state) => getSessionId(state));
     const navigate = useNavigate();
     const {
@@ -23,7 +27,7 @@ const PersonaCard = ({ list, setIsShowPersona, grade }) => {
     const [isEditLoading, setIsEditLoading] = useState(false);
 
     const EditPersonaRule = async (id) => {
-        if (isEditLoading) {
+        if (isEditLoading || !id) {
             return;
         }
         setIsEditLoading(true);
@@ -54,16 +58,15 @@ const PersonaCard = ({ list, setIsShowPersona, grade }) => {
                 <div className="box-design p10 mb30 no-box-shadow">
                     <div className="pref-as-card-wrapper">
                         <div className="pacr-row pacrw-heading">
-                            <div className="pacr-column">{list.personaName}</div>
+                            <div className="pacr-column">{list?.personaName ?? ''}</div>
                             <div className="pacr-column flex-right">
                                 <div className="width100p">
                                     <RSKendoDropDownList
                                         control={control}
-                                        name={`priority_` + list.personaId}
-                                        data={Object.keys(grade)}
-                                        //label="Priority"
+                                        name={`priority_` + list?.personaId}
+                                        data={gradeOptions}
                                         defaultValue={
-                                            getKeyByValue(grade, list.personaGradeId) || Object.keys(grade)[0]
+                                            getKeyByValue(safeGrade, list?.personaGradeId) || gradeOptions[0]
                                         }
                                     />
                                 </div>
@@ -76,7 +79,7 @@ const PersonaCard = ({ list, setIsShowPersona, grade }) => {
                                                 id="rs_data_pencil_edit"
                                                 className={`${pencil_edit_medium} icon-md color-primary-blue cp`}
                                                 onClick={() => {
-                                                    EditPersonaRule(list.personaId);
+                                                    EditPersonaRule(list?.personaId);
                                                 }}
                                             />
                                         </RSTooltip>
@@ -84,7 +87,7 @@ const PersonaCard = ({ list, setIsShowPersona, grade }) => {
                                 </div>
                             </div>
                         </div>
-                        {list.personaRule?.map((persona, personaIndex) => {
+                        {personaRules.map((persona, personaIndex) => {
                             return (
                                 <div key={personaIndex} className="pacr-row pacrw-content">
                                     <div className="pacr-column">{persona?.FieldName}</div>

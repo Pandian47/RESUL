@@ -1,7 +1,7 @@
 import { numberWithCommas } from 'Utils/modules/formatters';
 import { CANCEL, SAVE, SPLIT_SIZE, SPLIT_WINNING_COMMUNICATION } from 'Constants/GlobalConstant/Placeholders';
 import { Fragment, useCallback, useEffect, useRef, useState } from 'react';
-import _isEmpty from 'lodash/isEmpty';
+import { isEmpty as _isEmpty } from 'Utils/modules/lodashReplacements';
 import { slider } from 'Assets/Images';
 
 import { RSPrimaryButton, RSSecondaryButton } from 'Components/Buttons';
@@ -176,7 +176,7 @@ const SplitSlider = ({
                             </div>
                         </div>
                     </span>
-                    <span>
+                    <span className='lh-sm'>
                         {SPLIT_WINNING_COMMUNICATION}{' '}
                         {remainingCount.toLocaleString()}{" "}({Math.round(remainingPercentage)})<span className='fs12'>%</span> of the audience.
                     </span>

@@ -1,4 +1,4 @@
-import { CHECK_GEOFENCE_NAME_EXISTS, CHECK_VALID_GEOFENCE, DELETE_REGION_BY_ID, GET_GEOFENCES_LISTS, GET_GEOFENCE_DETAILS_BY_ID, SAVE_GEOFENCE, SYNC_GEOFENCE } from 'Constants/EndPoints';
+import { CHECK_GEOFENCE_NAME_EXISTS, CHECK_VALID_GEOFENCE, GET_GEOFENCES_LISTS, GET_GEOFENCE_DETAILS_BY_ID, SAVE_GEOFENCE, SYNC_GEOFENCE } from 'Constants/EndPoints';
 import request from 'Utils/Http';
 import { updateGeofence } from './reducer';
 
@@ -46,7 +46,6 @@ export const getGeoFenceDetailsById = ({ geoFenceId, departmentId, clientId, use
             url: GET_GEOFENCE_DETAILS_BY_ID,
             payload: { geoFenceId, departmentId, clientId, userId },
             loading: false,
-            isFailureCheck: true,
         }),
     );
 };
@@ -78,17 +77,6 @@ export const checkValidGeoFence = (payload) => async (dispatch) => {
         request.post({
             url: CHECK_VALID_GEOFENCE,
             payload,
-            loading: true,
-            isFailureCheck: true,
-        }),
-    );
-};
-
-export const deleteRegionById = ({ regionId }) => async (dispatch) => {
-    return dispatch(
-        request.post({
-            url: DELETE_REGION_BY_ID,
-            payload: { regionId },
             loading: true,
             isFailureCheck: true,
         }),

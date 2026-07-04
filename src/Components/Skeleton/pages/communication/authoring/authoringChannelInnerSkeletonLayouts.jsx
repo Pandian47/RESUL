@@ -814,8 +814,6 @@ const ROWS_EMAIL_CHANNEL_BOTTOM = [
     { labelWidth: '70%', align: 'email-create' },
 ];
 
-const EmailMailSubTabsSkeleton = () => <AuthoringChannelSubTabsSkeleton tabCount={2} activeIndex={0} />;
-
 const EmailContentBlockSkeleton = () => (
     <div className="form-group authoring-form-skeleton__email-content-group mt41">
         <Row>

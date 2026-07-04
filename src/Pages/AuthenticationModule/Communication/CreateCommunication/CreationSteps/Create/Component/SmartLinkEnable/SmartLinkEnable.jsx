@@ -6,17 +6,28 @@ import { RSPrimaryButton, RSSecondaryButton } from 'Components/Buttons';
 import { updateSmartLinkModalState } from 'Reducers/communication/createCommunication/Create/reducer';
 import useQueryParams from 'Hooks/useQueryParams';
 
-const SmartLinkEnable = ({ onReject = () => {}, onSave = () => {}, isSmartLink, secondaryButton = true , isQrClassNameEnable = false, ignoreButton = false, onIgnore = () => {}, isPaidMedia = false} ) => {
+const SmartLinkEnable = ({ message, onReject = () => {}, onSave = () => {}, isSmartLink, secondaryButton = true , isQrClassNameEnable = false, ignoreButton = false, onIgnore = () => {}, isPaidMedia = false} ) => {
     const dispatch = useDispatch();
     const location = useQueryParams('/communication');
-    // const { createCommunicationReducer } = useSelector((state) => state);
+
+    if (Number(location?.statusId) === 9) {
+        return null;
+    }
+
+    const displayMessage =
+        message ??
+        (isPaidMedia
+            ? PAID_MEDIA_SMARTLINK_MANDATORY
+            : !secondaryButton && !ignoreButton
+              ? MANDATORY_SMARTLINK
+              : CREATE_SMART_LINK);
 
     return (
         <Fragment>
             <span className={`${location?.campaignType === 'M' ? 'mdcoverlay' : ''}`}>
                 <div className="rs-smartlink-overlay communication-smartlink-popup"></div>
                 <div className={`rs-overlay-page-modal-wrapper text-center communication-popup-center ${isQrClassNameEnable ? 'left20':''}`}>
-                    <p className="mb21">{isPaidMedia ? PAID_MEDIA_SMARTLINK_MANDATORY : !secondaryButton && !ignoreButton ? MANDATORY_SMARTLINK : CREATE_SMART_LINK}</p>
+                    <p className="mb21">{displayMessage}</p>
                     {secondaryButton && (
                         <RSSecondaryButton
                             onClick={() => onReject()}
@@ -52,6 +63,7 @@ const SmartLinkEnable = ({ onReject = () => {}, onSave = () => {}, isSmartLink, 
 };
 
 SmartLinkEnable.propTypes = {
+    message: PropTypes.string,
     secondaryButton: PropTypes.bool,
     onReject: PropTypes.func,
     onSave: PropTypes.func,

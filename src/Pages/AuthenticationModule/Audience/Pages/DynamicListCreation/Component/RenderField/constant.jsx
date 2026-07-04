@@ -6,6 +6,11 @@ export const DATE_ATTRIBUTE_TYPES = ['Before', 'Between', 'After'];
 export const AUDIENCE_BASE_TYPES = ['Before', 'Between', 'After'];
 export const AUDIENCE_BASE_NUMBER_TYPES = ['Greater than', 'Lesser than', 'Between', 'Is equal to', 'Is not equal to'];
 
+export const TRIGGER_ATTRIBUTE_VALUE_DROPDOWN_PROPS = {
+    textField: 'value',
+    dataItemKey: 'id',
+};
+
 export const COMPARISON_MAP = {
     // String comparisons (for T, D, SD, etc.)
     isequalto: 'Is equal to',

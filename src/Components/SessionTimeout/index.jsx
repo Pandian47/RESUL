@@ -1,33 +1,44 @@
-import { ENTER_VALID_EMAIL, ENTER_VALID_EMAIL_ADDRESS, ENTER_VALID_PASSWORD, MAX75LENGTH } from 'Constants/GlobalConstant/ValidationMessage';
+import {
+    ENTER_VALID_EMAIL,
+    ENTER_VALID_EMAIL_ADDRESS,
+    ENTER_VALID_PASSWORD,
+    MAX75LENGTH,
+} from 'Constants/GlobalConstant/ValidationMessage';
 import { EMAIL_RULES } from 'Constants/GlobalConstant/Rules';
-import { BUSSINESS_EMAIL, SIGNIN, UNABLE_TOLOAD_DATA, YOUR_SESSION_EXPIRED } from 'Constants/GlobalConstant/Placeholders';
+import {
+    BUSSINESS_EMAIL,
+    SIGNIN,
+    UNABLE_TOLOAD_DATA,
+    YOUR_SESSION_EXPIRED,
+} from 'Constants/GlobalConstant/Placeholders';
 import { Fragment, useEffect, useRef, useState } from 'react';
 import axios from 'axios';
 import { useForm } from 'react-hook-form';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
-import _isEmpty from 'lodash/isEmpty';
+import { isEmpty as _isEmpty } from 'Utils/modules/lodashReplacements';
 
 import RSModal from 'Components/RSModal';
 import RSInput from 'Components/FormFields/RSInput';
 import RSCheckbox from 'Components/FormFields/RSCheckbox';
 import content from 'Constants/GlobalConstant/Content/content.json';
 import { RSPrimaryButton } from 'Components/Buttons';
-import { resetGlobalState, updateSessionModal } from 'Reducers/globalState/reducer';
-import { resetdashboardState } from 'Reducers/dashboard/dashboardReducer';
+import { loginExistingUser, emailExist, navigateToLoginAfterSessionClear } from 'Reducers/login/existingUser/request';
 import { globalStateSelector } from 'Utils/Selectors/app';
 import { getIpAddressData, getMasterData } from 'Reducers/globalState/request';
 import { getBrowserName } from 'Utils/modules/browserUtils';
 import { encryptWithAES, decryptWithAES, iv } from 'Utils/modules/crypto';
 import { GeneratePasswordpseudorandom } from 'Utils/modules/passwordUtils';
 import { RSCaptchaGenerator } from 'Components/RSCaptcha';
-import { loginExistingUser, emailExist } from 'Reducers/login/existingUser/request';
-import {updateSessionEmail} from 'Reducers/login/newUser/reducer';
+import { updateSessionEmail } from 'Reducers/login/newUser/reducer';
 import VerificationModule from 'Pages/RegistrationModule/Login/Pages/VerificationModule';
 import CryptoJS from 'crypto-js';
 import RSTimer from 'Components/RSTimer';
 import { maskEmailTwoCharsBeforeAndAfterDomain } from 'Utils/modules/masking';
 import useApiLoader, { LOADER_TYPE } from 'Hooks/useApiLoader';
+import { resetModalShellAfterSessionRecovery } from 'Hooks/useBodyPointerLock';
+import { resetGlobalState, updateSessionModal } from 'Reducers/globalState/reducer';
+import { resetdashboardState } from 'Reducers/dashboard/dashboardReducer';
 
 const signInFieldLoaderConfig = { create: LOADER_TYPE.FIELD, edit: LOADER_TYPE.FIELD };
 
@@ -46,7 +57,7 @@ const SessionTimeout = () => {
     const { showSessionModal } = useSelector((state) => globalStateSelector(state));
     const signInLoader = useApiLoader({ autoFetch: false, loaderConfig: signInFieldLoaderConfig, mode: 'create' });
     const [ipAddress, setIPAddress] = useState({});
-    const [isUserBlocked, setIsUserBlocked] =  useState(false)
+    const [isUserBlocked, setIsUserBlocked] = useState(false);
     const {
         control,
         watch,
@@ -70,23 +81,23 @@ const SessionTimeout = () => {
     const emailHasError = Object.hasOwn(errors, 'emailId');
 
     useEffect(() => {
-     const captchaRetry = parseInt(localStorage.getItem('captchaRetry'), 10) || 0;
-    if (emailHasError && captchaRetry > 5) {
-     localStorage.setItem('captchaRetry', '0');
-    }
-   }, [emailHasError]);
+        const captchaRetry = parseInt(localStorage.getItem('captchaRetry'), 10) || 0;
+        if (emailHasError && captchaRetry > 5) {
+            localStorage.setItem('captchaRetry', '0');
+        }
+    }, [emailHasError]);
 
     useEffect(() => {
         if (showSessionModal) {
-            document.body.className = 'Session-model-open';
-            
+            document.body.classList.add('Session-model-open');
+
             // Prefill email and password from stored plain text values
             try {
                 const storedCredentials = localStorage.getItem('sessionCredentials');
-                
+
                 if (storedCredentials) {
                     const credentialsObj = JSON.parse(decryptWithAES(storedCredentials));
-                    
+
                     // Use the stored plain text values directly
                     const email = credentialsObj?.email || '';
                     const password = credentialsObj?.password || '';
@@ -95,7 +106,7 @@ const SessionTimeout = () => {
                         existingEmail.current = email;
                         setValue('emailId', email);
                         setValue('password', password);
-                        setValue('rememberme', rememberMe)
+                        setValue('rememberme', rememberMe);
                         // Update email state for validation
                         setEmailState({
                             loading: false,
@@ -105,20 +116,27 @@ const SessionTimeout = () => {
                         setIsEmailAutoCompleted(true);
                     }
                 }
-            } catch (error) {
-            }
+            } catch (error) {}
         } else {
-            document.body.className = '';
+            document.body.classList.remove('Session-model-open');
             setIsEmailPrefilled(false);
             setIsEmailAutoCompleted(false);
         }
+
+        return () => {
+            requestAnimationFrame(resetModalShellAfterSessionRecovery);
+        };
     }, [showSessionModal, setValue]);
     const getIpAddress = async () => {
-          try {
-           // console.log('existing');
+        try {
+            // console.log('existing');
             // const res = await axios.get('https://ipapi.co/json');
             const res = await axios.get('https://geolocation-db.com/json/');
-            setIPAddress({ip:res?.data?.IPv4, countryName:res?.data?.country_name, countryCode:res?.data?.country_code}); //res?.data?.ip
+            setIPAddress({
+                ip: res?.data?.IPv4,
+                countryName: res?.data?.country_name,
+                countryCode: res?.data?.country_code,
+            }); //res?.data?.ip
             if (
                 localStorage.getItem('ipAddressData') === null ||
                 localStorage.getItem('ipAddressData') === undefined ||
@@ -130,7 +148,7 @@ const SessionTimeout = () => {
             }
         } catch (error) {
             // Set a default IP address or handle gracefully
-            setIPAddress({ip:'127.0.0.1', countryName:'India', countryCode:'IN'});
+            setIPAddress({ ip: '127.0.0.1', countryName: 'India', countryCode: 'IN' });
         }
     };
 
@@ -142,7 +160,7 @@ const SessionTimeout = () => {
                 setIsEmailAutoCompleted(true);
             }
         }, 1000);
-        
+
         return () => clearTimeout(timeoutId);
     }, []);
 
@@ -177,8 +195,8 @@ const SessionTimeout = () => {
     };
     const getLocation = async () => {
         const res = await axios.get('https://geolocation-db.com/json/');
-        return res
-    }
+        return res;
+    };
     const handleSubmit = async (formState) => {
         await signInLoader.refetch({
             fetcher: async () => {
@@ -195,17 +213,15 @@ const SessionTimeout = () => {
                         emailId: encryptWithAES(CryptoJS.enc.Utf8.parse(emailId), byteHash, tempiv),
                         hashval: btoa(GeneratePasswordpseudorandom(3) + hasValue + GeneratePasswordpseudorandom(3)),
                     };
-                    const emailCheck = await dispatch(emailExist({ payload: emailCheckPayload, setError, value: emailId, loading: false }));
+                    const emailCheck = await dispatch(
+                        emailExist({ payload: emailCheckPayload, setError, value: emailId, loading: false }),
+                    );
                     if (!emailCheck?.status) return null;
                     setEmailState({ loading: false, isValid: true });
                 }
 
                 dispatch(updateSessionEmail(emailId));
-                const tempOauth = encryptWithAES(
-                    CryptoJS.enc.Utf8.parse(`${emailId}###${password}`),
-                    byteHash,
-                    tempiv,
-                );
+                const tempOauth = encryptWithAES(CryptoJS.enc.Utf8.parse(`${emailId}###${password}`), byteHash, tempiv);
                 const payload = {
                     loginName: encryptWithAES(CryptoJS.enc.Utf8.parse(emailId), byteHash, tempiv),
                     loginPassword: encryptWithAES(CryptoJS.enc.Utf8.parse(password), byteHash, tempiv),
@@ -241,9 +257,9 @@ const SessionTimeout = () => {
     };
 
     const handleTimerComplete = () => {
-        setIsUserBlocked(false)
-        clearErrors('emailId')
-   }
+        setIsUserBlocked(false);
+        clearErrors('emailId');
+    };
 
     const handleEmailBlur = async ({ target: { value } }) => {
         localStorage.setItem('sessionModal', false);
@@ -297,7 +313,7 @@ const SessionTimeout = () => {
 
     const getHeader = () => {
         if (isLoginValid) {
-            switch(verificationStep) {
+            switch (verificationStep) {
                 case 'choose2FA':
                     return content.choose2FA;
                 case 'emailOTPSetup':
@@ -323,21 +339,12 @@ const SessionTimeout = () => {
                 const tempMasterData = localStorage.getItem('masterData');
                 const tempipAddressData = localStorage.getItem('ipAddressData');
                 const tempdisable_plugin_last_shown = localStorage.getItem('disable_plugin_last_shown');
-                     const tempNewVersionConfirm = localStorage.getItem('newVersionConfirm');
-                localStorage.clear();
-
-                    localStorage.setItem('ipAddressData', tempipAddressData);
-                    localStorage.setItem('disable_plugin_last_shown', tempdisable_plugin_last_shown);
-                    localStorage.setItem('newVersionConfirm', tempNewVersionConfirm);
                 dispatch(resetGlobalState());
                 dispatch(resetdashboardState());
                 dispatch(updateSessionModal(false));
-                localStorage.setItem('sessionModal', false);
-                
-                // Trigger storage event to notify other tabs about logout
-                localStorage.setItem('logoutEvent', Date.now().toString());
-                
-                window.location.href = '/';
+                localStorage.setItem('tempMasterData', tempMasterData);
+                localStorage.setItem('sessionModal', 'false');
+                navigateToLoginAfterSessionClear(dispatch, navigate);
             }}
             onEscapeKeyDown={(e) => {
                 e.preventDefault();
@@ -400,7 +407,13 @@ const SessionTimeout = () => {
                                     handleOnBlur={handleEmailBlur}
                                     loginEmailIcon
                                 />
-                           {isUserBlocked && (<RSTimer initialTime={300} isUserBlocked = {true} handleTimerComplete = {handleTimerComplete}/> )}
+                                {isUserBlocked && (
+                                    <RSTimer
+                                        initialTime={300}
+                                        isUserBlocked={true}
+                                        handleTimerComplete={handleTimerComplete}
+                                    />
+                                )}
                             </div>
                             <div className="form-group">
                                 <RSInput
@@ -431,7 +444,7 @@ const SessionTimeout = () => {
                                     />
                                 </div>
                             )}
-                            <div className="my15">
+                            <div className="mb15">
                                 <RSCheckbox
                                     control={control}
                                     name="rememberme"

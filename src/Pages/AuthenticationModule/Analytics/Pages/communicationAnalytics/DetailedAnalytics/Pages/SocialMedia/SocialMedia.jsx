@@ -5,6 +5,7 @@ import SocialAnalyticsPage from './SocialAnalytics/SocialAnalyticsPage';
 import SplitHeader from '../../Components/SplitHeader';
 import SocialAnalyticsFbApp from './SocialAnalytics/SocialAnalyticsFbApp';
 import SocialAnalyticsInstagram from './SocialAnalytics/SocialAnalyticsInstagram';
+import SocialAnalyticsPinterest from './SocialAnalytics/SocialAnalyticsPinterest';
 import useQueryParams from 'Hooks/useQueryParams';
 import { useDispatch, useSelector } from 'react-redux';
 
@@ -37,17 +38,18 @@ const SocialMedia = ({ type, isDownloadUI }) => {
     const [splitItem, setSplitItem] = useState('facebook');
     const [slectedTab, seSelectedTab] = useState(0);
     const [isDownloadLocal, setIsDownloadLocal] = useState(false);
-    
+
     const activeSubchannelId = defaultItemSplitHeader?.subchannelId ?? defaultItemSplitHeader?.subChannelId ?? locationData?.subChannelId;
     const isInstagram = Number(activeSubchannelId) === 6;
-    
+    const isPinterest = Number(activeSubchannelId) === 5;
+
     const filteredChannelInfos = useMemo(() => {
         if (channelDetail?.channelInfos && Array.isArray(channelDetail.channelInfos)) {
             return channelDetail?.channelInfos?.filter((item) => item?.channelId === 7) ?? [];
         }
         return [];
     }, [channelDetail?.channelInfos]);
-    
+
     useEffect(() => {
         if (filteredChannelInfos.length > 0) {
             const defaultItem =
@@ -59,7 +61,7 @@ const SocialMedia = ({ type, isDownloadUI }) => {
             dispatch(updateDetailsMainList({ field: 'defaultItemSplitHeader', data: defaultItem }));
         }
     }, [filteredChannelInfos, locationData?.subChannelId, dispatch]);
-    
+
     // const getData = (data) => setSplitItem(id);
     const getData = async (filterData) => {
         //debugger
@@ -86,7 +88,12 @@ const SocialMedia = ({ type, isDownloadUI }) => {
         };
         // console.log('filterData: ', filterData);
         // console.log("@@@@@@@@@@@@@@@@@@@@@@@");
-        const overViewPayload = { ...payload, subChannelId: filterData?.subchannelId };
+        const subId = filterData?.subchannelId ?? filterData?.subChannelId;
+        const overViewPayload = {
+            ...payload,
+            subchannelId: subId !== undefined && subId !== null ? Number(subId) : undefined,
+            subChannelId: subId !== undefined && subId !== null ? Number(subId) : undefined,
+        };
         // Don't call getDetailReport_ChannelDetails as channel details are already loaded
         // await dispatch(getDetailReport_ChannelDetails({ payload }));
         await dispatch(getDetailReport_OverviewDetails({ payload: overViewPayload }));
@@ -96,83 +103,96 @@ const SocialMedia = ({ type, isDownloadUI }) => {
     return (
         <div className={`page-content ${isDownloadLocal ? 'download-page-setup-detail' : ''}`}>
             <Container className='px0'>
-            {(Object.keys(overviewDetail)?.length || isInstagram) && !isLoading ? (
-                <div className="rs-csr-wrapper">
-                    <SplitHeader
-                        callbackSplit={getData}
-                        colorfulHeader={true}
-                        datePicker={false}
-                        splitData={filteredChannelInfos}
-                        // splitData={socialMedia?.headerValue}
-                        detailAnalytics
-                        isDownloadUI={(flag) => {
-                            setIsDownloadLocal(flag);
-                            setTimeout(() => {
-                                setIsDownloadLocal(false);
-                            }, 10000);
-                            isDownloadUI(flag);
-                        }}
-                        startDate={channelDetail?.startDate}
-                        endDate={channelDetail?.endDate}
-                        channelId={7}
-                    />
-                    <div>
-                        <div className="float-end d-flex position-relative zIndex1 top12 d-none">
-                            <ul className="mb0 rs-tabs row mini">
-                                {splitItem !== 'facebookApp' && !isInstagram &&
-                                    tabbarData.map((item, index) => {
-                                        return (
-                                            <li
-                                                className={`tabDefault tabTransparent  ${
-                                                    slectedTab === index ? 'active' : ''
-                                                }`}
-                                                key={item.id}
-                                                onClick={() => seSelectedTab(index)}
-                                            >
-                                                {item.text}
-                                            </li>
-                                        );
-                                    })}
-                            </ul>
+                {(Object.keys(overviewDetail)?.length || isInstagram || isPinterest) && !isLoading ? (
+                    <div className="rs-csr-wrapper">
+                        <SplitHeader
+                            callbackSplit={getData}
+                            colorfulHeader={true}
+                            datePicker={false}
+                            splitData={filteredChannelInfos}
+                            // splitData={socialMedia?.headerValue}
+                            detailAnalytics
+                            isDownloadUI={(flag) => {
+                                setIsDownloadLocal(flag);
+                                setTimeout(() => {
+                                    setIsDownloadLocal(false);
+                                }, 10000);
+                                isDownloadUI(flag);
+                            }}
+                            startDate={channelDetail?.startDate}
+                            endDate={channelDetail?.endDate}
+                            channelId={7}
+                        />
+                        <div>
+                            <div className="float-end d-flex position-relative zIndex1 top12 d-none">
+                                <ul className="mb0 rs-tabs row mini">
+                                    {splitItem !== 'facebookApp' && !isInstagram && !isPinterest &&
+                                        tabbarData.map((item, index) => {
+                                            return (
+                                                <li
+                                                    className={`tabDefault tabTransparent  ${slectedTab === index ? 'active' : ''
+                                                        }`}
+                                                    key={item.id}
+                                                    onClick={() => seSelectedTab(index)}
+                                                >
+                                                    {item.text}
+                                                </li>
+                                            );
+                                        })}
+                                </ul>
+                            </div>
+                        </div>
+                        {splitItem === 'facebookApp' ? (
+                            <SocialAnalyticsFbApp
+                                type={type}
+                                key={'fbApp'}
+                                typeOf="fbApp"
+                                splitItem={splitItem}
+                                infoIcon={true}
+                            />
+                        ) : isInstagram ? (
+                            <SocialAnalyticsInstagram
+                                type={type}
+                                key={'instagram'}
+                                typeOf="instagram"
+                                splitItem={splitItem}
+                                infoIcon={true}
+                            />
+                        ) : isPinterest ? (
+                            <SocialAnalyticsPinterest
+                                type={type}
+                                key={'pinterest'}
+                                typeOf="pinterest"
+                                splitItem={splitItem}
+                                infoIcon={true}
+                            />
+                        ) : slectedTab === 0 ? (
+                            <SocialAnalyticsPost
+                                type={type}
+                                key={'post'}
+                                typeOf="post"
+                                splitItem={splitItem}
+                                infoIcon={true}
+                            />
+                        ) : (
+                            <SocialAnalyticsPage
+                                type={type}
+                                key={'page'}
+                                typeOf="page"
+                                splitItem={splitItem}
+                                infoIcon={true}
+                            />
+                        )}
+                        <div className="mt20 mb20">
+                            <small className="color-secondary-black">
+                                <b>Data Disclaimer:</b>{' '}
+                                Analytics reflect delivery data received from telecom network partners. Reporting may be delayed, and complete activity may take up to 48 hours to appear in the analytics view.
+                            </small>
                         </div>
                     </div>
-                    {splitItem === 'facebookApp' ? (
-                        <SocialAnalyticsFbApp
-                            type={type}
-                            key={'fbApp'}
-                            typeOf="fbApp"
-                            splitItem={splitItem}
-                            infoIcon={true}
-                        />
-                    ) : isInstagram ? (
-                        <SocialAnalyticsInstagram
-                            type={type}
-                            key={'instagram'}
-                            typeOf="instagram"
-                            splitItem={splitItem}
-                            infoIcon={true}
-                        />
-                    ) : slectedTab === 0 ? (
-                        <SocialAnalyticsPost
-                            type={type}
-                            key={'post'}
-                            typeOf="post"
-                            splitItem={splitItem}
-                            infoIcon={true}
-                        />
-                    ) : (
-                        <SocialAnalyticsPage
-                            type={type}
-                            key={'page'}
-                            typeOf="page"
-                            splitItem={splitItem}
-                            infoIcon={true}
-                        />
-                    )}
-                </div>
-            ) : (
-                <DetailAnalyticsChannelPortletLoader isError={!isLoading} />
-            )}
+                ) : (
+                    <DetailAnalyticsChannelPortletLoader isError={!isLoading} />
+                )}
             </Container>
         </div>
     );

@@ -21,6 +21,7 @@ import { AudienceScoreTabContentSkeletonGate } from 'Components/Skeleton/Compone
 import useApiLoader from 'Hooks/useApiLoader';
 import { FIELD_BOTH_LOADER_CONFIG as fieldLoaderConfig } from 'Hooks/loaderTypes';
 import { handlePurchasePatternGradingTotal } from '../Components/constants';
+import { getAudienceScoreListFromResponse, asAudienceScoreList } from '../Components/constants';
 
 
 
@@ -86,11 +87,7 @@ const PurchasePattern = () => {
         return pageLoadApi.refetch({
             fetcher: () => dispatch(getPurchasePattern(payload)),
             onSuccess: (response) => {
-                if (response?.status) {
-                    setPurchasePatternData(response?.data ?? []);
-                } else {
-                    setPurchasePatternData([]);
-                }
+                setPurchasePatternData(getAudienceScoreListFromResponse(response));
             },
             onError: () => {
                 setPurchasePatternData([]);
@@ -103,10 +100,11 @@ const PurchasePattern = () => {
     }, [bootstrapPurchasePattern]);
 
     const handlePurchasePatternType = (data, patternSegementName) => {
-        const updatePatternData = data?.filter(
+        const safeData = asAudienceScoreList(data);
+        const updatePatternData = safeData?.filter(
             (item) => formatName(item?.patternSegmentKey) === formatName(patternSegementName),
         );
-        return updatePatternData[0] || {};
+        return updatePatternData[0] ?? {};
     };
 
     const totalValues = getValues();

@@ -1,8 +1,4 @@
-import React, { useLayoutEffect, useState } from 'react';
-import _get from 'lodash/get';
-import _map from 'lodash/map';
-import _replace from 'lodash/replace';
-
+import React, { useCallback, useContext, useLayoutEffect, useState ,useMemo, useRef,useEffect} from 'react';
 import RSIcon from 'Components/RSIcon';
 import Icon, { Icons } from 'Components/Icon/Icon';
 import BootstrapDropdown from 'Components/FormFields/RSBootstrapdown';
@@ -19,7 +15,7 @@ import {
 } from './constant';
 import InfoOverview from './InfoOverview';
 import * as skeleton from 'Components/Skeleton/Skeleton';
-import { formatNumber, getChannelId, numberWithCommas, truncateTitle } from 'Utils/index';
+import { formatNumber, formatPercentageDisplay, getChannelId, numberWithCommas, truncateTitle } from 'Utils/index';
 import { getSessionId } from 'Reducers/globalState/selector';
 
 import { useDispatch, useSelector } from 'react-redux';
@@ -42,7 +38,7 @@ const ANALYTICS_FIELD_LOADER_CONFIG = { create: LOADER_TYPE.FIELD, edit: LOADER_
 
 const ChartCountLabel = ({ total, percent }) => (
     <span className='d-flex align-items-baseline'>
-        {total} ({percent} <div className='ml-3 fs8'>%</div>)
+        {total} ({formatPercentageDisplay(percent)} <div className='ml-3 fs8'>%</div>)
     </span>
 );
 
@@ -84,8 +80,8 @@ const aggregatePreBlastByChannelId = (preBlastData = [], channelId) => {
 
 const OverviewCard = ({ cardData, downloadUI }) => {
     const dispatch = useDispatch();
-    const { audienceDetailsModalRef } = React.useContext(AnalyticsReportProvider);
-    const [pendingAudienceChannelId, setPendingAudienceChannelId] = React.useState(null);
+    const { audienceDetailsModalRef } = useContext(AnalyticsReportProvider);
+    const [pendingAudienceChannelId, setPendingAudienceChannelId] = useState(null);
     const preBlastLoader = useApiLoader({ autoFetch: false, loaderConfig: ANALYTICS_FIELD_LOADER_CONFIG });
     // const { state } = useLocation();
     const state = useQueryParams('/analytics/analytics-report');
@@ -95,17 +91,17 @@ const OverviewCard = ({ cardData, downloadUI }) => {
 
     const preBlast = useSelector((state) => getPreBlast(state));
     const summary = useSelector((state) => getSummaryList(state));
-    const getTotalValue = _get(summary, 'factModel') || 0;
+    const getTotalValue = summary?.factModel || 0;
 
     function getConversionStats(summary) {
         const toSafeNumber = (value) => (Number.isFinite(value) ? value : 0);
 
         const totalOnlineConversions =
-            Number(_get(summary, 'channelConversionInfo.totalOnlineConversionCount', 0)) || 0;
+            Number(summary?.channelConversionInfo?.totalOnlineConversionCount ?? 0) || 0;
         const totalOfflineConversions =
-            Number(_get(summary, 'channelConversionInfo.totalOfflineConversionCount', 0)) || 0;
-        const totalEngagements = Number(_get(summary, 'channelEngagementInfo.totalEngagementCount', 0)) || 0;
-        const totalReach = Number(_get(summary, 'channelReachInfo.totalReachCount', 0)) || 0;
+            Number(summary?.channelConversionInfo?.totalOfflineConversionCount ?? 0) || 0;
+        const totalEngagements = Number(summary?.channelEngagementInfo?.totalEngagementCount ?? 0) || 0;
+        const totalReach = Number(summary?.channelReachInfo?.totalReachCount ?? 0) || 0;
 
         const offlineRaw = totalReach > 0 ? (totalOfflineConversions / totalReach) * 100 : 0;
         const onlineRaw = totalEngagements > 0 ? (totalOnlineConversions / totalEngagements) * 100 : 0;
@@ -214,25 +210,25 @@ const OverviewCard = ({ cardData, downloadUI }) => {
     const [filterType, setFilterType] = useState('engagement');
     const [columnChartData, setcolumnChartData] = useState([]);
 
-    const channelName = _get(currentName, 'name', null);
+    const channelName = currentName?.name ?? null;
     const resolvedChannelId =
         Array.isArray(channelList) && channelList.length === 1 ? Number(channelList[0]) : Number(currentName?.id);
     const isColumnChartDisabled = resolvedChannelId === 10 || resolvedChannelId === 3;
     const showColumnChart = barchart && !isColumnChartDisabled;
     const audience = {
-        totalAudienceCnt: _get(channel, 'totalAudienceCnt', 0) ?? 0,
-        totalAudience: _get(channel, 'totalSentValue', 0) || 0,
-        uniqueAudience: _get(channel, 'uniqueAudienceCnt', 0) ?? 0,
-        spam: _get(channel, 'beforeSpamCnt', 0) ?? 0,
-        bounced: _get(channel, 'beforeBouncedCnt', 0) ?? 0,
+        totalAudienceCnt: channel?.totalAudienceCnt ?? 0,
+        totalAudience: channel?.totalSentValue || 0,
+        uniqueAudience: channel?.uniqueAudienceCnt ?? 0,
+        spam: channel?.beforeSpamCnt ?? 0,
+        bounced: channel?.beforeBouncedCnt ?? 0,
         unSubscribed:
             (channel?.beforeUnsubscribeCnt != null ? channel.beforeUnsubscribeCnt : channel?.unsubscribeCnt) ?? 0,
-        supressionList: _get(channel, 'suppressionListCnt', 0) ?? 0,
-        frequencyCap: _get(channel, 'beforeFrequencyCapCnt', 0) ?? 0,
-        sentCount: _get(channel, 'totalSentValue', 0) ?? 0,
-        cgCount: _get(channel, 'controlGroupCnt', 0) ?? 0,
-        dndCount: _get(channel, 'beforeDNDCnt', 0) ?? 0,
-        optedOut: _get(channel, 'optedOut', 0) ?? 0,
+        supressionList: channel?.suppressionListCnt ?? 0,
+        frequencyCap: channel?.beforeFrequencyCapCnt ?? 0,
+        sentCount: channel?.totalSentValue ?? 0,
+        cgCount: channel?.controlGroupCnt ?? 0,
+        dndCount: channel?.beforeDNDCnt ?? 0,
+        optedOut: channel?.optedOut ?? 0,
         afterdndCount: handleInfoCount(factModel, currentName?.name, 'dndCount', campaignType) || 0,
         deliveyCount: handleInfoCount(factModel, currentName?.name, 'deliveredCount', campaignType) || 0,
         messageCount: handleInfoCount(factModel, currentName?.name, 'messageCount', campaignType) || 0,
@@ -255,7 +251,7 @@ const OverviewCard = ({ cardData, downloadUI }) => {
         mobilePushMessageCount: handleInfoCount(factModel, currentName?.name, 'totalMessageCount', campaignType) || 0,
     };
 
-    React.useEffect(() => {
+    useEffect(() => {
         const uniqueChannelList = buildChannelsListFromPreBlast(preBlast);
         const firstChannelId = uniqueChannelList?.[0]?.id;
         const aggregatedFirstChannel = aggregatePreBlastByChannelId(preBlast, firstChannelId);
@@ -268,7 +264,7 @@ const OverviewCard = ({ cardData, downloadUI }) => {
         }));
     }, [preBlast]);
 
-    const applyAudienceChannelSelection = React.useCallback((preBlastData, channelId) => {
+    const applyAudienceChannelSelection = useCallback((preBlastData, channelId) => {
         const uniqueChannelList = buildChannelsListFromPreBlast(preBlastData);
         const normalizedChannelId =
             channelId != null ? parseInt(channelId, 10) || channelId : uniqueChannelList?.[0]?.id;
@@ -285,13 +281,13 @@ const OverviewCard = ({ cardData, downloadUI }) => {
 
     const isAudienceDetailsLoading = preBlastLoader.isFetching;
 
-    const handleCloseAudienceDetails = React.useCallback(() => {
+    const handleCloseAudienceDetails = useCallback(() => {
         setDetailShow(false);
         setPendingAudienceChannelId(null);
         preBlastLoader.reset();
     }, [preBlastLoader]);
 
-    const openAudienceDetailsModal = React.useCallback(
+    const openAudienceDetailsModal = useCallback(
         async (channelId) => {
             const normalizedChannelId = channelId != null ? parseInt(channelId, 10) || channelId : null;
 
@@ -327,7 +323,7 @@ const OverviewCard = ({ cardData, downloadUI }) => {
         ],
     );
 
-    React.useEffect(() => {
+    useEffect(() => {
         if (pendingAudienceChannelId == null || !preBlast?.length || preBlastLoader.isFetching) return;
 
         applyAudienceChannelSelection(preBlast, pendingAudienceChannelId);
@@ -345,7 +341,7 @@ const OverviewCard = ({ cardData, downloadUI }) => {
         audienceDetailsModalRef.current.close = handleCloseAudienceDetails;
     }, [audienceDetailsModalRef, handleCloseAudienceDetails, openAudienceDetailsModal]);
 
-    React.useEffect(() => {
+    useEffect(() => {
         if (Object?.keys(summary)?.length) {
             setCounts(getPercentages(filterType, summary, data));
         } else {
@@ -353,9 +349,15 @@ const OverviewCard = ({ cardData, downloadUI }) => {
         }
     }, [summary, filterType, data]);
 
-    const chartValues = React.useMemo(() => {
-        return _map(counts, (count) => {
-            const val = +_replace(count, '%', '');
+    useEffect(() => {
+        if (Number(summary?.channelConversionInfo?.totalOfflineConversionCount ?? 0) > 0) {
+            setFilterType('reach')
+        }
+    }, [summary]);
+
+    const chartValues = useMemo(() => {
+        return (counts || []).map((count) => {
+            const val = +String(count).replace('%', '');
             if (typeof val === 'number' && !isNaN(val)) return val;
             return 0;
         });
@@ -371,7 +373,7 @@ const OverviewCard = ({ cardData, downloadUI }) => {
 
     const displayData = displayText.trim();
 
-    React.useEffect(() => {
+    useEffect(() => {
         if (Object?.keys(summary)?.length > 0) {
             const columChartValue = chartValue(filterType, summary);
             setcolumnChartData(columChartValue);
@@ -395,10 +397,10 @@ const OverviewCard = ({ cardData, downloadUI }) => {
             setcolumnChartData(data);
         }
     }, [summary, filterType]);
-    const [isScrolling, setIsScrolling] = React.useState(false);
-    let scrollTimeout = React.useRef(null);
+    const [isScrolling, setIsScrolling] = useState(false);
+    let scrollTimeout = useRef(null);
 
-    React.useEffect(() => {
+    useEffect(() => {
         const handleScroll = () => {
             setIsScrolling(true);
             clearTimeout(scrollTimeout.current);
@@ -419,7 +421,7 @@ const OverviewCard = ({ cardData, downloadUI }) => {
     const isPaidMediaOnly = channelList?.includes(10) && channelList?.length === 1;
     const columnChartRowCount = isPaidMediaOnly ? 2 : 3;
     const isSummaryCardSkeleton = summaryLoading;
-    const isSummaryCardNoData = !summaryLoading && !showColumnChart && !_map(data)?.length;
+    const isSummaryCardNoData = !summaryLoading && !showColumnChart && !data?.length;
     const summaryCardArskClass = isSummaryCardSkeleton || isSummaryCardNoData ? ' arsk-summary-card' : '';
 
     return (
@@ -582,7 +584,7 @@ const OverviewCard = ({ cardData, downloadUI }) => {
                         </>
                     ) : (
                         <ReportOverviewColumnChartSkeleton
-                            isError={!summaryLoading}
+                            isError
                             rowCount={columnChartRowCount}
                         />
                     )}
@@ -597,8 +599,8 @@ const OverviewCard = ({ cardData, downloadUI }) => {
                         <div className="width100p">
                             <skeleton.DetailOverviewSkeleton isError={false} />
                         </div>
-                    ) : _map(data)?.length ? (
-                        _map(data, (item, index) => {
+                    ) : data?.length ? (
+                        data.map((item, index) => {
                             const infoValue = truncateTitle(item?.percentage, item?.percentage?.length - 1);
                             if (channelList?.includes(10) && channelList?.length === 1 && item?.title === 'Reach') {
                                 return null;
@@ -660,7 +662,7 @@ const OverviewCard = ({ cardData, downloadUI }) => {
                                         <div className="d-flex position-relative top-3 font-sm">
                                             <div className="percent-arro">
                                                 <span>
-                                                    {`(${counts[index] !== null ? counts[index] : 0}`}
+                                                    {`(${formatPercentageDisplay(counts[index] ?? 0)}`}
                                                     <sub>%</sub>)
                                                 </span>
                                                 {isIconToggle ? (
@@ -700,7 +702,7 @@ const OverviewCard = ({ cardData, downloadUI }) => {
                                                                     {numberWithCommas(
                                                                         conversionValues?.totalOnlineConversions,
                                                                     )}{' '}
-                                                                    ({conversionValues?.onlinePercentage}
+                                                                    ({formatPercentageDisplay(conversionValues?.onlinePercentage)}
                                                                     <sub>%</sub>)
                                                                 </span>
                                                                 <br />
@@ -709,7 +711,7 @@ const OverviewCard = ({ cardData, downloadUI }) => {
                                                                     {numberWithCommas(
                                                                         conversionValues?.totalOfflineConversions,
                                                                     )}{' '}
-                                                                    ({conversionValues?.offlinePercentage}
+                                                                    ({formatPercentageDisplay(conversionValues?.offlinePercentage)}
                                                                     <sub>%</sub>)
                                                                 </span>
                                                                 {/* <span>
@@ -762,9 +764,7 @@ const OverviewCard = ({ cardData, downloadUI }) => {
                                                                             {!isScrolling && (
                                                                                 <RSPPophover
                                                                                     position="top"
-                                                                                    customText={numberWithCommas(
-                                                                                        data?.pophoverText,
-                                                                                    )}
+                                                                                    customText={data?.pophoverText}
                                                                                     className={`overview-card`}
                                                                                 >
                                                                                     <i

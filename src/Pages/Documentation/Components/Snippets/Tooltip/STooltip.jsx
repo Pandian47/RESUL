@@ -1,4 +1,4 @@
-import { CustomCode, CustomCodePreview, PropsList } from '../Common';
+import { CustomCode, CustomCodePreview } from '../Common';
 import { RSPTooltip } from 'Components/Tooltip';
 export const STooltip = () => {
 
@@ -19,27 +19,6 @@ export const STooltip = () => {
         </>
     )
 }
-export const STooltipProps = () => {
-    return (
-        <>
-            <h1 className="mt50">ButtonProps</h1>
-            <PropsList title="className?" type="string">
-                <p>Sets the <code>className</code> of the RSPrimaryBtn component.</p>
-            </PropsList>
-            <PropsList title="bgc?" type="string">
-                <p>Specifies the <code>bgc</code> of backgroundColor in this button.</p>
-            </PropsList>
-            <PropsList title="paddingR?" type="string">
-                <p>Specifies the <code>paddingR</code> of paddingRight value.</p>
-            </PropsList>
-            <PropsList title="txtc?" type="string">
-                <p>Specifies the <code>txtc</code> of button text Color.</p>
-            </PropsList>
-        </>
-    )
-}
-
-
 let codeTooltip =
     `import { RSPTooltip } from 'Components/Tooltip';
 

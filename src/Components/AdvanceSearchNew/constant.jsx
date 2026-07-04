@@ -1,4 +1,4 @@
-import _get from 'lodash/get';
+import { get as _get } from 'Utils/modules/lodashReplacements';
 
 /** Mirrors Constants/AdvanceSearch — inlined to avoid prod bundle TDZ. */
 const DEFAULT_ADVANCE_SEARCH_SORT_BY_ID = 1;

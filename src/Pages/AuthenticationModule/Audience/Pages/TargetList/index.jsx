@@ -1,10 +1,10 @@
-import { getUserDetails } from 'Utils/modules/crypto';
+import { getUserDetails, encodeUrl } from 'Utils/modules/crypto';
 import { getDateWithDaynoFormat, getUserDateTimeFormat, getYYMMDD } from 'Utils/modules/dateTime';
 import { getWarningPopupMessage } from 'Utils/modules/warningPopup';
 
-import { ALL_AUDIENCE, NOT_USED, TARGET_LIST_NOT_AVAILABLE_1, TARGET_LIST_NOT_AVAILABLE_2, USED } from 'Constants/GlobalConstant/Placeholders';
+import { ALL_AUDIENCE, NOT_USED, UPLOAD_PARENT_ATTRIBUTES, UPLOAD_PARENT_ATTRIBUTES_ADD_AUDIENCE, USED } from 'Constants/GlobalConstant/Placeholders';
 import { circle_plus_fill_medium } from 'Constants/GlobalConstant/Glyphicons';
-import { Fragment, createContext, useContext, useEffect, useMemo, useRef, useState } from 'react';
+import { Fragment, createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { Row } from 'react-bootstrap';
  
@@ -22,8 +22,8 @@ import useComponentWillUnmount from 'Hooks/useComponentWillUnMount';
 import RSSkeletonTable from 'Components/RSSkeleton/RSSkeletonTable';
 import { getInitialAudienceSearchPayload, ListGridPageConfig, PAGE_CONFIG } from '../DynamicList/constant';
 import usePermission from 'Hooks/usePersmission';
-import { useNavigate } from 'react-router-dom';
-import { cloneDeep, debounce, isEqual } from 'lodash';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { cloneDeep, debounce, isEqual } from 'Utils/modules/lodashReplacements';
 import { AUDIENCE_LIST_DEFAULT_SORT_BY_ID, AUDIENCE_LIST_LAST_30_DAYS_OFFSET } from '../../audienceModuleDefaults';
 
 const getTargetListInitialDateFilter = () => ({
@@ -57,6 +57,7 @@ const TargetList = () => {
     const { licenseTypeId, isCampaign, isAgency,isAudience } = getUserDetails();
     const { addAccess } = permissions || {};
     const navigate = useNavigate();
+    const { pathname = '' } = useLocation() ?? {};
 
     const [listTypeView, setListTypeView] = useState(true);
     const [getPaginationGrid , setGetPaginationGrid] = useState(null);
@@ -71,7 +72,20 @@ const TargetList = () => {
     const { departmentId, clientId, userId, departmentName } = useSelector((state) => getSessionId(state));
     const { failureApiErrors, accountAdmin, company_clientId } = useSelector(({ globalstate }) => globalstate);
     let isAgencyAccountAdmin = isAgency && accountAdmin?.clientId === company_clientId?.clientId;
+    const isDepartmentBlocked = departmentName?.toLowerCase() === 'all' && licenseTypeId === '3';
     const dateFormate = getUserDateTimeFormat();
+
+    const navigateToAddAudience = useCallback(() => {
+        if (!addAccess || !pathname) return;
+
+        const stateRedirect = { from: 'master-data', index: 1 };
+        try {
+            const stateredirectEncode = encodeUrl(stateRedirect);
+            navigate(`${pathname}/add-audience?q=${stateredirectEncode}`, { state: stateRedirect });
+        } catch {
+            navigate(`${pathname}/add-audience`, { state: stateRedirect });
+        }
+    }, [addAccess, navigate, pathname]);
 
     const isFirstRender = useRef(true);
     const lastDispatchedTargetListParamsRef = useRef(null);
@@ -301,6 +315,9 @@ const TargetList = () => {
         }),
         [listTypeView, params, isDateFilter, pageConfig, initialGridPagination, audienceView],
     );
+    // if(true) {
+    //     return <></>
+    // }
     return (
         <Fragment>
             <TargetListContext.Provider value={value}>
@@ -331,29 +348,16 @@ const TargetList = () => {
                                     isAlertIcon={false}
                                     message={
                                         <>
-                                            {TARGET_LIST_NOT_AVAILABLE_1}
+                                            {UPLOAD_PARENT_ATTRIBUTES}
                                             <i
-                                                onClick={() => {
-                                                    if (addAccess) navigate(`create-target-list`, {});
-                                                }}
-                                                className={`${
-                                                    departmentName?.toLowerCase() === 'all' && licenseTypeId == '3'
-                                                        ? 'click-off'
-                                                        : ''
-                                                } ${circle_plus_fill_medium} icon-md px5 color-primary-blue`}
+                                                onClick={navigateToAddAudience}
+                                                className={`${isDepartmentBlocked ? 'click-off' : ''} ${circle_plus_fill_medium} icon-md px5 color-primary-blue`}
                                                 id="rs_data_circle_plus_fill"
                                                 style={{
-                                                    cursor:
-                                                        addAccess &&
-                                                        !(
-                                                            departmentName?.toLowerCase() === 'all' &&
-                                                            licenseTypeId == '3'
-                                                        )
-                                                            ? 'pointer'
-                                                            : 'default',
+                                                    cursor: addAccess && !isDepartmentBlocked ? 'pointer' : 'default',
                                                 }}
                                             />
-                                            {TARGET_LIST_NOT_AVAILABLE_2}.
+                                            {UPLOAD_PARENT_ATTRIBUTES_ADD_AUDIENCE}
                                         </>
                                     }
                                 />

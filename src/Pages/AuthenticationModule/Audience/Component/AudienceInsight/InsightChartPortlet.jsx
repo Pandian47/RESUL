@@ -264,7 +264,7 @@ const buildInsightOptions = (chartType, insightData) => {
         case 'bubble': {
             const MIN_BUBBLE_VISIBLE_VALUE = 0.1;
             const bubbleSeries = values
-                .map((v, i) => {
+                .map((v) => {
                     const rawPct = Number(v?.percentage ?? 0);
                     if (!Number.isFinite(rawPct) || rawPct <= 0) return null;
                     const roundedPct = Number(rawPct.toFixed(2));
@@ -272,16 +272,39 @@ const buildInsightOptions = (chartType, insightData) => {
                         name: v?.label ?? '',
                         // Avoid 0/near-zero values that bubbleChartOptions renders with transparent shade.
                         value: Math.max(MIN_BUBBLE_VISIBLE_VALUE, roundedPct),
+                        count: v?.count ?? 0,
                     };
                 })
                 .filter(Boolean);
-            return applyInsightChartLayout(
-                bubbleChartOptions({
-                    height: 325,
-                    isCustomSeries: true,
-                    series: bubbleSeries,
-                }),
-            );
+            const opts = bubbleChartOptions({
+                height: 325,
+                isCustomSeries: true,
+                series: bubbleSeries,
+            });
+            if (opts?.series) {
+                opts.series = opts.series.map((s, idx) => {
+                    const orig = bubbleSeries[idx];
+                    return {
+                        ...s,
+                        count: orig?.count ?? 0,
+                        data: s.data.map((d) => ({
+                            ...d,
+                            count: orig?.count ?? 0,
+                        })),
+                    };
+                });
+            }
+            opts.tooltip = {
+                ...opts.tooltip,
+                formatter: function () {
+                    const fullName = this?.point?.fullName || this?.series?.userOptions?.fullName || this?.series?.name;
+                    const pointColor = this?.color || this?.point?.color || this?.series?.color;
+                    const countValue = this?.point?.count !== undefined ? this?.point?.count : (this?.series?.userOptions?.count !== undefined ? this?.series?.userOptions?.count : 0);
+                    const formattedCount = formatNumber(countValue);
+                    return `<span class="font-xs" style="color: #ffffff;">${fullName}</span><hr style="margin:4px -8px 6px;border:0;border-top:1px solid #5a5a5a;opacity:1;width:auto;" /><span class="font-monospace" style="color:${pointColor}">\u25CF</span>&nbsp;<span class="font-xs" style="color: #ffffff;">Count: </span><span class="font-xs" style="color: #ffffff;">${formattedCount}</span>`;
+                },
+            };
+            return applyInsightChartLayout(opts);
         }
 
         case 'scatter':
@@ -351,6 +374,15 @@ const buildInsightOptions = (chartType, insightData) => {
                 series: [{ y: Number(pct.toFixed(1)) }],
                 max: 100,
             });
+
+            if (opts?.pane && Array.isArray(opts.pane)) {
+                opts.pane = opts.pane.map((p, idx) => ({
+                    ...p,
+                    center: idx === 0 ? ['50%', '85%'] : ['50%', '75%'],
+                    size: '140%',
+                }));
+            }
+
             return applyInsightChartLayout(opts);
         }
 

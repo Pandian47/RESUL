@@ -1,6 +1,6 @@
 import { getDDMMMYYYYWITHOUTCOMMAS, getMMMDDYYYY } from 'Utils/modules/dateTime';
 import { normalizeDisplayText } from 'Utils/modules/stringUtils';
-import _get from 'lodash/get';
+import { get as _get } from 'Utils/modules/lodashReplacements';
 
 export const ALLOW_MIXED_BRAND_PARTNER_IN_GROUP = false;
 
@@ -2403,10 +2403,13 @@ export const shortKeySubSegmentFlowConfig = generateShortKeyConfig([
     },
 ]);
 
+const controlCharPattern = new RegExp('[' + String.fromCharCode(0) + '-' + String.fromCharCode(31) + ']', 'g');
+
 export const safeParse = (jsonString, fallback) => {
+    if (jsonString && typeof jsonString === 'object') return jsonString;
     try {
         if (!jsonString?.trim()) return fallback;
-        return JSON.parse(jsonString);
+        return JSON.parse(jsonString.replace(controlCharPattern, ''));
     } catch {
         return fallback;
     }

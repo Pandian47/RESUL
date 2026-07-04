@@ -502,16 +502,19 @@
     height: 450px;
     border: 1px solid $quaternary-blue;
     border-radius: var(--globalBorderRadius);
-  .rs-facebook-preview-card__main,
-        .rs-linkedin-preview-card__scroll,
-        .rs-instagram-preview-card__scroll,
-        .rs-twitter-preview__scroll,
-        .rs-pinterest-preview__scroll {
-            scrollbar-gutter: stable;
-            @-moz-document url-prefix() {
-                padding-right: 4px;
-            }
+
+    .rs-facebook-preview-card__main,
+    .rs-linkedin-preview-card__scroll,
+    .rs-instagram-preview-card__scroll,
+    .rs-twitter-preview__scroll,
+    .rs-pinterest-preview__scroll {
+        scrollbar-gutter: stable;
+
+        @-moz-document url-prefix() {
+            padding-right: 4px;
         }
+    }
+
     .rs-social-preview-platform-badge {
         height: 32px;
         width: 32px;
@@ -1282,6 +1285,7 @@
             color: $secondary-black;
             overflow: hidden;
             text-align: left;
+
             .rs-twitter-preview__header.post-top-section {
                 flex-shrink: 0;
             }
@@ -1320,7 +1324,7 @@
                     align-items: flex-start;
                     gap: 8px;
 
-                    > ul {
+                    >ul {
                         flex: 1;
                         min-width: 0;
                     }
@@ -1631,7 +1635,7 @@
     flex-direction: column;
     width: 100%;
     min-width: 0;
-     
+
 }
 
 .rs-social-post-preview-column__spec-footer {
@@ -1702,7 +1706,7 @@
 .rs-social-post-type-cards__list {
     display: flex;
     flex-wrap: nowrap;
-    gap: 14px;
+    gap: 29px;
     align-items: stretch;
     flex: 0 0 auto;
 }
@@ -1824,7 +1828,7 @@
     line-height: 1;
     letter-spacing: 0.04em;
     text-transform: uppercase;
-    padding: 6px 5px 3px 5px;
+    padding: 5px;
     border-radius: 4px;
     color: $primary-grey;
     background-color: $white;
@@ -3155,7 +3159,7 @@
             align-items: flex-start;
             gap: 8px;
 
-            > ul {
+            >ul {
                 flex: 1;
                 min-width: 0;
             }

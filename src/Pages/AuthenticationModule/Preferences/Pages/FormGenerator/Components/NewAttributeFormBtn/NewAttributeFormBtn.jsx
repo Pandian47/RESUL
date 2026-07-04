@@ -1,4 +1,4 @@
-import { circle_plus_medium } from 'Constants/GlobalConstant/Glyphicons';
+import { circle_plus_fill_medium } from 'Constants/GlobalConstant/Glyphicons';
 import Icon from 'Components/Icon/Icon';
 
 const NewAttributeFormBtn = ({ title , handleModalAttribute }) => {
@@ -7,9 +7,9 @@ const NewAttributeFormBtn = ({ title , handleModalAttribute }) => {
             <span className="tsh-icon-with-label"  onClick={handleModalAttribute}>
                 <span className="">{title}</span>
                 <Icon
-                    icon={circle_plus_medium}
+                    icon={circle_plus_fill_medium}
                     size="md"
-                    color="primary-color"
+                    color="color-primary-blue"
                     tooltip='Add'
                     // callBack={handleModalAttribute}
                 />

@@ -16,9 +16,3 @@ export const consumeDashboardRouteSkeleton = () => {
 export const markDashboardCommTabSkeletonPhase = () => {
     commTabSkeletonPhase = true;
 };
-
-export const consumeDashboardCommTabSkeletonPhase = () => {
-    if (!commTabSkeletonPhase) return false;
-    commTabSkeletonPhase = false;
-    return true;
-};

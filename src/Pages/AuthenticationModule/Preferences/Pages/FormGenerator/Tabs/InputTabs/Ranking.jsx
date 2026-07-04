@@ -1,7 +1,7 @@
 import { formatName } from 'Utils/modules/formatters';
 import { circle_minus_fill_edge_medium, circle_plus_fill_edge_medium } from 'Constants/GlobalConstant/Glyphicons';
 import { memo, useContext, useEffect, useState } from 'react';
-import _find from 'lodash/find';
+import { find as _find } from 'Utils/modules/lodashReplacements';
 
 import { useFieldArray, useFormContext, useWatch } from 'react-hook-form';
 

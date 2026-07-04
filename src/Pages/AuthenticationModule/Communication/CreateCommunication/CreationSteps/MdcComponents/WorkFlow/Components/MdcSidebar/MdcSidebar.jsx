@@ -1,7 +1,7 @@
 import { memo, useEffect, useState } from 'react';
 import { Card, ListGroup } from 'react-bootstrap';
 
-import _get from 'lodash/get';
+import { get as _get } from 'Utils/modules/lodashReplacements';
 import { sourceAndChannelList } from '../../constant';
 import SourceBox from './SourceBox';
 import ChannelBox from './ChannelBox';

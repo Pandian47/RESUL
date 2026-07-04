@@ -501,7 +501,7 @@ const MobileNotification = ({ type, isDownloadUI }) => {
                                                     : {}
                                             }
                                             footerPercent={formatNumber(topOsValue)}
-                                            footerText={` of user engagement is from ${func.seriesNameField(topOs)} OS`}
+                                            footerText={` of user engagement is from ${seriesNameField(topOs)} OS`}
                                         />
                                     </Col>
                                     <Col md={6}>
@@ -513,7 +513,7 @@ const MobileNotification = ({ type, isDownloadUI }) => {
                                                     : {}
                                             }
                                             footerPercent={formatNumber(topBrowserValue)}
-                                            footerText={` of the notification were received through ${func.seriesNameField(
+                                            footerText={` of the notification were received through ${seriesNameField(
                                                 topBrowser,
                                             )} device`}
                                         />

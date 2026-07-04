@@ -9,12 +9,7 @@ import { circle_question_mark_mini, circle_thumbs_up_fill_large } from 'Constant
 import { useEffect, useRef, useState } from 'react';
 import { Row, Col } from 'react-bootstrap';
 import { useForm, FormProvider } from 'react-hook-form';
-import _find from 'lodash/find';
-import _findIndex from 'lodash/findIndex';
-import _cloneDeep from 'lodash/cloneDeep';
-import _filter from 'lodash/filter';
-import _split from 'lodash/split';
-import _isEmpty from 'lodash/isEmpty';
+import { find as _find, findIndex as _findIndex, cloneDeep as _cloneDeep, filter as _filter, split as _split, isEmpty as _isEmpty } from 'Utils/modules/lodashReplacements';
 import { useDispatch, useSelector } from 'react-redux';
 
 import { RSPrimaryButton, RSSecondaryButton } from 'Components/Buttons';
@@ -347,8 +342,8 @@ const NewAttributeModal = ({
 
         let tmpClassifications = [];
 
-        if (editData?.dataClassificationId) {
-            tmpClassifications = _split(editData.dataClassificationId, ',');
+        if (editData?.dataClassificationId && classifications?.length) {
+                tmpClassifications = _split(editData.dataClassificationId, ',');
 
             tmpClassifications = tmpClassifications.map((cls) =>
                 _find(classifications, ['dataClassificationId', +cls]),

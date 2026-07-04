@@ -3,8 +3,7 @@ import { getWarningPopupMessage } from 'Utils/modules/warningPopup';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import { Container, Col, Row } from 'react-bootstrap';
-import _find from 'lodash/find';
-import _isEmpty from 'lodash/isEmpty';
+import { find as _find, isEmpty as _isEmpty } from 'Utils/modules/lodashReplacements';
 import RSPageHeader from 'Components/RSPageHeader';
 import RSProgressSteps from 'Components/ProgressSteps';
 
@@ -17,7 +16,12 @@ import { getSessionId } from 'Reducers/globalState/selector';
 
 import { updateClientDetails } from 'Reducers/preferences/Companies/reducer';
 import useQueryParams from 'Hooks/useQueryParams';
-import { persistCompanyWizardPage } from 'Components/Skeleton/Components/PreferencesSubPageRouteSkeleton';
+import {
+    CompanyAssignRoleWizardChromeSkeleton,
+    persistCompanyWizardPage,
+} from 'Components/Skeleton/Components/PreferencesSubPageRouteSkeleton';
+import { skeletonShellSharedCriticalCss } from 'Components/Skeleton/Components/common';
+import { preferencesSkeletonCriticalCss } from 'Components/Skeleton/Components/preferencesSkeletonCriticalCss';
 const AddCompanies = ({ props }) => {
     
     
@@ -44,6 +48,9 @@ const AddCompanies = ({ props }) => {
     const upgradedLicenseId = location?.state?.upgradeLicenseId || null
     const [type, setType] = useState('');
     const [currentUserPage, setCurrentUserPage] = useState('ASSIGNROLE');
+    const [isAssignRolePageLoading, setIsAssignRolePageLoading] = useState(
+        () => location?.state?.page === 'ASSIGN_ROLE',
+    );
     const { licenseTypeId } = getUserDetails();
 
     const { userId, departmentId, clientId, departmentName } = useSelector((state) => getSessionId(state));
@@ -117,51 +124,71 @@ const AddCompanies = ({ props }) => {
             dispatch(updateClientDetails({}));
         };
     }, []);
+    useEffect(() => {
+        if (editCurrentPage !== 'ASSIGN_ROLE') {
+            setIsAssignRolePageLoading(false);
+        }
+    }, [editCurrentPage]);
+
     const isLicenseType = location?.state?.page === 'ACCOUNT_TYPE' && editCurrentPage === 'ACCOUNT_TYPE';
+    const showAssignRoleChromeSkeleton = editCurrentPage === 'ASSIGN_ROLE' && isAssignRolePageLoading;
+
     return (
         // Contend holder starts
         <div className="page-content-holder">
+            {showAssignRoleChromeSkeleton ? (
+                <>
+                    <style>{skeletonShellSharedCriticalCss}</style>
+                    <style>{preferencesSkeletonCriticalCss}</style>
+                </>
+            ) : null}
             {/* Main page heading block starts */}
-            <RSPageHeader
-                title={currentTitle[editCurrentPage]?.main}
-                isBack={!needBus}
-                isCompany
-                isAgencyDisabled={currentTitle[editCurrentPage]?.main === 'Add a new user'}
-                hideCompany={
-                    //currentTitle[editCurrentPage]?.main === 'Add a new user' ||
-                    currentTitle[editCurrentPage]?.main === 'Select license type' ||
-                    currentTitle[editCurrentPage]?.main === 'Add a new company account' ||
-                    currentTitle[editCurrentPage]?.main === 'Edit company account' ||
-                    currentTitle[editCurrentPage]?.main === 'Localization settings' ||
-                    currentTitle[editCurrentPage]?.main === 'Assign role to users' ||
-                    Number(location?.state?.licenseTypeId) !== 3
-                        ? true
-                        : false
-                }
-                hideBU={
-                    currentTitle[editCurrentPage]?.main === 'Add a new user' ||
-                    currentTitle[editCurrentPage]?.main === 'Select license type' ||
-                    currentTitle[editCurrentPage]?.main === 'Add a new company account' ||
-                    currentTitle[editCurrentPage]?.main === 'Edit company account' ||
-                    currentTitle[editCurrentPage]?.main === 'Localization settings' ||
-                    currentTitle[editCurrentPage]?.main === 'Assign role to users' ||
-                    currentUserPage === 'USERGRID' ||
-                    Number(location?.state?.licenseTypeId) !== 3
-                        ? true
-                        : false
-                }
-                backPath={'/preferences/company-list'}
-                // rightCommonMenus={
-                //     currentTitle[editCurrentPage]?.main === 'Assign role to users' ||
-                //     currentTitle[editCurrentPage]?.main === 'Add a new user'
-                //         ? true
-                //         : false
-                // }
-                // isBuDisabled={currentTitle[editCurrentPage]?.main === 'Add a new user' ? true : false}
-                //    rightCommonMenus={currentTitle[editCurrentPage]?.main === 'Add a new user' ? true : false}
-                //  isAgencyDisabled
-                // isBuDisabled={currentTitle[editCurrentPage]?.main === 'Add a new user' ? false : true}
-            />
+            {showAssignRoleChromeSkeleton ? (
+                <div className="preferences-skeleton-scope preferences-subpage-skeleton-scope">
+                    <CompanyAssignRoleWizardChromeSkeleton showSteps={false} />
+                </div>
+            ) : (
+                <RSPageHeader
+                    title={currentTitle[editCurrentPage]?.main}
+                    isBack={!needBus}
+                    isCompany
+                    isAgencyDisabled={currentTitle[editCurrentPage]?.main === 'Add a new user'}
+                    hideCompany={
+                        //currentTitle[editCurrentPage]?.main === 'Add a new user' ||
+                        currentTitle[editCurrentPage]?.main === 'Select license type' ||
+                        currentTitle[editCurrentPage]?.main === 'Add a new company account' ||
+                        currentTitle[editCurrentPage]?.main === 'Edit company account' ||
+                        currentTitle[editCurrentPage]?.main === 'Localization settings' ||
+                        currentTitle[editCurrentPage]?.main === 'Assign role to users' ||
+                        Number(location?.state?.licenseTypeId) !== 3
+                            ? true
+                            : false
+                    }
+                    hideBU={
+                        currentTitle[editCurrentPage]?.main === 'Add a new user' ||
+                        currentTitle[editCurrentPage]?.main === 'Select license type' ||
+                        currentTitle[editCurrentPage]?.main === 'Add a new company account' ||
+                        currentTitle[editCurrentPage]?.main === 'Edit company account' ||
+                        currentTitle[editCurrentPage]?.main === 'Localization settings' ||
+                        currentTitle[editCurrentPage]?.main === 'Assign role to users' ||
+                        currentUserPage === 'USERGRID' ||
+                        Number(location?.state?.licenseTypeId) !== 3
+                            ? true
+                            : false
+                    }
+                    backPath={'/preferences/company-list'}
+                    // rightCommonMenus={
+                    //     currentTitle[editCurrentPage]?.main === 'Assign role to users' ||
+                    //     currentTitle[editCurrentPage]?.main === 'Add a new user'
+                    //         ? true
+                    //         : false
+                    // }
+                    // isBuDisabled={currentTitle[editCurrentPage]?.main === 'Add a new user' ? true : false}
+                    //    rightCommonMenus={currentTitle[editCurrentPage]?.main === 'Add a new user' ? true : false}
+                    //  isAgencyDisabled
+                    // isBuDisabled={currentTitle[editCurrentPage]?.main === 'Add a new user' ? false : true}
+                />
+            )}
             {/* Main page heading block ends */}
             {/* Main page content block starts */}
             <Container fluid>
@@ -169,7 +196,14 @@ const AddCompanies = ({ props }) => {
                     <Container className="px0">
                         <Row className="mt21">
                             <Col sm={12}>
-                                {!isLicenseType && <RSProgressSteps customSteps={progressSteps} />}
+                                {!isLicenseType &&
+                                    (showAssignRoleChromeSkeleton ? (
+                                        <div className="preferences-skeleton-scope preferences-subpage-skeleton-scope">
+                                            <CompanyAssignRoleWizardChromeSkeleton showHeader={false} />
+                                        </div>
+                                    ) : (
+                                        <RSProgressSteps customSteps={progressSteps} />
+                                    ))}
                                 <RenderComponent
                                     isEdit={true}
                                     currentPage={editCurrentPage}
@@ -177,6 +211,7 @@ const AddCompanies = ({ props }) => {
                                     clientId={location?.state?.clientId}
                                     setCurrentTitle={setCurrentTitle}
                                     setCurrentUserPage={setCurrentUserPage}
+                                    onAssignRoleInlineLoadingChange={setIsAssignRolePageLoading}
                                     nextScreen={(screenName, type) => {
                                         screenName = ['KEY_INFO', 'LICENSE_TYPE'].includes(screenName)
                                             ? 'NEW_COMPANY'

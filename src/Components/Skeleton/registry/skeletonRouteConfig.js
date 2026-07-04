@@ -33,6 +33,7 @@ export const SKELETON_KEYS = {
     accountSetup: 'accountSetup',
     setupComplete: 'setupComplete',
     genie: 'genie',
+    launchPad: 'launchPad',
     default: 'default',
 };
 
@@ -205,6 +206,11 @@ export const SKELETON_ROUTE_RULES = [
             const normalized = (pathname || '').toLowerCase();
             return normalized.startsWith('/analytics') || normalized.startsWith('/analyticstwins');
         },
+    },
+    {
+        key: SKELETON_KEYS.launchPad,
+        label: 'Launch pad',
+        match: (pathname) => normalizePath(pathname) === '/launch-pad',
     },
     {
         key: SKELETON_KEYS.preferences,

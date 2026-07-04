@@ -4,6 +4,7 @@ import { useLocation } from 'react-router-dom';
 
 import PreferencesRouteSkeleton from './PreferencesRouteSkeleton';
 import PreferencesSubPageRouteSkeleton from './PreferencesSubPageRouteSkeleton';
+import LaunchPadRouteSkeleton from './LaunchPadRouteSkeleton';
 import {
     AddAudiencePageSkeleton,
     AudienceSuspenseFallback,
@@ -107,6 +108,10 @@ const PageContentSkeleton = ({ variant: variantProp, activeTabIndex: activeTabIn
         return <AnalyticsSuspenseFallback />;
     }
 
+    if (variant === 'launchPad') {
+        return <LaunchPadRouteSkeleton />;
+    }
+
     if (variant === 'preferences') {
         return <PreferencesRouteSkeleton />;
     }
@@ -121,16 +126,6 @@ const PageContentSkeleton = ({ variant: variantProp, activeTabIndex: activeTabIn
 PageContentSkeleton.propTypes = {
     variant: PropTypes.string,
     activeTabIndex: PropTypes.number,
-};
-
-export const SuspensePageContentFallback = () => {
-    const variant =
-        typeof window !== 'undefined' ? getMainSkeletonVariant(window.location.pathname) : 'default';
-    const activeTabIndex =
-        typeof window !== 'undefined'
-            ? getRouteTabIndex(window.location.pathname, window.location.search)
-            : 0;
-    return <PageContentSkeleton variant={variant} activeTabIndex={activeTabIndex} />;
 };
 
 export default memo(PageContentSkeleton);

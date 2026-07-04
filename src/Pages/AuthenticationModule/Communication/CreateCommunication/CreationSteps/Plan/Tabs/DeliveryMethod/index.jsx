@@ -1,17 +1,12 @@
 import { statusIdCheck } from 'Utils/modules/campaignUtils';
-import { addDaysToDate, convertToUserTimezone, convertUTCtoUserTimezone, getDateBasedonMonth, isDateBeforeToday } from 'Utils/modules/dateTime';
+import { addDaysToDate, convertToUserTimezone, convertUTCtoUserTimezone, getDateBasedonMonth, getYYMMDD, isDateBeforeToday } from 'Utils/modules/dateTime';
 import { getmasterData } from 'Utils/modules/masterData';
 import { PERCENTAGE_RULES } from 'Constants/GlobalConstant/Rules';
 import { encodeUrl, getUserDetails } from 'Utils/modules/crypto';
 import { charNumUnderScore, onlyNumbersDecimalWithoutSpecialCharacters } from 'Utils/modules/inputValidators';
 import { getWarningPopupMessage } from 'Utils/modules/warningPopup';
-import { Fragment, useCallback, useEffect, useReducer, useRef, useState } from 'react';
-import _map from 'lodash/map';
-import _get from 'lodash/get';
-import _find from 'lodash/find';
-import _isNil from 'lodash/isNil';
-import _filter from 'lodash/filter';
-import _findIndex from 'lodash/findIndex';
+import { Fragment, useCallback, useEffect, useMemo, useReducer, useRef, useState } from 'react';
+import { map as _map, get as _get, find as _find, isNil as _isNil, filter as _filter, findIndex as _findIndex } from 'Utils/modules/lodashReplacements';
 import { Row, Col } from 'react-bootstrap';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
@@ -22,6 +17,8 @@ import { setTabforEdit } from 'Reducers/communication/createCommunication/Create
 import {
     ANALYTICS_TYPES,
     buildRequestPayload,
+    buildPlanSubmitPayload,
+    isPlanPayloadEqual,
     CHANNEL_NAMES_UNSUPPORTED_FOR_OFFLINE_CONVERSION,
     CHANNEL_TYPES,
     checkAllChannelsSaved,
@@ -29,6 +26,7 @@ import {
     FREQUENCY_TAB_CONFIG,
     getEligibleChannelIds,
     getGoalType,
+    formatGoalPercentageForForm,
     getMetrixValue,
     getSelectedIncompatibleOfflineConversionChannelLabels,
     hasOfflineConversionChannelConflict,
@@ -107,7 +105,9 @@ import DeliveryMethodSkeleton from 'Components/Skeleton/Components/DeliveryMetho
 
 import { getSessionId, getUtcTimeData } from 'Reducers/globalState/selector';
 import { getUtcTimeNow } from 'Reducers/globalState/request';
+import { updateCommunicationOptions, setPlanDropdownsFetchedFor } from 'Reducers/communication/createCommunication/plan/reducer';
 
+import NewAttributeBtn from 'Pages/AuthenticationModule/Audience/Pages/AddImportAudience/Components/CustomHeaderColumn/NewAttributeBtn';
 import { RSPrimaryButton, RSSecondaryButton } from 'Components/Buttons';
 import { communicationNamevalidtor, analyticsTypeValidator } from 'Utils/HookFormValidate';
 import { FREQUENCY, PERIODS, WEEK_DAYS } from 'Pages/AuthenticationModule/Components/Schedules/Constants';
@@ -119,25 +119,54 @@ import { Container } from 'react-bootstrap';
 
 let tempProdCategoryData = '',
     tempProdSubCategoryData = '';
-import NewAttributeBtn from 'Pages/AuthenticationModule/Audience/Pages/AddImportAudience/Components/CustomHeaderColumn/NewAttributeBtn';
-import { updateCommunicationOptions, setPlanDropdownsFetchedFor } from 'Reducers/communication/createCommunication/plan/reducer';
-const DeliveryMethod = ({ type }) => {
-    // console.log('type: ', type);
-    const editModeStartDateRef = useRef(new Date());
-    const editModeEndDateRef = useRef(null);
-    const existingCommunicationName = useRef();
+
+const renderOfflineConversionChannelWarningText = (labels) => (
+    <Fragment>
+        {OFFLINE_CONVERSION_CHANNEL_WARNING}
+        {Array.isArray(labels) && labels.length > 0 && (
+            <>
+                <br />
+                <br />
+                <span className="text-bold">Not applicable with Offline Conversion: </span>
+                <span className="text-bold color-primary-red">{labels.join(', ')}</span>
+            </>
+        )}
+    </Fragment>
+);
+
+const DeliveryMethod = ({ type } = {}) => {
+    // Selectors
     const navigate = useNavigate();
     const dispatch = useDispatch();
-    const [frequencyId, setFrequencyId] = useState();
-    // const { state: locationState } = useLocation();
-    const locationState = useQueryParams('/communication');
-    const [isCreateMode, setIsCreateMode] = useState(false);
-    const [frequencyTabConfig, setFrequencyTabConfig] = useState(FREQUENCY_TAB_CONFIG);
-    const editState = useSelector((state) => state.communicationPlanReducer?.editState);
+    const locationState = useQueryParams('/communication') || {};
     const mode = _get(locationState, 'mode', '');
     const planLoaderMode = mode === 'edit' ? 'edit' : 'create';
-    const PLAN_FIELD_LOADER_CONFIG = { create: 'field', edit: 'field' };
     const PLAN_FIELD_ALWAYS_LOADER_CONFIG = { create: 'field', edit: 'field' };
+    const { failureApiErrors = [] } = useSelector(({ globalstate }) => globalstate ?? {}) ?? {};
+    const isEditable =
+        locationState?.communicationExcuteStatus !== undefined
+            ? locationState?.communicationExcuteStatus
+            : _get(locationState, 'isEditable', true);
+    const statusId = _get(locationState, 'statusId', 0);
+    const { dateFormatId, timeZoneId, isDayLight = false } = getUserDetails() || {};
+    const { dateFormatList = [], timeZoneList = [] } = getmasterData() || {};
+    const userTimeZone = _get(_find(timeZoneList, ['timeZoneID', timeZoneId]), 'timeZoneName');
+    const dateFormat = _get(_find(dateFormatList, ['dateFormatID', dateFormatId]), 'dateformat');
+    const formDateFormat = _map(dateFormat?.split('-'), (format) =>
+        format !== 'MM' ? format.toLowerCase() : format,
+    ).join('-');
+    const { departmentId, clientId, userId } = useSelector((reduxState) => getSessionId(reduxState) ?? {}) ?? {};
+    const utcTimeData = useSelector((reduxState) => getUtcTimeData(reduxState) ?? {}) ?? {};
+    const currentUTCdateTime = utcTimeData?.utcTime ? new Date(utcTimeData.utcTime.replace('Z', '')) : new Date();
+    const {
+        communicationOptions,
+        dynamicListData,
+        campaignBlastDetails,
+        communicationReferenceConfigs,
+        planDropdownsFetchedFor,
+    } = useSelector(({ communicationPlanReducer }) => communicationPlanReducer ?? {}) ?? {};
+    const { product = [], subProducts = [], attributes = [] } = communicationOptions || {};
+
     const communicationNameLoader = useApiLoader({
         mode: planLoaderMode,
         loaderConfig: PLAN_FIELD_ALWAYS_LOADER_CONFIG,
@@ -189,37 +218,26 @@ const DeliveryMethod = ({ type }) => {
         autoFetch: false,
     });
     const savePlanLoader = useApiLoader({ autoFetch: false });
+
+    // Refs
+    const editModeStartDateRef = useRef(new Date());
+    const editModeEndDateRef = useRef(null);
+    const existingCommunicationName = useRef();
+    const communicationReferenceFetchRef = useRef(null);
+    const communicationReferenceScopeKeyRef = useRef('');
+    const editBoundKeyRef = useRef(null);
+    const boundPlanPayloadRef = useRef(null);
+    const boundSubProductRef = useRef(null);
+
+    // State
+    const [frequencyId, setFrequencyId] = useState();
+    const [isCreateMode, setIsCreateMode] = useState(false);
+    const [frequencyTabConfig, setFrequencyTabConfig] = useState(FREQUENCY_TAB_CONFIG);
     const [submittingButtonType, setSubmittingButtonType] = useState(null);
-    useEffect(() => {
-        if (mode === '') {
-            setIsCreateMode(true);
-        } else {
-            setIsCreateMode(false);
-        }
-    }, [mode]);
-    const { failureApiErrors } = useSelector(({ globalstate }) => globalstate);
-    const isEditable =
-        locationState?.communicationExcuteStatus !== undefined
-            ? locationState?.communicationExcuteStatus
-            : _get(locationState, 'isEditable', true);
-    const statusId = _get(locationState, 'statusId', 0);
-    // console.log('statusId: ', statusId);
-    const { dateFormatId, timeZoneId, isDayLight = false } = getUserDetails();
-    const { dateFormatList, timeZoneList } = getmasterData();
-    const userTimeZone = _get(_find(timeZoneList, ['timeZoneID', timeZoneId]), 'timeZoneName');
-    const dateFormat = _get(_find(dateFormatList, ['dateFormatID', dateFormatId]), 'dateformat');
-    const formDateFormat = _map(dateFormat?.split('-'), (format) =>
-        format !== 'MM' ? format.toLowerCase() : format,
-    ).join('-');
-    let goalValue = ['Reach', 'Engagement', 'Conversion'];
+    const goalValue = ['Reach', 'Engagement', 'Conversion'];
 
     const methods = useForm(FORM_INITIAL_STATE);
 
-    const { departmentId, clientId, userId } = useSelector((state) => getSessionId(state));
-    const utcTimeData = useSelector((state) => getUtcTimeData(state));
-
-    // Use UTC time from API if available, otherwise fallback to system time
-    const currentUTCdateTime = utcTimeData.utcTime ? new Date(utcTimeData.utcTime.replace('Z', '')) : new Date();
     const [nameState, setNameState] = useState({
         isValid: false,
     });
@@ -235,23 +253,16 @@ const DeliveryMethod = ({ type }) => {
         show: false,
         incompatibleChannelLabels: [],
     });
-    const renderOfflineConversionChannelWarningText = (labels) => (
-        <Fragment>
-            {OFFLINE_CONVERSION_CHANNEL_WARNING}
-            {Array.isArray(labels) && labels.length > 0 && (
-                <>
-                    <br />
-                    <br />
-                    <span className="text-bold">Not applicable with Offline Conversion: </span>
-                    <span className="text-bold color-primary-red">{labels.join(', ')}</span>
-                </>
-            )}
-        </Fragment>
-    );
     const [savedDynamicListChannel, setSavedDynamicListChannel] = useState([]);
     const [inprogressReminder, setInprogressReminder] = useState(false);
     const [isInitialLoading, setIsInitialLoading] = useState(true);
     const [isSubProductsLoading, setIsSubProductsLoading] = useState(false);
+    const [isGetCampaignFail, setIsCampaingFail] = useState(false);
+    const [conditions, setConditions] = useState(false);
+    const [isFieldLoading, setIsFieldLoading] = useState(false);
+    const [isProductType, setIsProducttype] = useState(false);
+    const [isSubProductType, setIsSubProducttype] = useState(false);
+    const [clickOff, setClickOff] = useState(false);
 
     const [updateTimeZone, setUpdateTimeZone] = useState(userTimeZone);
     const {
@@ -289,17 +300,13 @@ const DeliveryMethod = ({ type }) => {
     const communicationNameError = Object.hasOwn(errors, 'communicationName');
     const [state, dispatchState] = useReducer(stateReducer, REDUCER_INITIAL_STATE);
     const { secondaryGoal: isSecondaryGoal, tags: selectedTags, isCommunicationReference } = state;
-    // console.log('isCommunicationReference: ', isCommunicationReference);
-    const {
-        communicationOptions,
-        dynamicListData,
-        campaignBlastDetails,
-        communicationReferenceConfigs,
-        planDropdownsFetchedFor,
-    } = useSelector(({ communicationPlanReducer }) => communicationPlanReducer);
+    const productSubcategoryTypeTextError = 'Please save the sub product type before proceeding';
 
-    const communicationReferenceFetchRef = useRef(null);
-    const communicationReferenceScopeKeyRef = useRef('');
+    const hasTagsSetup = useMemo(() => Boolean(state?.tags?.length), [state?.tags]);
+    const isTagsIconDisabled = isEditable ? false : !hasTagsSetup;
+    const isTagsModalViewOnly = !isEditable && hasTagsSetup;
+
+    // Memo / Callback
     const fetchCommunicationReferenceOnce = useCallback(
         async (payload) => {
             const key = `${payload.clientId}|${payload.userId}|${payload.departmentId}`;
@@ -321,10 +328,6 @@ const DeliveryMethod = ({ type }) => {
         },
         [dispatch, communicationReferenceConfigs],
     );
-    const { product = [], subProducts = [], attributes = [] } = communicationOptions;
-    console.log('subProducts: ', subProducts);
-    console.log('product: ', product);
-    let productSubcategoryTypeTextError = 'Please save the sub product type before proceeding'
 
     const [
         startDate,
@@ -356,249 +359,39 @@ const DeliveryMethod = ({ type }) => {
         'secondaryGoalPercentagebenchMarkMinValue',
     ]);
 
-    const [isFieldLoading, setIsFieldLoading] = useState(false);
-    const [isProductType, setIsProducttype] = useState(false);
-    const [isSubProductType, setIsSubProducttype] = useState(false);
-    const [clickOff, setClickOff] = useState(false);
-    // const handleCategoryName = async (name) => {
-    //     debugger;
-    //     if () {
-    //         setIsFieldLoading(true);
-    //         try {
-
-    //         } finally {
-    //             setIsFieldLoading(false);
-    //         }
-    //     } else {
-    //         setTimeout(() => {
-    //             setError(`productcategoryTypeText`, {
-    //                 type: 'custom',
-    //                 message: SPECIAL_CHATACTERS_NOT_ALlOWED,
-    //             });
-    //             return false;
-    //         }, 10);
-    //     }
-    // };
-    const saveCategoryData = async () => {
-        let catTypeText = getValues('productcategoryTypeText');
-        const payload = {
-            categoryId: 0,
-            categoryname: catTypeText,
-            departmentId,
-            clientId,
-            userId,
-        };
-        await saveProductCategoryLoader.refetch({
-            fetcher: async () => {
-                const saveResponse = await dispatch(
-                    saveCommunicationProducts({ payload, isLoading: false }),
-                );
-                if (saveResponse?.status) {
-                    setClickOff(false);
-                    const productPayload = {
-                        departmentId,
-                        clientId,
-                        userId,
-                    };
-                    const responseData = await dispatch(
-                        getCommunicationProducts({ payload: productPayload, isLoading: false }),
-                    );
-                    if (responseData?.status) {
-                        dispatch(updateCommunicationOptions({ ...communicationOptions, product: responseData?.data }));
-                        dispatch(
-                            setPlanDropdownsFetchedFor({ clientId, userId, departmentId }),
-                        );
-                    } else {
-                        dispatch(updateCommunicationOptions(communicationOptions));
-                    }
-                }
-                return saveResponse;
-            },
-        });
-        setIsProducttype(false);
-    };
-
-    const handleSubCategoryName = async (name) => {
-        tempProdSubCategoryData = name;
-
-        if (communicationNamevalidtor(name) === undefined) {
-            setIsFieldLoading(true);
-            try {
-                const res = subProducts?.some((item) => item?.subCategoryName === name);
-                if (!res) {
-                    setClickOff(true);
-                } else {
-                    setClickOff(false);
-                    setError(`productSubcategoryTypeText`, {
-                        type: 'custom',
-                        message: 'Name already exists',
-                    });
-                }
-            } finally {
-                setIsFieldLoading(false);
-            }
-        } else {
-            setTimeout(() => {
-                setError(`productSubcategoryTypeText`, {
-                    type: 'custom',
-                    message: SPECIAL_CHATACTERS_NOT_ALlOWED,
-                });
-                return false;
-            }, 10);
-        }
-    };
-    const saveSubCategoryData = async () => {
-        let catTypeText = getValues('productSubcategoryTypeText');
-        const payload = {
-            categoryId: Object.values(getValues('productType') ?? {})[0],
-            subCategoryId: 0,
-            subcategoryname: catTypeText,
-            departmentId,
-            clientId,
-            userId,
-        };
-        await saveSubProductLoader.refetch({
-            fetcher: async () => {
-                const saveResponse = await dispatch(saveCommunicationSubProducts({ payload, isLoading: false }));
-                if (saveResponse?.status) {
-                    setClickOff(false);
-                    const refreshPayload = {
-                        userId,
-                        clientId,
-                        departmentId,
-                        categoryId: getValues('productType')?.categoryId,
-                    };
-                    await dispatch(
-                        getCommunicationSubProducts({
-                            payload: refreshPayload,
-                            loading: false,
-                        }),
-                    );
-                }
-                return saveResponse;
-            },
-        });
-        setIsSubProducttype(false);
-    };
-
-    const handleProductTypeChange = async (event) => {
-        const selectedProduct = event?.value;
-        if (!selectedProduct?.categoryId) {
-            setIsSubProductsLoading(false);
-            unregister('subProductType');
-            dispatchState({
-                type: 'UPDATE',
-                payload: {},
-                field: 'subProductError',
-            });
-            return;
-        }
-
-        const payload = {
-            userId,
-            clientId,
-            departmentId,
-            categoryId: selectedProduct.categoryId,
-        };
-
-        setIsSubProductsLoading(true);
-        try {
-            const response = await dispatch(
-                getCommunicationSubProducts({
-                    payload,
-                    loading: false,
-                }),
-            );
-            const subProductList = response?.status ? response?.data : [];
-            const errormessage = subProductList?.length ? { required: SELECT_SUB_PRODUCT_TYPE } : {};
-            dispatchState({
-                type: 'UPDATE',
-                payload: errormessage,
-                field: 'subProductError',
-            });
-            unregister('subProductType');
-        } finally {
-            setIsSubProductsLoading(false);
-        }
-    };
-
-    /**
-     * Get timezone-adjusted minimum date for date pickers
-     * @param {string} dateType - 'start' or 'end'
-     * @returns {Date} - Current date or edit mode start date in user's timezone
-     */
-    const getTimezoneAdjustedMinDate = (dateType = 'start') => {
-        let baseMinDate;
-
-        if (dateType === 'end') {
-            // End date min logic based on statusId and startDate
-            if (statusId === 5) {
-                baseMinDate = addDaysToDate(currentUTCdateTime, 3);
-            } else {
-                baseMinDate = new Date(addDaysToDate(startDate, 3));
-            }
-        } else {
-            // Start date min logic
-            baseMinDate = currentUTCdateTime;
-        }
-
-        // Convert UTC time to user's timezone
-        if (utcTimeData.utcTime) {
-            return convertUTCtoUserTimezone(baseMinDate);
-        }
-
-        return convertToUserTimezone(baseMinDate, { formatAsString: false });
-    };
-
-    /**
-     * Get timezone-adjusted date for focusedDate prop (date only, no time)
-     * @param {string} dateType - 'start' or 'end'
-     * @returns {Date} - Date only (time set to 00:00:00) in user's timezone
-     */
-    const getTimezoneAdjustedFocusedDate = (dateType = 'start') => {
-        const adjustedDate = getTimezoneAdjustedMinDate(dateType);
-        // Return date only (set time to 00:00:00)
-        const focusedDate = new Date(adjustedDate.getFullYear(), adjustedDate.getMonth(), adjustedDate.getDate());
-        return focusedDate;
-    };
-
-    /**
-     * Get timezone-adjusted maximum date for date pickers
-     * @param {string} dateType - 'start' or 'end'
-     * @returns {Date} - Date 6 months from now in user's timezone
-     */
-    const getTimezoneAdjustedMaxDate = (dateType = 'start') => {
-        let baseMaxDate;
-
-        if (dateType === 'end') {
-            // End date max logic based on type and startDate
-            if (type === 'single') {
-                baseMaxDate = getDateBasedonMonth(6, new Date(startDate));
-            } else {
-                baseMaxDate = getDateBasedonMonth(12, new Date(startDate));
-            }
-        } else {
-            // Start date max logic - use UTC time from API if available
-            if (utcTimeData.utcTime) {
-                baseMaxDate = getDateBasedonMonth(6, currentUTCdateTime);
-            } else {
-                baseMaxDate = getDateBasedonMonth(6);
-            }
-        }
-
-        // Convert UTC time to user's timezone
-        if (utcTimeData.utcTime) {
-            return convertUTCtoUserTimezone(baseMaxDate);
-        }
-
-        return convertToUserTimezone(baseMaxDate, { formatAsString: false });
-    };
-
     const isPrimaryGoalValid =
-        !!primaryGoal && !!primarygoalPercentage && !Object.hasOwn(errors, 'primaryGoalPercentage');
-    useComponentWillUnmount(() => {
-        reset(FORM_INITIAL_STATE.defaultValues);
+        !!primaryGoal &&
+        primarygoalPercentage !== '' &&
+        primarygoalPercentage !== null &&
+        primarygoalPercentage !== undefined &&
+        !Object.hasOwn(errors, 'primaryGoalPercentage');
+    const { isMounted } = useComponentWillUnmount(() => {
+        reset(FORM_INITIAL_STATE?.defaultValues);
+        editBoundKeyRef.current = null;
+        boundPlanPayloadRef.current = null;
+        boundSubProductRef.current = null;
     });
+
+    const campaignId = _get(locationState, 'campaignId', 0);
+    const editNavKey =
+        mode === 'edit' && campaignId ? `${campaignId}-${mode}-${type}-${departmentId}` : '';
+
+    // Effects
+    useEffect(() => {
+        if (mode !== 'edit') {
+            editBoundKeyRef.current = null;
+            boundPlanPayloadRef.current = null;
+            boundSubProductRef.current = null;
+        }
+    }, [mode]);
+
+    useEffect(() => {
+        if (mode === '') {
+            setIsCreateMode(true);
+        } else {
+            setIsCreateMode(false);
+        }
+    }, [mode]);
 
     useEffect(() => {
         fetchInitialData(mode === 'edit');
@@ -607,112 +400,6 @@ const DeliveryMethod = ({ type }) => {
         dispatch(getUtcTimeNow());
     }, [departmentId, mode, type]);
 
-    const fetchInitialData = async (isEditLoad = false) => {
-        try {
-            await planOptionsLoader.refetch({
-                fetcher: async () => {
-                    const payload = {
-                        departmentId,
-                        clientId,
-                        userId,
-                    };
-                    const scopeMatches =
-                        planDropdownsFetchedFor &&
-                        planDropdownsFetchedFor.clientId === clientId &&
-                        planDropdownsFetchedFor.userId === userId &&
-                        planDropdownsFetchedFor.departmentId === departmentId;
-                    const productTypes = _get(communicationOptions, 'product', []);
-                    const communicationAttributes = _get(communicationOptions, 'attributes', []);
-
-                    const hasDropdownRows = Array.isArray(productTypes) && productTypes.length > 0;
-
-                    const hasAttributeRows =
-                        (Array.isArray(communicationOptions?.attributes) && communicationOptions.attributes.length > 0);
-
-                    if (scopeMatches && hasDropdownRows && hasAttributeRows) {
-                        // Data already in communicationOptions; skip redundant API calls
-                    } else {
-                        const firstRequest = [
-                            dispatch(getCommunicationProducts({ payload, isLoading: false })),
-                            dispatch(getCommunicationAttributes({ payload, loading: false })),
-                        ];
-                        await dispatch(fetchAllRequest(firstRequest, payload));
-                    }
-                    if (type === 'event') {
-                        const dynamicListPayload = {
-                            ...payload,
-                            campaignId: 0,
-                            filterText: '',
-                        };
-                        await dispatch(getDynamicList({ payload: dynamicListPayload, loading: false }));
-                    }
-                },
-            });
-        } finally {
-            if (!isEditLoad) {
-                setIsInitialLoading(false);
-            }
-        }
-        if (!isEditLoad) {
-            void fetchReferencSettings();
-        }
-    };
-    const fetchReferencSettings = async ({ communicationReference, version } = {}) => {
-        const payload = {
-            userId,
-            clientId,
-            departmentId,
-        };
-
-        await communicationReferenceLoader.refetch({
-            fetcher: async () => {
-                const response = await fetchCommunicationReferenceOnce(payload);
-                const status = response?.status;
-                const data = response?.data;
-
-                if (!status) {
-                    return response;
-                }
-
-                dispatchState({
-                    type: 'UPDATE_REFERENCE_CONFIG',
-                    payload: data,
-                });
-
-                if (communicationReference?.length) {
-                    dispatchState({
-                        type: 'UPDATE_REFERENCE_EDIT_DATA',
-                        payload: handleReferenceData(communicationReference, data, version),
-                    });
-                    return response;
-                }
-
-                let tempGrouping = {};
-                let tempPriority = {};
-                const tempData = data?.filter((item) => {
-                    if (item?.columnValue === 'Communication Grouping ID') {
-                        tempGrouping = { ...item };
-                    }
-                    if (item?.columnValue === 'Priority') {
-                        tempPriority = { ...item };
-                    }
-                    return item?.columnValue !== 'Communication Grouping ID' && item?.columnValue !== 'Priority';
-                });
-
-                dispatchState({
-                    type: 'UPDATE',
-                    payload: {
-                        priority: tempPriority,
-                        grouping: tempGrouping,
-                        reference: [...tempData],
-                    },
-                    field: 'communicationReferenceData',
-                });
-
-                return response;
-            },
-        });
-    };
     useEffect(() => {
         if (mode === 'edit') {
             return;
@@ -766,8 +453,7 @@ const DeliveryMethod = ({ type }) => {
             return;
         }
     }, [startDate, locationState]);
-    const [isGetCampaignFail, setIsCampaingFail] = useState(false);
-    const [conditions, setConditions] = useState(false);
+
     useEffect(() => {
         setConditions(
             product?.length > 0 &&
@@ -776,8 +462,17 @@ const DeliveryMethod = ({ type }) => {
         );
     }, [product, attributes, dynamicListData, type]);
     useEffect(() => {
-        if (mode === 'edit' && !!locationState) {
-            async function fetchCommunication() {
+        if (mode !== 'edit' || !campaignId || !conditions) {
+            return;
+        }
+
+        if (editBoundKeyRef.current === editNavKey) {
+            return;
+        }
+
+        let cancelled = false;
+
+        async function fetchCommunication() {
                 let attributesList = [],
                     productList = [],
                     referenceList = [],
@@ -791,17 +486,18 @@ const DeliveryMethod = ({ type }) => {
                         departmentId,
                     };
                     const payload = {
-                        campaignId: _get(locationState, 'campaignId', 0),
+                        campaignId,
                         ...userPayload,
                     };
                     const campaign = await dispatch(getCampaignById({ payload, loading: false }));
+                    if (cancelled || !isMounted.current) return;
                     const updateCampaign = campaign;
 
                     productList = product;
                     attributesList = attributes;
                     dynamicListDatas = dynamicListData;
                     if (campaign?.status) {
-                        // debugger;
+                        const planReducerState = state;
                         const {
                             campaignName,
                             communicationType,
@@ -862,7 +558,7 @@ const DeliveryMethod = ({ type }) => {
                         }
                         void fetchReferencSettings({ communicationReference, version });
 
-                        const state = {
+                        const editBindState = {
                             // communicationReferenceData:
                             //     communicationReference?.length > 2 ? JSON.parse(communicationReference) : referenceList,
                             // communicationReferenceData: tempGroup,
@@ -904,6 +600,7 @@ const DeliveryMethod = ({ type }) => {
                             );
                         }
                         const [subProducts, primaryType, secondaryType] = await Promise.all(nextRequest);
+                        if (!isMounted.current) return;
                         let subproductList = [],
                             primaryTypeList = [],
                             secondaryTypeList = [];
@@ -942,7 +639,7 @@ const DeliveryMethod = ({ type }) => {
                         setFrequencyId(frequencyId);
 
                         const findTimeZone = timeZoneList?.find(
-                            (timeZone) => timeZone?.timeZoneID === campaign?.timeZoneId,
+                            (timeZone) => timeZone?.timeZoneID === campaign?.data?.timeZoneId,
                         );
                         setUpdateTimeZone(findTimeZone?.timeZoneName);
                         if (!findTimeZone) {
@@ -973,12 +670,12 @@ const DeliveryMethod = ({ type }) => {
                             communicationType: comType,
                             productType: proType,
                             primaryGoal: getGoalType(primaryGoal),
-                            primaryGoalPercentage: primaryGoalPercentage,
+                            primaryGoalPercentage: formatGoalPercentageForForm(primaryGoalPercentage),
                             primaryGoalType: _filter(primaryTypeList, (primary) =>
                                 primaryGoalNames.includes(primary?.ConversionName),
                             ),
                             secondaryGoal: getGoalType(secondaryGoal),
-                            secondaryGoalPercentage: secondaryGoalPercentage,
+                            secondaryGoalPercentage: formatGoalPercentageForForm(secondaryGoalPercentage),
                             secondaryGoalType: _filter(secondaryTypeList, (secondary) =>
                                 secondaryGoalNames.includes(secondary?.ConversionName),
                             ),
@@ -1055,11 +752,10 @@ const DeliveryMethod = ({ type }) => {
                                     ? dlAnalyticsType
                                     : _map(ANALYTICS_TYPES, (analytics) => {
                                         const isAnalytics = analytics?.id?.some((id) => analyticsTypes?.includes(id));
-                                        if (isAnalytics) analytics.selected = true;
-                                        else {
-                                            analytics.selected = false;
-                                        }
-                                        return analytics;
+                                        return {
+                                            ...analytics,
+                                            selected: !!isAnalytics,
+                                        };
                                     }),
                             // channelTypes: _map(CHANNEL_TYPES, (channel) => {
                             //     const isChannel = channel.id.some((id) => channelType?.includes(id));
@@ -1086,10 +782,28 @@ const DeliveryMethod = ({ type }) => {
                         editModeStartDateRef.current = startDate;
                         editModeEndDateRef.current = endDate;
                         existingCommunicationName.current = campaignName;
-                        dispatchState({ type: 'UPDATE_EDIT', payload: state });
+                        dispatchState({ type: 'UPDATE_EDIT', payload: { ...state, ...editBindState } });
                         setNameState({
                             isValid: true,
                         });
+
+                        boundSubProductRef.current = subProType;
+                        boundPlanPayloadRef.current = buildPlanSubmitPayload({
+                            formState: getValues(),
+                            type,
+                            reducerState: state,
+                            mode: 'edit',
+                            locationState,
+                            departmentId,
+                            userId,
+                            clientId,
+                            tags: tags?.length ? tags.split(',') : [],
+                            isSecondaryGoal: !!secondaryGoal,
+                            isCommunicationReference,
+                            communicationReferenceData: state?.communicationReferenceData,
+                            savedDynamicListChannel,
+                        });
+                        editBoundKeyRef.current = editNavKey;
 
                         if (payload?.campaignId) {
                             await dispatch(
@@ -1102,107 +816,523 @@ const DeliveryMethod = ({ type }) => {
                         setIsCampaingFail(true);
                     }
                 } finally {
-                    setIsInitialLoading(false);
+                    if (isMounted.current) {
+                        setIsInitialLoading(false);
+                    }
                 }
             }
-            if (!!locationState && conditions) {
-                fetchCommunication();
+
+        fetchCommunication();
+
+        return () => {
+            cancelled = true;
+        };
+    }, [mode, campaignId, type, departmentId, conditions, editNavKey]);
+
+    useEffect(() => {
+        let endDate = getValues('enddate');
+        let startDate = getValues('startdate');
+        const diffTime = Math.abs(new Date(endDate) - new Date(startDate));
+        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+        if (parseInt(state?.frequencyType, 10) === 2 && diffDays < 7) {
+            setError('enddate', {
+                type: 'custom',
+                message: 'Frequency exceeds the comm. period',
+            });
+        } else if (parseInt(state?.frequencyType, 10) === 3) {
+            if (isFullMonthDifference(startDate, endDate)) {
+                setError('enddate', {
+                    type: 'custom',
+                    message: 'Frequency exceeds the comm. period',
+                });
+            } else {
+                clearErrors('enddate');
+            }
+        } else {
+            clearErrors('enddate');
+        }
+    }, [state?.frequencyType]);
+
+    // Handlers
+    const fetchInitialData = async (isEditLoad = false) => {
+        try {
+            await planOptionsLoader.refetch({
+                fetcher: async () => {
+                    const payload = {
+                        departmentId,
+                        clientId,
+                        userId,
+                    };
+                    const scopeMatches =
+                        planDropdownsFetchedFor &&
+                        planDropdownsFetchedFor.clientId === clientId &&
+                        planDropdownsFetchedFor.userId === userId &&
+                        planDropdownsFetchedFor.departmentId === departmentId;
+                    const productTypes = _get(communicationOptions, 'product', []);
+                    const hasDropdownRows = Array.isArray(productTypes) && productTypes.length > 0;
+                    const hasAttributeRows =
+                        Array.isArray(communicationOptions?.attributes) && communicationOptions.attributes.length > 0;
+
+                    if (scopeMatches && hasDropdownRows && hasAttributeRows) {
+                        // Data already in communicationOptions; skip redundant API calls
+                    } else {
+                        const firstRequest = [
+                            dispatch(getCommunicationProducts({ payload, isLoading: false })),
+                            dispatch(getCommunicationAttributes({ payload, loading: false })),
+                        ];
+                        await dispatch(fetchAllRequest(firstRequest, payload));
+                    }
+                    if (type === 'event') {
+                        const dynamicListPayload = {
+                            ...payload,
+                            campaignId: 0,
+                            filterText: '',
+                        };
+                        await dispatch(getDynamicList({ payload: dynamicListPayload, loading: false }));
+                    }
+                },
+            });
+        } catch {
+            // Initial plan data fetch failed
+        } finally {
+            if (!isEditLoad && isMounted.current) {
+                setIsInitialLoading(false);
             }
         }
-    }, [locationState, conditions]);
-
-    const fetchConversionTypesForGoal = async (value) => {
-        const listPayload = {
-            goal: value.slice(0, 1),
-            departmentId,
-            clientId,
-            userId,
-        };
-        const { status, data } = await dispatch(
-            getConversionTypeList({
-                payload: listPayload,
-                loading: false,
-            }),
-        );
-        if (status) {
-            dispatchState({ type: 'UPDATE_CONVERSION_TYPE', payload: data, field: value.toLowerCase() });
+        if (!isEditLoad) {
+            void fetchReferencSettings();
         }
     };
 
-    const fetchGoalBenchmarkPercentage = async (value, typeName) => {
+    const fetchReferencSettings = async ({ communicationReference, version } = {}) => {
+        try {
+            const payload = {
+                userId,
+                clientId,
+                departmentId,
+            };
+
+            await communicationReferenceLoader.refetch({
+                fetcher: async () => {
+                    const response = await fetchCommunicationReferenceOnce(payload);
+                    const status = response?.status;
+                    const data = response?.data;
+
+                    if (!status) {
+                        return response;
+                    }
+
+                    if (!isMounted.current) return response;
+
+                    dispatchState({
+                        type: 'UPDATE_REFERENCE_CONFIG',
+                        payload: data,
+                    });
+
+                    if (communicationReference?.length) {
+                        dispatchState({
+                            type: 'UPDATE_REFERENCE_EDIT_DATA',
+                            payload: handleReferenceData(communicationReference, data, version),
+                        });
+                        return response;
+                    }
+
+                    let tempGrouping = {};
+                    let tempPriority = {};
+                    const tempData = data?.filter((item) => {
+                        if (item?.columnValue === 'Communication Grouping ID') {
+                            tempGrouping = { ...item };
+                        }
+                        if (item?.columnValue === 'Priority') {
+                            tempPriority = { ...item };
+                        }
+                        return item?.columnValue !== 'Communication Grouping ID' && item?.columnValue !== 'Priority';
+                    });
+
+                    dispatchState({
+                        type: 'UPDATE',
+                        payload: {
+                            priority: tempPriority,
+                            grouping: tempGrouping,
+                            reference: [...(tempData || [])],
+                        },
+                        field: 'communicationReferenceData',
+                    });
+
+                    return response;
+                },
+            });
+        } catch {
+            // Reference settings fetch failed
+        }
+    };
+
+    const saveCategoryData = async () => {
+        try {
+            const catTypeText = getValues('productcategoryTypeText')?.trim();
+            const payload = {
+                categoryId: 0,
+                categoryname: catTypeText,
+                departmentId,
+                clientId,
+                userId,
+            };
+            await saveProductCategoryLoader.refetch({
+                fetcher: async () => {
+                    const saveResponse = await dispatch(
+                        saveCommunicationProducts({ payload, isLoading: false }),
+                    );
+                    if (!isMounted.current) return saveResponse;
+                    if (saveResponse?.status) {
+                        setClickOff(false);
+                        const productPayload = {
+                            departmentId,
+                            clientId,
+                            userId,
+                        };
+                        const responseData = await dispatch(
+                            getCommunicationProducts({ payload: productPayload, isLoading: false }),
+                        );
+                        if (!isMounted.current) return saveResponse;
+                        if (responseData?.status) {
+                            dispatch(updateCommunicationOptions({ ...communicationOptions, product: responseData?.data }));
+                            dispatch(
+                                setPlanDropdownsFetchedFor({ clientId, userId, departmentId }),
+                            );
+
+                            const productList = responseData?.data ?? [];
+                            const selectedProduct = _find(
+                                productList,
+                                (item) =>
+                                    item?.categoryname?.trim()?.toLowerCase() === catTypeText.toLowerCase(),
+                            );
+
+                            if (selectedProduct) {
+                                setValue('productType', selectedProduct);
+                                clearErrors('productType');
+                                await handleProductTypeChange({ value: selectedProduct });
+                            }
+                        } else {
+                            dispatch(updateCommunicationOptions(communicationOptions));
+                        }
+                    }
+                    return saveResponse;
+                },
+            });
+            if (isMounted.current) {
+                setValue('productcategoryTypeText', '');
+                clearErrors('productcategoryTypeText');
+                setIsProducttype(false);
+            }
+        } catch {
+            // Product category save failed
+        }
+    };
+
+    const handleSubCategoryName = async (name) => {
+        tempProdSubCategoryData = name;
+
+        if (communicationNamevalidtor(name) === undefined) {
+            setIsFieldLoading(true);
+            try {
+                const res = subProducts?.some((item) => item?.subCategoryName === name);
+                if (!isMounted.current) return;
+                if (!res) {
+                    setClickOff(true);
+                } else {
+                    setClickOff(false);
+                    setError(`productSubcategoryTypeText`, {
+                        type: 'custom',
+                        message: 'Name already exists',
+                    });
+                }
+            } catch {
+                // Sub-category name validation failed
+            } finally {
+                if (isMounted.current) {
+                    setIsFieldLoading(false);
+                }
+            }
+        } else {
+            setTimeout(() => {
+                if (!isMounted.current) return;
+                setError(`productSubcategoryTypeText`, {
+                    type: 'custom',
+                    message: SPECIAL_CHATACTERS_NOT_ALlOWED,
+                });
+            }, 10);
+        }
+    };
+
+    const saveSubCategoryData = async () => {
+        try {
+            const catTypeText = getValues('productSubcategoryTypeText')?.trim();
+            const payload = {
+                categoryId: getValues('productType')?.categoryId,
+                subCategoryId: 0,
+                subcategoryname: catTypeText,
+                departmentId,
+                clientId,
+                userId,
+            };
+            await saveSubProductLoader.refetch({
+                fetcher: async () => {
+                    const saveResponse = await dispatch(saveCommunicationSubProducts({ payload, isLoading: false }));
+                    if (!isMounted.current) return saveResponse;
+                    if (saveResponse?.status) {
+                        setClickOff(false);
+                        const refreshPayload = {
+                            userId,
+                            clientId,
+                            departmentId,
+                            categoryId: getValues('productType')?.categoryId,
+                        };
+                        const refreshResponse = await dispatch(
+                            getCommunicationSubProducts({
+                                payload: refreshPayload,
+                                loading: false,
+                            }),
+                        );
+                        if (!isMounted.current) return saveResponse;
+
+                        const subProductList = refreshResponse?.status ? refreshResponse?.data ?? [] : [];
+                        const selectedSubProduct = _find(
+                            subProductList,
+                            (item) =>
+                                item?.subCategoryName?.trim()?.toLowerCase() === catTypeText.toLowerCase(),
+                        );
+
+                        if (selectedSubProduct) {
+                            setValue('subProductType', selectedSubProduct);
+                            clearErrors('subProductType');
+                        }
+                    }
+                    return saveResponse;
+                },
+            });
+            if (isMounted.current) {
+                setValue('productSubcategoryTypeText', '');
+                clearErrors('productSubcategoryTypeText');
+                setIsSubProducttype(false);
+            }
+        } catch {
+            // Sub-product save failed
+        }
+    };
+
+    const clearSubProductFields = () => {
+        setValue('subProductType', null);
+        setValue('productSubcategoryTypeText', '');
+        clearErrors('subProductType');
+        clearErrors('productSubcategoryTypeText');
+        setIsSubProducttype(false);
+    };
+
+    const handleProductTypeChange = async (event) => {
+        const selectedProduct = event?.value;
+
+        clearSubProductFields();
+
+        if (!selectedProduct?.categoryId) {
+            setIsSubProductsLoading(false);
+            dispatchState({
+                type: 'UPDATE',
+                payload: {},
+                field: 'subProductError',
+            });
+            return;
+        }
+
         const payload = {
             userId,
             clientId,
             departmentId,
-            campaignAttributeId: _get(getValues('communicationType'), 'campaignAttributeId', 0),
-            metricsId: getMetrixValue(value),
+            categoryId: selectedProduct.categoryId,
         };
-        const { data, status } = await dispatch(getBenchmarkDetails({ payload, loading: false }));
 
-        if (status && Object.keys(data)?.length) {
-            let { benchMarkValue, benchMarkMaxValue, benchMarkMinValue } = data;
-            benchMarkValue = parseFloat(Number(benchMarkValue).toFixed(2));
-            setValue(typeName, benchMarkValue ?? 0);
-            setValue(`${typeName}benchMarkMaxValue`, benchMarkMaxValue);
-            setValue(`${typeName}benchMarkMinValue`, benchMarkMinValue);
-            trigger(typeName);
+        setIsSubProductsLoading(true);
+        try {
+            const response = await dispatch(
+                getCommunicationSubProducts({
+                    payload,
+                    loading: false,
+                }),
+            );
+            if (!isMounted.current) return;
+            const subProductList = response?.status ? response?.data : [];
+            const errormessage = subProductList?.length ? { required: SELECT_SUB_PRODUCT_TYPE } : {};
+            dispatchState({
+                type: 'UPDATE',
+                payload: errormessage,
+                field: 'subProductError',
+            });
+        } catch {
+            // Sub-product fetch failed
+        } finally {
+            if (isMounted.current) {
+                setIsSubProductsLoading(false);
+            }
+        }
+    };
+
+    const getTimezoneAdjustedMinDate = (dateType = 'start') => {
+        let baseMinDate;
+
+        if (dateType === 'end') {
+            if (statusId === 5) {
+                baseMinDate = addDaysToDate(currentUTCdateTime, 3);
+            } else {
+                baseMinDate = new Date(addDaysToDate(startDate, 3));
+            }
         } else {
-            setValue(typeName, '0.0');
+            baseMinDate = currentUTCdateTime;
+        }
+
+        if (utcTimeData?.utcTime) {
+            return convertUTCtoUserTimezone(baseMinDate);
+        }
+
+        return convertToUserTimezone(baseMinDate, { formatAsString: false });
+    };
+
+    const getTimezoneAdjustedFocusedDate = (dateType = 'start') => {
+        const adjustedDate = getTimezoneAdjustedMinDate(dateType);
+        return new Date(adjustedDate.getFullYear(), adjustedDate.getMonth(), adjustedDate.getDate());
+    };
+
+    const getTimezoneAdjustedMaxDate = (dateType = 'start') => {
+        let baseMaxDate;
+
+        if (dateType === 'end') {
+            if (type === 'single') {
+                baseMaxDate = getDateBasedonMonth(6, new Date(startDate));
+            } else {
+                baseMaxDate = getDateBasedonMonth(12, new Date(startDate));
+            }
+        } else if (utcTimeData?.utcTime) {
+            baseMaxDate = getDateBasedonMonth(6, currentUTCdateTime);
+        } else {
+            baseMaxDate = getDateBasedonMonth(6);
+        }
+
+        if (utcTimeData?.utcTime) {
+            return convertUTCtoUserTimezone(baseMaxDate);
+        }
+
+        return convertToUserTimezone(baseMaxDate, { formatAsString: false });
+    };
+
+    const fetchConversionTypesForGoal = async (value) => {
+        try {
+            const listPayload = {
+                goal: value?.slice?.(0, 1),
+                departmentId,
+                clientId,
+                userId,
+            };
+            const { status, data } = await dispatch(
+                getConversionTypeList({
+                    payload: listPayload,
+                    loading: false,
+                }),
+            );
+            if (!isMounted.current) return;
+            if (status) {
+                dispatchState({ type: 'UPDATE_CONVERSION_TYPE', payload: data, field: value?.toLowerCase?.() });
+            }
+        } catch {
+            // Conversion types fetch failed
+        }
+    };
+
+    const fetchGoalBenchmarkPercentage = async (value, typeName) => {
+        try {
+            const payload = {
+                userId,
+                clientId,
+                departmentId,
+                campaignAttributeId: _get(getValues('communicationType'), 'campaignAttributeId', 0),
+                metricsId: getMetrixValue(value),
+            };
+            const { data, status } = await dispatch(getBenchmarkDetails({ payload, loading: false }));
+            if (!isMounted.current) return;
+
+            if (status && Object.keys(data ?? {})?.length) {
+                let { benchMarkValue, benchMarkMaxValue, benchMarkMinValue } = data ?? {};
+                benchMarkValue = parseFloat(Number(benchMarkValue).toFixed(2));
+                setValue(typeName, formatGoalPercentageForForm(benchMarkValue ?? 0));
+                setValue(`${typeName}benchMarkMaxValue`, benchMarkMaxValue);
+                setValue(`${typeName}benchMarkMinValue`, benchMarkMinValue);
+                trigger(typeName);
+            } else {
+                setValue(typeName, formatGoalPercentageForForm(0));
+            }
+        } catch {
+            // Benchmark fetch failed
         }
     };
 
     const loadPrimaryGoalDependencies = async (goalValueResolved) => {
-        const needsConversionList =
-            goalValueResolved &&
-            !Object.hasOwn(state?.conversionTypes ?? {}, goalValueResolved.toLowerCase()) &&
-            (goalValueResolved === 'Engagement' || goalValueResolved === 'Conversion');
+        try {
+            const needsConversionList =
+                goalValueResolved &&
+                !Object.hasOwn(state?.conversionTypes ?? {}, goalValueResolved.toLowerCase()) &&
+                (goalValueResolved === 'Engagement' || goalValueResolved === 'Conversion');
 
-        const requests = [
-            primaryGoalBenchmarkLoader.refetch({
-                fetcher: async () => {
-                    await fetchGoalBenchmarkPercentage(goalValueResolved, 'primaryGoalPercentage');
-                },
-            }),
-        ];
-
-        if (needsConversionList) {
-            requests.push(
-                primaryGoalConversionTypesLoader.refetch({
+            const requests = [
+                primaryGoalBenchmarkLoader.refetch({
                     fetcher: async () => {
-                        await fetchConversionTypesForGoal(goalValueResolved);
+                        await fetchGoalBenchmarkPercentage(goalValueResolved, 'primaryGoalPercentage');
                     },
                 }),
-            );
-        }
+            ];
 
-        await Promise.all(requests);
+            if (needsConversionList) {
+                requests.push(
+                    primaryGoalConversionTypesLoader.refetch({
+                        fetcher: async () => {
+                            await fetchConversionTypesForGoal(goalValueResolved);
+                        },
+                    }),
+                );
+            }
+
+            await Promise.all(requests);
+        } catch {
+            // Primary goal dependencies load failed
+        }
     };
 
     const loadSecondaryGoalDependencies = async (goalValue) => {
-        const needsConversionList =
-            goalValue &&
-            !Object.hasOwn(state?.conversionTypes ?? {}, goalValue.toLowerCase()) &&
-            (goalValue === 'Engagement' || goalValue === 'Conversion');
+        try {
+            const needsConversionList =
+                goalValue &&
+                !Object.hasOwn(state?.conversionTypes ?? {}, goalValue.toLowerCase()) &&
+                (goalValue === 'Engagement' || goalValue === 'Conversion');
 
-        const requests = [
-            secondaryGoalBenchmarkLoader.refetch({
-                fetcher: async () => {
-                    await fetchGoalBenchmarkPercentage(goalValue, 'secondaryGoalPercentage');
-                },
-            }),
-        ];
-
-        if (needsConversionList) {
-            requests.push(
-                secondaryGoalConversionTypesLoader.refetch({
+            const requests = [
+                secondaryGoalBenchmarkLoader.refetch({
                     fetcher: async () => {
-                        await fetchConversionTypesForGoal(goalValue);
+                        await fetchGoalBenchmarkPercentage(goalValue, 'secondaryGoalPercentage');
                     },
                 }),
-            );
-        }
+            ];
 
-        await Promise.all(requests);
+            if (needsConversionList) {
+                requests.push(
+                    secondaryGoalConversionTypesLoader.refetch({
+                        fetcher: async () => {
+                            await fetchConversionTypesForGoal(goalValue);
+                        },
+                    }),
+                );
+            }
+
+            await Promise.all(requests);
+        } catch {
+            // Secondary goal dependencies load failed
+        }
     };
 
     const handleGoalTypeChange = () => {
@@ -1221,58 +1351,66 @@ const DeliveryMethod = ({ type }) => {
     };
 
     const handleCommunicationBlur = async (value) => {
-        if (value !== _get(state, 'edit.campaignName', '')) {
-            if (value?.length > 0 && !communicationNameError && existingCommunicationName.current !== value) {
-                existingCommunicationName.current = value;
-                const payload = {
-                    campaignName: value.trim(),
-                    campaignId: _get(locationState, 'campaignId', 0),
-                    userId,
-                    clientId,
-                    departmentId,
-                };
-                await communicationNameLoader.refetch({
-                    fetcher: async () =>
-                        dispatch(
-                            checkCommunicationNameExists({ payload, setError, isLoading: false }),
-                        ),
-                    onSuccess: (res) => {
-                        const { status } = res || {};
-                        if (status === false) {
-                            setNameState({ isValid: true });
-                        } else {
+        try {
+            if (value !== _get(state, 'edit.campaignName', '')) {
+                if (value?.length > 0 && !communicationNameError && existingCommunicationName.current !== value) {
+                    existingCommunicationName.current = value;
+                    const payload = {
+                        campaignName: value.trim(),
+                        campaignId: _get(locationState, 'campaignId', 0),
+                        userId,
+                        clientId,
+                        departmentId,
+                    };
+                    await communicationNameLoader.refetch({
+                        fetcher: async () =>
+                            dispatch(
+                                checkCommunicationNameExists({ payload, setError, isLoading: false }),
+                            ),
+                        onSuccess: (res) => {
+                            if (!isMounted.current) return;
+                            const { status } = res || {};
+                            if (status === false) {
+                                setNameState({ isValid: true });
+                            } else {
+                                existingCommunicationName.current = null;
+                                setNameState({ isValid: false });
+                            }
+                        },
+                        onError: () => {
+                            if (!isMounted.current) return;
                             existingCommunicationName.current = null;
                             setNameState({ isValid: false });
-                        }
-                    },
-                    onError: () => {
-                        existingCommunicationName.current = null;
-                        setNameState({ isValid: false });
-                    },
+                        },
+                    });
+                } else if (communicationNameError) {
+                    existingCommunicationName.current = null;
+                }
+            } else if (isMounted.current) {
+                setNameState({
+                    isValid: true,
                 });
-            } else if (communicationNameError) {
-                existingCommunicationName.current = null;
             }
-        } else {
-            setNameState({
-                isValid: true,
-            });
+        } catch {
+            // Communication name check failed
         }
     };
 
     const handleDynamicList = async (list, channelType, fromDDL = false, isEdit) => {
         const runInner = async () => {
-            let dynamicListId = list?.dynamicListId;
-            const payload = {
-                dynamicList: dynamicListId || 0,
-                campaignType: 'T',
-                campaignId: _get(locationState, 'campaignId', 0),
-                departmentId: departmentId,
-            };
-            const response = await dispatch(
-                getTriggerDynamicListChanneltype({ payload, loading: false }),
-            );
-            const { status, data, isImmediate } = response;
+            try {
+                const dynamicListId = list?.dynamicListId;
+                const payload = {
+                    dynamicList: dynamicListId || 0,
+                    campaignType: 'T',
+                    campaignId: _get(locationState, 'campaignId', 0),
+                    departmentId: departmentId,
+                };
+                const response = await dispatch(
+                    getTriggerDynamicListChanneltype({ payload, loading: false }),
+                );
+                if (!isMounted.current) return;
+                const { status, data, isImmediate } = response ?? {};
             if (isImmediate === false) {
                 setFrequencyId(1);
                 dispatchState({
@@ -1322,7 +1460,7 @@ const DeliveryMethod = ({ type }) => {
             }
             if (status) {
                 let savedAPIResponse = {};
-                forEach((item) => {
+                data?.forEach((item) => {
                     const findChannel = CHANNEL_TYPES.find((channel) =>
                         channel?.checkAllChannelsExist ? channel?.checkListChannel?.includes(item?.channelId) : null,
                     );
@@ -1349,10 +1487,10 @@ const DeliveryMethod = ({ type }) => {
                     };
                 });
 
-                const otherWebSave = some(
+                const otherWebSave = data?.some(
                     (item) => item?.channelId === 8 && item?.campaignId !== locationState?.campaignId,
                 );
-                const otherMobileSave = some(
+                const otherMobileSave = data?.some(
                     (item) => item?.channelId === 14 && item?.campaignId !== locationState?.campaignId,
                 );
 
@@ -1363,12 +1501,6 @@ const DeliveryMethod = ({ type }) => {
                         disabled: shouldDisable ? true : analytics?.disabled,
                     };
                 });
-                // console.log('updateChannelTypes: ', updateChannelTypes);
-                // const otherChannelTypes = CHANNEL_TYPES?.map((channel) => ({
-                //     ...channel,
-                //     disabled: some((item) => channel?.id?.includes(item?.channelId)),
-                //     selected: true,
-                // }));
                 if (fromDDL) {
                     const handleCheckedEditFlow = (updateChannelTypes) => {
                         if (isEdit && channelType) {
@@ -1426,6 +1558,9 @@ const DeliveryMethod = ({ type }) => {
                 channelTypes: CHANNEL_TYPES,
                 analyticsTypes: ANALYTICS_TYPES,
             };
+            } catch {
+                // Dynamic list channel type fetch failed
+            }
         };
         return dynamicListLoader.refetch({ fetcher: runInner });
     };
@@ -1471,7 +1606,6 @@ const DeliveryMethod = ({ type }) => {
     };
 
     const formSubmitHandler = async (formState, buttonType) => {
-        //debugger;
         dispatch(setTabforEdit(null));
         dispatch(showTabsSmartlink(false));
         let tempChannelObj = {
@@ -1492,7 +1626,6 @@ const DeliveryMethod = ({ type }) => {
         let eligibleChannelType = {};
         let channelTypes = _map(
             _filter(formState?.channelTypes ?? [], (list) => {
-                // debugger;
                 var tempList;
                 if (list?.selected) {
                     switch (list?.name) {
@@ -1543,6 +1676,13 @@ const DeliveryMethod = ({ type }) => {
         //     });
         //     return;
         // }
+        if (tempChannelObj.isNotificationChecked && !isWeb && !isApp) {
+            setError('analyticsTypes[0].selected', {
+                type: 'custom',
+                message: SELECT_WEB_TO_Analytics,
+            });
+            return false;
+        }
         let chennal = [];
         if (tempChannelObj.isNotificationChecked) {
             // if (analyticsTypes.includes(6) && !analyticsTypes.includes(16)) {
@@ -1557,7 +1697,6 @@ const DeliveryMethod = ({ type }) => {
         }
 
         channelTypes = chennal?.length === 0 ? channelTypes : chennal;
-        // console.log('Chec k array :::: ', channelTypes, chennal, isWeb, isApp);
 
         formState = {
             ...formState,
@@ -1699,6 +1838,63 @@ const DeliveryMethod = ({ type }) => {
                 templateChannelId: locationState?.templateChannelId || 0
             };
 
+            if (mode === 'edit' && isPlanPayloadEqual(payload, boundPlanPayloadRef.current)) {
+                setSubmittingButtonType(buttonType);
+                try {
+                    const navigatedWithoutApi = await handleWithoutAPICallNavigation({
+                        payload,
+                        props,
+                        locationState,
+                        navigate,
+                        dispatch,
+                        forceNavigateWithoutApi: true,
+                    });
+                    if (navigatedWithoutApi) {
+                        return;
+                    }
+                } finally {
+                    if (isMounted.current) {
+                        setSubmittingButtonType(null);
+                    }
+                }
+            }
+
+            const isEventTrigger =
+                locationState?.campaignType === 'T' ||
+                locationState?.campaignType === 'E' ||
+                type === 'event';
+            const isInProgress = parseInt(locationState?.statusId, 10) === 5;
+            const isEndDateModified = editModeEndDateRef.current
+                ? getYYMMDD(getValues('enddate')) !== getYYMMDD(new Date(editModeEndDateRef.current))
+                : false;
+
+            if (isEventTrigger && isInProgress) {
+                if (!isEndDateModified) {
+                    setSubmittingButtonType(buttonType);
+                    try {
+                        const navigatedWithoutApi = await handleWithoutAPICallNavigation({
+                            payload,
+                            props,
+                            locationState,
+                            navigate,
+                            dispatch,
+                            forceNavigateWithoutApi: true,
+                        });
+                        if (navigatedWithoutApi) {
+                            return;
+                        }
+                    } finally {
+                        if (isMounted.current) {
+                            setSubmittingButtonType(null);
+                        }
+                    }
+                } else {
+                    payload.isUpdate = true;
+                }
+            } else {
+                payload.isUpdate = false;
+            }
+
             setSubmittingButtonType(buttonType);
             let saveApiResponse;
             try {
@@ -1729,8 +1925,12 @@ const DeliveryMethod = ({ type }) => {
                     },
                 });
             } finally {
-                setSubmittingButtonType(null);
+                if (isMounted.current) {
+                    setSubmittingButtonType(null);
+                }
             }
+
+            if (!isMounted.current) return;
 
             if (!saveApiResponse?.status && saveApiResponse?.message === 'communicationReference is Mandatory.') {
                 setRequiredceCommReferenceModal({
@@ -1795,38 +1995,6 @@ const DeliveryMethod = ({ type }) => {
         // }
     };
 
-    useEffect(() => {
-        let endDate = getValues('enddate');
-        let startDate = getValues('startdate');
-        const diffTime = Math.abs(new Date(endDate) - new Date(startDate));
-        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-
-        if (parseInt(state?.frequencyType, 10) === 2 && diffDays < 7) {
-            setError('enddate', {
-                type: 'custom',
-                message: 'Frequency exceeds the comm. period',
-            });
-        } else if (parseInt(state?.frequencyType, 10) === 3) {
-            if (isFullMonthDifference(startDate, endDate)) {
-                setError('enddate', {
-                    type: 'custom',
-                    message: 'Frequency exceeds the comm. period',
-                });
-            } else {
-                clearErrors('enddate');
-            }
-        } else {
-            clearErrors('enddate');
-        }
-        // if(mode === 'edit'){
-        //     state?.frequencyType === 5 ? trigger('shortly.every_time') :
-        //     state?.frequencyType === 1 ?trigger('daily') :
-        //     state?.frequencyType === 2 ?trigger('weekly') :
-        //     trigger('monthly')
-        // }
-        // trigger('shortly.every_time');
-    }, [state?.frequencyType]);
-
     const handleTabChange = (id) => {
         if (frequencyId !== id)
             switch (id) {
@@ -1885,7 +2053,6 @@ const DeliveryMethod = ({ type }) => {
             });
         }
     };
-    // console.log('REfe data :::: ', state);
 
     const handleEndDateClickOff = () => {
         if (locationState?.campaignType === 'M') {
@@ -1924,6 +2091,7 @@ const DeliveryMethod = ({ type }) => {
         'shortly.period',
     ]);
 
+    // JSX
     return (
         <FormProvider {...methods}>
             {isInitialLoading ? (
@@ -1936,13 +2104,13 @@ const DeliveryMethod = ({ type }) => {
             >
                 <div className={`box-design bd-top-border ${!isEditable ? 'create-not-edit' : ''}`}>
                     {/* First Row */}
-                    <div className={`form-group mt20 ${!isEditable ? 'click-off' : ''}`}>
+                    <div className="form-group mt20">
                         <Row>
                             <Col sm={4} className="text-right">
                                 {' '}
                                 <label className="control-label-left">{COMMUNICATION_NAME_LABEL}</label>
                             </Col>
-                            <Col sm={7}>
+                            <Col sm={7} className={!isEditable ? 'click-off' : ''}>
                                 <RSInput
                                     id="rs_DeliveryMethod_communicationName"
                                     name="communicationName"
@@ -2023,6 +2191,7 @@ const DeliveryMethod = ({ type }) => {
                             <Col sm={1} className="fg-icons-wrapper pl0">
                                 <div className="fg-icons d-flex">
                                     <RSTooltip text={TAGS}>
+                                        <div className={isTagsIconDisabled ? 'pe-none click-off' : ''}>
                                         <i
                                             id="rs_DeliveryMethod_tagplus"
                                             className={`${tag_plus_medium} icon-md color-primary-blue cp`}
@@ -2039,6 +2208,7 @@ const DeliveryMethod = ({ type }) => {
                                                 });
                                             }}
                                         />
+                                        </div>
                                     </RSTooltip>
                                     <RSTooltip text={COMMUNICATION_REFERENCE}>
                                         {communicationReferenceLoader.isLoading ? (
@@ -2046,13 +2216,15 @@ const DeliveryMethod = ({ type }) => {
                                                 <span className="segment_loader" />
                                             </span>
                                         ) : (
-                                            <div className={`
+                                            <div
+                                                className={`
                                                 ${!statusIdCheck(locationState?.statusId) ||
                                                         state?.defaultCommunicationReferenceConfigData?.length === 0
                                                         ? 'pe-none click-off'
                                                         : ''
                                                     }
-                                                `}>
+                                                `}
+                                            >
                                             <i
                                                 id="rs_DeliveryMethod_edit"
                                                 className={`${form_edit_medium} icon-md color-primary-blue cp
@@ -2227,7 +2399,7 @@ getCommunicationSubProducts({
                                                                 onClick={() => {
                                                                     saveCategoryData();
                                                                 }}
-                                                                className={`${save_mini} ${!productcategoryTypeText &&
+                                                                className={`${save_mini} ${!errors?.productcategoryTypeText &&
                                                                     watch('productcategoryTypeText')?.length >= 3
                                                                     ? ''
                                                                     : 'click-off'
@@ -2340,7 +2512,7 @@ getCommunicationSubProducts({
                                                                 onClick={() => {
                                                                     saveSubCategoryData();
                                                                 }}
-                                                                className={`${save_mini} ${productSubcategoryTypeTextError != productSubcategoryTypeText &&
+                                                                className={`${save_mini} ${productSubcategoryTypeTextError != errors?.productSubcategoryTypeText &&
                                                                     watch('productSubcategoryTypeText')?.length >= 3
                                                                     ? ''
                                                                     : 'click-off'
@@ -2469,7 +2641,7 @@ getCommunicationSubProducts({
                                                     parseFloat(goalValue) < primaryMinValue ||
                                                         parseFloat(goalValue) > primaryMaxValue
                                                         ? `Accepting Only values ${primaryMinValue} - ${primaryMaxValue}`
-                                                        : parseFloat(goalValue) > 100
+                                                        : parseFloat(goalValue) > 100 || parseFloat(goalValue) === 0
                                                             ? ENTER_VALID_PERCENTAGE
                                                             : true,
                                             }}
@@ -2596,7 +2768,8 @@ getCommunicationSubProducts({
                                                             parseFloat(goalValue) < secondaryMinValue ||
                                                                 parseFloat(goalValue) > secondaryMaxValue
                                                                 ? `Accepting Only values ${secondaryMinValue} - ${secondaryMaxValue}`
-                                                                : parseFloat(goalValue) > 100
+                                                                : parseFloat(goalValue) > 100 ||
+                                                                    parseFloat(goalValue) === 0
                                                                     ? ENTER_VALID_PERCENTAGE
                                                                     : true,
                                                     }}
@@ -2848,8 +3021,9 @@ getCommunicationSubProducts({
                     {/* Seventh Row */}
                     {(type === 'single' || type === 'event') && (
                         <div
-                            className={`form-group mt50  ${!nameState.isValid ? 'pe-none' : ''} ${!isEditable ? 'pe-none click-off' : ''
-                                }`}
+                            className={`form-group mt50  ${!nameState.isValid ? 'pe-none' : ''} ${
+                                !isEditable && statusId !== 5 ? 'pe-none click-off' : ''
+                            }`}
                         >
                             <Row>
                                 <Col sm={4} className="text-right">
@@ -2863,8 +3037,14 @@ getCommunicationSubProducts({
                                             let disableEventTriggerChannel = ['socialpost', 'ads', 'qr'];
                                             let isDisabledEventTriggerChannel =
                                                 disableEventTriggerChannel.includes(field?.name) && type === 'event';
+                                            const isSelectedInProgressChannel = statusId === 5 && field?.selected;
                                             return (
-                                                <li key={field.id}>
+                                                <li
+                                                    key={field.id}
+                                                    className={`${
+                                                        isSelectedInProgressChannel ? 'pe-none click-off' : ''
+                                                    }`}
+                                                >
                                                     {field.disabled || isDisabledEventTriggerChannel ? (
                                                         <RSTooltip text={SAME_CHANNEL}>
                                                             <RSCheckbox
@@ -2872,7 +3052,9 @@ getCommunicationSubProducts({
                                                                 name={`channelTypes[${index}].selected`}
                                                                 labelName={field?.labelName}
                                                                 disabled={
-                                                                    field.disabled || isDisabledEventTriggerChannel
+                                                                    field.disabled ||
+                                                                    isDisabledEventTriggerChannel ||
+                                                                    isSelectedInProgressChannel
                                                                 }
                                                                 rules={
                                                                     {
@@ -2978,7 +3160,9 @@ getCommunicationSubProducts({
                                                             control={control}
                                                             name={`channelTypes[${index}].selected`}
                                                             labelName={field?.labelName}
-                                                            disabled={field.disabled}
+                                                            disabled={
+                                                                field.disabled || isSelectedInProgressChannel
+                                                            }
                                                             rules={
                                                                 {
                                                                     // validate: () =>
@@ -3081,7 +3265,7 @@ getCommunicationSubProducts({
                     {(type === 'single' || type === 'event') && (
                         <div
                             className={`form-group ${type === 'single' ? '1' : '2'}  ${!nameState.isValid ? 'pe-none' : ''
-                                } ${!isEditable ? 'click-off' : ''}`}
+                                } ${!isEditable && statusId !== 5 ? 'click-off' : ''}`}
                         >
                             <Row>
                                 <Col sm={4} className="text-right">
@@ -3092,14 +3276,22 @@ getCommunicationSubProducts({
                                 <Col sm={7}>
                                     <ul className="rs-list-inline switchwith-icon">
                                         {analyticsField.map((field, index) => {
+                                            const isSelectedInProgressAnalytics = statusId === 5 && field?.selected;
                                             return (
-                                                <li key={field.id} className={`${field.disabled ? 'disb' : ''} `}>
+                                                <li
+                                                    key={field.id}
+                                                    className={`${
+                                                        field.disabled || isSelectedInProgressAnalytics
+                                                            ? 'disb click-off pe-none'
+                                                            : ''
+                                                    } `}
+                                                >
                                                     <RSCheckbox
                                                         control={control}
                                                         name={`analyticsTypes[${index}].selected`}
                                                         labelName={field.labelName}
                                                         defaultValue={field.selected}
-                                                        disabled={field.disabled}
+                                                        disabled={field.disabled || isSelectedInProgressAnalytics}
                                                         rules={{
                                                             validate: () =>
                                                                 analyticsTypeValidator({
@@ -3279,7 +3471,7 @@ getCommunicationSubProducts({
                             className={'color-primary-blue'}
                         onClick={handleSubmit((data) => formSubmitHandler(data, 'save'))}
                         id="rs_DeliveryMethod_Save"
-                        isLoading={savePlanLoader.isFetching && submittingButtonType === 'save'}
+                        isLoading={submittingButtonType === 'save'}
                         blockBodyPointerEvents
                     >
                         {SAVE}
@@ -3292,9 +3484,9 @@ getCommunicationSubProducts({
                                 Object?.keys(errors)?.length > 0
                                 ? 'pe-none click-off'
                                 : ''
-                            } ${savePlanLoader.isFetching ? 'pe-none click-off' : ''}`}
+                            } ${submittingButtonType === 'form' ? 'pe-none click-off' : ''}`}
                         id="rs_DeliveryMethod_Next"
-                        isLoading={savePlanLoader.isFetching && submittingButtonType === 'form'}
+                        isLoading={submittingButtonType === 'form'}
                         blockBodyPointerEvents
                        
                     >
@@ -3308,6 +3500,7 @@ getCommunicationSubProducts({
                 <TagsModal
                     show={state.isTagEnabledModal}
                     tags={state.tags}
+                    viewOnly={isTagsModalViewOnly}
                     handleClose={() => dispatchState({ type: 'UPDATE', payload: false, field: 'isTagEnabledModal' })}
                     onSubmit={(tags) => {
                         dispatchState({ type: 'UPDATE', payload: tags, field: 'tags' });
@@ -3322,23 +3515,12 @@ getCommunicationSubProducts({
                     reducerState={state}
                     formState={state?.communicationReferenceData}
                     handleClose={(data) => {
-                        // debugger;
-                        // dispatchState({
-                        //     type: 'UPDATE_COMMUNICATION_REFERENCE',
-                        //     payload: {
-                        //         communicationReferenceData: data,
-                        //         isCommunicationReferenceModal: false,
-                        //         isCommunicationReference: false,
-                        //     },
-                        // });
                         dispatchState({
                             type: 'UPDATE_COMMUNICATION_REFERENCE',
                             payload: {
-                                // ...state,
                                 communicationReferenceData: data,
                                 isCommunicationReferenceModal: false,
-                                // isCommunicationReference: state?.isReferenceSaved ?? false,
-                                isSaved: state?.isReferenceSaved ?? isSaved ?? false,
+                                isSaved: state?.isReferenceSaved ?? data?.isSaved ?? false,
                             },
                         });
                     }}
@@ -3346,11 +3528,10 @@ getCommunicationSubProducts({
                         dispatchState({
                             type: 'UPDATE_COMMUNICATION_REFERENCE',
                             payload: {
-                                // ...state,
                                 communicationReferenceData: data,
                                 isCommunicationReferenceModal: false,
                                 isCommunicationReference: true,
-                                isSaved: isSaved,
+                                isSaved: data?.isSaved ?? false,
                             },
                         });
                     }}

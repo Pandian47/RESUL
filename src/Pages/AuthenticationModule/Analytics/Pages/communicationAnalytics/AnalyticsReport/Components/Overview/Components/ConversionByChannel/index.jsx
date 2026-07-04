@@ -3,7 +3,7 @@ import { user_identified_mini, user_mini, user_question_mark_edge_mini } from 'C
 import { Fragment, useEffect, useRef, useState } from 'react';
 import { Col } from 'react-bootstrap';
 import { useDispatch, useSelector } from 'react-redux';
-import _get from 'lodash/get';
+import { get as _get } from 'Utils/modules/lodashReplacements';
 import { getConversionByChannel } from 'Reducers/analytics/analyticsSummary/request';
 import { getSessionId } from 'Reducers/globalState/selector';
 import { getSummaryList } from 'Reducers/analytics/analyticsSummary/selector';

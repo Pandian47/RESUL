@@ -2,7 +2,7 @@ import { HorizontalSkeleton } from 'Components/Skeleton/Skeleton';
 import { AVERAGE_INBOX_SCORE, INBOX_SCORE, INBOX_SCORE_BREAKDOWN, NO_DATA_AVAILABEL, PROJECTED_CTR, SPAM_SCORE, SUBJECT_LINE_LENGTH, TOP3_SUBJECT_LINES } from 'Constants/GlobalConstant/Placeholders';
 import { useEffect } from 'react';
 import { Container } from 'react-bootstrap';
-import _get from 'lodash/get';
+import { get as _get } from 'Utils/modules/lodashReplacements';
 import { useDispatch, useSelector } from 'react-redux';
 import RSHighchartsContainer from 'Components/Highcharts';
 import RSModal from 'Components/RSModal';
@@ -43,28 +43,36 @@ const SpamScoreModal = ({
     // console.log('check spam::: ', checkSpam);
 
     useEffect(() => {
-        if (show) {
-            dispatch(
-                getCheckSpam({
-                    loading: false,
-                    payload: {
-                        userId,
-                        clientId,
-                        departmentId,
-                        campaignId: campaign?.campaignId,
-                        body: edmContent,
-                        body1: content, //Text editor content
-                        emailFooterRawcode: emailFooter,
-                        preHeaderMessage: inboxLinePreview,
-                        subjectLine,
-                        spamScore: spamScoreName,
-                        top3: top3Name,
-                        setValue,
-                    },
-                }),
-            );
+        if (!show) return;
+
+        const hasCachedSpamScore =
+            checkSpam?.[spamScoreName]?.spamScore != null &&
+            checkSpam?.[spamScoreName]?.spamScore !== '';
+
+        if (isSpam && hasCachedSpamScore) {
+            return;
         }
-    }, [show]);
+
+        dispatch(
+            getCheckSpam({
+                loading: false,
+                payload: {
+                    userId,
+                    clientId,
+                    departmentId,
+                    campaignId: campaign?.campaignId,
+                    body: edmContent,
+                    body1: content,
+                    emailFooterRawcode: emailFooter,
+                    preHeaderMessage: inboxLinePreview,
+                    subjectLine,
+                    spamScore: spamScoreName,
+                    top3: top3Name,
+                    setValue,
+                },
+            }),
+        );
+    }, [show, isSpam, spamScoreName, checkSpam]);
 
     return (
         <RSModal

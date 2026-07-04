@@ -167,7 +167,7 @@ ${DB_SK_SHIMMER_SCOPES.flatMap((scope) =>
 
 /** Dashboard skeleton — db-sk-* layout only; no app portlet / bootstrap utility classes required. */
 export const dashboardSkeletonCriticalCss = `
-::root {
+:root {
     --sp-space-sm: 10px;
     --sp-space-md: 21px;
 }
@@ -239,7 +239,13 @@ export const dashboardSkeletonCriticalCss = `
 .db-sk-tabs-wrap {
     width: 100%;
     background: ${SKELETON_PAGE_BG};
+    margin-bottom: 21px;
+}
+.db-sk-tabs-wrap--comm {
     margin-bottom: var(--sp-space-sm);
+}
+.db-sk-tabs-wrap--live {
+    margin-bottom: var(--sp-space-md);
 }
 .db-sk-tabs {
     display: flex;

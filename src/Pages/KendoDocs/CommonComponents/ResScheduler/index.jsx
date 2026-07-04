@@ -4,8 +4,6 @@ import { getDateWithAddMinutes, convertDateBetweenTimezones, convertUserTimezone
 import { getmasterData } from 'Utils/modules/masterData';
 import { Fragment, useEffect, useState } from 'react';
 import './resScheduler.scss';
-import _get from 'lodash/get';
-import _find from 'lodash/find';
 import { Row, Col } from 'react-bootstrap';
 import { useFormContext } from 'react-hook-form';
 import { useSelector, useDispatch } from 'react-redux';
@@ -56,6 +54,7 @@ const ResScheduler = ({
     isSplitABScheduler = false,
     /** Split A/B / listing toolbar: single row, no blue section backgrounds */
     compactToolbarLayout = false,
+    rootClassName = ''
 }) => {
     // console.log('maxDate: ', maxDate);
     // console.log('minDate: ', minDate);
@@ -97,8 +96,8 @@ const currentUTCdateTime = utcTimeData?.utcTime ? new Date(utcTimeData.utcTime.r
 
     
     const { startDate, endDate } = {
-        startDate: _get(state, 'startDate', null) ? new Date(`${_get(state, 'startDate', null)}T00:00:00`) : null,
-        endDate: _get(state, 'endDate', null) ? new Date(`${_get(state, 'endDate', null)}T00:00:00`) : null,
+        startDate: (state?.startDate ?? null) ? new Date(`${state?.startDate ?? null}T00:00:00`) : null,
+        endDate: (state?.endDate ?? null) ? new Date(`${state?.endDate ?? null}T00:00:00`) : null,
     };
     startDate?.setHours(0, 0, 0, 0);
     endDate?.setHours(23, 59, 59, 999);
@@ -107,9 +106,9 @@ const currentUTCdateTime = utcTimeData?.utcTime ? new Date(utcTimeData.utcTime.r
     const defaultValues = currentUTCdateTime;
     const { timeZoneList, timeFormatList, dateFormatList } = getmasterData();
     const { timeZoneId, timeFormatId, dateFormatId, isDayLight = false} = getUserDetails();
-    const timeZone = _find(timeZoneList, ['timeZoneID', timeZoneId || '']);
-    const timeFormat = _find(timeFormatList, ['timeFormatID', timeFormatId]);
-    const dateFormat = _find(dateFormatList, ['dateFormatID', dateFormatId]);
+    const timeZone = timeZoneList.find((item) => item?.timeZoneID === (timeZoneId || ''));
+    const timeFormat = timeFormatList.find((item) => item?.timeFormatID === timeFormatId);
+    const dateFormat = dateFormatList.find((item) => item?.dateFormatID === dateFormatId);
     
     // Determine the date-time format based on user's time format preference
     const getDateTimeFormat = () => {
@@ -174,7 +173,7 @@ const currentUTCdateTime = utcTimeData?.utcTime ? new Date(utcTimeData.utcTime.r
         }
     },[timeZone?.timeZoneID])
     useEffect(() => {
-        if (timeZoneId !== _get(timeZoneWatch, 'timeZoneID', '')){
+        if (timeZoneId !== (timeZoneWatch?.timeZoneID ?? '')){
             setTimeZone(true);
         }else if (!timeZone){
             setTimeZone(true);
@@ -533,7 +532,7 @@ const currentUTCdateTime = utcTimeData?.utcTime ? new Date(utcTimeData.utcTime.r
                 {!isTimeZone && (
                     <li className="float-end">
                         <span className="d-flex">
-                            {_get(timeZoneWatch?.gmtOffset ? timeZoneWatch : timeZone, 'gmtOffset', '')}{' '}
+                            {(timeZoneWatch?.gmtOffset ? timeZoneWatch : timeZone)?.gmtOffset ?? ''}{' '}
                             <ResTooltip text={LABEL_EDIT} className="ml5">
                                 <i
                                     id="rs_Scheduler_pencil_edit"
@@ -587,7 +586,7 @@ const currentUTCdateTime = utcTimeData?.utcTime ? new Date(utcTimeData.utcTime.r
 
     if (compactToolbarLayout) {
         return (
-            <div className={SCHEDULER_ROOT_CLASS}>
+            <div className={`${SCHEDULER_ROOT_CLASS} ${rootClassName}`}>
                 <Row className="align-items-start gx-3 gy-2 mb0">
                     <Col xs={12} xl={isTimeZone ? 12 : 12} className="min-w-0 form-group">
                         <div className="form-group mb0">{schedulePickerBlock}</div>
@@ -668,7 +667,7 @@ const currentUTCdateTime = utcTimeData?.utcTime ? new Date(utcTimeData.utcTime.r
     }
 
     return (
-        <div className={SCHEDULER_ROOT_CLASS}>
+            <div className={`${SCHEDULER_ROOT_CLASS} ${rootClassName}`}>
                 <div className={`form-group ${isTimeZone ? '' : 'mb0'}` }>
                     <Row>
                         <Col sm={isSplitABScheduler ? 2 :{ offset: 1, span: 2 }}>

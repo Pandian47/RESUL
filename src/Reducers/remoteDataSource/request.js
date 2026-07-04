@@ -15,26 +15,6 @@ import {
     versiumDataUpdate,
 } from './reducer';
 
-export const getTableData =
-    ({ payload }) =>
-    async (dispatch) =>
-        dispatch(
-            request.post({
-                url: GET_TABLE_DATA,
-                payload,
-                loading: true,
-                ok: ({ data }) => {
-                    if (data.status) {
-                        const { status, data: res } = data;
-                        if (status) {
-                            dispatch(getTableDropDown(res));
-                        }
-                    }
-                },
-                fail: (err) => {},
-            }),
-        );
-
 export const getColumnDetails =
     ({ payload }) =>
     async (dispatch) =>
@@ -49,26 +29,6 @@ export const getColumnDetails =
                         if (status) {
                             dispatch(getTableColumnDetails(res));
                             dispatch(getShowTableColumn(status));
-                        }
-                    }
-                },
-                fail: (err) => {},
-            }),
-        );
-
-export const connectToBQdata =
-    ({ payload }) =>
-    async (dispatch) =>
-        dispatch(
-            request.post({
-                url: CONNECT_BQ,
-                payload,
-                loading: true,
-                ok: ({ data }) => {
-                    if (data.status) {
-                        const { status, data: res } = data;
-                        if (status) {
-                            dispatch(connectToBQ(data));
                         }
                     }
                 },
@@ -170,44 +130,6 @@ export const checkFriendlyNameExists =
         );
     };
 //CRM
-export const crm_connection_exist =
-    ({ payload }) =>
-    async (dispatch) =>
-        dispatch(
-            request.post({
-                url: CRMDB_CONNECTIONS_EXIST,
-                payload,
-                loading: true,
-                ok: ({ data }) => {
-                    if (data.status) {
-                        const { status, data: res } = data;
-                        if (status) {
-                        }
-                    }
-                },
-                fail: (err) => {},
-            }),
-        );
-
-export const crm_get_tables_from_DB =
-    ({ payload }) =>
-    async (dispatch) =>
-        dispatch(
-            request.post({
-                url: CRM_GET_TABLES,
-                payload,
-                loading: true,
-                ok: ({ data }) => {
-                    if (data.status) {
-                        const { status, data: res } = data;
-                        if (status) {
-                            dispatch(getTableDropDown(res));
-                        }
-                    }
-                },
-                fail: (err) => {},
-            }),
-        );
 export const crm_getColumnTables =
     ({ payload }) =>
     async (dispatch) =>
@@ -225,18 +147,6 @@ export const crm_getColumnTables =
                         }
                     }
                 },
-                fail: (err) => {},
-            }),
-        );
-export const crm_SaveData =
-    ({ payload }) =>
-    async (dispatch) =>
-        dispatch(
-            request.post({
-                url: CRM_CONNECT_TABLES,
-                payload,
-                loading: true,
-                ok: ({ data }) => {},
                 fail: (err) => {},
             }),
         );
@@ -1145,25 +1055,6 @@ export const dataExchange_get_Webinar =
         );
 
 //Webex
-export const dataExchange_connection_Webex_login =
-    ({ payload }) =>
-    async (dispatch) =>
-        dispatch(
-            request.post({
-                url: GET_WEBINAR_LOGIN,
-                payload,
-                loading: true,
-                ok: ({ data }) => {
-                    if (data.status) {
-                        const { status, data: res } = data;
-                        if (status) {
-                        }
-                    }
-                },
-                fail: (err) => {},
-            }),
-        );
-
 export const dataExchange_get_Webex =
     ({ payload }) =>
     async (dispatch) =>

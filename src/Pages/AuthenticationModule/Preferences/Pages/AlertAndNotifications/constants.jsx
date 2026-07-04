@@ -1,4 +1,5 @@
 import { getUserCurrentFormat } from 'Utils/modules/dateTime';
+import { campaignProgressStatus } from 'Utils/modules/communicationStatus';
 import TruncateCell from 'Components/RSKendoGrid/TruncateCell';
 
 
@@ -30,6 +31,7 @@ export const notificationConfig = [
         field: 'description',
          filter: 'text',
         title: 'Description',
+        width: 200,
         cell: ({ dataItem }) => {
             let notificationType = campaignProgressStatus[dataItem?.notificationTypeID];
             return (

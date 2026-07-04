@@ -131,7 +131,7 @@ export const getColumnChartFormat = (id, summary) => {
                 count: {
                     reach: summary?.channelReachInfo?.reachPercentage,
                     engagement: summary?.channelEngagementInfo?.engagementPercentage,
-                    conversion: summary?.channelConversionInfo?.conversionVsReachPercentage,
+                    conversion: summary?.channelConversionInfo?.conversionVsEngagementPercentage,
                 },
                 total: {
                     reachTotal: summary?.channelReachInfo?.totalReachCount,

@@ -1,4 +1,4 @@
-import _orderBy from 'lodash/orderBy';
+import { orderBy as _orderBy } from 'Utils/modules/lodashReplacements';
 import { safeParseJSON } from 'Utils/modules/stringUtils';
 import {
     EMPTY_ANALYTICS_FILTER_OPTIONS,

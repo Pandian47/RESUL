@@ -28,8 +28,16 @@ export const handlePercentage = (value, totalValue) => {
         return 0;
     }
     const result = formatPercentageDisplay((numValue / numTotal) * 100);
-    return Number.isFinite(result) ? result : 0;
+    const numericResult = Number(result);
+    return Number.isFinite(numericResult) ? formatPercentageDisplay(numericResult) : 0;
 };
+
+const toApiPercentage = (value) => {
+    if (value === false || value == null) return 0;
+    const numericValue = Number(value);
+    return Number.isFinite(numericValue) ? formatPercentageDisplay(numericValue) : 0;
+};
+
 export const getPercentages = (id, summary, data) => {
     // console.log("Called Id : " , id)
     // console.log("Get Percentage ",summary , " and Data : ", data)
@@ -69,15 +77,9 @@ export const getPercentages = (id, summary, data) => {
 
         case 'reach':
             return [
-                handlePercentage(summary?.channelReachInfo?.totalReachCount, summary?.totalRecipientsCount),
-                handlePercentage(
-                    summary?.channelEngagementInfo?.totalEngagementCount,
-                    summary?.channelReachInfo?.totalReachCount,
-                ),
-                handlePercentage(
-                    summary?.channelConversionInfo?.totalConversionCount,
-                    summary?.channelReachInfo?.totalReachCount,
-                ),
+                toApiPercentage(summary?.channelReachInfo?.reachPercentage),
+                toApiPercentage(summary?.channelEngagementInfo?.engagementPercentage),
+                toApiPercentage(summary?.channelConversionInfo?.conversionPercentage),
             ];
 
         case 'engagement':
@@ -87,18 +89,14 @@ export const getPercentages = (id, summary, data) => {
                     summary?.channelEngagementInfo?.totalEngagementCount,
                     summary?.channelReachInfo?.totalReachCount,
                 ),
-                // handlePercentage(
-                //     summary?.channelConversionInfo?.totalConversionCount,
-                //     summary?.channelEngagementInfo?.totalEngagementCount,
-                // ),
                 handlePercentage(
                     summary?.channelConversionInfo?.totalConversionCount,
-                    (summary?.channelConversionInfo?.totalOfflineConversionCount ?? 0) > 0
-                        ? summary?.channelReachInfo?.totalReachCount
-                        : summary?.channelEngagementInfo?.totalEngagementCount
+                    summary?.channelEngagementInfo?.totalEngagementCount,
                 ),
             ];
     }
+
+    return [0, 0, 0];
 };
 
 export const getColumnChartFormat = (id, summary) => {
@@ -132,41 +130,19 @@ export const getColumnChartFormat = (id, summary) => {
                     engagementTotal: summary?.channelEngagementInfo?.totalEngagementCount,
                 },
             };
-        // case 'engagement':
-        //     return {
-        //         count: {
-        //             reach: summary?.channelReachInfo?.reachPercentage,
-        //             engagement: summary?.channelEngagementInfo?.engagementPercentage,
-        //             conversion: summary?.channelConversionInfo?.conversionVsReachPercentage,
-        //         },
-        //         total: {
-        //             reachTotal: summary?.channelReachInfo?.totalReachCount,
-        //             conversionTotal: summary?.channelConversionInfo?.totalConversionCount,
-        //             engagementTotal: summary?.channelEngagementInfo?.totalEngagementCount,
-        //         },
-        //     };
-
-        case 'engagement': {
-            const isOfflineConversion = (summary?.channelConversionInfo?.totalOfflineConversionCount ?? 0) > 0;
-
+        case 'engagement':
             return {
                 count: {
                     reach: summary?.channelReachInfo?.reachPercentage,
                     engagement: summary?.channelEngagementInfo?.engagementPercentage,
-                    conversion: isOfflineConversion
-                        ? summary?.channelConversionInfo?.conversionVsReachPercentage
-                        : summary?.channelConversionInfo?.conversionVsEngagementPercentage,
+                    conversion: summary?.channelConversionInfo?.conversionVsEngagementPercentage,
                 },
                 total: {
                     reachTotal: summary?.channelReachInfo?.totalReachCount,
+                    conversionTotal: summary?.channelConversionInfo?.totalConversionCount,
                     engagementTotal: summary?.channelEngagementInfo?.totalEngagementCount,
-                    conversionTotal: isOfflineConversion
-                        ? summary?.channelConversionInfo?.totalOfflineConversionCount
-                        : summary?.channelConversionInfo?.totalOnlineConversionCount,
-                        
                 },
             };
-        }
     }
 };
 
@@ -178,13 +154,14 @@ export const getChartCountParts = (total, percent) => ({
 export const chartValue = (type, summary) => {
     const columnValue = getColumnChartFormat(type, summary);
     const { count, total } = columnValue;
+    const formatPct = (value) => formatPercentageDisplay(value ?? 0);
     return [
         {
             name: 'Reach',
             data: [
                 {
-                    value: `${count?.reach}%`,
-                    count: getChartCountParts(total?.reachTotal, count?.reach),
+                    value: `${formatPct(count?.reach)}%`,
+                    count: getChartCountParts(total?.reachTotal, formatPct(count?.reach)),
                     color: 'bg-reach',
                 },
             ],
@@ -193,8 +170,8 @@ export const chartValue = (type, summary) => {
             name: 'Engagement',
             data: [
                 {
-                    value: `${count?.engagement}%`,
-                    count: getChartCountParts(total?.engagementTotal, count?.engagement),
+                    value: `${formatPct(count?.engagement)}%`,
+                    count: getChartCountParts(total?.engagementTotal, formatPct(count?.engagement)),
                     color: 'bg-engagement',
                 },
             ],
@@ -203,8 +180,8 @@ export const chartValue = (type, summary) => {
             name: 'Conversion',
             data: [
                 {
-                    value: `${count?.conversion}%`,
-                    count: getChartCountParts(total?.conversionTotal, count?.conversion),
+                    value: `${formatPct(count?.conversion)}%`,
+                    count: getChartCountParts(total?.conversionTotal, formatPct(count?.conversion)),
                     color: 'bg-conversion',
                 },
             ],

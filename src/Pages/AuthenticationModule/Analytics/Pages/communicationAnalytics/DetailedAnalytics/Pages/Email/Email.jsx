@@ -4,11 +4,27 @@ import { getChannelId } from 'Utils/modules/communicationChannels';
 import { getUserDetails } from 'Utils/modules/crypto';
 import { getYYMMDD } from 'Utils/modules/dateTime';
 import { KeyMetricsNew, OverviewGrid, OverviewList } from '../../Components';
-import { CAMPAIGN_GRID_COLUMN_DATA, COMMUNICATION_PERFORMANCE, CONTENT_TARGET_GRID_COLUMN_DATA, CONTENT_TARGET_PERFORMANCE, TOP_LINK_ACTIVITY, USER_ENGAGEMENT, areachangeToBase64, changeToBase64, defaultValues, getContentTargetGridData, getPreviewData, handleChannelInfo, handleSegmentData, handleSplit, pieChartOption } from '../../constants';
+import {
+    CAMPAIGN_GRID_COLUMN_DATA,
+    COMMUNICATION_PERFORMANCE,
+    CONTENT_TARGET_GRID_COLUMN_DATA,
+    CONTENT_TARGET_PERFORMANCE,
+    TOP_LINK_ACTIVITY,
+    USER_ENGAGEMENT,
+    areachangeToBase64,
+    changeToBase64,
+    defaultValues,
+    getContentTargetGridData,
+    getPreviewData,
+    handleChannelInfo,
+    handleSegmentData,
+    handleSplit,
+    pieChartOption,
+} from '../../constants';
 import { useEffect, useMemo, useState } from 'react';
 import { Col, Container, Row } from 'react-bootstrap';
 
-import { keyMetrixData, overview_data } from './data';
+import { CAMPAIGN_GRID_COLUMN_DATA as CAMPAIGN_GRID_COLUMN_DATA_DATA, keyMetrixData, overview_data } from './data';
 import ClickMapModal from '../../Components/ClickMapModal';
 import SplitHeader from '../../Components/SplitHeader';
 
@@ -373,7 +389,8 @@ const DetailAnalyticsEmail = ({ type, isDownloadUI }) => {
                                                 <Col md={12} className="portlet-container">
                                                     <AreasPlineChart
                                                         areaPlineDataList={
-                                                            blastAudienceJson && hasNonZeroEngagementData(blastAudienceJson)
+                                                            blastAudienceJson &&
+                                                            hasNonZeroEngagementData(blastAudienceJson)
                                                                 ? changeToBase64(blastAudienceJson, 'area')
                                                                 : {}
                                                         }
@@ -391,12 +408,14 @@ const DetailAnalyticsEmail = ({ type, isDownloadUI }) => {
                                                 expandViewStatus={true}
                                                 footerStatus={false}
                                                 overAllTextData={
-                                                    reachPerformanceJson && hasNonZeroEngagementData(reachPerformanceJson)
+                                                    reachPerformanceJson &&
+                                                    hasNonZeroEngagementData(reachPerformanceJson)
                                                         ? changeToBase64(reachPerformanceJson, 'area')
                                                         : {}
                                                 }
                                                 first24HoursData={
-                                                    reachPerformanceHrsJson && hasNonZeroEngagementData(reachPerformanceHrsJson)
+                                                    reachPerformanceHrsJson &&
+                                                    hasNonZeroEngagementData(reachPerformanceHrsJson)
                                                         ? changeToBase64(reachPerformanceHrsJson, 'area')
                                                         : {}
                                                 }
@@ -431,10 +450,7 @@ const DetailAnalyticsEmail = ({ type, isDownloadUI }) => {
                                                 footerStatus={hasNonZeroEngagementData(enagegementPerformanceJson)}
                                                 overAllTextData={
                                                     hasNonZeroEngagementData(enagegementPerformanceJson)
-                                                        ? areachangeToBase64(
-                                                              enagegementPerformanceJson,
-                                                              'areaFooter',
-                                                          )
+                                                        ? areachangeToBase64(enagegementPerformanceJson, 'areaFooter')
                                                         : {}
                                                 }
                                                 first24HoursData={
@@ -487,11 +503,9 @@ const DetailAnalyticsEmail = ({ type, isDownloadUI }) => {
                                             <ColumnChart
                                                 title={'Conversion'}
                                                 chartData={
-                                                    conversionPerformanceJson && hasNonZeroEngagementData(conversionPerformanceJson)
-                                                        ? changeToBase64(
-                                                              conversionPerformanceJson,
-                                                              'columnFooter',
-                                                          )
+                                                    conversionPerformanceJson &&
+                                                    hasNonZeroEngagementData(conversionPerformanceJson)
+                                                        ? changeToBase64(conversionPerformanceJson, 'columnFooter')
                                                         : {}
                                                 }
                                                 footerPercent={formatNumber(conversion?.registration)}
@@ -569,7 +583,6 @@ const DetailAnalyticsEmail = ({ type, isDownloadUI }) => {
                                                             pageable={true}
                                                             groupable={true}
                                                             searchable={false}
-                                                            initialDataState={{ group: [{ field: 'targetGroup' }] }}
                                                         />
                                                     </div>
                                                 </div>
@@ -618,11 +631,12 @@ const DetailAnalyticsEmail = ({ type, isDownloadUI }) => {
                                                     <KendoGrid
                                                         size="xl"
                                                         data={showLinkData}
-                                                        column={CAMPAIGN_GRID_COLUMN_DATA}
+                                                        column={CAMPAIGN_GRID_COLUMN_DATA_DATA}
                                                         scrollable="scrollable"
                                                         settings={{ total: showLinkData?.length }}
                                                         pageable={true}
                                                         isLoading={isShowLinkLoading}
+                                                        noBoxShadow
                                                     />
                                                 </>
                                             }
@@ -675,7 +689,7 @@ const DetailAnalyticsEmail = ({ type, isDownloadUI }) => {
                                                 setState((prev) => ({
                                                     ...prev,
                                                     isOverviewPreviewModal: false,
-                                            isPreviewLoading: false,
+                                                    isPreviewLoading: false,
                                                 }))
                                             }
                                             previewImage={previewData}

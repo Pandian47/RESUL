@@ -264,8 +264,7 @@ const GeofencingList = () => {
                                     {
                                         field: 'identifier',
                                         title: CLUSTER_NAME,
-                                        
-
+                                        width:200
                                     },
                                     {
                                         field: 'appNames',
@@ -283,7 +282,7 @@ const GeofencingList = () => {
                                     {
                                         field: 'createdDate',
                                         title: CREATE_DATE,
-
+                                        width:200,
                                         cell: (props) => {
                                             return (
                                                 <td>
@@ -300,7 +299,7 @@ const GeofencingList = () => {
                                         field: 'linkedCommunicationsText',
                                         title: 'Linked communications',
                                         filter: 'text',
-                                        width: 230,
+                                        width: 150,
                                         cell: ({ dataItem }) => {
                                             const campaigns = Array.isArray(dataItem?.linkedCommunication)
                                                 ? dataItem?.linkedCommunication
@@ -344,6 +343,7 @@ const GeofencingList = () => {
                                         field: 'statusName',
                                         title: STATUS,
                                         filter: 'text',
+                                        width:200,
                                         cell: (props) => {
                                             return (
                                                 <td>

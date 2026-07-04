@@ -9,7 +9,6 @@ import { useEffect, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import { useFormContext } from 'react-hook-form';
 import { Col, Row } from 'react-bootstrap';
-import _find from 'lodash/find';
 import RSTooltip from 'Components/RSTooltip';
 import RSInput from 'Components/FormFields/RSInput';
 import RSFileUpload from 'Components/FormFields/RSFileUpload';
@@ -62,7 +61,7 @@ const ConnectRDSInputs = ({
     const listnameError = Object.hasOwn(errors, 'instanceName');
     const friendlyNameError = Object.hasOwn(errors, 'friendlyName');
     const defineRow = state === 'CRM' ? 3 : 4;
-    const hasUploadError = !!_find(csvFiles, ['isValid', false]) || false;
+    const hasUploadError = !!csvFiles?.find((item) => item['isValid'] === false) || false;
     const listType = watch('listType');
     const [isValidFriendlyname, setIsValidFriendlyname] = useState(true);
     const validateFileUpload = (fileData) => {

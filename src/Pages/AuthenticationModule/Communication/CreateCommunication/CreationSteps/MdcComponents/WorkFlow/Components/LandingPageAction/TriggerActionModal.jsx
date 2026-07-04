@@ -15,9 +15,7 @@ import RSBootstrapDropdown from 'Components/FormFields/RSBootstrapdown';
 import RSModal from 'Components/RSModal';
 import { RSSecondaryButton, RSPrimaryButton } from 'Components/Buttons';
 
-import _map from 'lodash/map';
-import _filter from 'lodash/filter';
-import _get from 'lodash/get';
+import { map as _map, filter as _filter, get as _get } from 'Utils/modules/lodashReplacements';
 
 import {
     HandleUpdateEdgeLabelDateTimeValidation,

@@ -1,57 +1,10 @@
 import { getUserDetails, encryptWithAES, decryptWithAES, iv } from 'Utils/modules/crypto';
 import { GeneratePasswordpseudorandom } from 'Utils/modules/passwordUtils';
-import _get from 'lodash/get';
-import _map from 'lodash/map';
+import { get as _get, map as _map } from 'Utils/modules/lodashReplacements';
 import CryptoJS from 'crypto-js';
 let hasValue = GeneratePasswordpseudorandom(16); //GeneratePassword16Char();
 let byteHash = CryptoJS.enc.Utf8.parse(hasValue);
 let tempiv = iv;
-
-const toDialCodeDigits = (dialCode) => String(dialCode ?? '').replace(/\D/g, '');
-
-const findDialCodeFromPhoneDigits = (phoneDigits) => {
-    if (!phoneDigits) return '';
-    const sortedDialCodes = [...phoneDialCode].sort(
-        (a, b) => toDialCodeDigits(b.dialCode).length - toDialCodeDigits(a.dialCode).length,
-    );
-    const matched = sortedDialCodes.find(({ dialCode }) => {
-        const dialDigits = toDialCodeDigits(dialCode);
-        return dialDigits && phoneDigits.startsWith(dialDigits);
-    });
-    return matched ? toDialCodeDigits(matched.dialCode) : '';
-};
-
-const findDialCodeFromCountry = (payload) => {
-    const countryId =
-        _get(payload, 'country.countryID', 0) ||
-        _get(payload, 'countryLocation.countryID', 0) ||
-        _get(payload, 'companyCountry.countryID', 0);
-    if (!countryId) return '';
-    const { countryMasterList = [] } = getmasterData();
-    const countryCode = countryMasterList
-        .find((country) => country.countryID === countryId)
-        ?.countryCode?.toLowerCase();
-    if (!countryCode) return '';
-    return toDialCodeDigits(phoneDialCode.find((entry) => entry.countryCode === countryCode)?.dialCode);
-};
-
-const resolveMobileContact = (payload) => {
-    const phoneDigits = toDialCodeDigits(_get(payload, 'phoneNo', ''));
-    const countryDetails = _get(payload, 'countryDetails', {});
-    const dialFromDetails =
-        toDialCodeDigits(countryDetails?.dialCode) ||
-        toDialCodeDigits(countryDetails?.value?.split?.(' ')?.[0]);
-
-    let countryCodeMobile =
-        dialFromDetails || findDialCodeFromPhoneDigits(phoneDigits) || findDialCodeFromCountry(payload);
-
-    let phoneNo = phoneDigits;
-    if (countryCodeMobile && phoneDigits.startsWith(countryCodeMobile)) {
-        phoneNo = phoneDigits.slice(countryCodeMobile.length);
-    }
-
-    return { countryCodeMobile, phoneNo };
-};
 
 const resolveParentClientIdFromKeyContact = (parentClientId, clientId) => {
     const parentId = Number(parentClientId) || 0;
@@ -84,7 +37,7 @@ export const buildPayload = (payload, type,selectedState) => {
     const localizationSettings = {
         timeZoneId: _get(payload, 'timezone.timeZoneID', 0),
         timeFormatId: _get(payload, 'timeFormat.timeFormatID', 0),
-        dateFormatId: _get(payload, 'dateFormat.dateFormatID', 0),
+        dateFormatId: _get(payload, 'dateFormat.dateFormatID', 4),
         currencyId: _get(payload, 'currency.currencyID', 0),
         languageId: _get(payload, 'langauge.languageID', 0),
         isDayLight: _get(payload, 'timezone.isDayLight', false),

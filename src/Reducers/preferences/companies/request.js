@@ -14,10 +14,11 @@ import {
 import { savePricingConfig } from 'Reducers/login/newUser/request';
 import { updateClientList, updateCompanyList } from 'Reducers/globalState/reducer';
 import { resetNewUserFormState } from 'Reducers/login/newUser/reducer';
-import { encodeUrl } from 'Utils/modules/crypto';
+import { encodeUrl, encryptWithAES, decryptWithAES } from 'Utils/modules/crypto';
+import CacheManager from 'Utils/cacheManager';
 export const getCompanyDetails =
     ({ payload, loading = false }) =>
-        async (dispatch) => {
+        async (dispatch, getState) => {
             dispatch(updateLoadingCompany(true));
             return dispatch(
                 request.post({
@@ -30,6 +31,40 @@ export const getCompanyDetails =
                         dispatch(updateCompaniesList(list));
                         if (status) {
                             dispatch(updateCompanyList(response));
+                            try {
+                                const currentClientList = getState().globalstate.clientList || [];
+                                const updatedClientList = [...currentClientList];
+                                response.forEach((company) => {
+                                    if (company.isActivated || company.isActivated === 1) {
+                                        const index = updatedClientList.findIndex((c) => c.clientId === company.clientId);
+                                        const mappedCompany = {
+                                            clientId: company.clientId,
+                                            clientName: company.clientName,
+                                            logoPath: company.logoPath || company.logo || '',
+                                            licenseTypeId: company.licenseTypeId,
+                                            parentClientId: company.parentclientId || company.parentClientId || null,
+                                        };
+                                        if (index > -1) {
+                                            updatedClientList[index] = {
+                                                ...updatedClientList[index],
+                                                ...mappedCompany,
+                                            };
+                                        } else {
+                                            updatedClientList.push(mappedCompany);
+                                        }
+                                    }
+                                });
+                                dispatch(updateClientList(updatedClientList));
+                                const userInfoStr = localStorage.getItem('userInfo');
+                                if (userInfoStr) {
+                                    const userInfo = JSON.parse(decryptWithAES(userInfoStr));
+                                    userInfo.clientList = updatedClientList;
+                                    localStorage.setItem('userInfo', encryptWithAES(JSON.stringify(userInfo)));
+                                    CacheManager.set('userDetails', userInfo);
+                                }
+                            } catch (err) {
+                                console.error('Failed to sync clientList from GET_COMPANY_LIST response', err);
+                            }
                         }
                         if (!status) dispatch(updateFailureCompany(true));
                     },

@@ -1,5 +1,4 @@
-import _get from 'lodash/get';
-import _filter from 'lodash/filter';
+import { get as _get, filter as _filter } from 'Utils/modules/lodashReplacements';
 
 export const normalizeToArray = (value) => {
     if (Array.isArray(value)) return value;

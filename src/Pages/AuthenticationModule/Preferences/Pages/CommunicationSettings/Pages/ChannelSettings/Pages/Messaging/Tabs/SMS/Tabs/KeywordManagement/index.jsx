@@ -126,11 +126,13 @@ const KeywordManagement = () => {
                             {
                                 field: 'inboundNumber',
                                 title: INBOUND_NUMBERS,
+                                
                                 cell: ({ dataItem }) => <TruncatedCell value={dataItem?.inboundNumber} />,
                             },
                             {
                                 field: 'a2pNumberType',
                                 title: A2P_NUMBER_TYPES,
+                                width: 200,
                                 cell: ({ dataItem }) => (
                                     <TruncatedCell value={dataItem?.isDLCNo ? A2P_10_DLC : TOLL_FREE} />
                                 ),
@@ -138,6 +140,7 @@ const KeywordManagement = () => {
                             {
                                 field: 'serviceProvider',
                                 title: SERVICE_PROVIDER,
+                                width: 200,
                                 cell: ({ dataItem }) => <TruncatedCell value={dataItem?.serviceProviderName} />,
                             },
                             {

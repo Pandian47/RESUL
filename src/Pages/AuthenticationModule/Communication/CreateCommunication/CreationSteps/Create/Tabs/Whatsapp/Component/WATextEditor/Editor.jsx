@@ -13,7 +13,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { useFormContext } from 'react-hook-form';
 import EmojiPicker from 'Components/EmojiPicker';
 import ImageUpload from '../../../../Component/ImageUpload/ImageUpload';
-import _get from 'lodash/get';
+import { capitalize as _capitalize, get as _get } from 'Utils/modules/lodashReplacements';
 import RSPPophover from 'Components/RSPPophover';
 import { getWhatsappUploadConfig } from './contanst';
 import MessagingContext from '../../context';
@@ -144,7 +144,7 @@ const Editor = ({ templateResponse, isCarousel, fieldName, isCarouselBody = fals
         [handleImageData, currData?.mediaType],
     );
     const handleChange = async (content, type, isEmoji) => {
-        const mdcContentSetupDetails = _get(location, 'mdcContentSetupDetails', {});
+        const mdcContentSetupDetails = location?.mdcContentSetupDetails ?? {};
 
         if (type === 'dynamic') {
             await handleDynamicContent(content, mdcContentSetupDetails);
@@ -166,6 +166,7 @@ const Editor = ({ templateResponse, isCarousel, fieldName, isCarouselBody = fals
             })) || {};
 
         if (status) {
+            const { urlName, smartCode, blastSC } = data || {};
             insertContentAtCursor(urlName + smartCode + blastSC, { isSmartLink: true });
         }
     };
@@ -290,13 +291,15 @@ const Editor = ({ templateResponse, isCarousel, fieldName, isCarouselBody = fals
                 <Row>
                     {/* Left column starts */}
                     <Col className={isCarouselBody ? '' : ''}>
-                        <div className="wa-editor-error-container">
+                        
                             {_get(errors, `${waEditorText}.message`, '') && (
+                                <div className="wa-editor-error-container">
                                 <div className="wa-editor-error-message color-primary-red">
                                     {_get(errors, `${waEditorText}.message`, '')}
                                 </div>
+                                </div>
                             )}
-                        </div>
+                        
                         <div className="rs-textarea-component-wrapper preview-mobile-editor position-relative ">
                             <SmartLinkInsertingOverlay isLoading={smartLinkInsertLoader.isLoading} />
                             <div className="rstcw-top-icons">
@@ -305,7 +308,7 @@ const Editor = ({ templateResponse, isCarousel, fieldName, isCarouselBody = fals
                                         isCarousel ? currData?.cardBody : currData?.templateContent,
                                     ) && isToolbarActive
                                             ? ''
-                                            : 'click-off'
+                                            : 'click-off pe-none'
                                         }`}
                                 >
                                     <li>

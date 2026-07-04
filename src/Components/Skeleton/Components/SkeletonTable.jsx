@@ -5,7 +5,7 @@ import ContentLoader from 'react-content-loader';
 const GridHead = ({ height, width }) => (
     <ContentLoader
         style={{ width: '100%' }}
-        viewBox="0 0 100% 70"
+        viewBox="0 0 1000 70"
         backgroundColor={scolor1}
         foregroundColor={scolor2}
         height={height + themeSizeSm || sheight + sheightSpace}

@@ -6,8 +6,6 @@ import { CSV_DOWNLOAD } from 'Constants/GlobalConstant/Placeholders';
 import { arrow_left_medium, arrow_right_medium, csv_download_medium, female_large, male_large, user_medium } from 'Constants/GlobalConstant/Glyphicons';
 import { memo, useContext, useEffect, useMemo, useState } from 'react';
 import { Col, Row } from 'react-bootstrap';
-import _get from 'lodash/get';
-import _map from 'lodash/map';
 import RSHighchartsContainer from 'Components/Highcharts';
 import { useDispatch, useSelector } from 'react-redux';
 import { getIndustry, getKnownToUnknown, getSummaryList } from 'Reducers/analytics/analyticsSummary/selector';
@@ -139,8 +137,8 @@ const OverviewGrid = ({ data, handleChange, downloadUI }) => {
     );
 
     const industryChart = useMemo(() => {
-        const industryGraphDataJson = _get(industry, 'industryGraphDataJson[0]', {});
-        return _map(industryGraphDataJson?.data ?? [], (res, index) => ({
+        const industryGraphDataJson = industry?.industryGraphDataJson?.[0] ?? {};
+        return (industryGraphDataJson?.data ?? []).map((res, index) => ({
             name: res.name,
             // y: handleCountPercent(res.y, summary?.channelReachInfo?.totalReachCount),
             y: res.y,
@@ -149,7 +147,7 @@ const OverviewGrid = ({ data, handleChange, downloadUI }) => {
     }, [industry]);
 
     const knowUnknown = useMemo(() => {
-        return _map(knownToUnknown, (res, index) => ({
+        return (knownToUnknown || []).map((res, index) => ({
             name: res.name,
             y: res.intValue,
         }));
@@ -157,8 +155,8 @@ const OverviewGrid = ({ data, handleChange, downloadUI }) => {
     // console.log('knowUnknown: ', knowUnknown);
 
     const segmentChart = useMemo(() => {
-        const segmentGraphDataJson = _get(industry, 'segmentGraphDataJson[0]', {});
-        return _map(segmentGraphDataJson.data, (res, index) => ({
+        const segmentGraphDataJson = industry?.segmentGraphDataJson?.[0] ?? {};
+        return (segmentGraphDataJson.data || []).map((res, index) => ({
             name: res.name,
             y: res.y,
             color: segmentGraphDataJson.colors[index],

@@ -1,24 +1,19 @@
 import { encryptWithAES, getPermissions } from 'Utils/modules/crypto';
 import { getWarningPopupMessage } from 'Utils/modules/warningPopup';
+import {validateHttpsUrl, updateQueryParams} from 'Utils/modules/urlQuery';
 import { MAX_LENGTH10, MAX_LENGTH25, MAX_LENGTH255, MAX_LENGTH50, MIN_LENGTH } from 'Constants/GlobalConstant/Regex';
 import { BU_NAME_EXISTS, BUSINESS_UNIT as BUSINESS_UNIT_MSG, ENTER_ADDRESS, ENTER_CITY, ENTER_COMPANY as ENTER_COMPANY_MSG, ENTER_PARENT_COMPANY, MINLENGTH, SELECT_BUSINESS_POSITION, SELECT_BUSINESS_TYPE, SELECT_COMPANY_BRAND, SELECT_COMPANY_LIST, SELECT_COUNTRY, SELECT_INDUSTRY, SELECT_OPERATIONAL_REGION, SELECT_REGION, THIS_FIELD_IS_REQUIRED, UPLOAD_COMPANY_IMAGE } from 'Constants/GlobalConstant/ValidationMessage';
 import { LIST_NAME_RULES, WEBSITE_RULES_SECURE, ZIP_RULES } from 'Constants/GlobalConstant/Rules';
 import { ADD, ADDRESS, ALLOWED_FORMATS, ARE_YOU_SURE_WANT_TO_CHANGE, BUSINESS_UNIT, CANCEL, CITY, CLICK_ON, CONTACT_ADMIN, CROSS_BU, ENTER_COMPANY, FILE_NAME_EXTENSIONS_JPG_PNG_JPEG_1, FILE_SIZE500KB, HEAD_QUATERS, HEADER_QUATER_CHANGED, HYBRID_SOLUTION, ICON_TO_ADD_BUSINESS_UNITS, NEXT, NO_DATA_AVAILABEL, NOT_A_CLIENT, OK, OPERATIONAL_REGIONS, PARENT_COMPANY, PARENT_COMPANY_POP_HOVER, PERMISSION_REQUIRED, REQUEST_SENT, SAVE, SHARE_BUSINESS_UNITS, SHARING_BUS, STATE, UPDATE, WEBSITE, YOU_HAVE_ALREADY_CREATED, ZIP } from 'Constants/GlobalConstant/Placeholders';
 import { alert_medium, circle_minus_fill_medium, circle_pencil_medium, circle_plus_fill_edge_medium, circle_plus_fill_medium, circle_question_mark_mini, circle_tick_medium, close_medium, lock_medium, settings_medium } from 'Constants/GlobalConstant/Glyphicons';
 import { Fragment, useCallback, useEffect, useMemo, useState } from 'react';
-import _get from 'lodash/get';
-import _map from 'lodash/map';
-import _find from 'lodash/find';
-import _isEqual from 'lodash/isEqual';
-import _isEmpty from 'lodash/isEmpty';
-import _sortBy from 'lodash/sortBy';
-import _findIndex from 'lodash/findIndex';
+import { get as _get, map as _map, find as _find, isEqual as _isEqual, isEmpty as _isEmpty, sortBy as _sortBy, findIndex as _findIndex } from 'Utils/modules/lodashReplacements';
 import { Col, Row } from 'react-bootstrap';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useForm, useFieldArray, useWatch, FormProvider } from 'react-hook-form';
 
-import RSFileUpload from 'Components/FormFields/RSFileUpload';
+import { useImageUpload } from 'Hooks/useImageUpload';
 import RSKendoDropDownList from 'Components/FormFields/RSKendoDropdown';
 import RSInput from 'Components/FormFields/RSInput';
 import RSTooltip from 'Components/RSTooltip';
@@ -155,11 +150,6 @@ const CompanyInfo = ({
     const [parentcompanyList, setParentCompanyList] = useState(false);
     const [isHybridEdit, setisHybridEdit] = useState(false);
     const [allowedBULength, setAllowedBULength] = useState(0);
-    const [imageModalState, setImageModalState] = useState({
-        show: false,
-        tempImageData: null,
-        showFileUpload: true,
-    });
 
     // const deleteAccess = _get(permissions, 'deleteAccess', true);
     const { addAccess, updateAccess, deleteAccess } = permissions || {};
@@ -185,6 +175,17 @@ const CompanyInfo = ({
         resetField,
         formState: { errors, isValid, isDirty },
     } = methods;
+
+    const {
+        fileInputRef,
+        imageModalState,
+        handleNativeFileChange,
+        openCropWithExistingImage,
+        handleCropComplete,
+        handleModalClose,
+        triggerUpload,
+        setTempImageData,
+    } = useImageUpload(setValue, setError, clearErrors, 'profile');
 
     const [shareBU, preferredRegions] = watch(['shareBU', 'preferredRegions']);
     const selectedBusinessType = watch('businessType');
@@ -434,7 +435,7 @@ const CompanyInfo = ({
             const companyCountry = _find(countryMasterList, (country) => country.countryID === countryId);
             const jobFunction = _find(jobFunctionList, (job) => job.jobFunctionID === jobFunctionId);
             const currency = _find(currencyMasterList, (currency) => currency.currencyID === currencyId);
-            const dateFormat = _find(dateFormatList, (date) => date.dateFormatID === dateFormatId);
+            const dateFormat = _find(dateFormatList, (date) => date.dateFormatID === dateFormatId) || _find(dateFormatList, ['dateFormatID', 4]);
             const langauge = _find(languageMasterList, (language) => language.languageID === languageId);
             const timeFormat = _find(timeFormatList, (timeFormat) => timeFormat.timeFormatID === timeFormatId);
             const timezone = _find(timeZoneList, (timezone) => timezone.timeZoneID === timeZoneId);
@@ -640,45 +641,6 @@ const CompanyInfo = ({
         };
         fetchDepartmentLimit();
     }, [fromAccountSettings, accountBootstrap, shouldBootstrapCompanyClient, mode, isEnterprise]);
-
-    const handleImageUpload = (base64Image, fileName) => {
-        const fileExtension = fileName?.split('.').pop()?.toLowerCase() || 'jpeg';
-        const mimeType = fileExtension === 'png' ? 'image/png' : 'image/jpeg';
-        const dataUri = base64Image?.includes('data:image') ? base64Image : `data:${mimeType};base64,${base64Image}`;
-        setImageModalState((prev) => ({ ...prev, tempImageData: dataUri, showFileUpload: false }));
-    };
-
-    const handleCropComplete = (croppedImage) => {
-        setValue('profile', croppedImage);
-        clearErrors('profile');
-        setImageModalState({ show: false, tempImageData: null, showFileUpload: true });
-    };
-
-    const handleModalClose = () => {
-        setImageModalState({ show: false, tempImageData: null, showFileUpload: true });
-        clearErrors('profile');
-        clearErrors('uploadImageName');
-    };
-
-    const handleOpenImageModal = (isEdit = false) => {
-        if (isEdit) {
-            const currentImage = watch('profile');
-            if (currentImage) {
-                let imageForCrop = currentImage;
-                if (!currentImage.includes('data:image')) {
-                    const isBase64Includes = currentImage?.includes('base64') || false;
-                    if (isBase64Includes) {
-                        imageForCrop = currentImage;
-                    } else {
-                        imageForCrop = `data:image/png;base64,${currentImage}`;
-                    }
-                }
-                setImageModalState({ show: true, tempImageData: imageForCrop, showFileUpload: false });
-            }
-        } else {
-            setImageModalState({ show: true, tempImageData: null, showFileUpload: true });
-        }
-    };
 
     const CompanyImageUploadButton = ({ value, onClick, onRemove, onEdit, error }) => {
         const [tooltip, setTooltip] = useState(false);
@@ -1043,8 +1005,8 @@ const CompanyInfo = ({
                             <Col>
                                 <CompanyImageUploadButton
                                     value={watch('profile')}
-                                    onClick={() => handleOpenImageModal(false)}
-                                    onEdit={() => handleOpenImageModal(true)}
+                                    onClick={triggerUpload}
+                                    onEdit={() => openCropWithExistingImage(watch('profile'))}
                                     onRemove={() => {
                                         setValue('profile', null);
                                         setError('profile', {
@@ -2057,62 +2019,40 @@ const CompanyInfo = ({
                     // secondaryButton={false}
                 />
                 {getWarningPopupMessage(failureApiErrors, dispatch)}
-                {imageModalState.show && (
-                    <RSModal
-                        show={imageModalState.show}
-                        header="Edit company logo"
-                        size="md"
-                        handleClose={handleModalClose}
-                        body={
-                            <div className="image-upload-crop-container">
-                                {imageModalState.showFileUpload && (
-                                    <Row className="mt11">
-                                        <Col>
-                                            <RSFileUpload
-                                                isbase64={true}
-                                                control={control}
-                                                name={'uploadImageName'}
-                                                text="Browse"
-                                                accept=".png,.jpg,.jpeg"
-                                                customInputClass={'upload-button-top-align ml20'}
-                                                size={512000}
-                                                isBase64Status={true}
-                                                base64Data={async (base64, fileName, contentLength) => {
-                                                    handleImageUpload(base64, fileName);
-                                                }}
-                                                handleChange={(e) => {}}
-                                                setError={setError}
-                                                required
-                                                watch={watch}
-                                                clearErrors={clearErrors}
-                                            />
-                                            <small className="text-muted d-block mt5">
-                                            Allowed formats: .jpg, .jpeg, .png | maximum size: 500kb
-                                            </small>
-                                        </Col>
-                                    </Row>
-                                )}
-
-                                {imageModalState.tempImageData && (
-                                    <>
-                                        <ImageCropModal
-                                            imageSrc={imageModalState.tempImageData}
-                                            onCropComplete={handleCropComplete}
-                                            onCancel={handleModalClose}
-                                            aspectRatio={1}
-                                            cropShape="round"
-                                            showGrid={true}
-                                            height="250px"
-                                            setTempImageData={(data) => setImageModalState((prev) => ({ ...prev, tempImageData: data }))}
-                                            setShowFileUpload={(show) => setImageModalState((prev) => ({ ...prev, showFileUpload: show }))}
-                                            setValue={setValue}
-                                        />
-                                    </>
-                                )}
-                            </div>
-                        }
-                    />
-                )}
+            <input
+                type="file"
+                ref={fileInputRef}
+                accept=".png,.jpg,.jpeg"
+                style={{ display: 'none' }}
+                onChange={handleNativeFileChange}
+            />
+            {imageModalState.show && imageModalState.tempImageData && (
+                <RSModal
+                    show={imageModalState.show}
+                    header="Edit company logo"
+                    size="md"
+                    handleClose={handleModalClose}
+                    body={
+                        <div className="image-upload-crop-container">
+                            <ImageCropModal
+                                imageSrc={imageModalState.tempImageData}
+                                onCropComplete={handleCropComplete}
+                                onCancel={handleModalClose}
+                                aspectRatio={1}
+                                cropShape="round"
+                                showGrid={true}
+                                height="250px"
+                                setTempImageData={setTempImageData}
+                                setShowFileUpload={() => {
+                                    handleModalClose();
+                                    triggerUpload();
+                                }}
+                                setValue={setValue}
+                            />
+                        </div>
+                    }
+                />
+            )}
             </form>
             </PreferencesSubPageSkeletonGate>
         </FormProvider>

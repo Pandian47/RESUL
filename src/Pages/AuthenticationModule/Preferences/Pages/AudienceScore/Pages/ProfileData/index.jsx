@@ -3,7 +3,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { Col, Row } from 'react-bootstrap';
 import { RSPrimaryButton, RSSecondaryButton } from 'Components/Buttons';
 import { FormProvider, useForm } from 'react-hook-form';
-import { INITIAL_STATE, buildPayloadProfileData } from './constant';
+import { INITIAL_STATE, buildPayloadProfileData, findProfileSegmentByType } from './constant';
 import { setAudienceScoreTab } from 'Reducers/preferences/audienceScore/reducer';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
@@ -19,11 +19,14 @@ import {
 import ProfileDataCard from '../Components/ProfileData';
 import { worthLimit } from '../PurchasePattern/constant';
 import GradingCard from '../Components/ProfileData/GradingCard';
-import { parseAudienceJson } from 'Pages/AuthenticationModule/Audience/audienceDefaults';
+import { parseAudienceJson, parseAudienceJsonArray } from 'Pages/AuthenticationModule/Audience/audienceDefaults';
 import { handleProfileDataGradingTotal } from '../Components/constants';
 import { AudienceScoreTabContentSkeletonGate } from 'Components/Skeleton/Components/PreferencesSubPageRouteSkeleton';
 import useApiLoader from 'Hooks/useApiLoader';
 import { FIELD_BOTH_LOADER_CONFIG as fieldLoaderConfig } from 'Hooks/loaderTypes';
+import {
+    getAudienceScoreListFromResponse,
+} from '../Components/constants';
 
 
 
@@ -109,22 +112,16 @@ const ProfileData = () => {
                 return { profileRes, classificationRes, channelRes };
             },
             onSuccess: ({ profileRes, classificationRes, channelRes }) => {
-                if (profileRes?.status) {
-                    setProfileData(profileRes?.data ?? []);
-                } else {
-                    setProfileData([]);
-                }
+                setProfileData(
+                    profileRes?.status ? parseAudienceJsonArray(profileRes?.data, []) : [],
+                );
                 if (classificationRes?.status) {
-                    const getJsonParseData = parseAudienceJson(classificationRes?.data, {});
-                    setClassificationData(Array.isArray(getJsonParseData?.data) ? getJsonParseData.data : []);
+                    const parsedClassification = parseAudienceJson(classificationRes?.data, {});
+                    setClassificationData(parseAudienceJsonArray(parsedClassification?.data, []));
                 } else {
                     setClassificationData([]);
                 }
-                if (channelRes?.status) {
-                    setChannelNameData(channelRes?.data ?? []);
-                } else {
-                    setChannelNameData([]);
-                }
+                setChannelNameData(getAudienceScoreListFromResponse(channelRes));
             },
             onError: () => {
                 setProfileData([]);
@@ -138,22 +135,13 @@ const ProfileData = () => {
         bootstrapProfileData();
     }, [bootstrapProfileData]);
 
-    const updateName = (name) => {
-        const updatedName = name?.toLowerCase()?.replaceAll(/\s+/g, '');
-        return updatedName;
-    };
-
     const { referralviralityProfile, omnipresenceProfile, networkworthProfile, dataaugmentationProfile } = getAllValues;
 
     useEffect(() => {
         handleProfileDataGradingTotal(getAllValues, setValue);
     }, [referralviralityProfile, omnipresenceProfile, networkworthProfile, dataaugmentationProfile]);
 
-    const getCurrentProfileData = (type) => {
-        if (profileData?.length) {
-            return profileData.find((item) => updateName(item?.dataSegmentKey) === updateName(type));
-        }
-    };
+    const getCurrentProfileData = (type) => findProfileSegmentByType(profileData, type);
 
     const otherTypeKeyMapDetail = {
         textField: 'ChannelName',

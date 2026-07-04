@@ -64,19 +64,6 @@ const InputSkeleton = ({ extraBars = [] }) => (
     </div>
 );
 
-const AccountTypeOptionSkeleton = ({ withDivider = false }) => (
-    <Col className="text-center p0">
-        <div
-            className={`acc-setup-skel-account-type-box res-account-type-box${withDivider ? ' acc-setup-skel-account-type-box--divider' : ''
-                }`}
-        >
-            <SkelBar className="acc-setup-skel-account-type-icon" />
-            <SkelBar className="acc-setup-skel-account-type-title" />
-            <SkelBar className="acc-setup-skel-account-type-desc" />
-        </div>
-    </Col>
-);
-
 const AccountSetupContactFormSkeleton = () => (
     <div>
         <div className="acc-setup-skel-card rs-box rs-box-min-height">
@@ -118,15 +105,6 @@ const AccountSetupContactFormSkeleton = () => (
             <SkelBar className="acc-setup-skel-btn-back" />
             <SkelBar className="acc-setup-skel-btn-next" />
         </div>
-    </div>
-);
-
-const AccountSetupAccountTypeSkeleton = () => (
-    <div className="box-design rs-box acc-setup-skel-account-type-card">
-        <Row className="res-gx-2">
-            <AccountTypeOptionSkeleton />
-            <AccountTypeOptionSkeleton withDivider />
-        </Row>
     </div>
 );
 

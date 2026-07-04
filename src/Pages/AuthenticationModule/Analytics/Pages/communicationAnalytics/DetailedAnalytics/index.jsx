@@ -35,10 +35,10 @@ import useQueryParams from 'Hooks/useQueryParams';
 import { RSPageHeaderSkeleton } from 'Components/Skeleton/Components/common';
 import {
     DETAIL_ANALYTICS_LOADING_HOLDER_STYLE,
-    DetailAnalyticsPdfExportSkeleton,
     DetailAnalyticsLoadingBlock,
     detailAnalyticsSkeletonCriticalCss,
 } from 'Components/Skeleton/pages/analytics';
+import RSLoader from 'Components/Loader';
 import { SkeletonTable } from 'Components/Skeleton/Skeleton';
 import {
     linkPreviewDetailsData,
@@ -235,9 +235,9 @@ const DetailAnalytics = () => {
       delete channelDetailsPayload?.blastId;
       const { status, data } = await dispatch(getDetailReport_ChannelDetails({ payload: channelDetailsPayload }));
       if (status) {
-        let sortedChannels = getSortedChannels(channelInfos, 'channelId', '');
+        let sortedChannels = getSortedChannels(data?.channelInfos, 'channelId', '');
 
-        const channelInfos = isSplitEnabled && splitChannelLevelInfo?.length ? splitChannelLevelInfo : sortedChannels && sortedChannels ? sortedChannels : [];
+        const channelInfos = data?.isSplitEnabled && data?.splitChannelLevelInfo?.length ? data?.splitChannelLevelInfo : sortedChannels && sortedChannels ? sortedChannels : [];
         let splitIndex = null;
         if ((locationData?.isSplitAB || locationData?.isSplitABScheduler) && locationData?.splitName) {
           let splitInd = channelInfos?.findIndex((item) => item?.splitType == splitType);
@@ -293,13 +293,13 @@ const DetailAnalytics = () => {
                 dispatch(updateDetailsMainList({ field: 'fromSplitHeader', data: false }));
                 // Handle winner split functionality here to avoid duplicate API calls
                 let overviewPayload = { ...payload };
-                if (isWinnerSplit && startDate && endDate) {
+                if (isWinnerSplit && data?.startDate && data?.endDate) {
                     overviewPayload = {
                         ...overviewPayload,
-                        startDate: getYYMMDD(startDate),
-                        endDate: getYYMMDD(endDate),
+                        startDate: getYYMMDD(data.startDate),
+                        endDate: getYYMMDD(data.endDate),
                         segment: 0,
-                        split: isSplitABScheduler ? splitType: isWinnerSplit ? 'ACT' : `Split ${isWinnerSplitType}`,
+                        split: isSplitABScheduler ? splitType : isWinnerSplit ? 'ACT' : `Split ${isWinnerSplitType}`,
                     };
                     dispatch(updateDetailsMainList({ field: 'fromSplitHeader', data: true }));
                 } else if (
@@ -312,7 +312,7 @@ const DetailAnalytics = () => {
                     };
                 }
 
-                const isTGCGEnabled = isTGCG ?? channelDetail?.isTGCG;
+                const isTGCGEnabled = data?.isTGCG ?? channelDetail?.isTGCG;
                 if (isTGCGEnabled) {
                     overviewPayload = {
                         ...overviewPayload,
@@ -323,14 +323,14 @@ const DetailAnalytics = () => {
 
                 if (
                     resolvedChannelId === 10 &&
-                    startDate &&
-                    endDate &&
+                    data?.startDate &&
+                    data?.endDate &&
                     !overviewPayload.startDate
                 ) {
                     overviewPayload = {
                         ...overviewPayload,
-                        startDate: getYYMMDD(startDate),
-                        endDate: getYYMMDD(endDate),
+                        startDate: getYYMMDD(data.startDate),
+                        endDate: getYYMMDD(data.endDate),
                     };
                     dispatch(updateDetailsMainList({ field: 'fromSplitHeader', data: true }));
                 }
@@ -348,8 +348,8 @@ const DetailAnalytics = () => {
             const pathState = {
                 from: +locationData?.campaignId,
                 channelId: payload.channelId || locationData?.channelId,
-                startDate: startDate || locationData?.startDate,
-                endDate: endDate || locationData?.endDate,
+                startDate: data?.startDate || locationData?.startDate,
+                endDate: data?.endDate || locationData?.endDate,
                 campaignTypeValue: locationData?.campaignTypeValue,
                 campaignName: locationData?.campaignName,
                 subSegmentLevel:
@@ -752,6 +752,7 @@ const DetailAnalytics = () => {
     
     const contextValue = {
         refAPIStatus,
+        isPdfExporting,
     };
 
     return (
@@ -905,13 +906,11 @@ const DetailAnalytics = () => {
                 !isChannelLoading &&
                 createPortal(
                     <div
-                        className="analytics-report-pdf-skeleton-overlay analytics-detail-skeleton-scope dask-scope"
-                        style={DETAIL_ANALYTICS_LOADING_HOLDER_STYLE}
+                        className="analytics-report-pdf-loader-overlay"
                         aria-busy="true"
                         aria-label="Preparing PDF download"
                     >
-                        <style>{detailAnalyticsSkeletonCriticalCss}</style>
-                        <DetailAnalyticsPdfExportSkeleton />
+                        <RSLoader fallback />
                     </div>,
                     document.body,
                 )}

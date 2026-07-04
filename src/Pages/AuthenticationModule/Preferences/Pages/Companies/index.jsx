@@ -3,7 +3,7 @@ import { truncateTitle } from 'Utils/modules/displayCore';
 import { NO_DATA_AVAILABEL } from 'Constants/GlobalConstant/Placeholders';
 import { circle_grid_fill_edge_large, circle_hierarchy_fill_edge_large, circle_info_mini, circle_plus_fill_edge_large, settings_medium, user_medium } from 'Constants/GlobalConstant/Glyphicons';
 import { Fragment, useEffect, useMemo, useState } from 'react';
-import _map from 'lodash/map';
+import { map as _map } from 'Utils/modules/lodashReplacements';
 import { useNavigate } from 'react-router-dom';
 import { Container, Row } from 'react-bootstrap';
 
@@ -348,7 +348,7 @@ const Companies = ({ permissions }) => {
           </RSTooltip>
         </li>
         <li>
-          <RSTooltip position="top" text="Add" className="lh0">
+          <RSTooltip position="top" text="Add" className="lh0 mt-4">
             <div className={isToolbarDisabled ? 'pe-none click-off' : ''}>
             <i
               onClick={() => {

@@ -15,6 +15,7 @@ export const CHANNEL_IMAGE = {
     40: communication_response_sync_large,
     41: messaging_rcs_large,
 };
+import { sanitizeDisplayText } from 'Utils/index';
  
 export const getBandwidthChart = (bandwidth,isCustom) => {
     const bandwidthMatch = bandwidth?.match(/([0-9.]+)\s*([A-Za-z]+)/);

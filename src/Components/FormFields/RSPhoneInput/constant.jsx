@@ -844,3 +844,6 @@ export const phoneDialCode = [
         dialCode: '+263',
     },
 ];
+
+/** Same layer as ResKendoDropdown `.k-animation-container` — list above RSModal chrome */
+export const PHONE_COUNTRY_DROPDOWN_Z_INDEX = 1101;

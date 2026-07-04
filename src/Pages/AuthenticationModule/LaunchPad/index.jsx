@@ -6,8 +6,7 @@ import { useEffect, useState } from 'react';
 import RSPageHeader from 'Components/RSPageHeader';
 import { Container, Row, Col } from 'react-bootstrap';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import _find from 'lodash/find';
-import _get from 'lodash/get';
+import { find as _find, get as _get } from 'Utils/modules/lodashReplacements';
 import { useDispatch, useSelector } from 'react-redux';
 
 import ConfirmationPopup from '../Audience/Pages/AddAudience/Components/CSV/Components/ConfirmationPopup/ConfirmationPopup';

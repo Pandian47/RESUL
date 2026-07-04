@@ -1,18 +1,21 @@
 import { getWarningPopupMessage } from 'Utils/modules/warningPopup';
-import { useState } from 'react';
+import { useEffect, useLayoutEffect, useState } from 'react';
 import { ACTION_INITIAL_STATE } from '../../constant';
 import { SMPPProvider } from './Context';
 import SMPPCreate from './Create';
 import SMPPList from './Grid/index.jsx';
 
 import { useDispatch, useSelector } from 'react-redux';
+import useQueryParams from 'Hooks/useQueryParams';
 
 const SMPP = () => {
     const dispatch = useDispatch()
+    const queryState = useQueryParams('/preferences/communication-settings');
+    let addSenderFromComm = queryState?.from === 'messaging' && queryState?.addType === 'addSenderId';
     const { failureApiErrors } = useSelector(({ globalstate }) => globalstate);
     const [ failedApi, setFailedApi] = useState('')
     const [gridCreate, setGridCreate] = useState(ACTION_INITIAL_STATE);
-    const value = { setGridCreate, gridCreate };
+    const value = { setGridCreate, gridCreate, addSenderFromComm };
 
     const handleErrClose = () => {
         if (failedApi === 'GetClientSMSSettingsbyID' || failedApi === 'GetSMSSettingsbyID') {
@@ -20,6 +23,21 @@ const SMPP = () => {
         }
         setFailedApi('')
     }
+    useLayoutEffect(() => {
+        if (addSenderFromComm) {
+            setGridCreate((prev) => ({
+                ...prev,
+                showGrid: false,
+                smppAction: {
+                    edit: {
+                        editState: [],
+                        isEdit: false,
+                    },
+                    create: true,
+                },
+            }));
+        }
+    }, [addSenderFromComm]);
     return (
         <SMPPProvider.Provider value={value}>
             {gridCreate.showGrid ? (

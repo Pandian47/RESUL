@@ -1,5 +1,4 @@
 import { Fragment } from 'react';
-import _map from 'lodash/map';
 import ContentLoader from 'react-content-loader';
 import { getContentLoaderColors } from '../Constant';
 
@@ -56,7 +55,7 @@ const config = {
 };
 export const Skeleton = (config) => (
     <Fragment>
-        {_map(config, ({ content, rect }) => (
+        {config.map(({ content, rect }) => (
             <ContentLoader {...content}>
                 <rect x="0" y="0" rx="0" ry="0" {...rect} />
             </ContentLoader>

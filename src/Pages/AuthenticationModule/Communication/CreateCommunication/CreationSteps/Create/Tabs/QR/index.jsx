@@ -1,13 +1,19 @@
 import { isURLValid } from 'Utils/modules/dateTime';
 import { ACCEPTS_JPEG_PNG_FORMATS, CANCEL, COMMUNICATION_TEXT, COMMUNICATION_URL, DOUBLE_OPT_IN_STATEMENT, FACEBOOK_APP_URL, GENERATE, GENERATE_QR_THAN_SAVE, IGNORE_CHANNEL, KNOW_YOUR_CUSTOMER, MESSAGE, MOBILE_NUMBER, NEXT, OK, POTENTIAL_AUDIENCE_REACH, POTENTIAL_AUDIENCE_REACH_TOOLTIP, REDIRECTION_URL, SAVE, SELECT_KYC, SEND_MAIL_TO, SUBJECT_LINE, TWEET_TEXT, UPLOAD_LOGO, URL_COMMUNICATION_TEXT, URL_REDIRECTION_TEXT, USER_EMAIL_MOBILE } from 'Constants/GlobalConstant/Placeholders';
 import { getWarningPopupMessage } from 'Utils/modules/warningPopup';
-import { getStrContent, getUpdateTab, isBase64, QR_INITIAL_DATA } from './constant';
+import {
+    buildQrPreviewContentFromFormResponse,
+    DEFAULT_QR_PREVIEW_FORM_STATE,
+    getStrContent,
+    getUpdateTab,
+    isBase64,
+    QR_INITIAL_DATA,
+} from './constant';
 import { EMAIL_REGEX, HTTPS_REGEX, WEBSITE_REGEX, WEBURL_REGEX } from 'Constants/GlobalConstant/Regex';
 import { COMMUNICATION_DESCRIPTION, ENTER_AUDIENCE_REACH_NUMBER, ENTER_EDITOR_TEXT, ENTER_EMAIL_ID, ENTER_EMAIL_MESSAGE, ENTER_SUBJECT_LINE, ENTER_TWEET_TEXT, ENTER_URL, ENTER_VALID_EMAIL, ENTER_VALID_URL, REDIRECTION_URL as REDIRECTION_URL_MSG } from 'Constants/GlobalConstant/ValidationMessage';
 import { circle_question_mark_medium, circle_question_mark_mini, eye_large, restart_large } from 'Constants/GlobalConstant/Glyphicons';
 import { useEffect, useRef, useState } from 'react';
-import _isEmpty from 'lodash/isEmpty';
-import _get from 'lodash/get';
+import { isEmpty as _isEmpty, get as _get } from 'Utils/modules/lodashReplacements';
 import { Col, Row } from 'react-bootstrap';
 import { useDispatch, useSelector } from 'react-redux';
 import { useForm, FormProvider } from 'react-hook-form';
@@ -17,7 +23,6 @@ import RSKendoDropDownList from 'Components/FormFields/RSKendoDropdown';
 import RSTextarea from 'Components/FormFields/RSTextarea';
 import RSFileUpload from 'Components/FormFields/RSFileUpload';
 import RSSwitch from 'Components/FormFields/RSSwitch';
-import RSPPophover from 'Components/RSPPophover';
 import TextEditor from 'Components/TextEditor';
 import RSCheckbox from 'Components/FormFields/RSCheckbox';
 import RSPhoneInput from 'Components/FormFields/RSPhoneInput';
@@ -108,6 +113,8 @@ const QRContent = ({ tab }) => {
         callStatus: false
     })
     const [fileName, setFileName] = useState('');
+    const [isLogoUploading, setIsLogoUploading] = useState(false);
+    const [isGenerating, setIsGenerating] = useState(false);
     const [preview, setPreview] = useState(false);
     const [URL, setURL] = useState('');
     const [URLQR, setURLQR] = useState('');
@@ -132,13 +139,7 @@ const QRContent = ({ tab }) => {
         backgroundColor: '#ffffff',
         dropAbleData: [],
         previewTempData: [],
-        formState: {
-            layout: 'form-theme-default',
-            profilingToggle: false,
-            Submit: { buttonText: 'Submit', buttonColor: '#28a745' },
-            CancelView: { isCancel: false, buttonText: 'Cancel' },
-            previewData: { enableCaptchaCheckbox: false },
-        },
+        formState: DEFAULT_QR_PREVIEW_FORM_STATE,
         isCaptchaEnabled: false,
     });
     const { failureApiErrors } = useSelector(({ globalstate }) => globalstate);
@@ -460,6 +461,7 @@ const QRContent = ({ tab }) => {
     }, [location, tab]);
 
     const handleGenerate = async (formState) => {
+        setIsGenerating(true);
         let { audience_reach, short_url, kyc } = getValues();
 
         let {
@@ -491,6 +493,7 @@ const QRContent = ({ tab }) => {
             departmentId,
         };
         let res = await dispatch(getQRCodeDownloadURL({ payload }));
+        setIsGenerating(false);
         if (res?.status) {
             let pdf = res?.data[0]?.includes('.pdf') ? 0 : 1;
             setValue('download_img', pdf === 1 ? res?.data[0] : res?.data[1]);
@@ -725,7 +728,9 @@ const QRContent = ({ tab }) => {
                     imageFormat,
                     base64String,
                 };
+                setIsLogoUploading(true);
                 const res = await dispatch(uploadImageQR({ payload }));
+                setIsLogoUploading(false);
                 if (res?.status) {
                     let imagePath = res?.data;
                     let getFileName = imagePath.substring(imagePath.lastIndexOf('/') + 1);
@@ -767,26 +772,9 @@ const QRContent = ({ tab }) => {
     useEffect(() => {
         if (Object.keys(qr[tab])?.includes('getKYClistID')) {
             const { getKYClistID } = qr[tab];
-            if (!!getKYClistID[0]?.htmlcodeclient) {
-                const getParseData = JSON.parse(getKYClistID[0]?.htmlcodeclient);
-                const defaultFormState = {
-                    layout: 'form-theme-default',
-                    profilingToggle: false,
-                    Submit: { buttonText: 'Submit', buttonColor: '#28a745' },
-                    CancelView: { isCancel: false, buttonText: 'Cancel' },
-                    previewData: { enableCaptchaCheckbox: false },
-                };
-                setPreviewContent({
-                    backgroundColor: getParseData?.selectedColor || '#ffffff',
-                    dropAbleData: getParseData?.dropValue || [],
-                    previewTempData: getParseData?.previewData || [],
-                    formState: {
-                        ...defaultFormState,
-                        ...getParseData?.formState,
-                        layout: getParseData?.formState?.layout || defaultFormState.layout,
-                    },
-                    isCaptchaEnabled: getKYClistID[0]?.isCaptchaenabled || false,
-                });
+            const nextPreviewContent = buildQrPreviewContentFromFormResponse(getKYClistID?.[0]);
+            if (nextPreviewContent) {
+                setPreviewContent(nextPreviewContent);
             }
         }
     }, [qr, tab]);
@@ -822,7 +810,7 @@ const QRContent = ({ tab }) => {
                             isQrClassNameEnable
                         />
                     )}
-                    <div className="form-group">
+                    <div >
                         <Row>
                             <div className="col-sm-9">
                                 <div className="form-group">
@@ -832,7 +820,7 @@ const QRContent = ({ tab }) => {
                                                 {POTENTIAL_AUDIENCE_REACH}
                                             </label>
                                         </Col>
-                                        <Col sm={7} className="pl0">
+                                        <Col sm={7} >
                                             <RSInput
                                                 name={'audience_reach'}
                                                 type="text"
@@ -849,27 +837,9 @@ const QRContent = ({ tab }) => {
                                                 // handleOnBlur={(e) => setValue('audience_reach',  (e.target.value))}
                                                 onKeyDown={onlyNumbers}
                                                 maxLength={8}
+                                                rightTooltip = {POTENTIAL_AUDIENCE_REACH_TOOLTIP}
                                             />
-                                            <RSPPophover pophover={POTENTIAL_AUDIENCE_REACH_TOOLTIP}>
-                                                <i
-                                                    className={`${circle_question_mark_mini} icon-xs color-primary-blue float-end mt2`}
-                                                    id="circle_question_mark"
-                                                ></i>
-                                            </RSPPophover>
                                         </Col>
-                                        {/* <Col sm={1} className="fg-icons-wrapper pl0">
-                                            <div className="fg-icons">
-                                                <RSPPophover
-                                                    pophover={
-                                                        'Excepted audience reach is the number of audience in the area where QR code will be placed.'
-                                                    }
-                                                >
-                                                    <i
-                                                        className={`${circle_question_mark_medium} icon-md color-primary-blue`}
-                                                    ></i>
-                                                </RSPPophover>
-                                            </div>
-                                        </Col> */}
                                     </Row>
                                 </div>
 
@@ -881,7 +851,7 @@ const QRContent = ({ tab }) => {
                                                     {COMMUNICATION_URL}
                                                 </label>
                                             </Col>
-                                            <Col sm={7} className="pl0">
+                                            <Col sm={7} >
                                                 <RSInput
                                                     name={'communicationurl'}
                                                     id="rs_QRContent_CommunicationURL"
@@ -919,13 +889,8 @@ const QRContent = ({ tab }) => {
                                                                       message: ENTER_VALID_URL,
                                                                   },
                                                     }}
+                                                    rightTooltip = {URL_COMMUNICATION_TEXT}
                                                 />
-                                                <RSPPophover pophover={URL_COMMUNICATION_TEXT}>
-                                                    <i
-                                                        className={`${circle_question_mark_mini} icon-xs color-primary-blue float-end mt2`}
-                                                        id="circle_question_mark"
-                                                    ></i>
-                                                </RSPPophover>
                                             </Col>
                                         </Row>
                                     </div>
@@ -939,7 +904,7 @@ const QRContent = ({ tab }) => {
                                                     {COMMUNICATION_URL}
                                                 </label>
                                             </Col>
-                                            <Col sm={7} className="pl0">
+                                            <Col sm={7} >
                                                 <RSInput
                                                     name={'facebook_app_url'}
                                                     id="rs_QRContent_FacebookAppURL"
@@ -964,7 +929,7 @@ const QRContent = ({ tab }) => {
                                             <Col sm={{ span: 4 }}>
                                                 <label className="control-label-left">{TWEET_TEXT}</label>
                                             </Col>
-                                            <Col sm={7} className="pl0">
+                                            <Col sm={7} >
                                                 <RSTextarea
                                                     control={control}
                                                     name={'tweet_text'}
@@ -984,7 +949,7 @@ const QRContent = ({ tab }) => {
                                                     {COMMUNICATION_TEXT}
                                                 </label>
                                             </Col>
-                                            <Col sm={7} className="pl0">
+                                            <Col sm={7} >
                                                 <Row>
                                                     <Row>
                                                         {isTextInvalid && (
@@ -1016,7 +981,7 @@ const QRContent = ({ tab }) => {
                                                         {MOBILE_NUMBER}
                                                     </label>
                                                 </Col>
-                                                <Col sm={7} className="pl0">
+                                                <Col sm={7} >
                                                     <RSPhoneInput
                                                         control={control}
                                                         name={'mobile_number'}
@@ -1033,7 +998,7 @@ const QRContent = ({ tab }) => {
                                                 <Col sm={{ span: 4 }}>
                                                     <label className="control-label-left">{MESSAGE}</label>
                                                 </Col>
-                                                <Col sm={7} className="pl0 preference-modal">
+                                                <Col sm={7} className=" preference-modal">
                                                     <RSTextarea
                                                         control={control}
                                                         name={'message'}
@@ -1054,7 +1019,7 @@ const QRContent = ({ tab }) => {
                                                     {SEND_MAIL_TO}
                                                 </label>
                                             </Col>
-                                            <Col sm={7} className="pl0">
+                                            <Col sm={7} >
                                                 <RSInput
                                                     control={control}
                                                     required
@@ -1076,7 +1041,7 @@ const QRContent = ({ tab }) => {
                                                     {SUBJECT_LINE}
                                                 </label>
                                             </Col>
-                                            <Col sm={7} className="pl0">
+                                            <Col sm={7} >
                                                 <RSInput
                                                     control={control}
                                                     required
@@ -1092,7 +1057,7 @@ const QRContent = ({ tab }) => {
                                             <Col sm={{ span: 4 }}>
                                                 <label className="control-label-left">{MESSAGE}</label>
                                             </Col>
-                                            <Col sm={7} className="pl0">
+                                            <Col sm={7} >
                                                 <RSTextarea
                                                     control={control}
                                                     name={'message'}
@@ -1109,7 +1074,7 @@ const QRContent = ({ tab }) => {
                                         <Col sm={{ span: 4 }}>
                                             <label className="control-label-left">{REDIRECTION_URL}</label>
                                         </Col>
-                                        <Col sm={7} className="pl0">
+                                        <Col sm={7} >
                                             <RSInput
                                                 name={'redirection_url'}
                                                 control={control}
@@ -1154,27 +1119,9 @@ const QRContent = ({ tab }) => {
                                                     // },
                                                     // validate: () => (websiteError ? _get(errors, 'redirection_url.message') : true),
                                                 }}
+                                                rightTooltip={URL_REDIRECTION_TEXT}
                                             />
-                                            <RSPPophover pophover={URL_REDIRECTION_TEXT}>
-                                                <i
-                                                    className={`${circle_question_mark_mini} icon-xs color-primary-blue float-end mt2`}
-                                                    id="circle_question_mark"
-                                                ></i>
-                                            </RSPPophover>
                                         </Col>
-                                        {/* <Col sm={1} className="fg-icons-wrapper pl0">
-                                            <div className="fg-icons">
-                                                <RSPPophover
-                                                    pophover={
-                                                        'The user will be redirected to this URL if the QR code is scanned after the specified communication duration.'
-                                                    }
-                                                >
-                                                    <i
-                                                        className={`${circle_question_mark_medium} icon-md color-primary-blue`}
-                                                    ></i>
-                                                </RSPPophover>
-                                            </div>
-                                        </Col> */}
                                     </Row>
                                 </div>
 
@@ -1184,7 +1131,7 @@ const QRContent = ({ tab }) => {
                                             <Col sm={{ span: 4 }}>
                                                 <label className="control-label-left">{UPLOAD_LOGO}</label>
                                             </Col>
-                                            <Col sm={7} className="pl0">
+                                            <Col sm={7} >
                                                 <Row className={logo ? 'click-off' : ''}>
                                                     <RSFileUpload
                                                         name="logo"
@@ -1200,6 +1147,7 @@ const QRContent = ({ tab }) => {
                                                         fileCol={9}
                                                         btnCol={3}
                                                         watch={watch}
+                                                        isLoading={isLogoUploading}
                                                     />
                                                 </Row>
                                                 <Row>
@@ -1211,7 +1159,7 @@ const QRContent = ({ tab }) => {
                                                 </Row>
                                             </Col>
                                             {logo && (
-                                                <Col sm={1} className="pl0">
+                                                <Col sm={1} >
                                                     <div className="d-flex">
                                                         <RSTooltip text={'Reset image'}>
                                                             <i
@@ -1250,7 +1198,7 @@ const QRContent = ({ tab }) => {
                                                             : 7
                                                         : 7
                                                 }
-                                                className={`pl0 ${kycType?.formName !== 'Default KYC' ? '' : ''} `}
+                                                className={` ${kycType?.formName !== 'Default KYC' ? '' : ''} `}
                                             >
                                                 <Row className={`${campaignType === 'M' ? 'pe-none click-off' : ''}`}>
                                                     <Col sm={3}>
@@ -1281,7 +1229,7 @@ const QRContent = ({ tab }) => {
                                                         />
                                                     </Col>
                                                     {kyc && (
-                                                        <Col sm={9} className="pl0">
+                                                        <Col sm={9} >
                                                             {tab !== 'url' && (
                                                                 <div className="qr-kyc-sep">
                                                                     <Row>
@@ -1290,7 +1238,7 @@ const QRContent = ({ tab }) => {
                                                                                 {USER_EMAIL_MOBILE}
                                                                             </span>
                                                                         </Col>
-                                                                        <Col className="pl0 position-relative top1">
+                                                                        <Col className="l0 position-relative top1">
                                                                             <RSTooltip
                                                                                 text={'Preview'}
                                                                                 className="d-inline-block "
@@ -1360,7 +1308,7 @@ const QRContent = ({ tab }) => {
                                             {kycType &&
                                                 kycType?.formId !== 0 &&
                                                 kycType?.formType !== 'Tell a friend' && (
-                                                    <Col className="mt77 pr0" md={1}>
+                                                    <Col className="mt77 " md={1}>
                                                         <RSTooltip text={'Preview'} className="lh0 text-center">
                                                             {kycPreviewLoader.isLoading ? (
                                                                 <div className="segment_loader" />
@@ -1392,7 +1340,14 @@ const QRContent = ({ tab }) => {
                                                                                     params: { payload },
                                                                                 })) || {};
                                                                             if (tem.status) {
-                                                                                setPreview(!preview);
+                                                                                const nextPreviewContent =
+                                                                                    buildQrPreviewContentFromFormResponse(
+                                                                                        tem?.data?.[0],
+                                                                                    );
+                                                                                if (nextPreviewContent) {
+                                                                                    setPreviewContent(nextPreviewContent);
+                                                                                }
+                                                                                setPreview(true);
                                                                             }
                                                                         }
                                                                     }}
@@ -1413,7 +1368,7 @@ const QRContent = ({ tab }) => {
                                                     {DOUBLE_OPT_IN_STATEMENT}
                                                 </label>
                                             </Col>
-                                            <Col sm={7} className="pl0">
+                                            <Col sm={7} >
                                                 <RSTextarea
                                                     control={control}
                                                     id="rs_QRContent_DoubleOptInStatement"
@@ -1422,18 +1377,6 @@ const QRContent = ({ tab }) => {
                                                     multiLinePlaceholder
                                                 />
                                             </Col>
-                                            {/* <Col className="pl0 pt2">
-                                                {' '}
-                                                <RSPPophover
-                                                    pophover={
-                                                        'Check this box to receive product offers and updates from Company and to participate in this communication.'
-                                                    }
-                                                >
-                                                    <i
-                                                        className={`${circle_question_mark_medium} icon-md color-primary-blue lh0`}
-                                                    ></i>
-                                                </RSPPophover>
-                                            </Col> */}
                                         </Row>
                                     </div>
                                 )}
@@ -1449,6 +1392,7 @@ const QRContent = ({ tab }) => {
                                                     className="bg-secondary-blue rs-bg-secondary-blue"
                                                     type={'button'}
                                                     name="generate"
+                                                    isLoading={isGenerating}
                                                     // className={(!isBase64(logo) || !logo || kyc_disable) && 'click-off'}
                                                     onClick={() => {
                                                         handleSubmit((data) =>

@@ -5,7 +5,7 @@ import { useCallback, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { Col, Row } from 'react-bootstrap';
 import { useDispatch, useSelector } from 'react-redux';
-import _isNumber from 'lodash/isNumber';
+import { isNumber as _isNumber } from 'Utils/modules/lodashReplacements';
 
 import RSKendoDropdown from 'Components/FormFields/RSKendoDropdown';
 import RSInput from 'Components/FormFields/RSInput';

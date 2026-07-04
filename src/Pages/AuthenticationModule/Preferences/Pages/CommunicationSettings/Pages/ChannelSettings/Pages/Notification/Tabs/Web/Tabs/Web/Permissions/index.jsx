@@ -6,7 +6,7 @@ import { useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { FormProvider, useForm } from 'react-hook-form';
 import { Col, Container, Row } from 'react-bootstrap';
-import _map from 'lodash/map';
+import { map as _map } from 'Utils/modules/lodashReplacements';
 import { pencil_edit_medium } from 'Constants/GlobalConstant/Glyphicons';
 import useQueryParams from 'Hooks/useQueryParams';
 import RSPageHeader from 'Components/RSPageHeader';
@@ -25,6 +25,7 @@ import { INITIAL_STATE, INITIAL_STATE_FORM, buildPayload } from './constant';
 import { getSessionId } from 'Reducers/globalState/selector';
 import { getWebPushSettingData, UpsertWebPushPermission } from 'Reducers/preferences/CommunicationSettings/request';
 import { updateWepAppPermissionData } from 'Reducers/preferences/CommunicationSettings/reducer';
+import { UpdateState } from 'Utils/modules/misc';
 
 
 const NAVIGATION_STATE = createCommunicationSettingsNavState('notification', {

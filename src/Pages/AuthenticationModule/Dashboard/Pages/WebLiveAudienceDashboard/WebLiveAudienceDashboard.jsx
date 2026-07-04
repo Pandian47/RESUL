@@ -85,7 +85,7 @@ import { useForm } from 'react-hook-form';
 import { getWebDomains } from 'Reducers/audience/dynamicList/request';
 
 import Icon from 'Components/Icon/Icon';
-import _find from 'lodash/find';
+import { find as _find, isEmpty } from 'Utils/modules/lodashReplacements';
 import RSHighchartsContainer from 'Components/Highcharts';
 import RSChartTabbar from 'Components/RSChartTabber';
 import RSKendoDropDownList from 'Components/FormFields/RSKendoDropdown';
@@ -121,7 +121,6 @@ import { getSessionId } from 'Reducers/globalState/selector';
 import { update_isWebAppId, update_isWebAppData } from 'Reducers/globalState/reducer';
 import RSPLogger from 'Utils/RSPLogger/RSPLogger';
 
-import { isEmpty } from 'lodash';
 
 import {
     getAudienceCountMobile,

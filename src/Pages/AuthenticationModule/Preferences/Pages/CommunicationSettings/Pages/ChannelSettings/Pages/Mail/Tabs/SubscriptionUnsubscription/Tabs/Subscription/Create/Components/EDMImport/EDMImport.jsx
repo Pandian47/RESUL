@@ -2,7 +2,7 @@ import { MAX_LENGTH150, URLPATTERN } from 'Constants/GlobalConstant/Regex';
 import { ADD_VIEW_IN_BROWSER, COMMUNICATION_URL, EMAIL_NOT_DISPLAYING, INBOX_FIRST_LINE_MESSAGE, INBOX_FIRST_LINE_PREVIEW, RES_75_CHARACTERS, VIEW_IN_BROWSER } from 'Constants/GlobalConstant/Placeholders';
 import { email_preview_medium, import_link_large, restart_medium, spam_assassin_medium, users_persona_large, zip_large } from 'Constants/GlobalConstant/Glyphicons';
 import { Fragment, useCallback, useEffect, useRef, useState } from 'react';
-import _get from 'lodash/get';
+import { get as _get } from 'Utils/modules/lodashReplacements';
 
 import { useDispatch, useSelector } from 'react-redux';
 import { Row, Col } from 'react-bootstrap';
@@ -30,6 +30,7 @@ const scriptHtmlEnd = '<!-- End of Script html Conditions -->';
 
 import RSAlertWarning from 'Components/RSAlertWarning';
 import { uploadFileEDMInEmailSubUnsub, uploadURLEDMInEmailSubUnsub } from 'Reducers/preferences/CommunicationSettings/request';
+import { UpdateState } from 'Utils/modules/misc';
 
 const EDMImport = ({ fieldName = '', isSplit = false, showBrowerText = false, isNotification = false, channelId }) => {
     // console.log('fieldName: ', fieldName);

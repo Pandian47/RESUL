@@ -1,4 +1,4 @@
-import { DELETE_FREQUENCY_CAP, GET_ADVANCED_CUSTOM_FIELDS, GET_BENCHMARK_BY_CAMPAIGN_ID, GET_CAMPAIGN_ANALYZE_LIST, GET_CAMPAIGN_ROI_DETAILS, GET_FREQUENCY_CAP, GET_FREQUENCY_CAP_EDIT, GET_LIMIT_LIST, SAVE_ADVANCE_ANALYTICS, SAVE_CAMPAIGN_ROI, SAVE_FREQUENCY_CAP, SAVE_LIMIT_LIST, UPDATE_CGTG_COMMUNICATION, UPDATE_SCRUB_RULES } from 'Constants/EndPoints';
+import { DELETE_FREQUENCY_CAP, GET_ADVANCED_CUSTOM_FIELDS, GET_CAMPAIGN_ANALYZE_LIST, GET_CAMPAIGN_ROI_DETAILS, GET_FREQUENCY_CAP, GET_FREQUENCY_CAP_EDIT, GET_LIMIT_LIST, SAVE_ADVANCE_ANALYTICS, SAVE_CAMPAIGN_ROI, SAVE_FREQUENCY_CAP, SAVE_LIMIT_LIST, UPDATE_CGTG_COMMUNICATION, UPDATE_SCRUB_RULES } from 'Constants/EndPoints';
 import request from 'Utils/Http';
 
 import { update_campaign_details, updateCampaignAnalyzeListLoading } from './reducer';
@@ -159,42 +159,14 @@ export const getROIContentData =
             }),
         );
 
-export const getBenchmarkValueById =
-    ({ payload, loading = true, skipStoreUpdate = false }) =>
-    async (dispatch) =>
-        dispatch(
-            request.post({
-                url: GET_BENCHMARK_BY_CAMPAIGN_ID,
-                payload,
-                loading: resolveRequestGlobalLoading(loading),
-                ok: ({ data }) => {
-                    const { status } = data;
-                    if (!skipStoreUpdate) {
-                        if (status === 'True' || status) {
-                            dispatch(
-                                update_campaign_details({
-                                    field: 'benchmarkPercentage',
-                                    data: data?.data?.benchmarkPercentage,
-                                }),
-                            );
-                        } else {
-                            dispatch(update_campaign_details({ field: 'benchmarkPercentage', data: '' }));
-                        }
-                    }
-                },
-                fail: (err) => {
-                                    },
-            }),
-        );
-
 export const saveCampaignRoi =
-    ({ payload }) =>
+    ({ payload, loading = false }) =>
     async (dispatch) =>
         dispatch(
             request.post({
                 url: SAVE_CAMPAIGN_ROI,
                 payload,
-                loading: true,
+                loading: resolveRequestGlobalLoading(loading),
                 isFailureCheck: true,
                 ok: ({ data }) => {
                     const { status } = data;

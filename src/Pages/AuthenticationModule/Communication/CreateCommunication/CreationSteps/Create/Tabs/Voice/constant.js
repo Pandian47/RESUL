@@ -1,8 +1,6 @@
 import { isValidDate } from 'Utils/modules/uiToast';
 import { getUserDetails } from 'Utils/modules/crypto';
-import _map from 'lodash/map';
-import _get from 'lodash/get';
-import _reduce from 'lodash/reduce';
+import { map as _map, get as _get, reduce as _reduce } from 'Utils/modules/lodashReplacements';
 
 import { formatDateScheculer, handleAllChannelPayload, handleAllChannelTimeZonePayload, handleMDCExtraPayload } from '../../constant';
 

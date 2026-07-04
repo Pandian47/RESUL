@@ -1,4 +1,59 @@
 import { encodeUrl } from './crypto';
+import { COMMUNICATION_AVAILABLE_TABS as availableTabs } from 'Pages/AuthenticationModule/Communication/CreateCommunication/communicationDefaults';
+import { setTabforEdit, updateTab } from 'Reducers/communication/createCommunication/Create/reducer';
+
+export const shouldRefetchAudienceListOnReturn = (locationState) =>
+    Boolean(locationState?.refreshAudienceList);
+
+/**
+ * After saving audience from communication authoring, return to create-communication
+ * and flag the destination page to refetch recipient/audience lists.
+ */
+export function navigateBackToCommunicationCreation({
+    dispatch,
+    navigate,
+    navigationState = {},
+    extraReturnState = {},
+}) {
+    if (navigationState?.backAction === undefined) {
+        return false;
+    }
+
+    const { tabValue, tabValueName, backAction } = navigationState;
+    const verticalValues = Object.keys(availableTabs);
+    const verticalIndex = verticalValues.indexOf(tabValueName);
+    const selectedArray = availableTabs[tabValueName];
+    const tabIndex = selectedArray?.indexOf(tabValue);
+
+    if (dispatch && tabValueName && tabValue && tabIndex >= 0 && verticalIndex >= 0) {
+        dispatch(
+            updateTab({
+                field: tabValueName,
+                data: {
+                    tabName: availableTabs[tabValueName][tabIndex],
+                    currentIndex: tabIndex,
+                },
+            }),
+        );
+        dispatch(
+            setTabforEdit({
+                type: tabValueName,
+                currentTab: verticalIndex,
+            }),
+        );
+    }
+
+    setTimeout(() => {
+        navigate('/communication/create-communication' + backAction, {
+            state: {
+                refreshAudienceList: true,
+                ...extraReturnState,
+            },
+        });
+    }, 10);
+
+    return true;
+}
 export function handleAdvanceSearchDataFormat(data) {
     let finalDataFormat = {};
     Object.entries(data)?.forEach(([key, value]) => {
@@ -11,8 +66,7 @@ export function handleAdvanceSearchDataFormat(data) {
     return finalDataFormat;
 }
 export function validateIsCustomNavigate(location, defaultlocationState, navigate, nextLevelCallBack) {
-    const navigateDetails = defaultlocationState?.backNavigationDetails || location?.state?.backNavigationDetails;
-
+    const navigateDetails = defaultlocationState?.backNavigationDetails || location?.backNavigationDetails;
     if (navigateDetails?.isCustomNavigate) {
         const backPath = navigateDetails?.backPathName;
 
@@ -158,12 +212,12 @@ export function buildCommunicationSettingsNavState(baseState = {}, queryState, g
     const mergedLocationState = { ...safeQuery, ...safeForm };
 
     return {
-        ...safeBase,
+         ...safeBase,
         ...handleCustomNavigationDetails(
             Object.keys(mergedLocationState).length > 0 ? mergedLocationState : undefined,
         ),
-            ...handleCustomNavigationDetails(
-            Object.keys(mergedLocationState).length > 0 ? mergedLocationState : undefined,
-        )?.backNavigationDetails?.locationState
+        //     ...handleCustomNavigationDetails(
+        //     Object.keys(mergedLocationState).length > 0 ? mergedLocationState : undefined,
+        // )?.backNavigationDetails?.locationState
     };
 }

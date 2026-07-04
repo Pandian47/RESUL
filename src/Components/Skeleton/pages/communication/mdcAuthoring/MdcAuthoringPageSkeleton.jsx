@@ -1,7 +1,7 @@
 import { memo } from 'react';
 import PropTypes from 'prop-types';
 import { Container } from 'react-bootstrap';
-import _get from 'lodash/get';
+import { get as _get } from 'Utils/modules/lodashReplacements';
 
 import useQueryParams from 'Hooks/useQueryParams';
 import AuthoringChannelEditSkeletonHost from '../authoring/authoringChannelInnerSkeletonLayouts';

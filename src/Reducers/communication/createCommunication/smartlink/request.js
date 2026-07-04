@@ -1,9 +1,6 @@
 import { GET_MOBILE_APPS, GET_SCREEN_LIST, GET_SMARTLINK_CUSTOM_FIELDS, GET_SMARTURL_DETAIL_BY_CHANNEL, GET_SMART_URL, GET_SUB_SCREEN_LIST, SAVE_SMART_URL, VALIDATE_WEBSITE } from 'Constants/EndPoints';
-import _map from 'lodash/map';
-import _get from 'lodash/get';
+import { map as _map, get as _get, find as _find, forEach as _forEach } from 'Utils/modules/lodashReplacements';
 import request from 'Utils/Http';
-import _find from 'lodash/find';
-import _forEach from 'lodash/forEach';
 
 import {
     showTabsSmartlink,
@@ -15,8 +12,10 @@ import {
     updateScreenList,
     updateSubScreenList,
     updateSmartLinkFriendlyName,
-    updateSmartLinkDetailLoading
+    updateSmartLinkDetailLoading,
+    markSmartLinkDetailFetched,
 } from './reducer';
+import { getMobileAppIdFromEditFlow } from './selectors';
 import { getDeviceType } from 'Pages/AuthenticationModule/Communication/CreateCommunication/CreationSteps/Create/Component/SmartLinkModal/Component/GenerateSmartLink/constant';
 import { update_isMobileAppData, update_isMobileAppId } from 'Reducers/globalState/reducer';
 import { updateSmartLinkCreated } from '../Create/reducer';
@@ -210,8 +209,6 @@ export const getSmartUrl =
                                                 AppScreenName = ''
                                             } = appStore;
                                             const appScreenConfig = AppScreenName ? AppScreenName : AppStoreUrl;
-                                            if (!!MobileApp) dispatch(updateMobileAppId(MobileApp));
-                                            else dispatch(updateMobileAppId(''));
 
                                             const temp = {};
                                             const utmParameters = UTMParameter.slice(0, 1);
@@ -406,6 +403,8 @@ export const getSmartUrl =
                                 };
                             }
                             const { generatedLink, edit } = await getData();
+                            const resolvedMobileAppId = getMobileAppIdFromEditFlow(edit);
+                            dispatch(updateMobileAppId(resolvedMobileAppId || ''));
 
                             const friendlyName = {};
                             _forEach(response, ({ smartHttpPath, smartCode }, index) => {
@@ -446,6 +445,7 @@ export const getSmartUrl =
             }),
         );
         } finally {
+            dispatch(markSmartLinkDetailFetched({ campaignId: payload?.campaignId ?? 0 }));
             if (iconFieldLoader) {
                 dispatch(updateSmartLinkDetailLoading(false));
             }
@@ -487,6 +487,7 @@ export const saveSmartLink =
                         });
                         dispatch(updateGeneratedLink(links));
                         dispatch(updateSmartLinkFriendlyName(friendlyName));
+                        dispatch(markSmartLinkDetailFetched({ campaignId: payload?.campaignId ?? 0 }));
                     }
                 },
             }),

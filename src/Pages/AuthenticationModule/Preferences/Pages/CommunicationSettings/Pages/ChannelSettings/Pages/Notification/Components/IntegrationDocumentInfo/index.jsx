@@ -4,15 +4,15 @@ import { getSessionId } from 'Reducers/globalState/selector';
 
 
 const IntegrationDocumentInfo = ({
-    isDownloading,
+    isDownloading = false,
     onDownloadClick,
     type = 'web',
-    settingsId,
-    domainName,
-    framework,
-    name,
-    appId,
-    deviceList,
+    settingsId = null,
+    domainName = '',
+    framework = '',
+    name = '',
+    appId = '',
+    deviceList = [],
     disableAutoDownload = false,
 }) => {
     const dispatch = useDispatch();
@@ -76,18 +76,6 @@ IntegrationDocumentInfo.propTypes = {
     appId: PropTypes.string,
     deviceList: PropTypes.arrayOf(PropTypes.string),
     disableAutoDownload: PropTypes.bool,
-};
-
-IntegrationDocumentInfo.defaultProps = {
-    isDownloading: false,
-    type: 'web',
-    settingsId: null,
-    domainName: '',
-    framework: '',
-    name: '',
-    appId: '',
-    deviceList: [],
-    disableAutoDownload: false,
 };
 
 export default IntegrationDocumentInfo;

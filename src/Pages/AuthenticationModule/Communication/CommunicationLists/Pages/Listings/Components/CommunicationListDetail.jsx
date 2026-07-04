@@ -1,8 +1,7 @@
 import { getStatus } from 'Utils/modules/communicationStatus';
 import { SENT_BY_CHANNEL } from 'Constants/GlobalConstant/Placeholders';
 import { Fragment, useMemo } from 'react';
-import _get from 'lodash/get';
-import _map from 'lodash/map';
+import { get as _get,map as _map } from 'Utils/modules/lodashReplacements';
 
 import DetailedStatus from './DetailedStatus';
 import {
@@ -105,7 +104,7 @@ const CommunicationListDetail = ({ dataItem, disabled, onCollapse }) => {
                             {campaignType === 'M' && <th>{FRIENDLY_NAME}</th>}
                             <th>{STATUS}</th>
                             {hasSocialChannel && <th>{POST_TYPE}</th>}
-                            {/* {showSentByChannel && <th className="text-end">{SENT_BY_CHANNEL}</th>} */}
+                            {showSentByChannel && <th className="text-end">{SENT_BY_CHANNEL}</th>}
                             <th className="text-end">{ACTION}</th>
                         </tr>
                     </thead>
@@ -116,6 +115,7 @@ const CommunicationListDetail = ({ dataItem, disabled, onCollapse }) => {
                                 isSubsegment={isSubsegment}
                                 hasAnyGrouping={hasAnyGrouping}
                                 hasSocialChannel={hasSocialChannel}
+                                showSentByChannel={showSentByChannel}
                                 animated={showDetailSkeleton}
                             />
                         )}

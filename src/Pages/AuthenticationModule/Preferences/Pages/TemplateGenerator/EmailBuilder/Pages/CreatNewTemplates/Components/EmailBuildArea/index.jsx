@@ -1,7 +1,7 @@
 import { menu_dot_mini } from 'Constants/GlobalConstant/Glyphicons';
 import { Fragment, createContext, useEffect, useRef, useState } from 'react';
 import { Card } from 'react-bootstrap';
-import _find from 'lodash/find';
+import { find as _find } from 'Utils/modules/lodashReplacements';
 import { useFieldArray, useFormContext } from 'react-hook-form';
 import EmailEditor from 'react-email-editor';
 

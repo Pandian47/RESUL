@@ -8,7 +8,7 @@ import { useFormContext } from 'react-hook-form';
 import useQueryParams from 'Hooks/useQueryParams';
 
 const Personalize = (props) => {
-    const { view, onEditorMaxLen, maxLength = 350 } = props;
+    const { view, onEditorMaxLen, maxLength = 350, alignRight: alignRightProp = false } = props;
     const { personalization,listTypeWisePersonlization } = useSelector(({ createCommunicationReducer }) => createCommunicationReducer);
     const { userId, clientId, departmentId } = useSelector((state) => getSessionId(state));
     const location = useQueryParams('/communication');
@@ -16,6 +16,7 @@ const Personalize = (props) => {
     return (
         <div className="rs-editor-custom-icon editor-custom-personalize rseci-icon">
             <RSBootstrapdown
+                alignRight={alignRightProp}
                 data={handlePersonalization(
                     personalization,
                     location?.audience?.length ? location?.audience : (methods?.watch('audience')?.length ? methods?.watch('audience') : (methods?.getValues()?.audience || [])),

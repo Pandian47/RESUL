@@ -1,3 +1,4 @@
+import { formatFieldToTitle } from 'Utils/modules/stringUtils';
 
 export const formatLabel = (key = '') =>
     key

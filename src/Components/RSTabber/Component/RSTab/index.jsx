@@ -1,7 +1,7 @@
 import { ADD, ARE_YOU_SURE_REMOVE, ARE_YOU_SURE_RESET, ARE_YOU_SURE_WANT_TO_RESET, CONFIRMATION, DO_YOU_WISH_TO_CONTINUE_NEW, REMOVE, RESET, SWITCHING_TABS_WILL_DESCARD_NEW } from 'Constants/GlobalConstant/Placeholders';
 import { restart_medium } from 'Constants/GlobalConstant/Glyphicons';
 import { Fragment, useState } from 'react';
-import _isNil from 'lodash/isNil';
+import { isNil as _isNil } from 'Utils/modules/lodashReplacements';
 
 import RSTooltip from 'Components/RSTooltip';
 import RSConfirmationModal from 'Components/ConfirmationModal';

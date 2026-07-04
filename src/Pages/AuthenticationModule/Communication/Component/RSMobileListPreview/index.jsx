@@ -5,7 +5,7 @@ import { arrow_down_chevron_mini, arrow_up_chevron_mini } from 'Constants/Global
 import { Fragment, useEffect, useRef, useState } from 'react';
 import { Carousel } from 'react-bootstrap';
 import { useDispatch, useSelector } from 'react-redux';
-import _get from 'lodash/get';
+import { get as _get } from 'Utils/modules/lodashReplacements';
 import parse from 'html-react-parser';
 
 import { getSessionId } from 'Reducers/globalState/selector';

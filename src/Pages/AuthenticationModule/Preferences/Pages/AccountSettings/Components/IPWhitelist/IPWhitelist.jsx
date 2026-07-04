@@ -7,8 +7,7 @@ import { circle_minus_fill_mini } from 'Constants/GlobalConstant/Glyphicons';
 import { Fragment, useEffect, useState } from 'react';
 import RSModal from 'Components/RSModal';
 
-import _isEmpty from 'lodash/isEmpty';
-import _size from 'lodash/size';
+import { isEmpty as _isEmpty, size as _size } from 'Utils/modules/lodashReplacements';
 
 import { RSPrimaryButton, RSSecondaryButton } from 'Components/Buttons';
 import { Row, Col } from 'react-bootstrap';

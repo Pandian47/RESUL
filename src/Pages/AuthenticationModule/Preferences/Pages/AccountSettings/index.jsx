@@ -3,8 +3,7 @@ import { getWarningPopupMessage } from 'Utils/modules/warningPopup';
 import { NO_DATA_AVAILABEL } from 'Constants/GlobalConstant/Placeholders';
 import { useEffect, useMemo, useState } from 'react';
 import { Container, Col, Row } from 'react-bootstrap';
-import _find from 'lodash/find';
-import _isEmpty from 'lodash/isEmpty';
+import { find as _find, isEmpty as _isEmpty } from 'Utils/modules/lodashReplacements';
 
 import RSPageHeader from 'Components/RSPageHeader';
 import RSProgressSteps from 'Components/ProgressSteps';

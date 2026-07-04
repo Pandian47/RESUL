@@ -4,8 +4,6 @@ import { CLEAR, SELECT_SCHEDULE } from 'Constants/GlobalConstant/Placeholders';
 import { clear_medium } from 'Constants/GlobalConstant/Glyphicons';
 import { memo, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
-import _get from 'lodash/get';
-import _find from 'lodash/find';
 import { Controller } from 'react-hook-form';
 import { DateTimePicker } from '@progress/kendo-react-dateinputs';
 
@@ -72,7 +70,8 @@ const ResDateTimePicker = ({
     const { dateFormatList } = getmasterData();
     const { dateFormatId } = getUserDetails();
     const is12Hour = timeFormat === RES_TIME_FORMAT.TWELVE_HOURS;
-    const rawDateFormat = _get(_find(dateFormatList, ['dateFormatID', dateFormatId]), 'dateformat', 'MM-DD-YYYY');
+    const rawDateFormat =
+        dateFormatList.find((item) => item?.dateFormatID === dateFormatId)?.dateformat ?? 'MM-DD-YYYY';
     const dateFormat = normalizeDateFormat(rawDateFormat);
     const resolvedFormat = formatProp || getDateTimePickerFormat({ is12Hour, dateFormat });
 
@@ -548,7 +547,7 @@ const ResDateTimePicker = ({
             name={name}
             defaultValue={normalizeDateValue(defaultValue)}
             render={({ field, fieldState: { error } }) => {
-                const errMsg = _get(error, 'message', '');
+                const errMsg = error?.message ?? '';
                 const resolvedPlaceholder =
                     placeholderProp || SELECT_SCHEDULE || 'month-day-year hour:minute';
 
@@ -582,7 +581,7 @@ const ResDateTimePicker = ({
                             <div className="group-hidden group-hover-visible">
                                 <RSTooltip
                                     text={CLEAR}
-                                    className="lh0 z-2 right37 top5 position-absolute"
+                                    className="lh0 z-2 right0 mr32 top0 position-absolute lh0"
                                 >
                                     <i
                                         className={`${clear_medium} icon-md color-primary-red`}

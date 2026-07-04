@@ -12,8 +12,10 @@ import { setFlag } from 'Reducers/preferences/audienceScore/reducer';
 import { audienceScoreCommonCardTotalScoreValidation } from 'Utils/HookFormValidate';
 import RSTooltip from 'Components/RSTooltip';
 import { HorizontalSkeleton } from 'Components/Skeleton/Skeleton';
+import { asAudienceScoreList } from '../constants';
 
 const CommonCard = ({ constants, headName, head, title, tooltip, cardicons, filpData, extraClass, allChannel }) => {
+    const safeAllChannel = asAudienceScoreList(allChannel);
     const { audienceCardCollapse } = useSelector((state) => state.audienceScoreReducer);
     const dispatch = useDispatch();
     const {
@@ -62,15 +64,15 @@ const CommonCard = ({ constants, headName, head, title, tooltip, cardicons, filp
     };
 
     useEffect(() => {
-        if (allChannel?.length > 0) {
-            const filteredChannel = allChannel.find(
+        if (safeAllChannel.length > 0) {
+            const filteredChannel = safeAllChannel.find(
                 (item) => item?.campaignSegment?.toLowerCase() === headName?.toLowerCase(),
             );
-            const segmentRuleData = filteredChannel?.campaignSegmentRule;
+            const segmentRuleData = filteredChannel?.campaignSegmentRule ?? {};
 
             setValue(`${headName}.Total`, filteredChannel?.responseScore);
 
-            Object.entries(segmentRuleData)?.forEach(([key, value]) => {
+            Object.entries(segmentRuleData).forEach(([key, value]) => {
                 switch (true) {
                     case key.toLowerCase().startsWith('p'):
                         setValue(`${headName}[0].value`, value);
@@ -86,7 +88,7 @@ const CommonCard = ({ constants, headName, head, title, tooltip, cardicons, filp
                 }
             });
         }
-    }, [allChannel]);
+    }, [safeAllChannel, headName, setValue]);
 
     // console.log(fields, 'fields');
     return (
@@ -135,7 +137,7 @@ const CommonCard = ({ constants, headName, head, title, tooltip, cardicons, filp
                                             </div>
                                         </Row>
                                         {/* {map((ele, index) => { */}
-                                        {allChannel?.length > 0 && fields?.length > 0 ? (
+                                        {safeAllChannel.length > 0 && fields?.length > 0 ? (
                                             <div className="pacrw-content-list">
                                                 {fields?.map((field, index) => {
                                                     return (

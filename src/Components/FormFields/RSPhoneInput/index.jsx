@@ -3,10 +3,10 @@ import { memo, useEffect } from 'react';
 import ReactPhoneInput from 'react-phone-input-2';
 import PropTypes from 'prop-types';
 import { Controller } from 'react-hook-form';
-import { get } from 'lodash';
+import { get } from 'Utils/modules/lodashReplacements';
 
 import { ENTER_VALID_DIAL_CODE, ENTER_VALID_PHONE_NO } from 'Constants/GlobalConstant/ValidationMessage';
-import { phoneDialCode } from './constant';
+import { phoneDialCode, PHONE_COUNTRY_DROPDOWN_Z_INDEX } from './constant';
 import { getmasterData } from 'Utils/modules/masterData';
 import { getUserDetails } from 'Utils/modules/crypto';
 import { NO_RECORDS_FOUND, SEARCH } from 'Constants/GlobalConstant/Placeholders';
@@ -178,6 +178,8 @@ const RSPhoneInput = ({
                                 ...extraInputProps,
                             }}
                             country={isChangeMobNumber ? matchedPhoneDialCode?.countryCode ?? defaultCountryCode : matchedPhoneDialCode?.countryCode ?? defaultCountryCode}
+                            dropdownClass="rs-phone-input-country-list"
+                            dropdownStyle={{ zIndex: PHONE_COUNTRY_DROPDOWN_Z_INDEX }}
                             {...rest}
                         />
                         {isLoading && (

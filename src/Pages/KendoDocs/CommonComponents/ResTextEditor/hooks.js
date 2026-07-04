@@ -39,6 +39,42 @@ const IFRAME_CONTENT_STYLES = `
 `;
 
 const EDITOR_TOOLTIP_CLASS = 'rs-editor-tooltip';
+const EDITOR_TOOLTIP_EXIT_MS = 180;
+const DISABLED_TOOLTIP_HOST_CLASS = 'rs-editor-disabled-tooltip-host';
+
+const isToolbarControlDisabled = (control) =>
+    Boolean(
+        control?.matches?.(':disabled') ||
+            control?.getAttribute?.('aria-disabled') === 'true' ||
+            control?.classList?.contains('k-disabled'),
+    );
+
+const isEditorLocked = (root) =>
+    Boolean(
+        root?.classList?.contains('restexteditor--disabled') ||
+            root?.classList?.contains('restexteditor--readonly'),
+    );
+
+// Native disabled buttons ignore pointer events — wrap so hover tooltips still work.
+const resolveToolbarTooltipHost = (control) => {
+    if (!control) return control;
+
+    if (isToolbarControlDisabled(control)) {
+        const existingHost = control.parentElement;
+        if (existingHost?.classList?.contains(DISABLED_TOOLTIP_HOST_CLASS)) {
+            return existingHost;
+        }
+
+        const wrapper = document.createElement('span');
+        wrapper.className = DISABLED_TOOLTIP_HOST_CLASS;
+        wrapper.setAttribute('data-rs-disabled-tooltip-host', 'true');
+        control.parentNode?.insertBefore(wrapper, control);
+        wrapper.appendChild(control);
+        return wrapper;
+    }
+
+    return control;
+};
 
 const escapeTooltipText = (text) => {
     const el = document.createElement('span');
@@ -46,16 +82,43 @@ const escapeTooltipText = (text) => {
     return el.innerHTML;
 };
 
-const removeEditorTooltip = (tooltipTarget) => {
+const detachEditorTooltip = (tip, tooltipTarget, tipId) => {
+    tip?.remove();
+    if (tooltipTarget?.getAttribute?.('data-rs-tooltip-id') === tipId) {
+        tooltipTarget.removeAttribute('data-rs-tooltip-id');
+    }
+};
+
+const removeEditorTooltip = (tooltipTarget, { immediate = false } = {}) => {
     const tipId = tooltipTarget?.getAttribute?.('data-rs-tooltip-id');
     if (!tipId) return;
-    document.getElementById(tipId)?.remove();
-    tooltipTarget.removeAttribute('data-rs-tooltip-id');
+
+    const tip = document.getElementById(tipId);
+    if (!tip) {
+        tooltipTarget.removeAttribute('data-rs-tooltip-id');
+        return;
+    }
+
+    if (immediate || !tip.classList.contains('show')) {
+        detachEditorTooltip(tip, tooltipTarget, tipId);
+        return;
+    }
+
+    if (tip.classList.contains('rs-editor-tooltip--exiting')) return;
+
+    tip.classList.remove('show');
+    tip.classList.add('rs-editor-tooltip--exiting');
+
+    window.setTimeout(() => {
+        if (document.getElementById(tipId) === tip) {
+            detachEditorTooltip(tip, tooltipTarget, tipId);
+        }
+    }, EDITOR_TOOLTIP_EXIT_MS);
 };
 
 const showEditorTooltip = (tooltipTarget, tooltipText) => {
     if (!tooltipTarget || !tooltipText) return;
-    removeEditorTooltip(tooltipTarget);
+    removeEditorTooltip(tooltipTarget, { immediate: true });
 
     const rect = tooltipTarget.getBoundingClientRect();
     if (!rect.width && !rect.height) return;
@@ -69,16 +132,14 @@ const showEditorTooltip = (tooltipTarget, tooltipText) => {
         `<span class="rs-editor-tooltip__text">${escapeTooltipText(tooltipText)}</span>` +
         `<span class="rs-editor-tooltip__arrow"></span>`;
 
-    // Step 1: append hidden so we can measure its height
+    // Append hidden so we can measure height before animating in.
     tip.style.cssText = 'position:fixed;visibility:hidden;z-index:-1;top:0;left:0;pointer-events:none;';
     document.body.appendChild(tip);
 
-    // Step 2: measure and position directly above the target button (arrow touching)
     const tipHeight = tip.offsetHeight || 24;
     const centerX = rect.left + rect.width / 2;
     const topPos = Math.max(4, rect.top - tipHeight);
 
-    // Use inset shorthand directly so the browser doesn't collapse separate properties
     tip.style.cssText = [
         'position: fixed !important',
         `inset: ${topPos}px auto auto ${centerX}px !important`,
@@ -86,10 +147,17 @@ const showEditorTooltip = (tooltipTarget, tooltipText) => {
         'transform: translateX(-50%) !important',
         'pointer-events: none !important',
         'visibility: visible !important',
-        'opacity: 1 !important',
     ].join('; ') + ';';
 
     tooltipTarget.setAttribute('data-rs-tooltip-id', tipId);
+
+    requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+            if (document.getElementById(tipId) === tip) {
+                tip.classList.add('show');
+            }
+        });
+    });
 };
 
 const isCustomToolbarControl = (host) =>
@@ -97,27 +165,42 @@ const isCustomToolbarControl = (host) =>
         host?.closest?.('.rs-bootstrap-dropdown, .rs-editor-custom-icon, .k-colorpicker, .k-dropdown-button, .k-dropdownlist'),
     );
 
+const bindToolbarActionGuard = (host) => {
+    if (!host || host.hasAttribute('data-rs-disabled-guard')) return;
+    host.setAttribute('data-rs-disabled-guard', 'true');
+
+    const blockAction = (event) => {
+        event.preventDefault();
+        event.stopImmediatePropagation();
+    };
+
+    host.addEventListener('click', blockAction, true);
+    host.addEventListener('mousedown', blockAction, true);
+};
+
 const bindToolbarTooltipHost = (host, tooltipText, { allowCustomControls = false } = {}) => {
     if (!host || !tooltipText) return;
     if (!host.closest('.k-toolbar')) return;
     if (!allowCustomControls && isCustomToolbarControl(host)) return;
-    if (host.hasAttribute('data-rs-tooltip-bound')) return;
-    // Host already uses RSTooltip — avoid duplicate hover labels.
-    if (host.querySelector('.rs-tooltip-wrapper')) return;
 
-    const rect = host.getBoundingClientRect();
+    const tooltipHost = resolveToolbarTooltipHost(host);
+    if (tooltipHost.hasAttribute('data-rs-tooltip-bound')) return;
+    // Host already uses RSTooltip — avoid duplicate hover labels.
+    if (tooltipHost.querySelector('.rs-tooltip-wrapper')) return;
+
+    const rect = tooltipHost.getBoundingClientRect();
     if (!rect.width && !rect.height) return;
 
-    host.setAttribute('data-rs-tooltip-bound', 'true');
+    tooltipHost.setAttribute('data-rs-tooltip-bound', 'true');
 
-    const showTip = () => showEditorTooltip(host, tooltipText);
-    const hideTip = () => removeEditorTooltip(host);
+    const showTip = () => showEditorTooltip(tooltipHost, tooltipText);
+    const hideTip = () => removeEditorTooltip(tooltipHost);
 
-    host.addEventListener('mouseenter', showTip);
-    host.addEventListener('mouseleave', hideTip);
+    tooltipHost.addEventListener('mouseenter', showTip);
+    tooltipHost.addEventListener('mouseleave', hideTip);
 
     // RS icon child may be the only visible hit target after icon replacement.
-    host.querySelectorAll('.icon-md, .k-button-icon').forEach((el) => {
+    tooltipHost.querySelectorAll('.icon-md, .k-button-icon').forEach((el) => {
         el.addEventListener('mouseenter', showTip);
         el.addEventListener('mouseleave', hideTip);
     });
@@ -239,6 +322,23 @@ const collectToolbarIconElements = (root, className, legacyClassName) => {
     return [...nodes];
 };
 
+// Custom tools that ship their own RSTooltip are excluded via .rs-tooltip-wrapper guard above.
+const CUSTOM_TOOLBAR_TOOLTIPS = [
+    { selector: '.editor-custom-insert-link .k-button', label: 'Insert links' },
+    { selector: '.editor-custom-offer .k-button', label: 'Offer code' },
+    { selector: '.editor-custom-image .dropdown-toggle', label: 'Insert image' },
+    { selector: '.editor-custom-personalize .dropdown-toggle', label: 'Personalization' },
+    { selector: '.editor-custom-smartlink .dropdown-toggle', label: 'Smart link' },
+];
+
+const getCustomToolbarTooltipLabel = (control, toolbar) => {
+    if (!control || !toolbar) return null;
+    const match = CUSTOM_TOOLBAR_TOOLTIPS.find(
+        ({ selector }) => toolbar.querySelector(selector) === control,
+    );
+    return match?.label ?? null;
+};
+
 const bindDisabledToolbarButtonTooltips = (root, config) => {
     const toolbar = getEditorToolbar(root);
     if (!toolbar) return;
@@ -246,10 +346,15 @@ const bindDisabledToolbarButtonTooltips = (root, config) => {
     toolbar
         .querySelectorAll(
             '.k-button.k-disabled, .k-button:disabled, .k-button[aria-disabled="true"], ' +
-                '.k-dropdown-button.k-disabled, .k-dropdown-button[aria-disabled="true"]',
+                '.k-dropdown-button.k-disabled, .k-dropdown-button[aria-disabled="true"], ' +
+                '.k-dropdownlist.k-disabled, .k-dropdownlist[aria-disabled="true"] .k-button',
         )
         .forEach((button) => {
-            if (button.hasAttribute('data-rs-tooltip-bound')) return;
+            const tooltipHost = resolveToolbarTooltipHost(button);
+            if (tooltipHost !== button) {
+                button.removeAttribute('data-rs-tooltip-bound');
+            }
+            if (tooltipHost.hasAttribute('data-rs-tooltip-bound')) return;
 
             const buttonLabel = getToolbarButtonLabel(button);
             const matchedEntry =
@@ -264,6 +369,43 @@ const bindDisabledToolbarButtonTooltips = (root, config) => {
             bindToolbarTooltipHost(button, tooltipText, {
                 allowCustomControls: Boolean(button.closest('.rs-editor-custom-icon')),
             });
+
+            if (isToolbarControlDisabled(button)) {
+                bindToolbarActionGuard(button);
+                bindToolbarActionGuard(tooltipHost);
+            }
+        });
+};
+
+const bindLockedEditorToolbarTooltips = (root, config) => {
+    if (!isEditorLocked(root)) return;
+
+    const toolbar = getEditorToolbar(root);
+    if (!toolbar) return;
+
+    toolbar
+        .querySelectorAll(
+            '.k-button-group > .k-button, .k-dropdownlist, .k-dropdown-button, .rs-editor-custom-icon > button, .rs-editor-custom-icon > .k-button, .rs-editor-custom-icon .dropdown-toggle, .rs-editor-format-block-tool .k-dropdownlist',
+        )
+        .forEach((control) => {
+            const tooltipHost = resolveToolbarTooltipHost(control);
+            if (tooltipHost.hasAttribute('data-rs-tooltip-bound')) return;
+            if (tooltipHost.querySelector('.rs-tooltip-wrapper')) return;
+
+            const buttonLabel = getToolbarButtonLabel(control);
+            const matchedEntry =
+                config.find(({ className, legacyClassName }) =>
+                    buttonMatchesIconConfig(control, className, legacyClassName),
+                ) ||
+                config.find(({ buttonTitle }) => buttonTitle && buttonTitle === buttonLabel);
+
+            const customLabel = getCustomToolbarTooltipLabel(control, toolbar);
+            const tooltipText = customLabel || matchedEntry?.tooltipText || buttonLabel;
+            if (!tooltipText) return;
+
+            bindToolbarTooltipHost(control, tooltipText, {
+                allowCustomControls: true,
+            });
         });
 };
 
@@ -271,19 +413,29 @@ const bindDisabledToolbarButtonGuard = (root) => {
     const toolbar = getEditorToolbar(root);
     if (!toolbar) return;
 
+    const disabledSelectors = [
+        '.k-button.k-disabled',
+        '.k-button:disabled',
+        '.k-button[aria-disabled="true"]',
+        '.k-dropdown-button.k-disabled',
+        '.k-dropdown-button[aria-disabled="true"]',
+        '.k-dropdownlist.k-disabled',
+        '.k-dropdownlist[aria-disabled="true"]',
+    ].join(', ');
+
+    toolbar.querySelectorAll(disabledSelectors).forEach((control) => {
+        bindToolbarActionGuard(control);
+        bindToolbarActionGuard(resolveToolbarTooltipHost(control));
+    });
+
+    if (!isEditorLocked(root)) return;
+
     toolbar
-        .querySelectorAll('.k-button.k-disabled, .k-button:disabled, .k-button[aria-disabled="true"]')
-        .forEach((button) => {
-            if (button.hasAttribute('data-rs-disabled-guard')) return;
-            button.setAttribute('data-rs-disabled-guard', 'true');
-
-            const blockAction = (event) => {
-                event.preventDefault();
-                event.stopImmediatePropagation();
-            };
-
-            button.addEventListener('click', blockAction, true);
-            button.addEventListener('mousedown', blockAction, true);
+        .querySelectorAll(
+            '.k-button, .k-dropdown-button, .k-dropdownlist, .rs-editor-custom-icon, .rs-editor-format-block-tool, .rs-bootstrap-dropdown .dropdown-toggle',
+        )
+        .forEach((control) => {
+            bindToolbarActionGuard(control);
         });
 };
 
@@ -309,15 +461,6 @@ const bindStandardToolbarButtonTooltips = (root, config) => {
         }
     });
 };
-
-// Custom tools that ship their own RSTooltip are excluded via .rs-tooltip-wrapper guard above.
-const CUSTOM_TOOLBAR_TOOLTIPS = [
-    { selector: '.editor-custom-insert-link .k-button', label: 'Insert links' },
-    { selector: '.editor-custom-offer .k-button', label: 'Offer code' },
-    { selector: '.editor-custom-image .dropdown-toggle', label: 'Insert image' },
-    { selector: '.editor-custom-personalize .dropdown-toggle', label: 'Personalization' },
-    { selector: '.editor-custom-smartlink .dropdown-toggle', label: 'Smart link' },
-];
 
 // ---------------------------------------------------------------------------
 // useEditorIconReplacements — inject RS icon <i> elements into Kendo toolbar
@@ -349,6 +492,7 @@ export const useEditorIconReplacements = (containerRef, iconConfig) => {
             }
             bindStandardToolbarButtonTooltips(root, config);
             bindDisabledToolbarButtonTooltips(root, config);
+            bindLockedEditorToolbarTooltips(root, config);
             bindDisabledToolbarButtonGuard(root);
         };
 
@@ -400,6 +544,7 @@ export const useHyperlinkDialogEnhancements = () => {
             const dialog = document.querySelector('.k-edit-field input');
             const button = document.querySelector('.k-button-solid-primary');
             if (!dialog || !button) return;
+            if (dialog.getAttribute('data-rs-hyperlink-bound')) return;
 
             const handleInputChange = () => {
                 if (dialog.value.trim() === '') {
@@ -409,8 +554,8 @@ export const useHyperlinkDialogEnhancements = () => {
                 }
             };
 
-            dialog.removeEventListener('input', handleInputChange);
             dialog.addEventListener('input', handleInputChange);
+            dialog.setAttribute('data-rs-hyperlink-bound', 'true');
             handleInputChange();
         };
 

@@ -13,8 +13,7 @@ import { Col, Row } from 'react-bootstrap';
 import { useForm } from 'react-hook-form';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
-import _find from 'lodash/find';
-import { isEmpty } from 'lodash';
+import { find as _find, isEmpty } from 'Utils/modules/lodashReplacements';
 
 // Local imports
 // Components

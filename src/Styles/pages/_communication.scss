@@ -210,6 +210,14 @@
     }
 }
 
+.smartLinkModal-CSS .rs-accordion-wrapper .rs-sl-add-icon {
+    position: absolute;
+    bottom: 0;
+    z-index: 2;
+    left: 100%;
+    margin-left: 6px;
+}
+
 .campaign-info-smartlink-icon {
     display: inline-flex;
     align-items: center;
@@ -1562,12 +1570,16 @@ $personalization-highlight-color: $white;
             display: inline;
             color: $personalization-highlight-color;
             background-color: $personalization-highlight-bg;
+            // Transparent padding paints a gap between braces and the chip; negative
+            // margin cancels the extra inline width so the backdrop still matches the textarea.
+            background-clip: content-box;
+            -webkit-box-decoration-break: clone;
+            box-decoration-break: clone;
             border-radius: 5px;
             padding: 0 2px;
             margin: 0 -2px;
-            height: 26px;
-            line-height: 26px;
-            vertical-align: middle;
+            line-height: inherit;
+            vertical-align: baseline;
             font-size: inherit;
             font-family: inherit;
             font-weight: inherit;
@@ -1632,12 +1644,14 @@ $personalization-highlight-color: $white;
         display: inline;
         color: $personalization-highlight-color;
         background-color: $personalization-highlight-bg;
+        background-clip: content-box;
+        -webkit-box-decoration-break: clone;
+        box-decoration-break: clone;
         border-radius: 5px;
         padding: 0 2px;
         margin: 0 -2px;
-        height: 24px;
-        line-height: 24px;
-        vertical-align: middle;
+        line-height: inherit;
+        vertical-align: baseline;
         font-size: inherit;
         font-family: inherit;
         font-weight: inherit;
@@ -1884,6 +1898,9 @@ input.highlight-input {
     max-height: 300px;
     position: relative;
     @extend .css-scrollbar;
+    .preview-iframe-clip{
+        min-height: 110px;
+    }
 }
 
 .modal-email-preview {
@@ -2374,6 +2391,7 @@ input.highlight-input {
     .dropdown-footer {
         border-top: 1px solid $quaternary-blue;
         padding-top: 5px;
+        padding-bottom: 0;
     }
 
     .v1-dropdown-nodata {
@@ -2592,4 +2610,10 @@ input.highlight-input {
     line-height: 16px;
     color: $primary-red;
     text-align: left;
+}
+.w-23 {
+  width: 23%;
+}
+.w-38{
+    width:38%;
 }

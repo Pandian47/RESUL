@@ -1,5 +1,6 @@
 import { encryptWithAES, iv } from 'Utils/modules/crypto';
 import { GeneratePasswordpseudorandom } from 'Utils/modules/passwordUtils';
+import {validateHttpsUrl} from 'Utils/modules/urlQuery';
 import { MAX_LENGTH25, MAX_LENGTH250, MAX_LENGTH255 } from 'Constants/GlobalConstant/Regex';
 import { API_KEY as API_KEY_MSG, AUTH_TOKEN as AUTH_TOKEN_MSG, DOMAIN_NAME as DOMAIN_NAME_MSG, FCM_ID as FCM_ID_MSG, FCM_KEY as FCM_KEY_MSG, MESUREMENT as MESUREMENT_MSG, PROJECT_ID as PROJECT_ID_MSG, STORAGE_BUCKET as STORAGE_BUCKET_MSG, UPLOAD_FILE } from 'Constants/GlobalConstant/ValidationMessage';
 import { LIST_NAME_RULES, WEBSITE_RULES } from 'Constants/GlobalConstant/Rules';

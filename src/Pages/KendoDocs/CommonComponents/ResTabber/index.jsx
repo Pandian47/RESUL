@@ -31,6 +31,8 @@
 import { memo } from 'react';
 import PropTypes from 'prop-types';
 
+import './restabber.scss';
+
 import { TAB_VARIANTS } from './config';
 import { normalizeTabberProps } from './utils';
 

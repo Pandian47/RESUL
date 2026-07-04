@@ -2,7 +2,7 @@ import { ALERT, DO_YOU_WISH_TO_CONTINUE, PERSONALISATION } from 'Constants/Globa
 import { alert_medium } from 'Constants/GlobalConstant/Glyphicons';
 import { Fragment, useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import _map from 'lodash/map';
+import { map as _map } from 'Utils/modules/lodashReplacements';
 
 import SelectAttributeListboxModal from 'Components/SelectAttributeListboxModal';
 import { getDataAttributes, updateClassifications, updateFilterGroup, updateFilterGroups } from 'Reducers/preferences/datacatalogue/request';

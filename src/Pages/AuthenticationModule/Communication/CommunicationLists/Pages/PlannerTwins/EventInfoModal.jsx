@@ -5,8 +5,7 @@ import { numberWithCommas } from 'Utils/modules/formatters';
 import RSModal from 'Components/RSModal';
 import { Card, Col, Row } from 'react-bootstrap';
 import Carousel from 'react-bootstrap/Carousel';
-import _uniq from 'lodash/uniq';
-import _flatten from 'lodash/flatten';
+import { uniq as _uniq ,flatten as _flatten } from 'Utils/modules/lodashReplacements';
 
 
 import RSTooltip from 'Components/RSTooltip';

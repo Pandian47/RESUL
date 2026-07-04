@@ -1,5 +1,3 @@
-import _get from 'lodash/get';
-
 const editUser = (props) => {
     return <span>{props}</span>;
 };
@@ -29,7 +27,7 @@ export const buildPayloadAssignUser = (assignRole, clientId, departmentId, curre
     const stagedRoleList = (assignRole || []).flatMap((user) => {
         const userID = user.userID || user.userId;
         return (user.selectedBUs || []).map((bu) => {
-            const roleId = _get(bu, 'selectedRole.groupId', bu.roleId || 0);
+            const roleId = bu?.selectedRole?.groupId ?? (bu.roleId || 0);
             return {
                 userId: userID,
                 roleId: roleId,

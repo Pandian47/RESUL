@@ -7,7 +7,7 @@ import { useSelector } from 'react-redux';
 import RSTooltip from 'Components/RSTooltip';
 import RSBootstrapdown from 'Components/FormFields/RSBootstrapdown';
 import InsertOffer from '../../../../Component/InsertOffer';
-import _isEmpty from 'lodash/isEmpty';
+import { isEmpty as _isEmpty } from 'Utils/modules/lodashReplacements';
 import { Col, Row } from 'react-bootstrap';
 import { senderNameValidator } from 'Utils/HookFormValidate';
 import { handlePersonalization } from '../../../../constant';

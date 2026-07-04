@@ -7,8 +7,7 @@ import { CHANNEL_ANALYTICS } from 'Constants/GlobalConstant/Placeholders';
 import { analytics_medium, bookmark_medium, calendar_medium, channel_action_medium, compare_medium, user_network_medium } from 'Constants/GlobalConstant/Glyphicons';
 import { Fragment, memo, useContext, useEffect, useMemo, useState } from 'react';
 import { Col, Row } from 'react-bootstrap';
-import _map from 'lodash/map';
-import _get from 'lodash/get';
+import { map as _map, get as _get, every } from 'Utils/modules/lodashReplacements';
 import moment from 'moment';
 
 
@@ -29,7 +28,6 @@ import useQueryParams from 'Hooks/useQueryParams';
 import RSBootstrapdown from 'Components/FormFields/RSBootstrapdown';
 import { updateSummarySubSegmentDetail } from 'Reducers/analyticsTwins/analyticsSummary/reducer';
 import { AnalyticsReportProvider } from '../..';
-import { every } from 'lodash';
 import RSSkeletonTable from 'Components/RSSkeleton/RSSkeletonTable';
 const NOTEDATA_INITIAL_STATE = {
     notesEnable: false,
@@ -241,7 +239,12 @@ const CommunicationAnalysis = ({ analyticsTab, date }) => {
                         type="area"
                         isError={!trendsLoading && !summaryLoading}
                         pClassName="mt30"
-                        options={areasplineChartOptions({ formatdatelable: true, ...chartData })}
+                        options={areasplineChartOptions({
+                            formatdatelable: true,
+                            useDynamicDateLabels: true,
+                            enableXAxisZoom: true,
+                            ...chartData,
+                        })}
                     />
                 </Fragment>
             ),
@@ -256,7 +259,11 @@ const CommunicationAnalysis = ({ analyticsTab, date }) => {
                         type="columnChart"
                         isError={!trendsLoading && !summaryLoading}
                         pClassName="mt30"
-                        options={columnChartOptions(chartBarData)}
+                        options={columnChartOptions({
+                            useDynamicDateLabels: true,
+                            enableXAxisZoom: true,
+                            ...chartBarData,
+                        })}
                     />
                 </Fragment>
             ),
@@ -273,8 +280,8 @@ const CommunicationAnalysis = ({ analyticsTab, date }) => {
                 <Fragment key={'radar_chart'}>
                     <RSHighchartsContainer
                         type="pie"
-                        isError={true}
-                        pClassName="mt30"
+                        isError={trendsLoading || summaryLoading}
+                        pClassName="mt30 comm-analysis-radar-chart"
                         options={radarChartOptions(radar)}
                     />
                 </Fragment>
@@ -338,19 +345,19 @@ const CommunicationAnalysis = ({ analyticsTab, date }) => {
                                             mainClass="mr10"
                                             onDatePickerClosed={(dates) => {
                                                 setUpdateSelectDate({
-                                                    start: startDate,
-                                                    end: endDate,
+                                                    start: dates.startDate,
+                                                    end: dates.endDate,
                                                 });
                                                 setCommunicationAnalysisPayload((pre) => ({
                                                     ...pre,
-                                                    startDate: getYYMMDD(startDate),
-                                                    endDate: getYYMMDD(endDate),
+                                                    startDate: getYYMMDD(dates.startDate),
+                                                    endDate: getYYMMDD(dates.endDate),
                                                 }));
                                                 lastUpdateMetaDataSnapshotRef.current = {
                                                     ...lastUpdateMetaDataSnapshotRef.current,
                                                     communicationAnalysisDateRange: {
-                                                        startDate: getYYMMDD(startDate),
-                                                        endDate: getYYMMDD(endDate),
+                                                        startDate: getYYMMDD(dates.startDate),
+                                                        endDate: getYYMMDD(dates.endDate),
                                                     },
                                                 };
                                             }}

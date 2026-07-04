@@ -56,7 +56,7 @@ const DaskPortletHeader = ({ titleWidth, titleHeight = 20, tabs = false, single 
         {tabs ? (
             <div className="dask-portlet-header__tabs">
                 <DaskBlock style={barStyle(70, 23)} />
-                <span className="dask-portlet-header__pipe">|</span>
+                <span className="dask-portlet-header__pipe"></span>
                 <DaskBlock style={barStyle(70, 23)} />
             </div>
         ) : null}

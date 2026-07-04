@@ -3,7 +3,7 @@ import Daily from 'Pages/AuthenticationModule/Components/Schedules/Daily';
 import Weekly from 'Pages/AuthenticationModule/Components/Schedules/Weekly';
 import Monthly from 'Pages/AuthenticationModule/Components/Schedules/Monthly';
 import Shortly from 'Pages/AuthenticationModule/Components/Schedules/Shortly';
-import _cloneDeep from 'lodash/cloneDeep';
+import { cloneDeep as _cloneDeep } from 'Utils/modules/lodashReplacements';
 
 import { FREQUENCY, WEEK_DAYS } from 'Pages/AuthenticationModule/Components/Schedules/Constants';
 
@@ -16,7 +16,7 @@ export const FREQUENCY_TAB_CONFIG = [
     {
         id: 5,
         text: 'Shortly',
-        component: () => <Shortly />,
+        component: () => <Shortly isMDC />,
     },
     { id: 1, text: 'Daily', component: () => <Daily isMDC /> },
     { id: 2, text: 'Weekly', component: () => <Weekly isMDC /> },
@@ -53,42 +53,42 @@ export const RESET_FREQUENCY = {
 };
 
 export const FORM_INITIAL_STATE = {
-    defaultValues : {
-    dynamicList: '',
-    timezone: 0,
-    daylightSavings: false,
-    shortly: {
-        every_time: '',
-        period: {
-            id: 1,
-            value: 'hours',
+    defaultValues: {
+        dynamicList: '',
+        timezone: 0,
+        daylightSavings: false,
+        shortly: {
+            every_time: '',
+            period: {
+                id: 1,
+                value: 'hours',
+            },
         },
-    },
-    daily: {
-        days: '',
-        hours: '',
-    },
-    weekly: {
-        weekDays: [],
-        hours: '',
-        week: '',
-    },
-    monthly: {
-        type: '',
-        second_hours: '',
-        second_months: '',
-        second_days: { id: 1, name: 'mon', labelName: 'Monday', value: 'Monday' },
-        second_frequency: { id: 1, label: 'First' },
-        first_hours: '',
-        first_months: '',
-        first_day: '',
-    },
-}
+        daily: {
+            days: '',
+            hours: '',
+        },
+        weekly: {
+            weekDays: [],
+            hours: '',
+            week: '',
+        },
+        monthly: {
+            type: '',
+            second_hours: '',
+            second_months: '',
+            second_days: { id: 1, name: 'mon', labelName: 'Monday', value: 'Monday' },
+            second_frequency: { id: 1, label: 'First' },
+            first_hours: '',
+            first_months: '',
+            first_day: '',
+        },
+    }
 };
 
 export const buildSaveTriggerCavasDataPayload = (triggerData) => {
     const userDetails = getUserDetails();
-        const {
+    const {
         campaignId,
         clientId,
         departmentId,
@@ -285,14 +285,14 @@ export const RecipientNameList = (recipientList) => {
     return formattedList;
 };
 
- export const buildSelectedListByFrequency = (canvasState, freqId, list, timezone) => {
+export const buildSelectedListByFrequency = (canvasState, freqId, list, timezone) => {
     const baseList = {
         dynamicList: list?.[0],
         timezone: timezone?.[0],
         frequencyId: freqId,
     };
 
-   const details = canvasState?.dataSource?.freqDetails?.details
+    const details = canvasState?.dataSource?.freqDetails?.details
 
     switch (freqId) {
         case 1: // Daily
@@ -336,8 +336,8 @@ export const RecipientNameList = (recipientList) => {
                     ...monthlyBase,
                     monthly: {
                         ...monthlyBase.monthly,
-                        second_days:  WEEK_DAYS?.find((wkDy)=> parseInt(wkDy?.id) === parseInt( details?.selByWeek)) || '',
-                        second_frequency: FREQUENCY?.find((frq)=> parseInt(frq.id,10) === parseInt(details?.selByDay)) || '' ,
+                        second_days: WEEK_DAYS?.find((wkDy) => parseInt(wkDy?.id) === parseInt(details?.selByWeek)) || '',
+                        second_frequency: FREQUENCY?.find((frq) => parseInt(frq.id, 10) === parseInt(details?.selByDay)) || '',
                         second_hours: details?.reccursDayMonthlytimePicker,
                         second_months: details?.reccursDayMonthly,
                     },
@@ -358,20 +358,20 @@ export const RecipientNameList = (recipientList) => {
     }
 };
 
- export  const TriggerInWeek = (weekDaysCheckedData = []) => {
-  const dayMap = {
-    IsSunday: "sun",
-    IsMonday: "mon",
-    IsTuesday: "tue",
-    IsWednesday: "wed",
-    IsThursday: "thu",
-    IsFriday: "fri",
-    IsSaturday: "sat"
-  };
+export const TriggerInWeek = (weekDaysCheckedData = []) => {
+    const dayMap = {
+        IsSunday: "sun",
+        IsMonday: "mon",
+        IsTuesday: "tue",
+        IsWednesday: "wed",
+        IsThursday: "thu",
+        IsFriday: "fri",
+        IsSaturday: "sat"
+    };
 
-  return Object.entries(dayMap).reduce((acc, [key, short]) => {
-    acc[short] = weekDaysCheckedData.find(d => d.daysId === key)?.checked || false;
-    return acc;
-  }, {});
+    return Object.entries(dayMap).reduce((acc, [key, short]) => {
+        acc[short] = weekDaysCheckedData.find(d => d.daysId === key)?.checked || false;
+        return acc;
+    }, {});
 };
 

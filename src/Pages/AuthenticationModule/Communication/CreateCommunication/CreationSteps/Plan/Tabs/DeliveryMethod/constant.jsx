@@ -1,6 +1,5 @@
 import {Fragment} from 'react';
-import _get from 'lodash/get';
-import _map from 'lodash/map';
+import { get as _get, map as _map, filter as _filter, cloneDeep as _cloneDeep } from 'Utils/modules/lodashReplacements';
 import Daily from 'Pages/AuthenticationModule/Components/Schedules/Daily';
 import Weekly from 'Pages/AuthenticationModule/Components/Schedules/Weekly';
 import Monthly from 'Pages/AuthenticationModule/Components/Schedules/Monthly';
@@ -14,7 +13,6 @@ import {
 
 import { encodeUrl } from 'Utils/modules/crypto';
 import { getYYMMDD } from 'Utils/modules/dateTime';
-import _cloneDeep from 'lodash/cloneDeep';
 import { resetCreateCommunication } from 'Reducers/communication/createCommunication/create/reducer';
 import { resetCommunicationPlan } from 'Reducers/communication/createCommunication/plan/reducer';
 import { handleCampaignStatus } from 'Reducers/communication/createCommunication/plan/request';
@@ -347,7 +345,7 @@ export const FORM_INITIAL_STATE = {
         primaryGoalPercentage: '',
         primaryGoalType: [],
         secondaryGoal: '',
-        secondarygoalPercentage: '',
+        secondaryGoalPercentage: '',
         secondaryGoalType: '',
         roi: false,
         dynamicList: {
@@ -449,7 +447,7 @@ export const stateReducer = (state, action) => {
                 primarygoalPercentage: '',
                 primaryGoalType: [],
                 secondaryGoal: '',
-                secondarygoalPercentage: '',
+                secondaryGoalPercentage: '',
                 secondaryGoalType: null,
                 roi: false,
                 dynamicList: {
@@ -531,6 +529,9 @@ export function getGoalType(type) {
     else if (type === 'C') return 'Conversion';
     return '';
 }
+
+export const formatGoalPercentageForForm = (value) =>
+    value === null || value === undefined || value === '' ? '' : String(value);
 
 export const buildRequestPayload = (formState, type, state, mode) => {
     const {
@@ -618,7 +619,7 @@ export const buildRequestPayload = (formState, type, state, mode) => {
         templateId: templateId || 0,
         templateChannelId: templateId && formState?.templateFlowChannelId ? (formState?.templateFlowChannelId || 0) : 0,
         primaryGoal: primaryGoal.substring(0, 1),
-        primaryGoalPercentage: String(primaryGoalPercentage),
+        primaryGoalPercentage: formatGoalPercentageForForm(primaryGoalPercentage),
         dynamicList: Number(_get(dynamicList, 'dynamicListId', '0')),
         startDate: getYYMMDD(startdate),
         endDate: getYYMMDD(enddate),
@@ -631,7 +632,8 @@ export const buildRequestPayload = (formState, type, state, mode) => {
         communicationReference: getReferenceData(),
         primaryGoalType: _map(primaryGoalType, 'ConversionName').toString(),
         secondaryGoal: secondaryGoal?.substring(0, 1) || '',
-        secondaryGoalPercentage: secondaryGoalPercentage || '0',
+        secondaryGoalPercentage:
+            formatGoalPercentageForForm(secondaryGoalPercentage) || '0',
         secondaryGoalType: _map(secondaryGoalType, 'ConversionName').toString(),
         isFrequency,
         timeZoneId: timeZoneId,
@@ -906,7 +908,7 @@ export const handleReferenceData = (referenceData, referenceList, version, docke
 export const getUpdateCommunicationRefData = (refdata, file) => {
     const filterFinalReferenceData = refdata?.filter((ref) => ref?.columnValue); /// Filter value only with column Value
     const modifiedData = filterFinalReferenceData?.map((data) => {
-        if (columnValue === 'Communication Docket') {
+        if (data?.columnValue === 'Communication Docket') {
             return { ...data, fileName: file };
         } else {
             return { ...data };
@@ -942,6 +944,112 @@ export const isFullMonthDifference = (startDate, endDate, months) => {
     return false;
 };
 
+export const flattenPlanChannelAnalytics = ({ formState, savedDynamicListChannel, campaignId }) => {
+    const analyticsTypes = _map(
+        _filter(formState?.analyticsTypes ?? [], (list) => list?.selected),
+        'id',
+    ).flat();
+    const isWeb = analyticsTypes?.includes(6);
+    const isApp = analyticsTypes?.includes(16);
+    let channelTypes = _map(
+        _filter(formState?.channelTypes ?? [], (list) => list?.selected),
+        'id',
+    ).flat();
+
+    const isNotificationChecked = (formState?.channelTypes ?? []).some(
+        (list) => list?.selected && list?.name === 'notifications',
+    );
+
+    if (isNotificationChecked) {
+        let filteredChannels = channelTypes;
+        if (!isWeb) {
+            filteredChannels = filteredChannels.filter((id) => id !== 8);
+        }
+        if (!isApp) {
+            filteredChannels = filteredChannels.filter((id) => id !== 14);
+        }
+        channelTypes = filteredChannels?.length === 0 ? channelTypes : filteredChannels;
+    }
+
+    return { channelTypes, analyticsTypes };
+};
+
+export const buildPlanSubmitPayload = ({
+    formState,
+    type,
+    reducerState,
+    mode,
+    locationState,
+    departmentId,
+    userId,
+    clientId,
+    tags,
+    isSecondaryGoal,
+    isCommunicationReference,
+    communicationReferenceData,
+    savedDynamicListChannel,
+}) => {
+    const { channelTypes, analyticsTypes } = flattenPlanChannelAnalytics({
+        formState,
+        savedDynamicListChannel,
+        campaignId: _get(locationState, 'campaignId', 0),
+    });
+
+    const preparedFormState = {
+        ...formState,
+        channelTypes,
+        analyticsTypes,
+        isSecondaryGoal,
+        tags,
+        isCommunicationReference,
+        templateId: locationState?.edmTemplateId,
+        templateFlowChannelId: locationState?.templateChannelId,
+        communicationReference:
+            communicationReferenceData?.length === 0
+                ? []
+                : [
+                      communicationReferenceData?.grouping,
+                      communicationReferenceData?.priority,
+                      ...(communicationReferenceData?.reference ?? []),
+                  ],
+        frequencyType: reducerState?.frequencyType,
+        departmentId,
+        userId,
+        clientId,
+        campaignId: _get(locationState, 'campaignId', 0),
+    };
+
+    return buildRequestPayload(preparedFormState, type, reducerState, mode);
+};
+
+const normalizePlanPayloadForComparison = (payload) => {
+    if (!payload) return null;
+
+    const {
+        communicationReference: _communicationReference,
+        recurrenceInfo,
+        channelType,
+        analyticsTypes,
+        isUpdate: _isUpdate,
+        ...scalarFields
+    } = payload;
+
+    return {
+        ...scalarFields,
+        channelType: [...(channelType ?? [])].sort((a, b) => Number(a) - Number(b)),
+        analyticsTypes: [...(analyticsTypes ?? [])].sort((a, b) => Number(a) - Number(b)),
+        recurrenceInfo: JSON.stringify(recurrenceInfo ?? {}),
+    };
+};
+
+export const isPlanPayloadEqual = (current, bound) => {
+    if (!current || !bound) return false;
+    return (
+        JSON.stringify(normalizePlanPayloadForComparison(current)) ===
+        JSON.stringify(normalizePlanPayloadForComparison(bound))
+    );
+};
+
 export const handleWithoutAPICallNavigation = async ({
     payload,
     props,
@@ -950,11 +1058,11 @@ export const handleWithoutAPICallNavigation = async ({
     navigate,
     forceNavigateWithoutApi = false,
 }) => {
-    // 5-inprogress,9-completed
+    // 5-inprogress,9-completed,52-alert
     const campaignTypeWiseStatusIdCheck = {
-        T: [9],
-        S: [9],
-        M: [],
+        T: [9,52],
+        S: [9,52],
+        M: [9,52],
     };
     const shouldNavigateWithoutApi =
         forceNavigateWithoutApi ||

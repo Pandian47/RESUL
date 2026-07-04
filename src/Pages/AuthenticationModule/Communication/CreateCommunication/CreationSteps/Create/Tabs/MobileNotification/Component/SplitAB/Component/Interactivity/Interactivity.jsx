@@ -2,7 +2,7 @@ import { ALPHA_CHARCTERS, WEBSITE_REGEX } from 'Constants/GlobalConstant/Regex';
 import { ENTER_BUTTON_NAME, ENTER_VALID_LINK, SELECT_LINK, SELECT_URL_TYPE } from 'Constants/GlobalConstant/ValidationMessage';
 import { close_large, colorpicker_bg_medium, colorpicker_text_medium, settings_medium } from 'Constants/GlobalConstant/Glyphicons';
 import { Fragment, memo, useCallback, useContext, useEffect, useMemo, useState } from 'react';
-import _map from 'lodash/map';
+import { map as _map } from 'Utils/modules/lodashReplacements';
 import { Row, Col } from 'react-bootstrap';
 import { useFieldArray, useFormContext, useWatch } from 'react-hook-form';
 

@@ -10,7 +10,7 @@ import { getRcsList } from 'Reducers/communication/createCommunication/Create/se
 import { useContext } from 'react';
 import Interactivity from '../Interactivity/Interactivity';
 import RSSwitch from 'Components/FormFields/RSSwitch';
-import _get from 'lodash/get';
+import { get as _get } from 'Utils/modules/lodashReplacements';
 import { RCSProvider } from '../../RCS';
 import { validateCurlyBraces, handlePersonalization } from '../../../../constant';
 import useQueryParams from 'Hooks/useQueryParams';

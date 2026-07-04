@@ -3,8 +3,7 @@ import { onlyNumbers } from 'Utils/modules/inputValidators';
 import { ENTER_HOURS, ENTER_VALIDATE_WEEK, ENTER_WEEKS, SELECT_HOURS, SELECT_WEEK } from 'Constants/GlobalConstant/ValidationMessage';
 import { EVERY, FREQUENCY_EXCEEDS, HOURS, RESET, WEEK } from 'Constants/GlobalConstant/Placeholders';
 import { Fragment, useCallback, useEffect, useState } from 'react';
-import _findIndex from 'lodash/findIndex';
-import _get from 'lodash/get';
+import { findIndex as _findIndex, get as _get } from 'Utils/modules/lodashReplacements';
 
 import PropTypes from 'prop-types';
 
@@ -84,8 +83,8 @@ const Weekly = ({ isMDC = false, isTLShare = false }) => {
                 <Row>
                     <Col sm={7}>
                         <ul className="rs-list-inline flex-vertical-center my20">
-                            <li className="mr15">{EVERY}</li>
-                            <li className="mr15 width125" title={weekly?.week?.message || ''}>
+                            <li className="mr20">{EVERY}</li>
+                            <li className={`${isMDC ? 'col-sm-5' : 'w-38'}`} title={errors?.weekly?.week?.message || ''}>
                                 <RSInput
                                     control={control}
                                     name={'weekly.week'}
@@ -130,8 +129,8 @@ const Weekly = ({ isMDC = false, isTLShare = false }) => {
                                     }}
                                 />
                             </li>
-                            <li className="mr15">@ </li>
-                            <li className="mr15 width125">
+                            <li className="mr20">@ </li>
+                            <li className={`${isMDC ? 'col-sm-5' : 'w-38'}`}>
                                 <RSKendoDropDownList
                                     control={control}
                                     name="weekly.hours"

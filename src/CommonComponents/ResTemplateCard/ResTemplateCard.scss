@@ -60,7 +60,7 @@ $res-template-card-heights: (
     --rtc-card-min-height: 0px;
     --rtc-card-padding: 19px;
     --rtc-card-margin-bottom: 0px;
-    --rtc-header-gap: 10px;
+    --rtc-header-gap: 13px;
     --rtc-title-gap: 8px;
     --rtc-accent-display: block;
     --rtc-menu-offset: -8px;
@@ -71,8 +71,8 @@ $res-template-card-heights: (
     --rtc-preview-comm-size: 200%;
     --rtc-offer-thumb-size: 165px;
     --rtc-border-radius: var(--globalBorderRadius);
-    --rtc-info-trigger-bottom: 13px;
-    --rtc-info-trigger-right: 10px;
+    --rtc-info-trigger-bottom: 12px;
+    --rtc-info-trigger-right: 5px;
     --rtc-info-popup-gap: clamp(8px, 2vh, 14px);
     --rtc-info-popup-section-gap: clamp(10px, 2.5vh, 18px);
 
@@ -89,6 +89,14 @@ $res-template-card-heights: (
     padding: var(--rtc-card-padding);
     margin-bottom: var(--rtc-card-margin-bottom, 0);
     overflow: hidden;
+
+    &:has(> .gaugeslider-wrapper):not(.res-template-card--info-open) {
+        overflow: visible;
+    }
+
+    &.email-authoring-popup {
+        height:230px
+    }
 
     // Column modifiers — height from col prop (inline --rtc-* vars take precedence)
     @each $col, $height in $res-template-card-heights {
@@ -188,6 +196,43 @@ $res-template-card-heights: (
         position: relative;
         z-index: 10;
         flex-shrink: 0;
+
+        > .rs-bootstrap-dropdown,
+        > .rs-bootstrap-dropdown.rs-bootstrap-dropdown-with-icon {
+            flex-shrink: 0;
+            margin-right: var(--rtc-menu-offset);
+
+            .rs-dropdown {
+                .dropdown-toggle {
+                    height: auto;
+                    min-height: 0;
+                    padding: 0;
+                    line-height: 1;
+                    display: inline-flex;
+                    align-items: flex-start;
+                    justify-content: flex-end;
+                }
+
+                .rs-dropdown-title {
+                    line-height: 1;
+                    display: inline-flex;
+                    align-items: flex-start;
+                }
+
+                &.no_caret .dropdown-toggle {
+                    padding: 0;
+                }
+
+                &.show .dropdown-menu,
+                .dropdown-menu.show {
+                    z-index: 30;
+                }
+            }
+
+            .dropdown-menu {
+                margin-top: 5px;
+            }
+        }
     }
 
     &__header-meta,
@@ -273,11 +318,12 @@ $res-template-card-heights: (
         flex-shrink: 0;
         min-width: 0;
         width: 100%;
+        max-width: 95%;
         font-size: $font-xsm;
         color: $secondary-black;
         line-height: 1.4;
         margin: 0 0 var(--rtc-title-gap);
-        padding-right:11px;
+        padding-right: 11px;
 
         p,
         div {
@@ -539,6 +585,59 @@ $res-template-card-heights: (
         }
     }
 
+    // Create new template tab — centre Select overlay on preview (EmailBuilder)
+    &.create-new-template-card {
+        .create-new-template-card__body {
+            flex: 1;
+            min-height: 0;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            width: 100%;
+            border: 0;
+            padding: 0;
+            box-sizing: border-box;
+
+            &--blank {
+                align-items: center;
+                justify-content: center;
+            }
+        }
+
+        .create-new-template-card__preview {
+            flex: 1;
+            min-height: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            overflow: hidden;
+
+            img {
+                max-width: 100%;
+                max-height: 100%;
+                width: auto;
+                height: auto;
+                object-fit: contain;
+                display: block;
+            }
+        }
+
+        .create-new-template-card__interaction {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 2;
+            pointer-events: none;
+
+            .template-buttons-section {
+                pointer-events: auto;
+            }
+        }
+    }
+
     &__footer,
     .gl-bottom {
         position: absolute;
@@ -547,15 +646,24 @@ $res-template-card-heights: (
     }
 
     &__info-trigger,
+    .gl-bottom,
     .gl-bottom.p5 {
-        bottom: var(--rtc-info-trigger-bottom);
-        right: var(--rtc-info-trigger-right);
+        bottom: 12px;
+        right: 5px;
         display: inline-flex;
         align-items: center;
         justify-content: center;
-        padding: 2px;
         margin: 0;
         cursor: pointer;
+        z-index: 4;
+    }
+
+    // Communication gallery — carousel is a direct flex child when wrapBody={false}
+    > .gaugeslider-wrapper,
+    > .res-template-card__carousel {
+        flex: 1 1 auto;
+        min-height: 0;
+        width: 100%;
     }
 
     // -------------------------------------------------------------------------
@@ -686,13 +794,17 @@ $res-template-card-heights: (
     }
 
     .gaugeslider-wrapper {
-        flex: 1;
+        flex: 1 1 auto;
         min-height: 0;
-        display: flex;
+        display: flex !important;
         flex-direction: column;
+        position: relative;
+        width: 100%;
+        padding-bottom: 13px;
+        box-sizing: border-box;
 
         .carousel-inner {
-            flex: 1;
+            flex: 1 1 auto;
             min-height: 0;
             height: 100%;
         }
@@ -701,6 +813,7 @@ $res-template-card-heights: (
             flex-direction: column;
             min-height: 0;
             height: 100%;
+            width: calc(100% + 10px);
 
             // Do not set display on all items — breaks Bootstrap slide visibility
             &.active,
@@ -710,16 +823,44 @@ $res-template-card-heights: (
             }
         }
 
+        .gl-body {
+            flex: 1 1 auto;
+            min-height: 0;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .gl-img-scroll-container {
+            flex: 1 1 auto;
+            min-height: 0;
+            height: 100%;
+        }
+
         .carousel-control-prev,
         .carousel-control-next {
             height: 20px;
             top: 50%;
+            transform: translateY(-50%);
             width: 28px;
+            z-index: 4;
+            .carousel-control-prev-icon, .carousel-control-next-icon{
+                padding: 17px;
+            }
+        }
+
+        .carousel-control-prev {
+            left: -12px;
+        }
+
+        .carousel-control-next {
+            right: -12px;
         }
 
         .carousel-indicators {
-            bottom: 0px;
+            bottom: -15px;
             margin-bottom: 0;
+            z-index: 4;
         }
     }
 
@@ -809,9 +950,11 @@ $res-template-card-heights: (
         border: 1px solid $quaternary-blue;
         border-radius: var(--rtc-border-radius);
         text-align: center;
-        z-index: 10;
+        z-index: 9;
         overflow: hidden;
         box-sizing: border-box;
+        margin-top: 68px;
+        margin-bottom: 13px;
 
         .rsgp-content {
             position: relative;
@@ -820,7 +963,7 @@ $res-template-card-heights: (
             display: flex;
             flex-direction: column;
             margin: 0;
-            padding: calc(var(--rtc-card-padding) + 14px) var(--rtc-card-padding) var(--rtc-card-padding);
+            padding: calc(var(--rtc-card-padding) + 5px) var(--rtc-card-padding) var(--rtc-card-padding);
             overflow-y: auto;
             @extend %rtc-css-scrollbar;
             box-sizing: border-box;
@@ -839,7 +982,7 @@ $res-template-card-heights: (
                 gap: var(--rtc-info-popup-section-gap);
                 padding-bottom: var(--rtc-info-popup-section-gap);
                 border-bottom: 1px solid $quaternary-blue;
-                margin-bottom: var(--rtc-info-popup-gap);
+                margin: 0 -21px;
 
                 li {
                     margin: 0;
@@ -861,7 +1004,8 @@ $res-template-card-heights: (
                 display: flex;
                 flex-direction: column;
                 justify-content: center;
-                gap: var(--rtc-info-popup-gap);
+                gap: 5px;
+                padding-top: 20px;
 
                 li {
                     display: flex;
@@ -880,12 +1024,18 @@ $res-template-card-heights: (
                         margin-left: 5px;
                     }
                 }
+                &.gallery-fact-skeleton{
+                     gap: 10px;
+                     li{
+                        gap:7px;
+                     }
+                }
             }
 
             .rsgpc-close-icon {
                 position: absolute;
-                top: 8px;
-                right: 8px;
+                top: 0;
+                right: 0;
                 z-index: 2;
                 line-height: 0;
                 padding: 4px;
@@ -953,6 +1103,16 @@ $res-template-card-heights: (
                 object-fit: cover;
                 object-position: center;
             }
+        }
+    }
+}
+.res-template-card__header.gl-top {
+    .rs-bootstrap-dropdown .rs-dropdown  {
+        .dropdown-toggle{
+            height: auto;
+        }
+       .dropdown-menu[x-placement=bottom-end]{
+            margin-top: 5px;
         }
     }
 }

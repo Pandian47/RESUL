@@ -373,7 +373,7 @@ const DownloadCSV = ({
                                 </div>
                             </div>
                             <div className="form-group">
-                                <p className='lh-base'>{OTP_CONTENT}</p>
+                                <small className='lh-base'>{OTP_CONTENT}</small>
                             </div>
                             <div className="form-group">
                                 <Row>

@@ -5,7 +5,7 @@ import { mCurrentMonthYear } from 'Constants/Utils/dates';
 import { EARLIER_IN, NO_COMMUNICATION_SELECTED_PERIOD } from 'Constants/GlobalConstant/Placeholders';
 import { alert_medium, circle_info_medium, circle_time_medium, eye_medium } from 'Constants/GlobalConstant/Glyphicons';
 import { useEffect, useRef, useState } from 'react';
-import _isEmpty from 'lodash/isEmpty';
+import { isEmpty as _isEmpty } from 'Utils/modules/lodashReplacements';
 import './timeline.css';
 import RSPPophover from 'Components/RSPPophover';
 import BootstrapDropdown from 'Components/FormFields/RSBootstrapdown';

@@ -1,7 +1,6 @@
-import { formatName } from 'Utils/modules/formatters';
 import { SELECT_PROPER_VALUES } from 'Constants/GlobalConstant/ValidationMessage';
 import { settings_medium } from 'Constants/GlobalConstant/Glyphicons';
-import { memo, useContext, useEffect, useMemo, useRef, useState } from 'react';
+import { memo, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { Row, Col } from 'react-bootstrap';
 import { useFormContext } from 'react-hook-form';
 import { useDispatch, useSelector } from 'react-redux';
@@ -11,13 +10,20 @@ import RSMultiSelect from 'Components/FormFields/RSMultiSelect';
 import RSTagsComponent from 'Components/RSTagsComponent';
 import RSModal from 'Components/RSModal';
 import RSTooltip from 'Components/RSTooltip';
+import SpinnerLoader from 'Components/Skeleton/Components/common/SpinnerLoader';
 import { RSPrimaryButton, RSSecondaryButton } from 'Components/Buttons';
 import { getGeoFencesLists as getGeoFencesListsFromCS, getGeoFenceDetailsById } from 'Reducers/preferences/CommunicationSettings/Geofencing/request';
 import { getSessionId } from 'Reducers/globalState/selector';
+import useApiLoader from 'Hooks/useApiLoader';
+import { FIELD_LOADER_CONFIG as fieldLoaderConfig } from 'Hooks/loaderTypes';
 import { ACTION_DATA } from './contant';
 import { parseRuleJSON } from 'Pages/AuthenticationModule/Audience/audienceDefaults';
+import { buildFieldTriggerValuesKey } from '../../constant';
 
 import { DynamicListCreateContext } from '../..';
+
+const geoFencesSessionCache = new Map();
+const geoFencesInFlightRequests = new Map();
 
 const isActiveGeoFence = (item) => {
     const status = item?.statusID ?? item?.statusId;
@@ -150,52 +156,58 @@ export const extractGeoFencesList = (response) => {
 };
 
 export const loadGeoFencesFullList = async (dispatch, { departmentId, clientId, userId } = {}) => {
-    try {
-        const response = await dispatch(
-            getGeoFencesListsFromCS({ departmentId, clientId, userId, skip: 0, take: 500 }),
-        );
-        const extracted = extractGeoFencesList(response);
-        if (extracted.length) {
-            return extracted;
-        }
+    const sessionKey = `${clientId ?? ''}-${departmentId ?? ''}-${userId ?? ''}`;
 
-        return dispatch((_, getState) => {
-            const reduxList = getState()?.geofenceReducer?.list;
-            return normalizeGeoFencesList(Array.isArray(reduxList) ? reduxList : []);
-        });
-    } catch {
-        return [];
-    }
-};
-let geoFencesFetchPromise = null;
-
-export const resetGeoFencesListState = (dispatchState) => {
-    geoFencesFetchPromise = null;
-    dispatchState({ type: 'UPDATE', field: 'geoFencesFullList', payload: null });
-    dispatchState({ type: 'UPDATE', field: 'geoFencesFullListLoading', payload: false });
-};
-
-export const fetchGeoFencesIntoListState = async (dispatch, dispatchState, sessionIds) => {
-    if (geoFencesFetchPromise) {
-        return geoFencesFetchPromise;
+    if (geoFencesSessionCache.has(sessionKey)) {
+        return geoFencesSessionCache.get(sessionKey);
     }
 
-    geoFencesFetchPromise = (async () => {
-        dispatchState({ type: 'UPDATE', field: 'geoFencesFullListLoading', payload: true });
+    if (geoFencesInFlightRequests.has(sessionKey)) {
+        return geoFencesInFlightRequests.get(sessionKey);
+    }
+
+    const requestPromise = (async () => {
         try {
-            const list = await loadGeoFencesFullList(dispatch, sessionIds);
-            dispatchState({ type: 'UPDATE', field: 'geoFencesFullList', payload: list });
-            return list;
+            const response = await dispatch(
+                getGeoFencesListsFromCS({ departmentId, clientId, userId, skip: 0, take: 500 }),
+            );
+            const extracted = extractGeoFencesList(response);
+            const result = extracted.length ? extracted : [];
+            geoFencesSessionCache.set(sessionKey, result);
+            return result;
         } catch {
-            dispatchState({ type: 'UPDATE', field: 'geoFencesFullList', payload: [] });
             return [];
         } finally {
-            dispatchState({ type: 'UPDATE', field: 'geoFencesFullListLoading', payload: false });
-            geoFencesFetchPromise = null;
+            geoFencesInFlightRequests.delete(sessionKey);
         }
     })();
 
-    return geoFencesFetchPromise;
+    geoFencesInFlightRequests.set(sessionKey, requestPromise);
+    return requestPromise;
+};
+
+export const clearGeoFencesListSessionCache = () => {
+    geoFencesSessionCache.clear();
+    geoFencesInFlightRequests.clear();
+};
+
+export const matchesGeoFenceId = (left, right) => String(left ?? '') === String(right ?? '');
+
+export const buildGeofenceComparisonFromEditRule = (ruleAttribute, clusterList = []) => {
+    const geofenceId = ruleAttribute?.GeofenceId;
+    if (!geofenceId) {
+        return null;
+    }
+
+    const matchedCluster = clusterList.find((item) => matchesGeoFenceId(item?.geoFenceId, geofenceId));
+    const cluster = Array.isArray(ruleAttribute?.AttributeValue) ? ruleAttribute.AttributeValue : [];
+
+    return {
+        ...(matchedCluster ?? {}),
+        geoFenceId: matchedCluster?.geoFenceId ?? geofenceId,
+        identifier: matchedCluster?.identifier ?? ruleAttribute?.AttributeName ?? '',
+        cluster,
+    };
 };
 
 export const filterGeoFencesByPage = (fullList, pages) => {
@@ -292,99 +304,54 @@ const DynamicListGeoFencing = ({
 }) => {
     const { control, setValue, watch, getValues } = useFormContext();
     const dispatch = useDispatch();
-    const { ListState, dispatchState } = useContext(DynamicListCreateContext);
+    const { ListState } = useContext(DynamicListCreateContext);
     const geofenceListFromStore = useSelector((state) => state.geofenceReducer?.list);
-    const [clusterDetails, setClusterDetails] = useState(null);
-    const [regions, setRegions] = useState([]);
     const [showRegionsModal, setShowRegionsModal] = useState(false);
     const [tempRegions, setTempRegions] = useState([]);
+    const clusterDetailsAPI = useApiLoader({
+        autoFetch: false,
+        mode: 'create',
+        loaderConfig: fieldLoaderConfig,
+    });
+    const isClusterDetailsLoading = clusterDetailsAPI.isLoading;
     const { departmentId, clientId, userId } = useSelector((state) => getSessionId(state));
-    const editList = useSelector(({ dynamicListReducer }) => dynamicListReducer?.editList);
-    const editHydratedRef = useRef(false);
-    const isClusterListLoading = ListState?.geoFencesFullListLoading === true;
 
     const pagesId = resolveSelectedPageId(pages);
     const pagesName = resolveSelectedPageName(pages);
+    const attributeLabel = attribute?.attributeName?.value ?? 'Geofence';
+    const geofenceFieldKey = buildFieldTriggerValuesKey(name, '2D', 1);
+    const fieldTriggerState = ListState?.fieldTriggerValues?.[geofenceFieldKey];
+    const isClusterListLoading = fieldTriggerState?.isLoading ?? false;
+    const geofenceListFromField =
+        fieldTriggerState?.triggerValues?.[attributeLabel] ??
+        fieldTriggerState?.triggerValues?.Geofence;
 
     const clusterList = useMemo(() => {
         const fullList =
-            ListState?.geoFencesFullList ??
-            (Array.isArray(geofenceListFromStore) ? geofenceListFromStore : null);
+        geofenceListFromField ??
+        (Array.isArray(geofenceListFromStore) ? geofenceListFromStore : null);
         const pageFilter =
-            pagesId || pagesName ? { id: pagesId, appId: pagesId, value: pagesName } : pages;
+        pagesId || pagesName ? { id: pagesId, appId: pagesId, value: pagesName } : pages;
         return filterGeoFencesByPage(fullList, pageFilter).filter(
             (item) => item?.geoFenceId != null && item?.geoFenceId !== '',
         );
-    }, [ListState?.geoFencesFullList, geofenceListFromStore, pagesId, pagesName]);
-
-    useEffect(() => {
-        const isGeofenceRule = formatName(attribute?.attributeName?.value) === 'geofence';
-        if (!isGeofenceRule) {
-            return;
-        }
-        if (ListState?.geoFencesFullList != null || ListState?.geoFencesFullListLoading) {
-            return;
-        }
-        fetchGeoFencesIntoListState(dispatch, dispatchState, { departmentId, clientId, userId });
-    }, [
-        attribute?.attributeName?.value,
-        ListState?.geoFencesFullList,
-        ListState?.geoFencesFullListLoading,
-        dispatch,
-        dispatchState,
-        departmentId,
-        clientId,
-        userId,
-    ]);
+    }, [geofenceListFromField, geofenceListFromStore, pagesId, pagesName]);
 
     const attributeComparisonValue = watch(`${name}.attributeComparison`);
-    const attributeValueAction = watch(`${name}.attributeValue`);
 
-    useEffect(() => {
-        editHydratedRef.current = false;
-    }, [ListState?.geoFencesFullList, index, currentRuleIndex, attribute?.attributeName?.value]);
-
-    useEffect(() => {
-        if (editHydratedRef.current || !clusterList.length || !editList?.dynamiclist?.length) {
-            return;
+    const regions = useMemo(() => {
+        if (!attributeComparisonValue || typeof attributeComparisonValue !== 'object') {
+            return [];
         }
+        return Array.isArray(attributeComparisonValue.cluster) ? attributeComparisonValue.cluster : [];
+    }, [attributeComparisonValue]);
 
-        const currentAttr = findGeofenceAttrFromEditList(editList, currentRuleIndex, index, attribute);
-        if (!currentAttr) {
-            return;
-        }
+    const clearClusterSelection = useCallback(() => {
+        setValue(`${name}.attributeComparison`, '', { shouldDirty: false });
+        setValue(`${name}.attributeValue`, []);
+    }, [name, setValue]);
 
-        const selectedItem = clusterList.find((item) => item?.geoFenceId === currentAttr.GeofenceId);
-        if (!selectedItem) {
-            return;
-        }
-
-        const savedRegions =
-            currentAttr?.AttributeValue && Array.isArray(currentAttr.AttributeValue) && currentAttr.AttributeValue.length > 0
-                ? currentAttr.AttributeValue
-                : [];
-
-        const currentComparison = getValues(`${name}.attributeComparison`);
-        const nextComparison = {
-            ...selectedItem,
-            cluster: savedRegions,
-        };
-        const isSameComparison =
-            currentComparison &&
-            typeof currentComparison === 'object' &&
-            currentComparison?.geoFenceId === nextComparison.geoFenceId &&
-            JSON.stringify(currentComparison.cluster) === JSON.stringify(savedRegions);
-
-        if (!isSameComparison) {
-            setValue(`${name}.attributeComparison`, nextComparison, { shouldDirty: false });
-        }
-        if (savedRegions.length > 0) {
-            setRegions(savedRegions);
-        }
-        editHydratedRef.current = true;
-    }, [clusterList, editList, index, currentRuleIndex, attribute?.attributeName?.value, name, setValue, getValues]);
-
-    useEffect(() => {
+    const resetClusterIfNotInList = useCallback(() => {
         if (!clusterList.length) {
             return;
         }
@@ -396,62 +363,82 @@ const DynamicListGeoFencing = ({
         if (currentKey == null || currentKey === '') {
             return;
         }
-        const isInList = clusterList.some((item) => item?.geoFenceId === currentKey);
+        const isInList = clusterList.some((item) => matchesGeoFenceId(item?.geoFenceId, currentKey));
         if (!isInList) {
-            setValue(`${name}.attributeComparison`, '', { shouldDirty: false });
-            setRegions([]);
+            clearClusterSelection();
         }
-    }, [clusterList, name, setValue, getValues]);
+    }, [clearClusterSelection, clusterList, getValues, name]);
 
-    useEffect(() => {
-        if (
-            !attributeComparisonValue ||
-            (typeof attributeComparisonValue === 'object' && Object.keys(attributeComparisonValue).length === 0)
-        ) {
-            setRegions([]);
-        }
-    }, [attributeComparisonValue]);
-
-    useEffect(() => {
-        if (attributeValueAction === '' || attributeValueAction == null) {
-            setValue(`${name}.attributeValue`, []);
-        }
-    }, [attributeValueAction, name, setValue]);
+  
 
     const handleClusterChange = async (e) => {
         const selectedValue = e?.value ?? e?.target?.value;
-
-        if (selectedValue) {
-            setValue(`${name}.attributeComparison`, selectedValue);
-        }
-
         const selectedGeoFenceId = selectedValue?.geoFenceId || selectedValue;
 
-        if (selectedGeoFenceId) {
-            try {
-                const response = await dispatch(
-                    getGeoFenceDetailsById({ geoFenceId: selectedGeoFenceId, departmentId, clientId, userId }),
-                );
-
-                if (response?.status) {
-                    const clusterData = response?.data?.data?.cluster || response?.data?.cluster || [];
-                    setRegions(clusterData);
-                    if (selectedValue) {
-                        setValue(`${name}.attributeComparison`, {
-                            ...selectedValue,
-                            cluster: clusterData,
-                        });
-                    }
-                } else {
-                    setRegions([]);
-                }
-            } catch {
-                setRegions([]);
-            }
+        if (!selectedValue || selectedValue === '' || !selectedGeoFenceId) {
+            clearClusterSelection();
+            setDuplicateRule({
+                show: false,
+                index: 0,
+            });
+            return;
         }
+
+        const isInList = clusterList.some((item) => matchesGeoFenceId(item?.geoFenceId, selectedGeoFenceId));
+        if (!isInList) {
+            clearClusterSelection();
+            setDuplicateRule({
+                show: false,
+                index: 0,
+            });
+            return;
+        }
+
+        setValue(`${name}.attributeComparison`, selectedValue);
+        setValue(`${name}.attributeValue`, []);
+
+        const response = await clusterDetailsAPI.refetch({
+            fetcher: () =>
+                dispatch(
+                    getGeoFenceDetailsById({
+                        geoFenceId: selectedGeoFenceId,
+                        departmentId,
+                        clientId,
+                        userId,
+                    }),
+                ),
+            mode: 'create',
+            loaderConfig: fieldLoaderConfig,
+            params: { geoFenceId: selectedGeoFenceId },
+        });
+
+        if (response?.status) {
+            const clusterData = response?.data?.data?.cluster || response?.data?.cluster || [];
+            setValue(`${name}.attributeComparison`, {
+                ...selectedValue,
+                cluster: clusterData,
+            });
+        } else {
+            setValue(`${name}.attributeComparison`, {
+                ...selectedValue,
+                cluster: [],
+            });
+        }
+
         setDuplicateRule({
             show: false,
             index: 0,
+        });
+    };
+
+    const handleActionChange = () => {
+        const currentValue = getValues(`${name}.attributeValue`);
+        if (currentValue === '' || currentValue == null) {
+            setValue(`${name}.attributeValue`, []);
+        }
+        setDuplicateRule({
+            index: 0,
+            show: false,
         });
     };
 
@@ -481,7 +468,6 @@ const DynamicListGeoFencing = ({
     };
 
     const handleSaveRegions = () => {
-        setRegions(tempRegions);
         const currentComparison = watch(`${name}.attributeComparison`);
         if (currentComparison) {
             setValue(`${name}.attributeComparison`, {
@@ -519,19 +505,24 @@ const DynamicListGeoFencing = ({
                                 : {}
                         }
                         handleOnBlur={() => {
+                            resetClusterIfNotInList();
                             handleDuplicateCheck && handleDuplicateCheck();
                         }}
                     />
                 </Col>
-                {regions.length > 0 && (
+                {(regions.length > 0 || isClusterDetailsLoading) && (
                     <Col sm={1} className="pl0">
                         <div className="position-relative top6">
-                            <RSTooltip position="top" text="Settings" className="lh0 d-inline-block">
-                                <i
-                                    className={`${settings_medium} icon-md color-primary-blue cp`}
-                                    onClick={handleOpenModal}
-                                />
-                            </RSTooltip>
+                            {isClusterDetailsLoading ? (
+                                <SpinnerLoader className="float-start" />
+                            ) : (
+                                <RSTooltip position="top" text="Settings" className="lh0 d-inline-block">
+                                    <i
+                                        className={`${settings_medium} icon-md color-primary-blue cp`}
+                                        onClick={handleOpenModal}
+                                    />
+                                </RSTooltip>
+                            )}
                         </div>
                     </Col>
                 )}
@@ -543,7 +534,6 @@ const DynamicListGeoFencing = ({
                         data={ACTION_DATA}
                         textField="value"
                         dataItemKey="value"
-                        defaultValue={[]}
                         required={checkValidCondition()}
                         rules={
                             checkValidCondition()
@@ -552,12 +542,7 @@ const DynamicListGeoFencing = ({
                                   }
                                 : {}
                         }
-                        handleChange={() =>
-                            setDuplicateRule({
-                                index: 0,
-                                show: false,
-                            })
-                        }
+                        handleChange={handleActionChange}
                         handleOnBlur={() => {
                             handleDuplicateCheck && handleDuplicateCheck();
                         }}

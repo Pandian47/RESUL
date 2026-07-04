@@ -39,6 +39,7 @@ const EventNameDuplicateValidate = (value, events, currentFormState, isEditEvent
 const WebFieldTrack = ({ show, onWebFieldTrackSubmit, editEventList, handleModalClose }) => {
     var socket;
     var client;
+    var beforeUnloadHandler;
     const locationState = useQueryParams('/communication');
     const removeWebftParam = () => {
         const params = new URLSearchParams(window.location.search);
@@ -211,6 +212,11 @@ const WebFieldTrack = ({ show, onWebFieldTrackSubmit, editEventList, handleModal
                 webSocketInit();
             }
         }
+
+        return () => {
+            if (socket) socket.disconnect();
+            if (beforeUnloadHandler) window.removeEventListener('beforeunload', beforeUnloadHandler);
+        };
     }, [show]);
     useEffect(() => {
         if (imageDetails?.controlsArray?.length) {
@@ -376,7 +382,7 @@ const WebFieldTrack = ({ show, onWebFieldTrackSubmit, editEventList, handleModal
             reconnection: true,
         });
 
-        window.addEventListener('beforeunload', function () {
+        beforeUnloadHandler = function () {
             // if (this.selfClose === true) {
             //     socket.emit("closed", { userName: 'fieldtrack', domainName: domainName, appId: parseInt(parsedCid), status: true });
             //     socket.emit("close", { userName: 'fieldtrack', domainName: domainName, appId: parseInt(parsedCid), status: true });
@@ -394,7 +400,8 @@ const WebFieldTrack = ({ show, onWebFieldTrackSubmit, editEventList, handleModal
                 status: false,
             });
             // }
-        });
+        };
+        window.addEventListener('beforeunload', beforeUnloadHandler);
 
         socket.on('connect', () => {
             socket.emit('new_user', { userName: 'fieldtrack', domainName: domainName, appId: parseInt(parsedCid, 10) });

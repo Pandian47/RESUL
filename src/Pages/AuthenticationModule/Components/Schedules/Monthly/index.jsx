@@ -3,7 +3,7 @@ import { ENTER_DAYS, ENTER_HOURS, ENTER_MONTHS, ENTER_VALIDATE_DAYS, ENTER_VALID
 import { ARE_YOU_SURE_RESET, DAY, DAYS, FREQUENCY as FREQUENCY_PH, FREQUENCY_EXCEEDS, HOURS, MONTH, OF_EVERY, RESET, THE, WEEK_DAYS as WEEK_DAYS_PH } from 'Constants/GlobalConstant/Placeholders';
 import { restart_medium } from 'Constants/GlobalConstant/Glyphicons';
 import { Fragment, useEffect, useState } from 'react';
-import _get from 'lodash/get';
+import { get as _get } from 'Utils/modules/lodashReplacements';
 import { useFormContext, useWatch } from 'react-hook-form';
 
 import RSInput from 'Components/FormFields/RSInput';
@@ -76,15 +76,17 @@ const Monthly = ({ isMDC = false, isFormCSVDownload = false, isTLShare = false }
             <div className={`d-flex form-group mb0 mt30 ${isMDC ? 'mdc' : ''}`}>
                 <div className="position-relative">
                     <Row>
-                        <ul className={`flex-list  ${!isFormCSVDownload && type === 'Month(s)' ? 'click-off' : ''}`}>
+                        <ul className={`flex-list align-items-end ${!isFormCSVDownload && type === 'Month(s)' ? 'pe-none click-off' : ''}`}>
                             {!isFormCSVDownload ? (
-                                <li>
+                                <li className="d-flex align-items-center pb2 position-relative top-4">
                                     <RSRadioButton
                                         control={control}
                                         name={`monthly.type`}
                                         labelName={DAYS}
                                         defaultValue={type}
                                         isLabel={false}
+                                        isError={false}
+                                        radio_wrapper_class="mb0 mt0"
                                         rules={{
                                             required: SELECT_MONTHLY_CONDITION,
                                         }}
@@ -95,10 +97,10 @@ const Monthly = ({ isMDC = false, isFormCSVDownload = false, isTLShare = false }
                                 <li className="mr15">{DAY}</li>
                             )}
                             {!isFormCSVDownload && (
-                                <li className={`${!type ? 'pe-none' : ''} mr15`}>{DAY}</li>
+                                <li className={`${!type ? 'click-off pe-none' : ''} mr15`}>{DAY}</li>
                             )}
                             <Col sm={2} className={`mr15 ${isFormCSVDownload ? 'width100' : 'width125'}`}>
-                                <li className={` ${!type && !isFormCSVDownload ? 'pe-none ' : 'mr15'} ${ isFormCSVDownload ? 'width100' : 'width125'}`}>
+                                <li className={` ${!type && !isFormCSVDownload ? 'click-off pe-none ' : 'mr15'} ${ isFormCSVDownload ? 'width100' : 'width125'}`}>
                                     <RSInput
                                         name={'monthly.first_day'}
                                         control={control}
@@ -125,10 +127,10 @@ const Monthly = ({ isMDC = false, isFormCSVDownload = false, isTLShare = false }
                                     />
                                 </li>
                             </Col>
-                            <li className={`${!type && !isFormCSVDownload ? 'pe-none  text-center' : ' text-center'} ${isFormCSVDownload ? 'mr15' : 'mr15'}`}>{OF_EVERY}</li>
+                            <li className={`${!type && !isFormCSVDownload ? 'click-off pe-none  text-center' : ' text-center'} ${isFormCSVDownload ? 'mr15' : 'mr15'}`}>{OF_EVERY}</li>
                             <Col sm={2} className={`mr15 ${isMDC ? 'width26p' : isFormCSVDownload ? 'width100' : 'width125'}`}>
                                 <li
-                                    className={` ${!type && !isFormCSVDownload ? `pe-none mr15 ${isMDC ? 'width100p' : 'width125'}`  : `mr15 ${isMDC ? 'width100p' : 'width125'}`}`}
+                                    className={` ${!type && !isFormCSVDownload ? `click-off pe-none mr15 ${isMDC ? 'width100p' : 'width125'}`  : `mr15 ${isMDC ? 'width100p' : 'width125'}`}`}
                                     title={monthly?.first_months?.message || ''}
                                 >
                                     <RSInput
@@ -155,9 +157,9 @@ const Monthly = ({ isMDC = false, isFormCSVDownload = false, isTLShare = false }
                                     />
                                 </li>
                             </Col>
-                            <li className={!type && !isFormCSVDownload ? 'pe-none mr15' : 'mr15'}>@</li>
+                            <li className={!type && !isFormCSVDownload ? 'click-off pe-none mr15' : 'mr15'}>@</li>
                             <Col sm={2} className="mr15 width115">
-                                <li className={`${!type && !isFormCSVDownload ? 'pe-none mr15 ' : 'mr15 '} ${isFormCSVDownload ? 'width120' : 'width125'}`}>
+                                <li className={`${!type && !isFormCSVDownload ? 'click-off pe-none mr15 ' : 'mr15 '} ${isFormCSVDownload ? 'width120' : 'width125'}`}>
                                     <RSKendoDropDownList
                                         control={control}
                                         name="monthly.first_hours"
@@ -200,8 +202,8 @@ const Monthly = ({ isMDC = false, isFormCSVDownload = false, isTLShare = false }
                     </Row>
                     {!isFormCSVDownload && (
                     <Row>
-                        <ul className={`flex-list  mt30  ${type === 'Day(s)' ? 'click-off' : ''}`}>
-                            <li>
+                        <ul className={`flex-list align-items-end mt30 ${type === 'Day(s)' ? 'pe-none click-off' : ''}`}>
+                            <li className="d-flex align-items-center pb2 position-relative top-4">
                                 <RSRadioButton
                                     control={control}
                                     name={`monthly.type`}
@@ -209,6 +211,7 @@ const Monthly = ({ isMDC = false, isFormCSVDownload = false, isTLShare = false }
                                     defaultValue={type}
                                     isError={false}
                                     isLabel={false}
+                                    radio_wrapper_class="mb0 mt0"
                                     rules={{
                                         required: SELECT_MONTHLY_CONDITION,
                                     }}
@@ -216,9 +219,9 @@ const Monthly = ({ isMDC = false, isFormCSVDownload = false, isTLShare = false }
                                 />
                             </li>
 
-                            <li className={`${!type ? 'pe-none mr15' : 'mr15'}`}>{THE}</li>
+                            <li className={`${!type ? 'click-off pe-none mr15' : 'mr15'}`}>{THE}</li>
                             <Col sm={1.5} className={`mr15 ${isFormCSVDownload ? 'width70' : 'width95'}`}>
-                                <li className={` ${!type ? 'pe-none' : ''}`}>
+                                <li className={` ${!type ? 'pe-none click-off' : ''}`}>
                                     <RSKendoDropDownList
                                         control={control}
                                         name="monthly.second_frequency"
@@ -237,7 +240,7 @@ const Monthly = ({ isMDC = false, isFormCSVDownload = false, isTLShare = false }
                                 </li>
                             </Col>
                             <Col sm={1.5} className={`mr15 ${isFormCSVDownload ? 'width70 ml11 mr18' : 'width95'}`}>
-                                <li className={` ${!type ? 'pe-none' : ''}`}>
+                                <li className={` ${!type ? 'click-off pe-none' : ''}`}>
                                     <RSKendoDropDownList
                                         control={control}
                                         name="monthly.second_days"
@@ -255,10 +258,10 @@ const Monthly = ({ isMDC = false, isFormCSVDownload = false, isTLShare = false }
                                     />
                                 </li>
                             </Col>
-                            <li className={!type ? 'pe-none mr15 text-center' : 'mr15 text-center'}>{OF_EVERY}</li>
+                            <li className={!type ? 'click-off pe-none mr15 text-center' : 'mr16 text-center'}>{OF_EVERY}</li>
                             <Col sm={1.5} className={`mr15 ${isMDC ? 'width125' : isFormCSVDownload ? 'width70' : 'width80'}`}>
                                 <li
-                                    className={` ${!type ? 'pe-none' : `mr15 ${isMDC ? 'width125' : 'width80'}`}`}
+                                    className={` ${!type ? 'click-off pe-none' : `mr15 ${isMDC ? 'width125' : 'width80'}`}`}
                                     title={monthly?.second_months?.message || ''}
                                 >
                                     <RSInput
@@ -285,9 +288,9 @@ const Monthly = ({ isMDC = false, isFormCSVDownload = false, isTLShare = false }
                                     />
                                 </li>
                             </Col>
-                            <li className={!type ? 'pe-none mr15' : 'mr15'}>@</li>
-                            <Col sm={2} className={`mr15 ${isFormCSVDownload ? 'width75' : 'width93'}`}>
-                                <li className={!type ? 'pe-none ' : ''}>
+                            <li className={!type ? 'pe-none click-off mr15' : 'mr15'}>@</li>
+                            <Col sm={2} className={`mr15 ${isFormCSVDownload ? 'width75' : isMDC ? 'width95': 'width94'}`}>
+                                <li className={!type ? 'click-off pe-none ' : ''}>
                                     <RSKendoDropDownList
                                         control={control}
                                         name="monthly.second_hours"

@@ -3,6 +3,7 @@ import { DropdownButton, Dropdown } from 'react-bootstrap';
 import Proptypes from 'prop-types';
 import RSTooltip from '../RSTooltip';
 import { normalizeDisplayText } from 'Utils/modules/stringUtils';
+import { RS_BOOTSTRAP_DROPDOWN_POPPER_CONFIG } from 'Components/FormFields/RSBootstrapdown';
 
 const SafeDropdownTitle = ({ children, eventKey, className = '', ...rest }) => (
     <span className={`rs-dropdown-title ${className}`.trim()} {...rest}>
@@ -96,6 +97,7 @@ export const BootstrapDropdown = ({
                 className={`rs-dropdown ${className} ${fontSize}`}
                 title={sanitizeDropdownTitle(title)}
                 renderMenuOnMount
+                popperConfig={RS_BOOTSTRAP_DROPDOWN_POPPER_CONFIG}
                 {...(isCustomToggle && { show: show, onClick: props.handleClick })}
             >
                 <div className={isScroll ? 'css-scrollbar custome-dropdown-scroll' : ''}>

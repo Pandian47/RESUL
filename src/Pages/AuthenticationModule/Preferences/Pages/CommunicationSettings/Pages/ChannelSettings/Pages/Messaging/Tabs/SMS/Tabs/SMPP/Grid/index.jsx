@@ -163,6 +163,7 @@ const SMPPList = () => {
                                 field: 'friendlyName',
                                 title: 'Friendly name',
                                 filter: 'text',
+                                width: 200,
                                 cell: ({ dataItem }) => {
                                     const displayValue = dataItem?.friendlyName || dataItem?.smsFriendlyName || dataItem?.userName || '-';
                                     return (
@@ -176,6 +177,7 @@ const SMPPList = () => {
                                 field: 'serviceproviderName',
                                 title: SERVICE_PROVIDER,
                                 filter: 'text',
+                                width: 200,
                                 cell: ({ dataItem }) => (
                                     <td>
                                     {dataItem?.serviceproviderName}
@@ -186,6 +188,7 @@ const SMPPList = () => {
                                 field: 'settingType',
                                 title: SMS_TYPE,
                                 filter: 'text',
+                                width: 200,
                                 cell: (props) => {
                                     const item = props.dataItem;
                                     const rawType = item?.messageTypes ?? item?.settingType;
@@ -232,6 +235,7 @@ const SMPPList = () => {
                                 field: 'senderId',
                                 title: SENDER_ID,
                                 filter: 'text',
+                                width: 200,
                                 cell: ({ dataItem }) => (
                                     <td>
                                     {dataItem?.senderId}

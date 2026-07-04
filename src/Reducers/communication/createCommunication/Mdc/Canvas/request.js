@@ -29,10 +29,9 @@ import {
     SUBSEGMENT_AGANIST_CHANNEL_COUNT_TARGETLIST,
     SUBSEGMENT_DISABLE_CHANNELS,
     SUBSEGMENT_ENABLE_CHANNELS,
-    GET_MDC_OFFLINE_CONVERSION_EDIT,
 } from 'Constants/EndPoints';
 import { updateRecipientList, setMdcFlowConfig, updateDynamicList } from './reducer';
-import { updateOfflineConversion, updateVoiceList } from '../../Create/reducer';
+import { updateVoiceList } from '../../Create/reducer';
 
 export const getRecipientList =
     ({ payload, loading = false }) =>
@@ -472,23 +471,3 @@ export const subsegmentEnableChannels =
                                     },
             }),
         );
-
-export const GetMDCOfflineConversionDetails = (payload) => async (dispatch) => {
-    return dispatch(
-        request.post({
-            url: GET_MDC_OFFLINE_CONVERSION_EDIT,
-            payload,
-            loading: true,
-            ok: ({ data }) => {
-                const { data: res, status } = data;
-                const response = status ? res : [];
-                dispatch(
-                    updateOfflineConversion({
-                        data: response,
-                        field: 'OfflineConversionEdit',
-                    }),
-                );
-            },
-        }),
-    );
-};

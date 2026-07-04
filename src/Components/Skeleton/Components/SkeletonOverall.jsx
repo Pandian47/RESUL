@@ -418,8 +418,10 @@ export const CSRDeviceSkeleton = (props) => {
 export const DetailOverviewSkeleton = (props) => {
     const { isError, children } = props;
     const [data, updateData] = useState('No data available');
+    const shouldStopAnimation = props.stopAnimation ?? isError;
+
     return (
-        <div className="skeleton-span-con">
+        <div className={`skeleton-span-con${shouldStopAnimation ? ' skeleton-span-con--static' : ''}`}>
             <div>
                 {props.nodata ? <NoData /> : null}
                 {isError ? (
@@ -435,25 +437,25 @@ export const DetailOverviewSkeleton = (props) => {
             </div>
             <Row>
                 <Col md={4} className="pr2">
-                    <CommonSkeleton box space height={187} stopAnimation={isError} />
-                    <CommonSkeleton box space height={33} stopAnimation={isError} />
-                    <CommonSkeleton box space height={33} stopAnimation={isError} />
-                    <CommonSkeleton box space height={33} stopAnimation={isError} />
-                    <CommonSkeleton box space height={33} stopAnimation={isError} />
+                    <CommonSkeleton box space height={187} stopAnimation={shouldStopAnimation} />
+                    <CommonSkeleton box space height={33} stopAnimation={shouldStopAnimation} />
+                    <CommonSkeleton box space height={33} stopAnimation={shouldStopAnimation} />
+                    <CommonSkeleton box space height={33} stopAnimation={shouldStopAnimation} />
+                    <CommonSkeleton box space height={33} stopAnimation={shouldStopAnimation} />
                 </Col>
                 <Col md={4} className="px4">
-                    <CommonSkeleton box space height={187} stopAnimation={isError} />
-                    <CommonSkeleton box space height={33} stopAnimation={isError} />
-                    <CommonSkeleton box space height={33} stopAnimation={isError} />
-                    <CommonSkeleton box space height={33} stopAnimation={isError} />
-                    <CommonSkeleton box space height={33} stopAnimation={isError} />
+                    <CommonSkeleton box space height={187} stopAnimation={shouldStopAnimation} />
+                    <CommonSkeleton box space height={33} stopAnimation={shouldStopAnimation} />
+                    <CommonSkeleton box space height={33} stopAnimation={shouldStopAnimation} />
+                    <CommonSkeleton box space height={33} stopAnimation={shouldStopAnimation} />
+                    <CommonSkeleton box space height={33} stopAnimation={shouldStopAnimation} />
                 </Col>
                 <Col md={4} className="pl2">
-                    <CommonSkeleton box space height={187} stopAnimation={isError} />
-                    <CommonSkeleton box space height={33} stopAnimation={isError} />
-                    <CommonSkeleton box space height={33} stopAnimation={isError} />
-                    <CommonSkeleton box space height={33} stopAnimation={isError} />
-                    <CommonSkeleton box space height={33} stopAnimation={isError} />
+                    <CommonSkeleton box space height={187} stopAnimation={shouldStopAnimation} />
+                    <CommonSkeleton box space height={33} stopAnimation={shouldStopAnimation} />
+                    <CommonSkeleton box space height={33} stopAnimation={shouldStopAnimation} />
+                    <CommonSkeleton box space height={33} stopAnimation={shouldStopAnimation} />
+                    <CommonSkeleton box space height={33} stopAnimation={shouldStopAnimation} />
                 </Col>
             </Row>
         </div>
@@ -1321,7 +1323,7 @@ export const ColumnChartSkeleton = (props) => {
                 <div
                     className="skeleton-span flex-row fill width100p align-items-end mb5 transformY-3 position-relative pb20"
                     style={{
-                        height: 328,
+                        height: 315,
                         borderLeft: `1px solid ${axisColor}`,
                         borderBottom: `1px solid ${axisColor}`,
                         boxSizing: 'border-box',
@@ -2751,113 +2753,6 @@ export const PathToConversionFlowChartSkeleton = ({ isError = false }) => {
 
 
 
-export const FlowChartSkeleton = () => {
-    const boxStyle = {
-        backgroundColor: "#e9e9e9",
-        color: "transparent",
-        width: "100px",
-        height: "40px",
-        borderRadius: "6px",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-    };
-
-    const lineStyle = {
-        stroke: "#e9e9e9",
-        strokeWidth: 2,
-        fill: "none",
-    };
-
-    const dashedLineStyle = {
-        ...lineStyle,
-        strokeDasharray: "5,5",
-    };
-
-    return (
-        <div
-            style={{
-                position: "relative",
-                width: "100%",
-                height: "500px",
-                backgroundColor: "white",
-            }}
-        >
-            <svg width="100%" height="100%">
-                {/* arrows (straight and dashed lines) */}
-                <defs>
-                    <marker
-                        id="arrow"
-                        markerWidth="10"
-                        markerHeight="10"
-                        refX="6"
-                        refY="3"
-                        orient="auto"
-                    >
-                        <path d="M0,0 L0,6 L9,3 z" fill="#e9e9e9" />
-                    </marker>
-                </defs>
-
-                {/* main flow (Installed → Opened → Signup → Subscribe → Watched) */}
-                <path
-                    d="M120 60 L220 140"
-                    style={lineStyle}
-                    markerEnd="url(#arrow)"
-                />
-                <path
-                    d="M320 220 L420 300"
-                    style={lineStyle}
-                    markerEnd="url(#arrow)"
-                />
-                <path
-                    d="M520 380 L620 460"
-                    style={lineStyle}
-                    markerEnd="url(#arrow)"
-                />
-
-                {/* dashed lines to Failed */}
-                <path
-                    d="M220 140 L750 60"
-                    style={dashedLineStyle}
-                    markerEnd="url(#arrow)"
-                />
-                <path
-                    d="M420 300 L750 60"
-                    style={dashedLineStyle}
-                    markerEnd="url(#arrow)"
-                />
-                <path
-                    d="M620 460 L750 60"
-                    style={dashedLineStyle}
-                    markerEnd="url(#arrow)"
-                />
-
-                {/* nodes */}
-                <foreignObject x="40" y="40" width="100" height="40">
-                    <div style={boxStyle}>Installed</div>
-                </foreignObject>
-                <foreignObject x="180" y="120" width="100" height="40">
-                    <div style={boxStyle}>Opened</div>
-                </foreignObject>
-                <foreignObject x="340" y="200" width="100" height="40">
-                    <div style={boxStyle}>Signup</div>
-                </foreignObject>
-                <foreignObject x="500" y="360" width="100" height="40">
-                    <div style={boxStyle}>Subscribe</div>
-                </foreignObject>
-                <foreignObject x="660" y="520" width="100" height="40">
-                    <div style={boxStyle}>Watched</div>
-                </foreignObject>
-                <foreignObject x="740" y="40" width="100" height="40">
-                    <div style={boxStyle}>Failed</div>
-                </foreignObject>
-            </svg>
-        </div>
-    );
-};
-
-
-
 export const ConsumptionsChannelSkeleton = ({ isError = false, count = 12 }) => {
     return (
         <div
@@ -3073,14 +2968,19 @@ export const ReportOverviewColumnChartSkeleton = ({ stopAnimation, isError, rowC
     const shouldStopAnimation = stopAnimation ?? isError;
 
     return (
-        <div className="skeleton-span-con">
+        <div className={`skeleton-span-con${shouldStopAnimation ? ' skeleton-span-con--static' : ''}`}>
             {isError ? (
                 <div className="nodata-bar">
                     <Icon icon={alert_medium} size="md" color="color-primary-orange" nocp />
                     <p>No data available</p>
                 </div>
             ) : null}
-            <div className="attri-roi-contianer report-overview-port skeleton-report-overview-column" aria-hidden="true">
+            <div
+                className={`attri-roi-contianer report-overview-port skeleton-report-overview-column${
+                    shouldStopAnimation ? ' skeleton-report-overview-column--static' : ''
+                }`}
+                aria-hidden="true"
+            >
                 <ul>
                     {rows.map((_, index) => (
                         <li key={index}>

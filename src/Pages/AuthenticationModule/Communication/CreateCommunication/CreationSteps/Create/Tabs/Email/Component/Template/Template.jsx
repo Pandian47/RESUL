@@ -9,7 +9,7 @@ import { LAST30DAYS_DATEFILTER, MAX_LENGTH150 } from 'Constants/GlobalConstant/R
 import { ADD_VIEW_IN_BROWSER, EMAIL_NOT_DISPLAYING, INBOX_FIRST_LINE_MESSAGE, INBOX_FIRST_LINE_PREVIEW, RES_75_CHARACTERS, VIEW_IN_BROWSER } from 'Constants/GlobalConstant/Placeholders';
 import { circle_question_mark_mini, email_preview_medium, form_edit_medium, pencil_edit_medium, restart_medium, spam_assassin_medium } from 'Constants/GlobalConstant/Glyphicons';
 import { useEffect, useMemo, useRef, useState } from 'react';
-import _get from 'lodash/get';
+import { get as _get } from 'Utils/modules/lodashReplacements';
 import RSTabbar from 'Components/RSTabber';
 import { Row, Col } from 'react-bootstrap';
 import { currentSplitName, tabData } from './constant';
@@ -55,8 +55,122 @@ import RSEmojiPickerInput from 'Components/EmojiPickerInput';
 import { updateMDCEditMode } from 'Reducers/communication/createCommunication/Create/reducer';
 import useApiLoader from 'Hooks/useApiLoader';
 import { AUTHORING_FIELD_LOADER_CONFIG } from 'Components/Skeleton/pages/communication/authoring';
+import { TemplatePreviewInnerSkeleton } from 'Components/Skeleton/Skeleton';
 
 const lastSpamScoreTemplateBySplit = {};
+
+const templateGalleryRequestsInFlight = new Map();
+
+const buildTemplateGalleryApiPayload = (payload, { departmentId, clientId }) => ({
+    ...payload,
+    departmentId,
+    clientId,
+    filteration: {
+        ...payload?.filteration,
+        templateCategoryId: payload?.filteration?.templateCategoryId || '',
+    },
+});
+
+const fetchTemplateGalleryListDeduped = (dispatch, payloadForApi) => {
+    const requestKey = JSON.stringify(payloadForApi);
+    const inFlightRequest = templateGalleryRequestsInFlight.get(requestKey);
+    if (inFlightRequest) {
+        return inFlightRequest;
+    }
+
+    const request = dispatch(templateGalleryListApi_AI(payloadForApi)).finally(() => {
+        templateGalleryRequestsInFlight.delete(requestKey);
+    });
+    templateGalleryRequestsInFlight.set(requestKey, request);
+    return request;
+};
+
+const getTemplateGalleryBootstrapFromQuery = () => {
+    const qparam = new URLSearchParams(window.location.search);
+    const channelId = parseInt(qparam.get('channelId')) || 0;
+    const templateId = parseInt(qparam.get('templateId')) || 0;
+    const isReturningFromBuilder = qparam.get('channelId') !== null && channelId > 0 && !templateId;
+
+    return {
+        isReturningFromBuilder,
+        channelId,
+        shouldAutoSelectLatest: isReturningFromBuilder,
+    };
+};
+
+const buildDefaultTemplateGalleryPayload = ({ departmentId, clientId, userId, isNotification, bootstrap }) => ({
+    departmentId,
+    clientId,
+    userId: bootstrap?.isReturningFromBuilder ? userId : 0,
+    channelId: bootstrap?.isReturningFromBuilder
+        ? bootstrap.channelId
+        : isNotification === 'Web'
+          ? 8
+          : isNotification === 'Mobile'
+            ? 14
+            : 1,
+    templatecategory: bootstrap?.isReturningFromBuilder ? 'My template' : 'All template',
+    pagination: {
+        pageNo: 1,
+        recordLimit: bootstrap?.shouldAutoSelectLatest ? 1 : 4,
+    },
+    isFilter: false,
+    filteration: {
+        templateName: '',
+        startDate: getYYMMDD(getDateWithDaynoFormat(LAST30DAYS_DATEFILTER)),
+        endDate: getYYMMDD(new Date()),
+        templateCategoryId: '',
+    },
+});
+
+const resolveEmailChannelDetailId = ({
+    saveData,
+    getValues,
+    locationState,
+    campaignDetails,
+    isSplit,
+    fieldName,
+}) => {
+    if (saveData?.edmChannelId) {
+        return saveData.edmChannelId;
+    }
+
+    const savedChannelResponseDetailId = getValues('savedChannelResponseDetailId');
+    if (savedChannelResponseDetailId) {
+        return savedChannelResponseDetailId;
+    }
+
+    if (locationState?.channelDetailId) {
+        return locationState.channelDetailId;
+    }
+
+    if (locationState?.mdcContentSetupDetails?.channelDetailId) {
+        return locationState.mdcContentSetupDetails.channelDetailId;
+    }
+
+    const splitType = isSplit && fieldName ? fieldName.replace('split', '') : null;
+    const content = campaignDetails?.content;
+    if (splitType && Array.isArray(content)) {
+        const splitContent = content.find((item) => item.splitType === splitType);
+        if (splitContent?.edmChannelId) {
+            return splitContent.edmChannelId;
+        }
+    }
+
+    return content?.[0]?.edmChannelId ?? 0;
+};
+
+const resolvePushChannelDetailId = (saveData, isNotification) => {
+    if (isNotification === 'Web') {
+        return saveData?.WebPushNotifyChannelDetailID ?? 0;
+    }
+
+    if (isNotification === 'Mobile') {
+        return saveData?.MobilePushNotifyChannelDetailID ?? 0;
+    }
+
+    return saveData?.edmChannelId ?? 0;
+};
 
 const Template = ({
     fieldName = '',
@@ -69,6 +183,8 @@ const Template = ({
     const dispatch = useDispatch();
     const navigate = useNavigate();
     const spamScoreLoader = useApiLoader();
+    const templateSelectLoader = useApiLoader({ autoFetch: false });
+    const editTemplateLoader = useApiLoader({ autoFetch: false });
     const { departmentId, clientId, userId } = useSelector((state) => getSessionId(state));
     const { campaignDetails } = useSelector((state) => emailList(state));
     const [campaign, setCampaign] = useState({});
@@ -95,7 +211,10 @@ const Template = ({
     const qparam = new URLSearchParams(window.location.search);
     const channelIdParam = parseInt(qparam.get('channelId')) || 0;
     const templateIdParam = parseInt(qparam.get('templateId')) || 0;
+    const builderBootstrapRef = useRef(getTemplateGalleryBootstrapFromQuery());
+    const shouldAutoSelectLatestTemplateRef = useRef(builderBootstrapRef.current.shouldAutoSelectLatest);
     const [templateId, setTemplateId] = useState(rrState?.templateId);
+    const [templatePreviewError, setTemplatePreviewError] = useState(false);
     const [loading, setLoading] = useState(false);
     const [previewMode, setPreviewMode] = useState('amp');
     const isInitializedRef = useRef(false);
@@ -109,29 +228,27 @@ const Template = ({
     const template = useSelector(({ TemplateReducer }) => TemplateReducer);
     const emailBuilderReducer = useSelector(({ emailBuilderReducer }) => emailBuilderReducer);
     const [isTrigger, setIsTrigger] = useState(false);
-    const [payload, setPayload] = useState({
-        departmentId,
-        clientId,
-        userId: 0,
-        channelId: isNotification === 'Web' ? 8 : isNotification === 'Mobile' ? 14 : 1,
-        templatecategory: 'All template',
-        pagination: {
-            pageNo: 1,
-            recordLimit: 4,
-        },
-        isFilter: false,
-        filteration: {
-            templateName: '',
-            startDate: getYYMMDD(getDateWithDaynoFormat(LAST30DAYS_DATEFILTER)),
-            endDate: getYYMMDD(new Date()),
-            templateCategoryId: '',
-        },
-    });
+    const [payload, setPayload] = useState(() =>
+        buildDefaultTemplateGalleryPayload({
+            departmentId,
+            clientId,
+            userId,
+            isNotification,
+            bootstrap: builderBootstrapRef.current,
+        }),
+    );
     const handleTemplate = async (value) => {
+        const nextTemplateCategory = value.text === 'My templates' ? 'My template' : 'All template';
+        const nextUserId = value.text === 'My templates' ? userId : 0;
+
+        if (payload.templatecategory === nextTemplateCategory && payload.userId === nextUserId) {
+            return;
+        }
+
         let updatedPayload = {
             ...payload,
-            userId: value.text === 'My templates' ? userId : 0,
-            templatecategory: value.text === 'My templates' ? 'My template' : 'All template',
+            userId: nextUserId,
+            templatecategory: nextTemplateCategory,
             pagination: {
                 pageNo: 1,
                 recordLimit: 4,
@@ -147,37 +264,58 @@ const Template = ({
         setPayload(updatedPayload);
     };
 
-    const lastTemplateGalleryPayloadKeyRef = useRef(null);
     const lastTemplateCategoryKeyRef = useRef(null);
+    const lastGalleryFetchKeyRef = useRef(null);
 
     useEffect(() => {
-        const payloadKey = JSON.stringify(payload ?? {});
-        if (lastTemplateGalleryPayloadKeyRef.current === payloadKey) {
+        if (builderBootstrapRef.current.isReturningFromBuilder && userId) {
+            setPayload((prev) => (prev.userId === userId ? prev : { ...prev, userId }));
+        }
+    }, [userId]);
+
+    useEffect(() => {
+        if (!departmentId || !clientId) {
             return;
         }
-        lastTemplateGalleryPayloadKeyRef.current = payloadKey;
+
+        if (builderBootstrapRef.current.isReturningFromBuilder && !userId) {
+            return;
+        }
 
         const categoryKey = `${clientId}|${departmentId}|${userId}|${String(payload?.templatecategory ?? '')}`;
         const shouldFetchCategories =
             lastTemplateCategoryKeyRef.current !== categoryKey ||
             !(Array.isArray(categoriesData) && categoriesData.length);
+        const payloadForApi = buildTemplateGalleryApiPayload(payload, { departmentId, clientId });
+        const galleryFetchKey = JSON.stringify(payloadForApi);
+        const shouldFetchGallery = lastGalleryFetchKeyRef.current !== galleryFetchKey;
+
+        if (!shouldFetchGallery && !shouldFetchCategories) {
+            return;
+        }
 
         let cancelled = false;
 
         const run = async () => {
-            const payloadForApi = {
-                ...payload,
-                filteration: {
-                    ...payload?.filteration,
-                    templateCategoryId: payload?.filteration?.templateCategoryId || '',
-                },
-            };
-            setLoading(true);
-            dispatch(templateLoading(true));
-            await dispatch(templateGalleryListApi_AI(payloadForApi));
-            if (cancelled) return;
-            setLoading(false);
-            dispatch(templateLoading(false));
+            if (shouldFetchGallery) {
+                setLoading(true);
+                dispatch(templateLoading(true));
+                const result = await fetchTemplateGalleryListDeduped(dispatch, payloadForApi);
+                if (cancelled) return;
+                setLoading(false);
+                dispatch(templateLoading(false));
+                lastGalleryFetchKeyRef.current = galleryFetchKey;
+
+                if (shouldAutoSelectLatestTemplateRef.current) {
+                    shouldAutoSelectLatestTemplateRef.current = false;
+                    const latestTemplateId = result?.data?.[0]?.templateID;
+                    const resolvedChannelId = builderBootstrapRef.current.channelId || channelIdParam || 1;
+                    if (latestTemplateId) {
+                        fetchTemplateById(latestTemplateId, resolvedChannelId);
+                    }
+                }
+            }
+
             if (shouldFetchCategories) {
                 await handleCategories(payload?.templatecategory);
                 if (!cancelled) {
@@ -191,7 +329,7 @@ const Template = ({
         return () => {
             cancelled = true;
         };
-    }, [payload, isNotification, dispatch, clientId, departmentId, userId, categoriesData]);
+    }, [payload, isNotification, dispatch, clientId, departmentId, userId]);
 
     // On mount: if query params contain channelId (1, 8, or 14) and a templateId, fetch template by ID
     useEffect(() => {
@@ -202,35 +340,11 @@ const Template = ({
 
         const isValidChannel = channelIdParam === 8 || channelIdParam === 14 || channelIdParam === 1;
         const hasTemplateId = templateIdParam > 0;
-        const isReturningFromBuilder = new URLSearchParams(window.location.search).get('channelId') !== null;
 
-        const run = async () => {
-            if (isValidChannel && hasTemplateId) {
-                fetchTemplateById(templateIdParam, channelIdParam);
-            } else if (isValidChannel && !hasTemplateId && isReturningFromBuilder) {
-                const latestPayload = {
-                    departmentId,
-                    clientId,
-                    userId,
-                    channelId: channelIdParam,
-                    templatecategory: 'My template',
-                    pagination: { pageNo: 1, recordLimit: 1 },
-                    isFilter: false,
-                    filteration: {
-                        templateName: '',
-                        startDate: getYYMMDD(getDateWithDaynoFormat(LAST30DAYS_DATEFILTER)),
-                        endDate: getYYMMDD(new Date()),
-                        templateCategoryId: '',
-                    },
-                };
-                const result = await dispatch(templateGalleryListApi_AI(latestPayload));
-                const latestTemplateId = result?.data?.[0]?.templateID;
-                if (latestTemplateId) {
-                    fetchTemplateById(latestTemplateId, channelIdParam);
-                }
-            }
-        };
-        run();
+        if (isValidChannel && hasTemplateId) {
+            fetchTemplateById(templateIdParam, channelIdParam);
+        }
+
         setCampaign(campaign);
     }, []);
 
@@ -372,9 +486,9 @@ const Template = ({
                     clientId,
                     departmentId,
                     campaignId: locationState?.campaignId,
-                    body: html,
-                    body1: spamScoreModalProps?.content, //Text editor content
-                    emailFooterRawcode: spamScoreModalProps?.emailFooter,
+                    body: getValues(edmContentName) || html,
+                    body1: getValues(editorTextName),
+                    emailFooterRawcode: _get(sampleEmailFooter, 'emailFooterRawcode', ''),
                     preHeaderMessage: getValues(inboxLinePreviewName),
                     subjectLine: getValues(subjectLineName),
                     spamScore: spamScoreName,
@@ -724,7 +838,7 @@ const Template = ({
     const spamScoreModalProps = {
         show: state.SpamScoreModal,
         content: getValues(editorTextName),
-        edmContent,
+        edmContent: edmContent || templateContent,
         emailFooter: sampleFooterText,
         subjectLine: getValues(subjectLineName),
         inboxLinePreview: getValues(inboxLinePreviewName),
@@ -798,69 +912,48 @@ const Template = ({
             };
             let payload = buildPayload(formState, '', 'template', locationState);
 
-            const payloadSubmit = {
-                clientId,
-                departmentId,
-                userId,
-                createdBy: userId,
-                campaignId: locationState?.campaignId,
-                campaignType: locationState?.campaignType,
-                edmGuid: '',
-                campaignGuid: '',
-                audienceCount: formState?.audience?.reduce(
-                    (prev, cur) => Number(prev) + Number(cur.recipientCountWebPush),
-                    0,
-                ),
-                ...payload,
-            };
-            // const payload = buildPayload(formState);
+            const { status, message, templateData, data } = await editTemplateLoader.refetch({
+                fetcher: async () => {
+                    const saveResult = await dispatch(
+                        resolvePausedEtSaveEmailThunk({
+                            payload,
+                            savedChannelsId,
+                            campaignDetails,
+                            locationState,
+                            loading: false,
+                        }),
+                    );
 
-            // let baseURL = 'https://dwiz.resul.io/';
+                    if (!saveResult?.status) {
+                        return saveResult;
+                    }
 
-            const token = localStorage.getItem('accessToken');
+                    const templatePayload = {
+                        templateId: getValues(templateIDName) || campaignDetails?.content[0]?.templateId || 0,
+                        channelId: 1,
+                        departmentId,
+                        clientId,
+                        userId,
+                    };
+                    const fetchedTemplate = await dispatch(
+                        getTemplate_AIEmail_byId({ ...templatePayload, loading: false }),
+                    );
 
-            let fromEnvi = location.href;
-            // const { status, data } = await dispatch(saveEmailCampaign({ payload }));
-            const { status, data, message } = await dispatch(
-                resolvePausedEtSaveEmailThunk({
-                    payload,
-                    savedChannelsId,
-                    campaignDetails,
-                    locationState,
-                }),
-            );
-            if (status) {
-                // console.log('data::', data);
-                // let params = {
-                //     campaignId: locationState?.campaignId || 0,
-                //     templateId: getValues(templateIDName) || campaignDetails?.content[0].templateId || 0,
-                //     channelId: 1,
-                //     segList: 0,
-                //     name: campaignDetails?.content[0].templateName || '',
-                //     SplitType: '',
-                //     channelDetailId: edmChannelId || 0,
-                //     departmentId,
-                //     clientId,
-                //     userId,
-                //     edmChannelId: edmChannelId || 0,
-                // };
-                // let channelDetails = JSON.stringify(params);
-                // window.location.href = `${baseURL}${'CommunicationEDMTemplate/TemplateBuilder'}?accessToken=${encodeURIComponent(
-                //     token,
-                // )}&ChannelDetails=${encodeURIComponent(channelDetails)}&from=${fromEnvi}`;
-                // window.location.href = `${baseURL}${'CommunicationEDMTemplate/TemplateBuilder'}?accessToken=${encodeURIComponent(
-                //     token,
-                // )}&ChannelDetails=${encodeURIComponent(channelDetails)}&from=${fromEnvi}`;
+                    return { ...saveResult, templateData: fetchedTemplate };
+                },
+                mode: 'create',
+                loaderConfig: AUTHORING_FIELD_LOADER_CONFIG,
+            });
 
-                const payload = {
-                    templateId: getValues(templateIDName) || campaignDetails?.content[0]?.templateId || 0,
-                    channelId: 1,
-                    departmentId,
-                    clientId,
-                    userId,
-                };
-                let templateData = await dispatch(getTemplate_AIEmail_byId(payload));
-                if (templateData?.status) {
+            if (status && templateData?.status) {
+                    const edmChannelId = resolveEmailChannelDetailId({
+                        saveData: data,
+                        getValues,
+                        locationState,
+                        campaignDetails,
+                        isSplit,
+                        fieldName,
+                    });
                     const channelIdToSave = 1;
                     const updatedSavedChannelsId = { ...(locationState.savedChannelsId || savedChannelsId) };
                     if (!updatedSavedChannelsId[channelIdToSave]?.includes(channelIdToSave)) {
@@ -900,7 +993,7 @@ const Template = ({
                         edmChannelId: edmChannelId || 0,
                         fromEnvi: locationEnvi,
                         templateCategoryType: categoriesData?.filter(
-                            (e) => e.templateCategoryId === templateData?.TemplateCategoryID,
+                            (e) => e.templateCategoryId === templateData?.data?.TemplateCategoryID,
                         )[0] || {
                             categoryName: 'Business',
                             templateCategoryId: 2,
@@ -917,8 +1010,7 @@ const Template = ({
                             state: stateAIBuilder,
                         },
                     );
-                }
-            } else {
+            } else if (!status) {
                 dispatch(
                     update_failures_API_Errors({
                         field: 'SaveEmailCampaign',
@@ -988,19 +1080,34 @@ const Template = ({
         return currentTabData;
     };
 
-    const fetchTemplateById = async (templateId, channelId) => {
+    const fetchTemplateById = async (selectedTemplateId, selectedChannelId) => {
         const payloadFetch = {
-            templateId: templateId,
-            channelId: channelId,
+            templateId: selectedTemplateId,
+            channelId: selectedChannelId,
             departmentId,
             clientId,
             userId,
         };
 
-        const res = await dispatch(getTemplate_AIEmail_byId(payloadFetch));
         const tabErrorField = isSplit ? `${fieldName}.tabErrorText` : 'tabErrorText';
+        setTemplatePreviewError(false);
         clearErrors(tabErrorField);
-        if (res?.status && res?.data?.HTML) {
+
+        const res = await templateSelectLoader.refetch({
+            fetcher: ({ payload } = {}) =>
+                dispatch(getTemplate_AIEmail_byId({ ...payload, loading: false })),
+            mode: 'create',
+            loaderConfig: AUTHORING_FIELD_LOADER_CONFIG,
+            params: { payload: payloadFetch },
+        });
+
+        if (!res?.status || !res?.data?.HTML) {
+            setTemplatePreviewError(true);
+            return;
+        }
+
+        const templateId = selectedTemplateId;
+        const channelId = selectedChannelId;
             // Check if is5.0 is false AND it's email builder (not Web or Mobile push)
             // Only apply this logic for email builder
             if (res?.data?.['is5.0'] === false && isNotification !== 'Web' && isNotification !== 'Mobile') {
@@ -1079,10 +1186,19 @@ const Template = ({
                         savedChannelsId,
                         campaignDetails,
                         locationState,
+                        loading: false,
                     }),
                 );
 
                 if (status) {
+                    const edmChannelId = resolveEmailChannelDetailId({
+                        saveData: data,
+                        getValues,
+                        locationState,
+                        campaignDetails,
+                        isSplit,
+                        fieldName,
+                    });
                     // Update location state with channelDetailId for fromEnvi
                     const channelIdToSave = 1;
                     const updatedSavedChannelsId = { ...(locationState.savedChannelsId || savedChannelsId) };
@@ -1115,7 +1231,9 @@ const Template = ({
                         clientId,
                         userId,
                     };
-                    let templateData = await dispatch(getTemplate_AIEmail_byId(payloadTemplate));
+                    let templateData = await dispatch(
+                        getTemplate_AIEmail_byId({ ...payloadTemplate, loading: false }),
+                    );
 
                     if (templateData?.status) {
                         const stateAIBuilder = {
@@ -1134,7 +1252,7 @@ const Template = ({
                             edmChannelId: edmChannelId || 0,
                             fromEnvi: locationEnvi,
                             templateCategoryType: categoriesData?.filter(
-                                (e) => e.templateCategoryId === templateData?.TemplateCategoryID,
+                                (e) => e.templateCategoryId === templateData?.data?.TemplateCategoryID,
                             )[0] || {
                                 categoryName: 'Business',
                                 templateCategoryId: 2,
@@ -1170,8 +1288,12 @@ const Template = ({
                 setValue(templateIDName, templateId);
                 handleFileInputChange(res?.data?.HTML);
             }
-        }
     };
+
+    const isTemplateSelectLoading = templateSelectLoader.isLoading;
+    const hasTemplateContent = templateContent?.length > 0 || edmContent?.length > 0;
+    const hideTemplateGallery =
+        hasTemplateContent || isTemplateSelectLoading || templatePreviewError;
 
     return (
         <div className="form-group mb0 mt30">
@@ -1242,11 +1364,7 @@ const Template = ({
                                                 ? `communication/create-mdc-communication`
                                                 : `communication/create-communication`;
                                             let currentChannelDetailId =
-                                                (isNotification === 'Web'
-                                                    ? WebPushNotifyChannelDetailID
-                                                    : isNotification === 'Mobile'
-                                                        ? MobilePushNotifyChannelDetailID
-                                                        : edmChannelId) || 0;
+                                                resolvePushChannelDetailId(data, isNotification) || 0;
 
                                             let updatedLocationState = {
                                                 ...(locationState?.campaignType === 'M'
@@ -1292,7 +1410,7 @@ const Template = ({
                                                 departmentId,
                                                 clientId,
                                                 userId,
-                                                edmChannelId: edmChannelId || 0,
+                                                edmChannelId: data?.edmChannelId || 0,
                                                 templateDate: templateDate,
                                                 templateCategory: templateCategory,
                                                 activeSplitName: getValues('splitTest') ? currentSplitName(getValues('currentSplitTab')) : '',
@@ -1329,6 +1447,8 @@ const Template = ({
                                         setValue(templateContentName, '');
                                         setValue(templateIDName, 0);
                                         setValue(edmContentName, '');
+                                        setTemplatePreviewError(false);
+                                        templateSelectLoader.reset();
                                         removeQueryParams(['channelId', 'templateId']);
                                     }}
                                     className={`${restart_medium} icon-md color-primary-blue mt-5`}
@@ -1348,21 +1468,24 @@ const Template = ({
                     </div>
                 ) : (
                     <>
-                        <span
-                            className={`${(getValues(contentTypeName) === 'T' && edmContent?.length > 0) ||
-                                templateContent?.length > 0
-                                ? 'd-none'
-                                : ''
-                                }`}
-                        >
+                        <span className={hideTemplateGallery ? 'd-none' : ''}>
                             <RSTabbar
-                                dynamicTab={`res-tabs-2 row rs-tabs-auto-width email-rs-tab ai-email-tab-tab form-group`}
-                                activeClass={'active'}
+                                className="rs-tabs row"
+                                dynamicTab="mb0 mini rs-tabs-auto-width email-rs-tab ai-email-tab-tab"
+                                activeClass="active"
                                 tabData={handleTabData()}
-                                defaultClass={`col-sm-3`}
+                                defaultClass="tabTransparent"
                                 callBack={handleTemplate}
                             />
                         </span>
+                        {(isTemplateSelectLoading || templatePreviewError) && (
+                            <div className="form-group mt30">
+                                <TemplatePreviewInnerSkeleton
+                                    showBrowserToolbar={showBrowerText && isTemplateSelectLoading}
+                                    showNoData={!isTemplateSelectLoading && templatePreviewError}
+                                />
+                            </div>
+                        )}
                         {showBrowerText && (edmContent?.length > 0 || templateContent?.length > 0) && (
                             <div className="form-group mt30">
                                 <Row>
@@ -1447,17 +1570,23 @@ const Template = ({
                                     <li className="position-relative top3">
                                         <RSTooltip
                                             text={'Edit template'}
-                                            className={`lh0 ${isClickOff
+                                            className={`lh0 ${isClickOff || editTemplateLoader.isLoading
                                                 ? 'pe-none click-off'
                                                 : ''
                                                 }`}
                                         >
-                                            <i
-                                                className={`${form_edit_medium}   icon-md color-primary-blue cp`}
-                                                onClick={() => {
-                                                    handleDirect(categoriesData);
-                                                }}
-                                            ></i>
+                                            {editTemplateLoader.isLoading ? (
+                                                <span className="d-inline-flex align-items-center justify-content-center">
+                                                    <span className="segment_loader"></span>
+                                                </span>
+                                            ) : (
+                                                <i
+                                                    className={`${form_edit_medium}   icon-md color-primary-blue cp`}
+                                                    onClick={() => {
+                                                        handleDirect(categoriesData);
+                                                    }}
+                                                ></i>
+                                            )}
                                         </RSTooltip>
                                     </li>
                                 </ul>

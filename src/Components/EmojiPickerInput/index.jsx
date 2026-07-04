@@ -258,7 +258,7 @@ const RSEmojiPickerInput = ({
                     customRender
                 )}
             </div>
-            <ul className={`align-items-center d-flex rli-space-5 rs-list-inline  ${!iconTopspace ? 'mt10' : iconTopspaceValue ? iconTopspaceValue : 'mt6'}`}>
+            <ul className={`align-items-center d-flex rli-space-5 rs-list-inline  ${!iconTopspace ? 'mt5' : iconTopspaceValue ? iconTopspaceValue : 'mt6'}`}>
                 {isPersonalize && (
                     <li className={` mr15 ${isClickOff ? 'click-off' : ''}`}>
                         {/* <RSKendoIconDropdown
@@ -347,7 +347,7 @@ const RSEmojiPickerInput = ({
                                 footer={
                                     smartLinks.length < MAX_SMART_LINKS ? (
                                         <div
-                                            className="dropdown-footer-btn"
+                                            className="dropdown-footer-item"
                                             onMouseDown={(e) => { e.preventDefault(); e.stopPropagation(); }}
                                             onClick={handleOpenWithAdd}
                                         >

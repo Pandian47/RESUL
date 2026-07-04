@@ -64,138 +64,148 @@ const SegmentInfo = ({ handleClose, viewData = {}, listInfoModal = false }) => {
         <>
             <RSModal
                 show={listInfoModal}
+                className="modal-w-carousel"
                 handleClose={handleModalClose}
                 header={LIST_INFO}
                 size="xxlg"
+                bodyClassName="pt0"
                 body={
-                    <>
-                        <div>
-                            <Row className="listinfo-header-line align-items-center">
-                                <Col md={6}>
-                                    <h4 className="mb15 mr5">
-                                        {(viewData?.dynamicListName?.length ?? 0) > 30 ? (
-                                            <div className="d-flex">
-                                                <RSTooltip
-                                                    text={viewData?.dynamicListName ?? ''}
-                                                    position="top"
-                                                    className="modalOverlayZindexCSS"
-                                                >
-                                                    <span>{truncateTitle(viewData?.dynamicListName ?? '', 30)}</span>
-                                                </RSTooltip>
-                                            </div>
-                                        ) : (
-                                            viewData?.dynamicListName ?? ''
-                                        )}
-                                    </h4>
-                                </Col>
-                                <Col md={6}>
-                                    <h6 className="mb15">
-                        {/* {viewData?.modifiedBy ? MODIFIED_BY : CREATED_BY}:{' '} */}
-                                        {CREATED_BY}:
-                        <span className="RSfirstLetterCaps">
-                            {/* {viewData?.modifiedName === null || viewData?.modifiedName === ''
-                                ? viewData?.createdName
-                                : viewData?.modifiedName} */}
-                            {viewData?.createdName ?? ''}
-                        </span>
-                                        , on:{' '}
-                        {/* {viewData?.modifiedDate === null || viewData?.modifiedDate === 'NaT'
-                            ?
-                            getUserDateTimeFormat(viewData.createdDate + ' UTC', 'formatDateTime')
-                            : getUserDateTimeFormat(viewData?.modifiedDate, 'formatDateTime')} */}
-                        {/* {getUserDateTimeFormat(viewData.createdDate + ' UTC', 'formatDateTime')} */}
-                        {createdDateFormat}
-                                    </h6>
-                                </Col>
-                            </Row>
-                            <Row>
-                                <Col sm={6} className="mt20 position-relative">
-                                    <h5 className="font-medium">
-                                        {DYNAMIC_COMMUNICATION_LINKED} ({commsCount})
-                                    </h5>
-                                    {isListInfoLoading ? (
-                                        <>
-                                            {[0, 1, 2].map((blockIdx) => (
-                                                <div className="p10" key={blockIdx}>
-                                                    <CommonSkeleton width="200px" height={25} box stopAnimation />
-                                                    <CommonSkeleton width="300px" height={28} box stopAnimation />
-                                                </div>
-                                            ))}
-                                        </>
-                                    ) : campaignsList?.length > 0 ? (
-                                        <ul className="infoTwoColumnDivCSS css-scrollbar" style={{ height: '377px' }}>
-                                            {campaignsList.map((infoItem, index) => (
-                                                <li key={infoItem?.campaignId ?? index}>
-                                                    <small>
-                                                        {getUserCurrentFormat(infoItem?.startDate)?.dateFormat ?? ''}
-                                                    </small>
-                                                    <div>{decodeBase64(infoItem?.campaignName)}</div>
-                                                </li>
-                                            ))}
-                                        </ul>
+                    <div className="master-recip-data-popup-del">
+                        <Row className="listinfo-header-line py12">
+                            <Col md={6} className="d-flex align-items-center gap-2">
+                                <h4 className="mb0">
+                                    {(viewData?.dynamicListName?.length ?? 0) > 50 ? (
+                                        <RSTooltip
+                                            text={viewData?.dynamicListName ?? ''}
+                                            position="top"
+                                            className="modalOverlayZindexCSS"
+                                        >
+                                            <span>{truncateTitle(viewData?.dynamicListName ?? '', 50)}</span>
+                                        </RSTooltip>
                                     ) : (
-                                        <NoDataAvailableRender
-                                            message={NO_COMMUNICATIONS_BLASTED}
-                                            showMessage
-                                        />
+                                        viewData?.dynamicListName ?? ''
                                     )}
-                                </Col>
-                                <Col sm={6} className="mt20">
-                                    <Row className="d-none">
-                                        <Col sm={12} className="border-bottom mb15 pb15">
-                                            <h5 className="font-medium mb15">
-                                                {AUDIENCE_BY_CHANNEL} ({numberWithCommas(viewData?.audienceCount) || 0})
-                                            </h5>
-                                            <ul className="infoTwoColumnSpanCSS px15">
-                                                <li>
-                                                    <span>{EMAIL_NAME}</span>
-                                                    <span>
-                                                        {numberWithCommas(listInfo?.emailPushChannelList?.length) || 0}
-                                                    </span>
-                                                </li>
-                                                <li>
-                                                    <span>{MOBILE}</span>
-                                                    <span>
-                                                        {numberWithCommas(listInfo?.mobilePushChannelList?.length) || 0}
-                                                    </span>
-                                                </li>
-                                                <li>
-                                                    <span>{WEB_PUSH}</span>
-                                                    <span>
-                                                        {numberWithCommas(listInfo?.webPushChannelList?.length) || 0}
-                                                    </span>
-                                                </li>
-                                                <li>
-                                                    <span>{WHATS_APP}</span>
-                                                    <span>
-                                                        {numberWithCommas(listInfo?.whatsappPushChannelList?.length) ||
-                                                            0}
-                                                    </span>
-                                                </li>
+                                </h4>
+                            </Col>
+                            <Col md={6} className="d-flex justify-content-between align-items-center">
+                                <h6>
+                                    <span>
+                                        {CREATED_BY}:{' '}
+                                        <span className="RSfirstLetterCaps">{viewData?.createdName ?? ''}</span>
+                                        {', '}
+                                    </span>
+                                    <span>on: {createdDateFormat}</span>
+                                </h6>
+                            </Col>
+                        </Row>
+
+                        <div className="target-info-crossfade-wrapper">
+                            <div className="target-info-pane list-panel is-active">
+                                <Row className="mt16">
+                                    <Col sm={6} className="position-relative">
+                                        <h5 className="font-medium mb10">
+                                            {DYNAMIC_COMMUNICATION_LINKED}
+                                            {!isListInfoLoading && ` (${commsCount})`}
+                                        </h5>
+                                        {campaignsList?.length === 0 && (
+                                            <div className="position-relative">
+                                                {[0, 1, 2].map((blockIdx) => (
+                                                    <div className="p10" key={blockIdx}>
+                                                        <CommonSkeleton width="200px" height={25} box stopAnimation />
+                                                        <CommonSkeleton width="300px" height={28} box stopAnimation />
+                                                    </div>
+                                                ))}
+                                                {!isListInfoLoading && (
+                                                    <NoDataAvailableRender
+                                                        message={NO_COMMUNICATIONS_BLASTED}
+                                                        showMessage={!isListInfoLoading}
+                                                    />
+                                                )}
+                                            </div>
+                                        )}
+                                        {campaignsList?.length > 0 && (
+                                            <ul
+                                                className="infoTwoColumnDivCSS css-scrollbar"
+                                                style={{ height: '377px' }}
+                                            >
+                                                {campaignsList.map((infoItem, index) => (
+                                                    <li key={infoItem?.campaignId ?? index}>
+                                                        <small>
+                                                            {getUserCurrentFormat(infoItem?.startDate)?.dateFormat ?? ''}
+                                                        </small>
+                                                        <div>{decodeBase64(infoItem?.campaignName)}</div>
+                                                    </li>
+                                                ))}
                                             </ul>
-                                        </Col>
-                                        <Col sm={12} className="border-bottom mb15 pb15">
-                                            <h5 className="font-medium mb15">{DELIVERABILITY}</h5>
-                                            <ul className="infoTwoColumnSpanCSS px15">
-                                                <li>
-                                                    <span>{SPAM}</span>
-                                                    <span>{numberWithCommas(0) || 0}</span>
-                                                </li>
-                                                <li>
-                                                    <span>{BOUNCED}</span>
-                                                    <span>{numberWithCommas(0) || 0}</span>
-                                                </li>
-                                                <li>
-                                                    <span>{UNSUBSCRIBED}</span>
-                                                    <span>{numberWithCommas(0) || 0}</span>
-                                                </li>
-                                            </ul>
-                                        </Col>
-                                    </Row>
-                                </Col>
-                            </Row>
+                                        )}
+                                    </Col>
+                                    <Col sm={6}>
+                                        <div className="css-scrollbar" style={{ height: '406px' }}>
+                                            <Row className="d-none">
+                                                <Col sm={12} className="border-bottom mb15 pb15">
+                                                    <h5 className="font-medium mb15">
+                                                        {AUDIENCE_BY_CHANNEL} (
+                                                        {numberWithCommas(viewData?.audienceCount) || 0})
+                                                    </h5>
+                                                    <ul className="infoTwoColumnSpanCSS px15">
+                                                        <li>
+                                                            <span>{EMAIL_NAME}</span>
+                                                            <span>
+                                                                {numberWithCommas(
+                                                                    listInfo?.emailPushChannelList?.length,
+                                                                ) || 0}
+                                                            </span>
+                                                        </li>
+                                                        <li>
+                                                            <span>{MOBILE}</span>
+                                                            <span>
+                                                                {numberWithCommas(
+                                                                    listInfo?.mobilePushChannelList?.length,
+                                                                ) || 0}
+                                                            </span>
+                                                        </li>
+                                                        <li>
+                                                            <span>{WEB_PUSH}</span>
+                                                            <span>
+                                                                {numberWithCommas(
+                                                                    listInfo?.webPushChannelList?.length,
+                                                                ) || 0}
+                                                            </span>
+                                                        </li>
+                                                        <li>
+                                                            <span>{WHATS_APP}</span>
+                                                            <span>
+                                                                {numberWithCommas(
+                                                                    listInfo?.whatsappPushChannelList?.length,
+                                                                ) || 0}
+                                                            </span>
+                                                        </li>
+                                                    </ul>
+                                                </Col>
+                                                <Col sm={12} className="border-bottom mb15 pb15">
+                                                    <h5 className="font-medium mb15">{DELIVERABILITY}</h5>
+                                                    <ul className="infoTwoColumnSpanCSS px15">
+                                                        <li>
+                                                            <span>{SPAM}</span>
+                                                            <span>{numberWithCommas(0) || 0}</span>
+                                                        </li>
+                                                        <li>
+                                                            <span>{BOUNCED}</span>
+                                                            <span>{numberWithCommas(0) || 0}</span>
+                                                        </li>
+                                                        <li>
+                                                            <span>{UNSUBSCRIBED}</span>
+                                                            <span>{numberWithCommas(0) || 0}</span>
+                                                        </li>
+                                                    </ul>
+                                                </Col>
+                                            </Row>
+                                        </div>
+                                    </Col>
+                                </Row>
+                            </div>
                         </div>
-                    </>
+                    </div>
                 }
             />
         </>

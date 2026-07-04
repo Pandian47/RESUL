@@ -17,11 +17,13 @@ export const audienceTargetListTabCriticalCss = `
     box-sizing: border-box;
 }
 .aud-sk-target-list-cards-grid {
-    display: flex;
+    display: grid;
     flex-wrap: wrap;
     width: 100%;
     margin: 0;
     box-sizing: border-box;
+    gap: 20px;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 `;
 

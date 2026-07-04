@@ -9,6 +9,7 @@ import { Row, Col } from 'react-bootstrap';
 //constants
 //components
 import { RSPrimaryButton } from 'Components/Buttons';
+// import { UpdateState } from 'Utils/modules/misc';
 
 const LinkGeneration = (props) => {
     const { findDuplicates, isGenerateLink, state, setIsGenerateLink, fieldName } = props;

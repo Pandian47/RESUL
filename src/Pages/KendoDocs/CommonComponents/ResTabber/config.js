@@ -20,11 +20,6 @@ const generateClassName = ({ prefix, componentName }) =>
 const generateDocRoute = ({ prefix, componentName }) =>
     `/docs/component/${prefix.toLowerCase()}${componentName.toLowerCase()}`;
 
-export const tabberClass = (modifier) => {
-    const base = generateClassName(TABBER_NAME_CONFIG);
-    return modifier ? `${base}--${modifier}` : base;
-};
-
 export const TABBER_CONFIG = {
     name: TABBER_NAME_CONFIG,
     componentName: generateComponentName(TABBER_NAME_CONFIG),

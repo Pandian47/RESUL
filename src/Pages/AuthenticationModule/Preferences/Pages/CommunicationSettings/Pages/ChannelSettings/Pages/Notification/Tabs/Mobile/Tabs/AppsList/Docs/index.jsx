@@ -1,9 +1,7 @@
 import { createCommunicationSettingsNavState, NOTIFICATION_TAB_ID } from 'Utils/modules/navigation';
 import { iOSAppOnBoard } from 'Assets/Images';
 import { useEffect, useRef, useState } from 'react';
-import _map from 'lodash/map';
-import _get from 'lodash/get';
-import _keys from 'lodash/keys';
+import { map as _map, get as _get, keys as _keys } from 'Utils/modules/lodashReplacements';
 import { Container } from 'react-bootstrap';
 import RSPageHeader from 'Components/RSPageHeader';
 import Scrollspy from 'react-scrollspy';

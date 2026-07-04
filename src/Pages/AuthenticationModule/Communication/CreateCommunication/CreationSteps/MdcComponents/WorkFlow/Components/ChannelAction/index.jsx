@@ -1,11 +1,5 @@
-﻿import { memo, useContext, useEffect, useState } from 'react';
-import _get from 'lodash/get';
-import _find from 'lodash/find';
-import _differenceBy from 'lodash/differenceBy';
-import _differenceWith from 'lodash/differenceWith';
-import _isEqual from 'lodash/isEqual';
-import _filter from 'lodash/filter';
-import _cloneDeep from 'lodash/cloneDeep';
+import { memo, useContext, useEffect, useState } from 'react';
+import { get as _get, find as _find, differenceBy as _differenceBy, differenceWith as _differenceWith, isEqual as _isEqual, filter as _filter, cloneDeep as _cloneDeep } from 'Utils/modules/lodashReplacements';
 
 import TriggerActionModal from './TriggerActionModal';
 import CreateWorkFlowContext, { CreateWorkFlowOtherContext } from '../../context';
@@ -252,6 +246,32 @@ export default memo(({ data, isContentSetupComplet, cancelAction, goalType }) =>
         };
     }, [canvasState, data?.currentWindowId]);
 
+    const parseScheduleDate = (d) => {
+        if (!d) return null;
+        if (d instanceof Date) return d;
+        if (typeof d === 'string' && d.includes(',')) {
+            const parts = d.split(',');
+            if (parts.length >= 5) {
+                const [date, month, year, hours, minutes] = parts;
+                return new Date(Number(year), Number(month) - 1, Number(date), Number(hours), Number(minutes));
+            }
+        }
+        const parsed = new Date(d);
+        return !isNaN(parsed.getTime()) ? parsed : null;
+    };
+
+    const parseCurrentDateByTimeZone = (str) => {
+        if (!str) return new Date();
+        const cleaned = str.replace(/,/g, '');
+        const parsed = new Date(cleaned);
+        return !isNaN(parsed.getTime()) ? parsed : new Date();
+    };
+
+    const resolvedDate = parseScheduleDate(scheduleDate);
+    const finalScheduleDate = (!resolvedDate || resolvedDate.getFullYear() === 1970)
+        ? parseCurrentDateByTimeZone(currentDateByTimeZone)
+        : resolvedDate;
+
     return (
         <>
             {show ? (
@@ -260,7 +280,7 @@ export default memo(({ data, isContentSetupComplet, cancelAction, goalType }) =>
                     currentWindowId={data.currentWindowId}
                     canvasData={canvasState}
                     currentTriggerAction={currentTriggerAction}
-                    scheduleDate={scheduleDate}
+                    scheduleDate={finalScheduleDate}
                     show={show}
                     dispatchState={dispatchState}
                     formSubmit={(data) => handleSaveActionTriggerList(data)}

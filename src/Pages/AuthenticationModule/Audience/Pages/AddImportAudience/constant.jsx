@@ -1,8 +1,6 @@
 import { encodeUrl } from 'Utils/modules/crypto';
 import { SELECT_DIFFERENT_ATTRIBUTE } from 'Constants/GlobalConstant/ValidationMessage';
-import _find from 'lodash/find';
-import _map from 'lodash/map';
-import _first from 'lodash/first';
+import { find as _find,first as _first,map as _map } from 'Utils/modules/lodashReplacements';
 
 export const INITIAL_STATE = {
     audienceList: [],

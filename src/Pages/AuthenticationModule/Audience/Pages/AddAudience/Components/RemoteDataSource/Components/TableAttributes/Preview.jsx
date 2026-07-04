@@ -53,7 +53,7 @@ import {
     save_Versium_data,
     updateDedupeRDS,
 } from 'Reducers/remoteDataSource/request';
-import _map from 'lodash/map';
+import { map as _map } from 'Utils/modules/lodashReplacements';
 
 import { mySqlUpdate } from 'Reducers/RemoteDataSource/reducer';
 import useQueryParams from 'Hooks/useQueryParams';

@@ -1,8 +1,7 @@
 
 import { getUserDetails } from 'Utils/modules/crypto';
 import { circle_plus_medium } from 'Constants/GlobalConstant/Glyphicons';
-import _map from 'lodash/map';
-import _get from 'lodash/get';
+import { map as _map, get as _get } from 'Utils/modules/lodashReplacements';
 
 import {
     ensureArray,
@@ -17,7 +16,7 @@ import {
 } from '../../../../communicationDefaults';
 
 import SplitAB from './Component/SplitAB/SplitAB';
-import { handleAllChannelPayload, handleAllChannelTimeZonePayload, handleMDCExtraPayload, resolveLocalBlastDateTime } from '../../constant';
+import { handleAllChannelPayload, handleAllChannelTimeZonePayload, handleMDCExtraPayload, resolveLocalBlastDateTime , resolveMdcSchedule} from '../../constant';
 export const sanitizeMessagingCount = sanitizeChannelCount;
 
 export const sumMobileAudienceCount = (audienceList) =>
@@ -94,13 +93,8 @@ export const buildPayload = (formState, type, location) => {
         ...restState
     } = ensureObject(formState);
 
-    
-    schedule =
-        levelNumber > 1
-            ? new Date(formState.scheduleDate)
-            : campaignType === 'M' && dataSource === 'DL'
-            ? new Date()
-            : schedule;
+
+    schedule = resolveMdcSchedule(formState, location, levelNumber, campaignType, dataSource, schedule);
 
     // if (type === 'whatsapp') {
     //     parentChannelDetailType = 'WA';
@@ -157,8 +151,8 @@ export const buildPayload = (formState, type, location) => {
             isSendTestSMS === 4
                 ? `${formState?.userKeyPersonInfo?.[0]?.phoneNo || ''}|${formState?.passportID || ''}`
                 : approvalList?.testPhoneNumber
-                ? approvalList?.testPhoneNumber?.slice(approvalList?.dialCode?.length + 1)
-                : '',
+                    ? approvalList?.testPhoneNumber?.slice(approvalList?.dialCode?.length + 1)
+                    : '',
         // testSmsMobileNo: mobile,
         countryCodeMobile:
             approvalList?.dialCode?.length && approvalList?.dialCode.includes('+')
@@ -168,53 +162,53 @@ export const buildPayload = (formState, type, location) => {
         actionId, //--	s
         content: !splitTest
             ? [
-                  {
-                      templateId: _get(templateId, 'dltTemplateID', templateId),
-                      smsChannelDetailId: channelDetailId,
-                      body: editorText,
-                      timeZoneId: handleAllChannelTimeZonePayload(
-                          campaignType,
-                          location?.timeZoneId,
-                          timezone,
-                          timeZoneId,
-                          location,
-                      ),
-                      localBlastDateTime: resolveLocalBlastDateTime({
-                          campaignType,
-                          statusId: _get(content?.[0], 'statusId', 0),
-                          triggerPlayPauseStatus: formState?.triggerPlayPauseStatus,
-                          schedule,
-                      }),
-                      splitType: '',
-                      isUnicode: false,
-                      isDaylightSavings: daylightSavings || false,
-                  },
-              ]
+                {
+                    templateId: _get(templateId, 'dltTemplateID', templateId),
+                    smsChannelDetailId: channelDetailId,
+                    body: editorText,
+                    timeZoneId: handleAllChannelTimeZonePayload(
+                        campaignType,
+                        location?.timeZoneId,
+                        timezone,
+                        timeZoneId,
+                        location,
+                    ),
+                    localBlastDateTime: resolveLocalBlastDateTime({
+                        campaignType,
+                        statusId: _get(content?.[0], 'statusId', 0),
+                        triggerPlayPauseStatus: formState?.triggerPlayPauseStatus,
+                        schedule,
+                    }),
+                    splitType: '',
+                    isUnicode: false,
+                    isDaylightSavings: daylightSavings || false,
+                },
+            ]
             : _map(ensureArray(splitTabs), (tabs, index) => {
                   const tabState = restState?.[tabs] || {};
-                  const { templateId, editorText, schedule, timezone, daylightSavings } = tabState;
-                  return {
-                      templateId: _get(templateId, 'dltTemplateID', templateId),
-                      smsChannelDetailId: ensureMessagingContent(content)?.[index]?.smsChannelDetailId || 0,
-                      body: editorText ?? '',
-                      timeZoneId: handleAllChannelTimeZonePayload(
-                          campaignType,
-                          location?.timeZoneId,
-                          timezone,
-                          timeZoneId,
-                          location,
-                      ),
-                      localBlastDateTime: resolveLocalBlastDateTime({
-                          campaignType,
-                          statusId: _get(content?.[index], 'statusId', 0),
-                          triggerPlayPauseStatus: formState?.triggerPlayPauseStatus,
-                          schedule,
-                      }),
-                      splitType: tabs?.slice?.(-1) ?? '',
-                      isUnicode: false,
-                      isDaylightSavings: daylightSavings || false,
-                  };
-              }),
+                const { templateId, editorText, schedule, timezone, daylightSavings } = tabState;
+                return {
+                    templateId: _get(templateId, 'dltTemplateID', templateId),
+                    smsChannelDetailId: ensureMessagingContent(content)?.[index]?.smsChannelDetailId || 0,
+                    body: editorText ?? '',
+                    timeZoneId: handleAllChannelTimeZonePayload(
+                        campaignType,
+                        location?.timeZoneId,
+                        timezone,
+                        timeZoneId,
+                        location,
+                    ),
+                    localBlastDateTime: resolveLocalBlastDateTime({
+                        campaignType,
+                        statusId: _get(content?.[index], 'statusId', 0),
+                        triggerPlayPauseStatus: formState?.triggerPlayPauseStatus,
+                        schedule,
+                    }),
+                    splitType: tabs?.slice?.(-1) ?? '',
+                    isUnicode: false,
+                    isDaylightSavings: daylightSavings || false,
+                };
+            }),
         smsSplit: {
             smsChannelId: smsSplit?.smsChannelId || 0,
             splitPercentage: sanitizeMessagingCount(_get(splitABCount, 'percentage', 0)),
@@ -297,7 +291,7 @@ export const FORM_INITIAL_STATE = {
         editorText: '',
         schedule: null,
         sendTimeRecommendation: false,
-        templateId: '' ,
+        templateId: '',
         approvalList: {
             name: [{ approverName: '', mandatory: false }],
             requestApproval: false,

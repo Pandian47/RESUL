@@ -2,7 +2,7 @@ import PropTypes from 'prop-types';
 
 import { SKELETON_LAYER } from './skeletonLayers';
 import { SKELETON_KEYS, resolveSkeletonRouteKey } from './registry/skeletonRouteConfig';
-import PreferencesLandingSkeleton from './Components/PreferencesLandingSkeleton';
+import PreferencesLandingSkeleton from './Components/PreferencesRouteSkeleton';
 import { getMainNavActiveIndex } from './Components/mainSkeletonVariants';
 
 /**

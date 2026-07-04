@@ -1,8 +1,7 @@
 import { getDateWithAddMinutes } from 'Utils/modules/dateTime';
 import { IN_PAGE_SPLIT_CONTENT_DEFAULTS, refreshFieldsOnSplitAB } from '../../constant';
 import { Fragment, useContext, useEffect, useMemo } from 'react';
-import _get from 'lodash/get';
-import _cloneDeep from 'lodash/cloneDeep';
+import { get as _get, cloneDeep as _cloneDeep } from 'Utils/modules/lodashReplacements';
 import PropTypes from 'prop-types';
 import { Row, Col } from 'react-bootstrap';
 import { useFormContext, useWatch } from 'react-hook-form';
@@ -217,6 +216,7 @@ const SplitAB = ({ fieldName = '', isSplit = false, index, setDirtyReset }) => {
                     location?.mdcContentSetupDetails?.levelNumber === 1 &&
                     location?.mdcContentSetupDetails?.dataSource === 'TL')) &&
                 isContentSetupForSchedule && (
+                    <div className='form-group'>
                 <Scheduler
                     isSplitTabs={isSplit && layoutPosition?.id !== 4}
                     fieldName={fieldName}
@@ -226,6 +226,7 @@ const SplitAB = ({ fieldName = '', isSplit = false, index, setDirtyReset }) => {
                     splitABminDate={getMinDateForScheduler}
                     isRfaEnabled={true}
                 />
+                </div>
             )}
         </Fragment>
     );

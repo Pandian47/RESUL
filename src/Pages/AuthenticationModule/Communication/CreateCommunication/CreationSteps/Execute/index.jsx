@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import { Container } from 'react-bootstrap';
 
@@ -56,6 +56,12 @@ const Execute = () => {
         ({ createCommunicationReducer }) => createCommunicationReducer,
     );
     const { smartLink1, smartLink2 } = useSelector((state) => getGeneratedLink(state));
+    const campaignId = state1?.campaignId ?? 0;
+    const isRoiFlow = useMemo(
+        () => isCommunicationExecuteRoiActive(state1),
+        [state1?.campaignId, state1?.roi],
+    );
+    const analyzeListFetchKeyRef = useRef(null);
     // console.log('Campaign  :::: ', state1);
 
     useEffect(() => {
@@ -184,22 +190,24 @@ const Execute = () => {
         setTabData(tabName);
     }
     useEffect(() => {
-        // if (location.state) {
-        //     navigate('/communication', {
-        //         state: {
-        //             index: 0,
-        //         },
-        //     });
-        // } else {
-        if (state1) {
-            dispatch(updateCampaignAnalyzeListLoading(true));
-            getCampaignAnalyzeListData();
+        if (!state1) return;
+        setRoiContent(isRoiFlow);
+    }, [isRoiFlow, state1]);
+
+    useEffect(() => {
+        if (!campaignId || campaignId <= 0 || !userId || !clientId || !departmentId) {
+            return;
         }
-        // }
-        if (state1) {
-            setRoiContent(isCommunicationExecuteRoiActive(state1));
+
+        const fetchKey = `${campaignId}:${userId}:${clientId}:${departmentId}`;
+        if (analyzeListFetchKeyRef.current === fetchKey) {
+            return;
         }
-    }, [state1]);
+        analyzeListFetchKeyRef.current = fetchKey;
+
+        dispatch(updateCampaignAnalyzeListLoading(true));
+        getCampaignAnalyzeListData();
+    }, [campaignId, userId, clientId, departmentId]);
 
     const validateCGTGForAllChannels = () => {
         if (!campaignDetails?.channelDetails) return { isValid: true };
@@ -250,14 +258,11 @@ const Execute = () => {
                             {roiContent ? (
                                 <>
                                     <RSProgressSteps stepsData={planningStepsExecute} isRoiCompleted={roiContent} />
-                                    {isCampaignAnalyzeListLoading ? (
-                                        <ExecuteROIPageLoadingBlock />
-                                    ) : (
-                                        <>
-                                            <CampaignInfoCard type="execute" />
-                                            <ROIContent setRoiContent={setRoiContent} />
-                                        </>
-                                    )}
+                                    {isCampaignAnalyzeListLoading ? <ExecuteROIPageLoadingBlock /> : null}
+                                    <div className={isCampaignAnalyzeListLoading ? 'd-none' : undefined}>
+                                        <CampaignInfoCard type="execute" />
+                                        <ROIContent setRoiContent={setRoiContent} />
+                                    </div>
                                 </>
                             ) : isExecuteContentLoading ? (
                                 <ExecutePageLoadingSkeletonBlock />

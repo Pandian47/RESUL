@@ -850,32 +850,33 @@ const Consumptions = () => {
                                                         className={`d-flex cp   ${
                                                             channelData.count > 0 ? '' : 'click-off'
                                                         } `}
-                                                        onClick={() => {
-                                                            if (channelData.count > 0) {
-                                                                let url = '/preferences/consumptions/consumption-channel';
-                                                                const state = {
-                                                                    channelId: channelData.channelId,
-                                                                    channelName: channelData.channelName,
-                                                                    ...(isVersium && { isVersium: true }),
-                                                                };
-                                                                const encryptState = encodeUrl(state);
-                                                                navigate(`${url}?q=${encryptState}`, {
-                                                                    state,
-                                                                });
-                                                                dispatch(
-                                                                    update_consumptionChannel({
-                                                                        id: channelData.channelId,
-                                                                        lable: channelData.channelName,
-                                                                    }),
-                                                                );
-                                                            }
-                                                        }}
-                                                    >
-                                                        <i
-                                                            className={`${
-                                                                CHANNEL_IMAGE[channelData.channelId]
-                                                            }  icon-lg color-primary-blue mr5`}
-                                                        ></i>
+                                        onClick={() => {
+                                            if (channelData.count > 0) {
+                                                let url = '/preferences/consumptions/consumption-channel';
+                                                const state = {
+                                                    channelId: channelData.channelId,
+                                                    channelName: channelData.channelName,
+                                                    ...(isVersium && { isVersium: true }),
+                                                    filteredChannels: getFilteredChannels(),
+                                                };
+                                                const encryptState = encodeUrl(state);
+                                                navigate(`${url}?q=${encryptState}`, {
+                                                    state,
+                                                });
+                                                dispatch(
+                                                    update_consumptionChannel({
+                                                        id: channelData.channelId,
+                                                        lable: channelData.channelName,
+                                                    }),
+                                                );
+                                            }
+                                        }}
+                                    >
+                                        <i
+                                            className={`${
+                                                CHANNEL_IMAGE[channelData.channelId]
+                                            }  icon-lg color-primary-blue mr5`}
+                                        ></i>
                                                         {channelData?.channelName?.length > 25 ? (
                                                             <RSTooltip
                                                                 text={channelData?.channelName}
@@ -903,27 +904,28 @@ const Consumptions = () => {
                                                     <div className="bottom5 position-absolute right5">
                                                     <RSTooltip text='Detail view' position='top' className="lh0">
                                                     <i
-                                                            onClick={() => {
-                                                                if (channelData.count > 0) {
-                                                                    let url = '/preferences/consumptions/consumption-channel';
-                                                                    const state = {
-                                                                        channelId: channelData.channelId,
-                                                                        channelName: channelData.channelName,
-                                                                        ...(isVersium && { isVersium: true }),
-                                                                    };
-                                                                    const encryptState = encodeUrl(state);
-                                                                    navigate(`${url}?q=${encryptState}`, {
-                                                                        state,
-                                                                    });
-                                                                    dispatch(
-                                                                        update_consumptionChannel({
-                                                                            id: channelData.channelId,
-                                                                            lable: channelData.channelName,
-                                                                        }),
-                                                                    );
-                                                                }
-                                                            }}
-                                                            className={`${circle_info_medium} ${
+                                            onClick={() => {
+                                                if (channelData.count > 0) {
+                                                    let url = '/preferences/consumptions/consumption-channel';
+                                                    const state = {
+                                                        channelId: channelData.channelId,
+                                                        channelName: channelData.channelName,
+                                                        ...(isVersium && { isVersium: true }),
+                                                        filteredChannels: getFilteredChannels(),
+                                                    };
+                                                    const encryptState = encodeUrl(state);
+                                                    navigate(`${url}?q=${encryptState}`, {
+                                                        state,
+                                                    });
+                                                    dispatch(
+                                                        update_consumptionChannel({
+                                                            id: channelData.channelId,
+                                                            lable: channelData.channelName,
+                                                        }),
+                                                    );
+                                                }
+                                            }}
+                                            className={`${circle_info_medium} ${
                                                                 channelData.count > 0 ? '' : 'click-off'
                                                             } icon-md color-primary-blue`}
                                                             id="rs_data_circle_info"

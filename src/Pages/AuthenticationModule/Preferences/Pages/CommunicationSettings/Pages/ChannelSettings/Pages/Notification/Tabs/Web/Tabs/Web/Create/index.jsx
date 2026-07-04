@@ -9,7 +9,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useForm, FormProvider } from 'react-hook-form';
 import { Row, Col } from 'react-bootstrap';
-
+import {validateHttpsUrl} from 'Utils/modules/urlQuery';
 import RSInput from 'Components/FormFields/RSInput';
 import RSFileUpload from 'Components/FormFields/RSFileUpload';
 import RSKendoDropDownList from 'Components/FormFields/RSKendoDropdown';

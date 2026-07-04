@@ -1,11 +1,6 @@
 import { addHoursToDate } from 'Utils/modules/dateTime';
 import { addDaysToDate } from 'Utils/modules/dateTime';
-import _get from 'lodash/get';
-import _find from 'lodash/find';
-import _cloneDeep from 'lodash/cloneDeep';
-import _mapKeys from 'lodash/mapKeys';
-import _camelCase from 'lodash/camelCase';
-import _filter from 'lodash/filter';
+import { get as _get, find as _find, cloneDeep as _cloneDeep, mapKeys as _mapKeys, camelCase as _camelCase, filter as _filter } from 'Utils/modules/lodashReplacements';
 import { eachDeep, findDeep, mapDeep } from 'deepdash-es/standalone';
 
 import { getModule } from '../../constant';
@@ -169,9 +164,9 @@ export const DAY_OR_HOUR_FIELD_RULE_CONVERSION = ({
             // alert(data);
             
             if (selectedOption?.length && selectedOption?.length === 1 && selectedOption[0].value === 21) {
-                setError('dayOrHourErr', { type: `custom`, message: `` });
+                clearErrors('dayOrHourErr');
             } else if (selectedOption?.length && selectedOption?.length === 2 && _find(selectedOption, 'value', 21)) {
-                setError('dayOrHourErr', { type: `custom`, message: `` });
+                clearErrors('dayOrHourErr');
             } else {
                 let p1, p2, p3, p4, p5, maxDaysExceed = false;
                 p1 = p2 = p3 = p4 = p5 = false;

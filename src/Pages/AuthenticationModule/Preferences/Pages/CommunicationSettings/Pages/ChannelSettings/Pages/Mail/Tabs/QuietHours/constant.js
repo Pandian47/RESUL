@@ -1,5 +1,5 @@
 import { COMMUNICATION_NAME, MIN_LENGTH } from 'Constants/GlobalConstant/Regex';
-import { QUIET_HOURS_BRAND_SHORTER_THAN_REGULATORY, QUIET_HOURS_CANNOT_SHORTEN_REGULATORY, QUIET_HOURS_WINDOW_END_NOT_BEFORE_START, QUIET_HOURS_WINDOW_TIMES_MUST_DIFFER } from 'Constants/GlobalConstant/Placeholders';
+import { QUIET_HOURS_BRAND_SHORTER_THAN_REGULATORY, QUIET_HOURS_CANNOT_SHORTEN_REGULATORY, QUIET_HOURS_WINDOW_END_NOT_BEFORE_START, QUIET_HOURS_WINDOW_START_NOT_BEFORE_END, QUIET_HOURS_WINDOW_TIMES_MUST_DIFFER } from 'Constants/GlobalConstant/Placeholders';
 import { getChannelId } from 'Utils/modules/communicationChannels';
 import { SPECIAL_CHATACTERS_NOT_ALlOWED, MINLENGTH } from 'Constants/GlobalConstant/ValidationMessage';
 export const RULE_TYPES = {
@@ -118,9 +118,15 @@ export const isQuietHoursSessionReady = ({
     departmentId,
     channelId,
 } = {}) => {
-    if (clientId == null || clientId === '') return false;
+    const toPositiveId = (value) => {
+        const parsed = Number(value);
+        return Number.isFinite(parsed) && parsed > 0;
+    };
+
+    if (!toPositiveId(clientId)) return false;
+    if (!toPositiveId(departmentId)) return false;
     if (userId == null || userId === '') return false;
-    if (departmentId == null || departmentId === '') return false;
+
     const channel = Number(channelId);
     return Number.isFinite(channel) && channel > 0;
 };
@@ -189,14 +195,6 @@ const extractKendoFilterValues = (filter, accumulator = {}) => {
 
     return accumulator;
 };
-
-export const buildQuietHoursFilterationFromKendoFilter = (kendoFilter) =>
-    sanitizeQuietHoursFilteration(extractKendoFilterValues(kendoFilter, {}));
-
-export const hasActiveQuietHoursFilteration = (filteration = QUIET_HOURS_DEFAULT_FILTERATION) =>
-    Object.values(sanitizeQuietHoursFilteration(filteration)).some(
-        (value) => String(value ?? '').trim() !== '',
-    );
 
 export const buildQuietHoursListPayload = ({
     clientId,
@@ -726,38 +724,125 @@ export const toQuietWindowMinutes = (value) => {
 
 const QUIET_HOURS_EVENING_START_MINUTES = 18 * 60;
 
+export const QUIET_HOURS_WINDOW_FIELDS = Object.freeze({
+    START: 'windowStart',
+    END: 'windowEnd',
+});
+
+const QUIET_HOURS_WINDOW_START_AFTER_END_MESSAGE =
+    'Window start cannot be later than window end.';
+
+const isQuietHoursInvalidSameDayWindowOrder = (startMins, endMins) =>
+    startMins > endMins && startMins < QUIET_HOURS_EVENING_START_MINUTES;
+
 /**
- * Equal times — shown on the window end field.
+ * Pair validation for one field — errors attach to the field the user changed.
  */
-export const validateQuietHoursWindowEndField = (windowStart, windowEnd, placeholders = {}) => {
+export const getQuietHoursWindowFieldError = (
+    fieldName,
+    windowStart,
+    windowEnd,
+    changedField = fieldName,
+) => {
     const startMins = toQuietWindowMinutes(windowStart);
     const endMins = toQuietWindowMinutes(windowEnd);
     if (startMins == null || endMins == null) return true;
+
+    const equalMessage =
+        QUIET_HOURS_WINDOW_TIMES_MUST_DIFFER || 'Start and end times must be different.';
+    const endBeforeStartMessage =
+        QUIET_HOURS_WINDOW_END_NOT_BEFORE_START ||
+        'Window end cannot be earlier than window start.';
+    const startAfterEndMessage =
+        QUIET_HOURS_WINDOW_START_NOT_BEFORE_END || QUIET_HOURS_WINDOW_START_AFTER_END_MESSAGE;
+
     if (startMins === endMins) {
-        return QUIET_HOURS_WINDOW_TIMES_MUST_DIFFER || 'Start and end times must be different.';
+        return changedField === fieldName ? equalMessage : true;
     }
+
+    if (isQuietHoursInvalidSameDayWindowOrder(startMins, endMins)) {
+        if (changedField === QUIET_HOURS_WINDOW_FIELDS.END && fieldName === QUIET_HOURS_WINDOW_FIELDS.END) {
+            return endBeforeStartMessage;
+        }
+        if (changedField === QUIET_HOURS_WINDOW_FIELDS.START && fieldName === QUIET_HOURS_WINDOW_FIELDS.START) {
+            return startAfterEndMessage;
+        }
+        return true;
+    }
+
     return true;
+};
+
+/** Re-validates the edited window field and clears the sibling when the pair is valid. */
+export const runQuietHoursWindowFieldValidation = ({
+    changedField,
+    getValues,
+    clearErrors,
+    trigger,
+}) => {
+    window.setTimeout(() => {
+        const start = getValues(QUIET_HOURS_WINDOW_FIELDS.START);
+        const end = getValues(QUIET_HOURS_WINDOW_FIELDS.END);
+
+        if (start != null && end != null) {
+            const startIsValid =
+                getQuietHoursWindowFieldError(
+                    QUIET_HOURS_WINDOW_FIELDS.START,
+                    start,
+                    end,
+                    changedField,
+                ) === true;
+            const endIsValid =
+                getQuietHoursWindowFieldError(
+                    QUIET_HOURS_WINDOW_FIELDS.END,
+                    start,
+                    end,
+                    changedField,
+                ) === true;
+
+            if (startIsValid) {
+                clearErrors(QUIET_HOURS_WINDOW_FIELDS.START);
+            }
+            if (endIsValid) {
+                clearErrors(QUIET_HOURS_WINDOW_FIELDS.END);
+            }
+        }
+
+        void trigger(changedField);
+    }, 0);
 };
 
 /**
- * Invalid wrap (e.g. 12:00–11:00) — error shown on window start; window end is cleared.
+ * Equal times — shown on the field the user edited.
  */
-export const validateQuietHoursWindowStartField = (windowStart, windowEnd, placeholders = {}) => {
-    const startMins = toQuietWindowMinutes(windowStart);
-    const endMins = toQuietWindowMinutes(windowEnd);
-    if (startMins == null || endMins == null) return true;
-    if (startMins === endMins) return true;
-    if (startMins < endMins) return true;
-    if (startMins > endMins && startMins < QUIET_HOURS_EVENING_START_MINUTES) {
-        return (
-            QUIET_HOURS_WINDOW_END_NOT_BEFORE_START ||
-            'Window end cannot be earlier than window start.'
-        );
-    }
-    return true;
-};
+export const validateQuietHoursWindowEndField = (
+    windowStart,
+    windowEnd,
+    changedField = QUIET_HOURS_WINDOW_FIELDS.END,
+) =>
+    getQuietHoursWindowFieldError(
+        QUIET_HOURS_WINDOW_FIELDS.END,
+        windowStart,
+        windowEnd,
+        changedField,
+    );
 
-export const isQuietHoursWindowEndBeforeStartError = (message, placeholders = {}) => {
+/**
+ * Invalid same-day order (e.g. 12:00–11:00) — shown on the field the user edited.
+ */
+export const validateQuietHoursWindowStartField = (
+    windowStart,
+    windowEnd,
+    changedField = QUIET_HOURS_WINDOW_FIELDS.START,
+) =>
+    getQuietHoursWindowFieldError(
+        QUIET_HOURS_WINDOW_FIELDS.START,
+        windowStart,
+        windowEnd,
+        changedField,
+    );
+
+export const isQuietHoursWindowEndBeforeStartError = (message) => {
     if (!message) return false;
     return (
         message ===

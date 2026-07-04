@@ -1,6 +1,5 @@
 import { EMAIL_RULES } from 'Constants/GlobalConstant/Rules';
 import { useRef, useState } from 'react';
-import _get from 'lodash/get';
 import { Col } from 'react-bootstrap';
 import { useForm } from 'react-hook-form';
 
@@ -103,7 +102,7 @@ const LoginPopup = (props) => {
                                 // rules={EMAIL_RULES}
                                 rules={{
                                     ...EMAIL_RULES,
-                                    validate: () => (emailHasError ? _get(errors, 'emailId.message') : true),
+                                    validate: () => (emailHasError ? errors?.emailId?.message : true),
                                 }}
                                 handleOnchange={() => {
                                     if (emailHasError) clearErrors('emailId');

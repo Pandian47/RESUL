@@ -2,7 +2,7 @@ import { FirefoxLogo, GoogleChromeLogo, androidLogo, iosLogo, userImg } from 'As
 import { truncateTitle } from 'Utils/modules/displayCore';
 import { arrow_down_chevron_mini, arrow_up_chevron_mini, close_mini } from 'Constants/GlobalConstant/Glyphicons';
 import { useEffect, useRef, useState } from 'react';
-import _get from 'lodash/get';
+import { get as _get } from 'Utils/modules/lodashReplacements';
 import RSTooltip from 'Components/RSTooltip';
 import { Carousel } from 'react-bootstrap';
 

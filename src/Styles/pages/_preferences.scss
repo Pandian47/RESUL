@@ -762,6 +762,10 @@
     }
 }
 
+.pref-sk-offer-toolbar--flush.top-sub-heading {
+    margin-top: 0 !important;
+}
+
 .rs-kendo-grid-table.rs-userListing-grid {
 
     // Override global grid rule (.rs-tooltip-wrapper span { overflow: hidden }) so Kendo Switch is not clipped
@@ -1084,6 +1088,18 @@
 
                 p {
                     background-color: transparent;
+                }
+            }
+        }
+
+        .rsfb-submit {
+            .rs-form-button-preview-label {
+                color: $white;
+
+                p {
+                    color: $white;
+                    margin: 0;
+                    padding: 0;
                 }
             }
         }

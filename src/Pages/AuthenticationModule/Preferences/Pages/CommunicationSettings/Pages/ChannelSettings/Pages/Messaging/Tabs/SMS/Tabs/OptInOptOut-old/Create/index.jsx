@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useForm, FormProvider, useFieldArray } from 'react-hook-form';
 import { Row, Col } from 'react-bootstrap';
 import { useDispatch, useSelector } from 'react-redux';
-import _findIndex from 'lodash/findIndex';
+import { findIndex as _findIndex } from 'Utils/modules/lodashReplacements';
 
 import RSKendoDropDownList from 'Components/FormFields/RSKendoDropdown';
 import RSTextarea from 'Components/FormFields/RSTextarea';

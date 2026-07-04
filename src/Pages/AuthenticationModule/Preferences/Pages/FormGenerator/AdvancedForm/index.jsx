@@ -288,7 +288,7 @@ const AdvancedForm = () => {
     const handleCreateResulForm = async () => {
         if (!addAccess) return;
         try {
-            const res = await dispatch(getNewFormRedirectUrl());
+            const res = await dispatch(getNewFormRedirectUrl({ clientId, departmentId }));
             const redirectUrl = extractNewFormRedirectUrl(res);
             if (redirectUrl) {
                 openFormForgeWithReturn(redirectUrl, resulListReturnUrl);
@@ -313,7 +313,7 @@ const AdvancedForm = () => {
             return;
         }
         try {
-            const res = await dispatch(getFormEditUrl(formId));
+            const res = await dispatch(getFormEditUrl({ formId: String(formId), clientId, departmentId }));
             const url = extractFormRedirectUrlFromResponse(res);
             if (url) {
                 openFormForgeWithReturn(url, resulListReturnUrl);
@@ -338,7 +338,7 @@ const AdvancedForm = () => {
             return;
         }
         try {
-            const res = await dispatch(getFormAnalyticsUrl(formId));
+            const res = await dispatch(getFormAnalyticsUrl({ formId: String(formId), clientId, departmentId }));
             const url = extractFormRedirectUrlFromResponse(res);
             if (url) {
                 const targetUrl = appendEmbedParamToFormForgeUrl(url, resulListReturnUrl);

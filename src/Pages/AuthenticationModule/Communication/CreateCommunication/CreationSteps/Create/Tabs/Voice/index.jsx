@@ -9,10 +9,7 @@ import { ENTER_DESCRIPTION, SELECT_TEMPLATE_NAME, SELECT_VENDOR_NAME } from 'Con
 import { ADD, ATTRIBUTES, AUDIENCE, AUDIENCE_CHANGE_CONFIRMATION, AUTO_REFRESH, AUTO_REFRESH_POP_HOVER_TEXT, CALL_CENTER_DESCRIPTION, CANCEL, CHECK_START_DATE_AND_END_DATE, COMMUNICATION_SCHEDULED, DESCRIPTION, I_AGREE_TO_TRANSFER_CALL_CENTER, IGNORE_CHANNEL, NEXT, OK, SAVE, SELECT_TEMPLATE, TEMPLATE, VENDOR_NAME } from 'Constants/GlobalConstant/Placeholders';
 import { circle_plus_fill_medium, circle_question_mark_mini } from 'Constants/GlobalConstant/Glyphicons';
 import { useEffect, useMemo, useRef, useState } from 'react';
-import _get from 'lodash/get';
-import _find from 'lodash/find';
-import _isEmpty from 'lodash/isEmpty';
-import _filter from 'lodash/filter';
+import { get as _get, find as _find, isEmpty as _isEmpty, filter as _filter } from 'Utils/modules/lodashReplacements';
 import { Row, Col } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
@@ -860,11 +857,11 @@ const Voice = ({ type, mCampType }) => {
             />
             <SelectAttributeListboxModal
                 getSelectedData={(data) => {
-                    setSelectedColumnData({
-                        leftAttributes: leftAttributes,
-                        rightAttributes: rightAttributes,
+                       setSelectedColumnData({
+                        leftAttributes: data?.leftAttributes,
+                        rightAttributes: data?.rightAttributes,
                     });
-                    setValue('attributeList',rightAttributes)
+                    setValue('attributeList',data?.rightAttributes)
                     setAttModal(false);
                 }}
                 leftAttributes={selectedColumnsData.leftAttributes}

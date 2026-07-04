@@ -1,12 +1,35 @@
 import { circle_zoom_fill_edge_medium } from 'Constants/GlobalConstant/Glyphicons';
 import { memo, isValidElement, useCallback, useEffect, useId, useLayoutEffect, useMemo, useRef, useState } from 'react';
-import _get from 'lodash/get';
+import { get as _get } from 'Utils/modules/lodashReplacements';
 import PropTypes from 'prop-types';
 import { Dropdown, Form } from 'react-bootstrap';
 import RSTooltip from 'Components/RSTooltip';
 import { SEARCH } from 'Constants/GlobalConstant/Placeholders';
 import { truncateTitle } from 'Utils/modules/displayCore';
 import NoDataAvailableRender from 'Components/FormFields/Component/NoDataAvailableRender';
+
+/** Popper — escape RSModal overflow:hidden shell (z-index matches ResKendoDropdown) */
+export const RS_BOOTSTRAP_DROPDOWN_POPPER_CONFIG = {
+    strategy: 'fixed',
+    modifiers: [
+        {
+            name: 'preventOverflow',
+            options: {
+                boundary: 'viewport',
+                padding: 8,
+                altBoundary: true,
+            },
+        },
+        {
+            name: 'flip',
+            options: {
+                boundary: 'viewport',
+                padding: 8,
+                fallbackPlacements: ['bottom-start', 'top-start', 'bottom-end', 'top-end'],
+            },
+        },
+    ],
+};
 
 const OBJECT_ROW_ID_EXCLUDED_KEYS = new Set(['menuLabel']);
 
@@ -114,6 +137,7 @@ const RSBootstrapDropdown = ({
     disabled = false,
     footerContent = null,
     isLoading = false,
+    tooltipClassName = ''
 }) => {
     const [title, setTitle] = useState(defaultItem);
     const titleRef = useRef(null);
@@ -271,6 +295,15 @@ const RSBootstrapDropdown = ({
         return findUniquePrimitiveKeyAcrossRows(filteredMenus, fieldKey);
     }, [idKey, isObject, filteredMenus, fieldKey]);
 
+    const isSearchEnabled = useMemo(
+        () =>
+            showSearch
+            || (filterable && (menus?.length > 5 || isHierarchical || isFullHierarchyUI)),
+        [showSearch, filterable, menus?.length, isHierarchical, isFullHierarchyUI],
+    );
+
+    const dropdownScrollMaxHeight = maxHeightnone ? '' : isSearchEnabled ? '215px' : '210px';
+
     useLayoutEffect(() => {
         if (!defaultItem) return;
 
@@ -362,18 +395,19 @@ const RSBootstrapDropdown = ({
                                 onClick={(e) => toggleExpand(item.id, e)}
                             />
                         ) : (
-                            <span className="rs-tree-arrow-placeholder" />
+                           <></>
                         )}
                         {showCheckbox ? (
                             <div className="checkbox-wrapper pe-none">
                                 <label>
-                                    <input type="checkbox" checked={isChecked} readOnly className="checkbox" />
+                                    <input
+                                        type="checkbox"
+                                        checked={isChecked}
+                                        readOnly
+                                        className="checkbox"
+                                        tabIndex={-1}
+                                    />
                                     <span className="lbl">
-                                        <i
-                                            className={
-                                                isChecked ? 'icon-rs-checkbox-mini genie-color-primary-blue' : ''
-                                            }
-                                        />
                                         <span className="rs-tree-name">{label}</span>
                                     </span>
                                 </label>
@@ -394,7 +428,7 @@ const RSBootstrapDropdown = ({
     const renderToggleContent = () => {
         if (toggleLabel != null && String(toggleLabel).trim() !== '') {
             return toggleLabel?.length > 25 ? (
-                <RSTooltip text={toggleLabel} position="bottom" innerContent={false}>
+                <RSTooltip text={toggleLabel} position="bottom" innerContent={false} className = {tooltipClassName}>
                     {toggleLabel?.slice(0, 25) + '...'}
                 </RSTooltip>
             ) : (
@@ -415,7 +449,7 @@ const RSBootstrapDropdown = ({
                 ? `${_get(title, 'friendlyName', '')} ${_get(title, 'smartLinkTitle', '')}`.trim()
                 : String(display ?? '');
             return displayString?.length > 25 ? (
-                <RSTooltip text={displayString} position="bottom" innerContent={false}>
+                <RSTooltip text={displayString} position="bottom" innerContent={false} className = {tooltipClassName}>
                     {displayString?.slice(0, 25) + '...'}
                 </RSTooltip>
             ) : (
@@ -423,7 +457,7 @@ const RSBootstrapDropdown = ({
             );
         }
         if (title?.length > 25) {
-            return <RSTooltip text={title}>{title?.slice(0, 25) + '...'}</RSTooltip>;
+            return <RSTooltip text={title} className = {tooltipClassName}>{title?.slice(0, 25) + '...'}</RSTooltip>;
         }
         return title;
     };
@@ -465,8 +499,9 @@ const RSBootstrapDropdown = ({
 
                 <Dropdown.Menu
                     renderOnMount
-                    className={popupSettings?.popupClass}
-                    style={{ '--rs-dropdown-item-count': filteredMenus?.length || 0 }}
+                    popperConfig={RS_BOOTSTRAP_DROPDOWN_POPPER_CONFIG}
+                    className={`rs-bootstrap-dropdown-menu ${popupSettings?.popupClass ?? ''}`.trim()}
+                    style={{ '--rs-dropdown-item-count': filteredMenus?.length || 0, zIndex: 1101 }}
                 >
                     {/* Legacy search (showSearch) */}
                     {showSearch && (
@@ -508,7 +543,7 @@ const RSBootstrapDropdown = ({
 
                     <div
                         className={`css-scrollbar custome-dropdown-scroll position-relative ${isFullHierarchyUI ? 'rs-full-hierarchy-wrapper' : ''} ${filteredMenus?.length ? 'v1-dropdown-data': 'v1-dropdown-nodata'}`}
-                        style={{ maxHeight: maxHeightnone ? '' : '210px', height: maxHeightnone ? 'auto' : '' }}
+                        style={{ maxHeight: dropdownScrollMaxHeight, height: maxHeightnone ? 'auto' : '' }}
                     >
                         {isFullHierarchyUI ? (
                             treeData?.length ? (
@@ -677,6 +712,7 @@ RSBootstrapDropdown.propTypes = {
     maxHeightnone: PropTypes.bool,
     controlledShow: PropTypes.bool,
     disabled: PropTypes.bool,
+    tooltipClassName: PropTypes.string,
 };
 
 export default memo(RSBootstrapDropdown);

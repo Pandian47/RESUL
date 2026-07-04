@@ -129,7 +129,8 @@ const UserDeviceSetupGrid = () => {
                     {
                         field: 'appName',
                         title: APP_NAME,
-                        filter:'text'
+                        filter:'text',
+                        width:'300'
                     },
                     {
                         field: 'userName',
@@ -144,12 +145,14 @@ const UserDeviceSetupGrid = () => {
                     {
                         field: 'platformName',
                         title: MOBILE_PLATFORM,
-                         filter:'text',
+                        filter:'text',
+                        width: 170,
                     },
                     {
                         field: 'createddate',
                         title: CREATE_DATE,
                          filter:'date',
+                         width:200,
                         cell: (props) => {
                             return (
                                 <td>
@@ -165,7 +168,7 @@ const UserDeviceSetupGrid = () => {
                     {
                         field: 'action',
                         title: ACTIONS,
-                        width: '200px',
+                        width: '200',
                         sortable: false,
                         cell: (props) => {
                             return (

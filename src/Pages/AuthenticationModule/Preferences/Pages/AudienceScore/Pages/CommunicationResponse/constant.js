@@ -74,6 +74,10 @@ const INITIAL_STATE = {
 export { BRAND_SENTIMENT, FREQUENCY_TIME, INITIAL_STATE, CAMPAIN_DATA };
 
 export const commuResponseChannelData = (allData, channelData) => {
+    if (!Array.isArray(allData) || !Array.isArray(channelData) || !channelData.length) {
+        return [];
+    }
+
     const customData = allData.map((item) => {
         if (item?.campaignSegment === 'Conversion') {
             return { ...item, campaignSegment: 'Leads' };
@@ -106,6 +110,9 @@ export const commuResponseChannelData = (allData, channelData) => {
 };
 
 export const getCommuAttribute = (data) => {
+    if (!Array.isArray(data)) {
+        return [];
+    }
     const customData = data?.map((item) => {
         return {
             title: item?.attributename,
@@ -117,6 +124,9 @@ export const getCommuAttribute = (data) => {
 };
 
 export const customDropdownData = (data) => {
+    if (!Array.isArray(data)) {
+        return [];
+    }
     const customData = data?.map((item) => {
         return {
             title: item?.Text,

@@ -252,8 +252,21 @@
         height: 100%;
         display: flex;
         flex-direction: column-reverse;
+        align-items: stretch;
+        justify-content: flex-end;
         width: 23px;
         margin: 0 2px;
+
+        .tooltip-wrap {
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            align-items: stretch;
+            height: 100%;
+            width: 100%;
+            flex: 1 1 auto;
+            min-height: 0;
+        }
 
         .tooltip .tooltip-inner {
             text-transform: capitalize;
@@ -465,35 +478,70 @@
 }
 
 .headBandCSS {
+    $head-band-item-max-width: 190px;
+
     display: flex;
     align-items: center;
     justify-content: space-between;
+    width: 100%;
     border: 1px solid #c2cfe3;
     border-radius: 5px;
     background-color: #fff;
     padding: 5px 10px;
     margin: 15px 0 15px;
+    list-style: none;
 
     h4 {
         margin: 0;
-        max-width: 190px;
+        min-width: 0;
+        max-width: 100%;
+        overflow: hidden;
     }
 
     li {
         position: relative;
+        flex: 0 1 $head-band-item-max-width;
+        max-width: $head-band-item-max-width;
+        min-width: 0;
+        padding: 0 10px;
+        border-left: 1px solid #c2cfe3;
 
-        &:first-child:before {
-            display: none;
+        &:first-child {
+            border-left: none;
         }
 
-        &::before {
-            content: '';
-            position: absolute;
-            height: 40px;
-            top: 50%;
-            left: -15px;
-            margin-top: -20px;
-            border-left: solid 1px #c2cfe3;
+        &:last-child {
+            padding-right: 0;
+        }
+
+        .k-truncate-cell-inline {
+            display: block;
+            min-width: 0;
+            max-width: 100%;
+            overflow: hidden;
+        }
+
+        .rs-tooltip-wrapper,
+        .res-tooltip-wrapper {
+            display: block;
+            max-width: 100%;
+            min-width: 0;
+            height: auto;
+
+            .tooltip-wrap {
+                display: block;
+                max-width: 100%;
+                min-width: 0;
+                overflow: hidden;
+            }
+        }
+
+        .k-text-truncate {
+            display: block;
+            max-width: 100%;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
         }
     }
 }

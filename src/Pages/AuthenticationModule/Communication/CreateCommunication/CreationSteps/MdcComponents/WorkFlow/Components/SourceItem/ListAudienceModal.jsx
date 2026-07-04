@@ -381,7 +381,7 @@ const ListAudienceModal = ({
                                         textField={'recipientsBunchName'}
                                         dataItemKey={'segmentationListId'}
                                         control={control}
-                                        label={AUDIENCE}
+                                        label={SELECT_SEGMENT_LIST}
                                         required
                                         loading={isAudienceLoading || audienceFilterLoader.isLoading}
                                         rules={{

@@ -5,7 +5,7 @@ import { getUserCurrentFormat } from 'Utils/modules/dateTime';
 
 import { collapse_large, communication_edit_large, events_large, expand_large, restart_large, smart_link_large } from 'Constants/GlobalConstant/Glyphicons';
 import { Fragment, useEffect, useState } from 'react';
-import _get from 'lodash/get';
+import { get as _get } from 'Utils/modules/lodashReplacements';
 import { useLocation, useNavigate } from 'react-router-dom';
 
 import RSTooltip from 'Components/RSTooltip';
@@ -43,7 +43,6 @@ const CampaignInfoCard = ({
     const { eventTrackData, mobileChangeConfirm, isSmartLinkDetailLoading } = useSelector(
         ({ smartLinkReducer }) => smartLinkReducer,
     );
-    console.log('isSmartLinkDetailLoading: ', isSmartLinkDetailLoading);
 
     const { smartLink1, smartLink2 } = useSelector((state) => getGeneratedLink(state));
     const smartLink = useSelector((state) => getGeneratedLink(state));
@@ -134,6 +133,10 @@ const CampaignInfoCard = ({
     };
     const isDisplayEditCommunication =
         (campaignType === 'M' && pathName === '/communication/execute') || campaignType !== 'M' ? true : false;
+    const isExecutePage = pathName === '/communication/execute';
+    const isCompletedCampaign = Number(state?.statusId) === 9;
+    const hasSmartLink = Boolean(smartLink1 && Object.values(smartLink || {})[0]);
+    const isSmartLinkIconDisabled = isExecutePage && isCompletedCampaign && !hasSmartLink;
     // const period = `${getDateWithDay(startDate)} - ${getDateWithDay(endDate)}`;
     const period = `${getUserCurrentFormat(startDate)?.dateFormat} - ${getUserCurrentFormat(endDate)?.dateFormat}`;
     return (
@@ -229,7 +232,7 @@ const CampaignInfoCard = ({
                                             : !!smartLink1
                                               ? 'bg-primary-green'
                                               : 'bg-secondary-grey'
-                                    }`}
+                                    } ${isSmartLinkIconDisabled ? 'pe-none click-off' : ''}`}
                                 >
                                     {isSmartLinkDetailLoading ? (
                                         <span
@@ -246,8 +249,14 @@ const CampaignInfoCard = ({
                                         innerContent={false}
                                     >
                                         <i
-                                            className={`${smart_link_large} icon-lg white p4`}
-                                            onClick={() => dispatch(updateSmartLinkModalState(true))}
+                                            className={`${smart_link_large} icon-lg white p4 ${
+                                                isSmartLinkIconDisabled ? 'cursor-default' : 'cp'
+                                            }`}
+                                            onClick={
+                                                isSmartLinkIconDisabled
+                                                    ? undefined
+                                                    : () => dispatch(updateSmartLinkModalState(true))
+                                            }
                                             id="rs_CampaignInfoCard_Smartlink"
                                         ></i>
                                     </RSTooltip>
@@ -396,7 +405,7 @@ const CampaignInfoCard = ({
             {/* End */}
 
             {/* Modals */}
-            {showSmartLink && <SmartLink
+            {showSmartLink && !isSmartLinkIconDisabled && <SmartLink
                 statusId={state?.statusId}
                 show={showSmartLink}
                 openWithAddNewTab={smartLinkAutoAdd}

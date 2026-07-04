@@ -1,5 +1,4 @@
-import _map from 'lodash/map';
-import _get from 'lodash/get';
+import { map as _map,get as _get  } from 'Utils/modules/lodashReplacements';
 export const InteractivityButtonsPreview = ({ buttonText = [], type = 'chrome', className = '' }) => {
     if (!Array.isArray(buttonText) || buttonText.length === 0) return null;
     return (

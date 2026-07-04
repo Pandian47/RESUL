@@ -1,6 +1,6 @@
 import { STATUS_LIST } from 'Utils/modules/communicationChannels';
 import { CHANNELSSOCIAL_LIST } from 'Constants/GlobalConstant/channelSocialList';
-import uniqBy from 'lodash/uniqBy';
+import { uniqBy } from 'Utils/modules/lodashReplacements';
 import { DEFAULT_SORT_TYPE_ADVANCE_FILTER_VALUE } from 'Constants/AdvanceSearch';
 import { isEntireMultiSelectChosen, buildAdvanceSearchPersistStorageKey } from 'Components/AdvanceSearchNew';
 import {

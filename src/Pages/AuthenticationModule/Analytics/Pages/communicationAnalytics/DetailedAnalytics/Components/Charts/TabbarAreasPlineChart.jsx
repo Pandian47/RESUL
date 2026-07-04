@@ -72,7 +72,7 @@ const TabbarAreasPlineChart = (props) => {
                             <ul>
                                 <li>
                                     <span>{showPercentage(overAllPercent || 0)}</span>
-                                    <small className='font-sm'>%</small>
+                                    <small>%</small>
                                 </li>
                                 <li>{overAllText}</li>
                             </ul>

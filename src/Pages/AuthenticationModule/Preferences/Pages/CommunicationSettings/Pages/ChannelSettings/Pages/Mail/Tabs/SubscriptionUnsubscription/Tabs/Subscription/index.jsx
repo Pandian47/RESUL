@@ -151,6 +151,7 @@ const Subscription = ({ tabname }) => {
                                     ? SUBSCRIPTION_CONTENT
                                     : UNSUBSCRIPTION_CONTENT,
                                 filter: 'text',
+                                width:500,
                                 cell: ({ dataItem }) => {
                                     const nameField = isSubscription ? dataItem?.subscribeName : dataItem?.unsubscribeName;
 

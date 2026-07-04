@@ -1,32 +1,26 @@
 import { ENTER_SENDER_ID } from 'Constants/GlobalConstant/ValidationMessage';
-import { Suspense, lazy } from 'react';
+import { lazy } from 'react';
 import Papa from 'papaparse';
 import RSTooltip from 'Components/RSTooltip';
-import { CommunicationSettingsInnerTabLoadingBlock } from 'Components/Skeleton/Components/PreferencesSubPageRouteSkeleton';
+import { renderEmbeddedLazyInner } from '../../../../constant';
 
 const SMPP = lazy(() => import('./Tabs/SMPP'));
 const KeywordManagement = lazy(() => import('./Tabs/KeywordManagement'));
 const LifetimeCap = lazy(() => import('./Tabs/LifetimeCap'));
 const SMSTemplate = lazy(() => import('./Tabs/Template'));
 
-const renderLazyInner = (LazyComponent) => () => (
-    <Suspense fallback={<CommunicationSettingsInnerTabLoadingBlock />}>
-        <LazyComponent />
-    </Suspense>
-);
-
 export const SMS_VENDOR_FORM_ACTIONS_PORTAL_ID = 'pref-cs-sms-vendor-form-actions';
 
 export const getSMPPTabConfig = (isKeywordManagementEnabled = false) => [
-    { id: 1001, text: 'Vendor', disable: false, component: renderLazyInner(SMPP) },
-    { id: 1004, text: 'Templates', disable: false, component: renderLazyInner(SMSTemplate) },
+    { id: 1001, text: 'Vendor', disable: false, component: renderEmbeddedLazyInner(SMPP) },
+    { id: 1004, text: 'Templates', disable: false, component: renderEmbeddedLazyInner(SMSTemplate) },
     {
         id: 1002,
         text: 'Keyword management',
         disable: !isKeywordManagementEnabled,
-        component: renderLazyInner(KeywordManagement),
+        component: renderEmbeddedLazyInner(KeywordManagement),
     },
-    { id: 1003, text: 'Lifetime cap', disable: true, component: renderLazyInner(LifetimeCap) },
+    { id: 1003, text: 'Lifetime cap', disable: true, component: renderEmbeddedLazyInner(LifetimeCap) },
 ];
 
 export const ACTION_INITIAL_STATE = {
@@ -548,13 +542,6 @@ export const getSenderIdRules = () => ({
         return true;
     },
 });
-
-export const senderIdKeyDown = (e) => {
-    const key = e.key;
-    const controlKeys = ['Backspace', 'Delete', 'Enter', 'Tab', 'ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Escape'];
-    if (controlKeys.includes(key)) return;
-    if (key.length === 1 && !SENDER_ID_KEY_PATTERN.test(key)) e.preventDefault();
-};
 
 // ─── Form validation helpers ─────────────────────────────────────────────────
 const SENDER_ID_TOTAL_MAX_LENGTH = 75;

@@ -1,4 +1,3 @@
-import { colorpicker_bg_medium, colorpicker_text_medium, user_question_mark_medium } from 'Constants/GlobalConstant/Glyphicons';
 import { useEffect, useRef, useState } from 'react';
 import { EditorTools, ProseMirror } from '@progress/kendo-react-editor';
 import { convert } from 'html-to-text';
@@ -8,8 +7,6 @@ import ResTextEditor from 'Pages/KendoDocs/CommonComponents/ResTextEditor';
 import TimerIcon from '../TimerIcon/TimerIcon';
 import ImageUpload from 'Pages/AuthenticationModule/Communication/CreateCommunication/CreationSteps/Create/Component/ImageUpload/ImageUpload';
 import { useDispatch, useSelector } from 'react-redux';
-import RSBootstrapdown from 'Components/FormFields/RSBootstrapdown';
-import RSColorPicker from 'Components/ColorPicker';
 import { useFormContext, useWatch } from 'react-hook-form';
 import { uploadMobilePush } from 'Reducers/communication/createCommunication/Create/request';
 import { getSessionId } from 'Reducers/globalState/selector';
@@ -48,71 +45,6 @@ export const styles = `p.placeholder:first-child:before {
     }`;
 
 const { Bold, Italic, Underline, Strikethrough, FormatBlock, ForeColor, BackColor } = EditorTools;
-
-const personalizationMobile = ({ handleChange }) => {
-    const { personalization } = useSelector(({ createCommunicationReducer }) => createCommunicationReducer);
-    const { control, setValue, watch, trigger } = useFormContext();
-    const splitTest = useWatch({
-        name: 'splitTest',
-        control,
-    });
-
-    const { notification } = useSelector(({ createCommunicationReducer }) => createCommunicationReducer);
-    const editorTextName = splitTest ? `${notification?.mobile?.fieldNameIndex}.editorText` : 'editorText';
-
-    const [editorText] = watch([editorTextName]);
-
-    return (
-        <RSBootstrapdown
-            data={personalization}
-            isObject
-            fieldKey="personalizationKey"
-            flatIcon
-            defaultItem={{
-                attributeName: '',
-                dataAttributeId: 0,
-                fallbackAttributeName: null,
-                personalizationKey: <i className={`${user_question_mark_medium} icon-md`} />,
-            }}
-            showUpdate={false}
-            className="no_caret"
-            onSelect={({ personalizationKey }) => {
-                const text = editorText || '';
-
-                setValue(editorTextName, text + personalizationKey);
-
-                trigger(editorTextName);
-            }}
-        />
-    );
-};
-
-const backgroundColorMobile = ({ isSplit, fieldName }) => {
-    const customizationName = isSplit ? `${fieldName}.customization` : 'customization';
-
-    const { setValue } = useFormContext();
-    return (
-        <RSColorPicker
-            icon={colorpicker_bg_medium}
-            onSelect={(color) => setValue(`${customizationName}.background`, color)}
-            initColor={customizationName?.background}
-        />
-    );
-};
-
-const textColorMobile = ({ isSplit, fieldName }) => {
-    const customizationName = isSplit ? `${fieldName}.customization` : 'customization';
-
-    const { setValue } = useFormContext();
-
-    return (
-        <RSColorPicker
-            icon={colorpicker_text_medium}
-            onSelect={(color) => setValue(`${customizationName}.background`, color)}
-            initColor={customizationName?.background}
-        />
-    );
-};
 
 const ImageUploadMobile = () => {
     const dispatch = useDispatch();
@@ -157,18 +89,6 @@ const ImageUploadMobile = () => {
             }}
         />
     );
-};
-
-const handleContentChange = (editorText, editorTextName, editorTextValue, smartLinkData, setValue, trigger) => {
-    const text = editorText || '';
-    if (editorTextValue.current === undefined) {
-        setValue(editorTextName, text + smartLinkData);
-    } else {
-        var start = text.slice(0, editorTextValue?.current?.startPoistion);
-        var end = text.slice(editorTextValue?.current?.endPosition);
-        setValue(editorTextName, start + ' ' + smartLinkData + ' ' + end);
-    }
-    trigger(editorTextName);
 };
 
 const TextEditorMobile = ({

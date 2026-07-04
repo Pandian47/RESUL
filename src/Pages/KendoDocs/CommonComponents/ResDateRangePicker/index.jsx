@@ -372,7 +372,7 @@ const ResDateRangePicker = ({
         : Boolean(selectedDate.start && selectedDate.end);
 
     return (
-        <div className={`${DR_CLASS.root} date-range-view-container h32 ${mainClass}`} ref={datePickerRef}>
+        <div className={`${DR_CLASS.root} date-range-view-container  ${mainClass}`} ref={datePickerRef}>
             <div
                 className="date-title"
                 onClick={() => {
@@ -429,8 +429,8 @@ const ResDateRangePicker = ({
                     getData.customDate ? 'calendar-box' : ''
                 } ${getData.customDate && positionRight ? 'calendar-box-right' : ''}`}
                 animate={{
-                    width: getData.customDate ? 590 : 147,
-                    height: getData.customDate ? 350 : 223,
+                    width: getData.customDate ? 590 : 150,
+                    height: getData.customDate ? 347 : 227,
                     // padding: getData.customDate ? 10 : 5,
                 }}
                 transition={{ duration: 0.3, ease: 'easeInOut' }}

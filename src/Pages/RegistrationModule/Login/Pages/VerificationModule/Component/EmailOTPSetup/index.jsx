@@ -177,31 +177,31 @@ const EmailOTPSetup = ({ onBack, onComplete }) => {
         <FormProvider {...methods}>
             <div className="forgot-password-modal">
                 {showOtpAlerts && (
-                        <OtpModalAlerts
-                            isOtpRequestLoading={isOtpSendLoading}
-                            className = 'position-absolute OTPWidth'
-                            isOtpValidateLoading={isOtpValidateLoading}
-                            flag={showFlag}
-                            isOtp={isOtpValid}
-                            otpMessage={otpMessage}
-                            message={otpSuccessMessage}
-                            hideSuccessWhenFlag={showFlag}
-                            validationResultProps={{
-                                invalidVariant: 'warning',
-                                className: 'border-r7 align-items-stretch mb0',
-                                compact: false,
-                            }}
-                            successAlertProps={{
-                                className: 'border-r7 align-items-stretch mb0',
-                                compact: false,
-                            }}
-                            sendingAlertProps={{
-                                className: 'border-r7 mb0',
-                            }}
-                            validatingAlertProps={{
-                                className: 'border-r7 mb0',
-                            }}
-                        />
+                    <OtpModalAlerts
+                        isOtpRequestLoading={isOtpSendLoading}
+                        className = 'position-absolute OTPWidth'
+                        isOtpValidateLoading={isOtpValidateLoading}
+                        flag={showFlag}
+                        isOtp={isOtpValid}
+                        otpMessage={otpMessage}
+                        message={otpSuccessMessage}
+                        hideSuccessWhenFlag={showFlag}
+                        validationResultProps={{
+                            invalidVariant: 'warning',
+                            className: 'border-r7 align-items-stretch mb0',
+                            compact: false,
+                        }}
+                        successAlertProps={{
+                            className: 'border-r7 align-items-stretch mb0',
+                            compact: false,
+                        }}
+                        sendingAlertProps={{
+                            className: 'border-r7 mb0',
+                        }}
+                        validatingAlertProps={{
+                            className: 'border-r7 mb0',
+                        }}
+                    />
                 )}
                 <form
                     className="d-flex align-items-center"

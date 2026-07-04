@@ -10,9 +10,8 @@ import { ENTER_SUBJECT_LINE, SELECT_AUDIENCE, SELECT_UNSUBSCRIPTION_BUTTON_MESSA
 import { A_SUFFICIENT_NUMBER, ADD_EMAIL_FOOTER, ARE_YOU_SURE_YOU_WANT_TO_LEAVE, CREATE_EMAIL_FOOTER, EMAIL_FOOTER_TEMPLATES, EMAIL_PREVIEW, ENABLE_UNSUBSCRIPTION, KEY_PERSON_INFO_NOT_FOUND, LIVE_PREVIEW, MESSAGE, PREVIEW, SUBJECT_LINE, UNSUBSCRIPTION_MESSAGE } from 'Constants/GlobalConstant/Placeholders';
 import { circle_plus_fill_medium, circle_question_mark_medium, email_preview_medium, eye_medium, pencil_edit_medium, spam_assassin_medium, template_medium } from 'Constants/GlobalConstant/Glyphicons';
 import { Fragment, useCallback, useContext, useEffect, useMemo, useReducer, useRef, useState } from 'react';
-import _get from 'lodash/get';
+import { get as _get, cloneDeep as _cloneDeep } from 'Utils/modules/lodashReplacements';
 import parse from 'html-react-parser';
-import _cloneDeep from 'lodash/cloneDeep';
 import { useSelector, useDispatch, useStore } from 'react-redux';
 import { Row, Col } from 'react-bootstrap';
 import { useFormContext, useWatch } from 'react-hook-form';
@@ -78,6 +77,8 @@ const SplitABTab = ({ fieldName, isSplit = true, isSubjectLineEnable }) => {
   const unsubscriptionFetchPromiseRef = useRef(null);
   const unsubscriptionListHydratedRef = useRef(false);
   const hasFetchedFooterRef = useRef(false);
+  const emailFooterFetchPromiseRef = useRef(null);
+  const emailFooterListHydratedRef = useRef(false);
   const [{ splitTabList }] = useReducer(
     stateReducer,
     initialState
@@ -173,6 +174,43 @@ const SplitABTab = ({ fieldName, isSplit = true, isSubjectLineEnable }) => {
         return readList();
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [dispatch, store, clientId, userId, departmentId]);
+
+    const ensureEmailFooterListLoaded = useCallback(async () => {
+        const readList = () => emailList(store.getState()).emailFooter;
+        if (emailFooterListHydratedRef.current) {
+            return readList();
+        }
+        let list = readList();
+        if (list?.length) {
+            emailFooterListHydratedRef.current = true;
+            setEmailFooterListResolved(true);
+            return list;
+        }
+        if (emailFooterFetchPromiseRef.current) {
+            await emailFooterFetchPromiseRef.current;
+            return readList();
+        }
+        const fetchPromise = emailFooterLoader.refetch({
+            fetcher: ({ payload } = {}) =>
+                dispatch(getEmailFooterList({ payload, loading: false })),
+            mode: 'create',
+            loaderConfig: AUTHORING_FIELD_LOADER_CONFIG,
+            params: { payload: { clientId, userId, departmentId } },
+        });
+        emailFooterFetchPromiseRef.current = fetchPromise;
+        try {
+            await fetchPromise;
+        } finally {
+            if (emailFooterFetchPromiseRef.current === fetchPromise) {
+                emailFooterFetchPromiseRef.current = null;
+            }
+        }
+        list = readList();
+        emailFooterListHydratedRef.current = Boolean(list?.length);
+        setEmailFooterListResolved(Boolean(list?.length));
+        return list;
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [dispatch, store, clientId, userId, departmentId]);
     const subjectLineName = isSplit ? `${fieldName}.subjectLine` : 'subjectLine';
     const tabErrorTextName = isSplit ? `${fieldName}.tabErrorText` : 'tabErrorText';
     const editorTextName = isSplit ? `${fieldName}.editorText` : 'editorText';
@@ -219,17 +257,14 @@ const SplitABTab = ({ fieldName, isSplit = true, isSubjectLineEnable }) => {
   useEffect(() => {
     if (!emailFooter) {
       hasFetchedFooterRef.current = false;
+      emailFooterListHydratedRef.current = false;
+      return;
     }
-  }, [emailFooter]);
-
-  useEffect(() => {
-    if (emailFooter && !emailFooterList?.length && !hasFetchedFooterRef.current) {
+    if (!emailFooterList?.length && !hasFetchedFooterRef.current) {
       hasFetchedFooterRef.current = true;
-      dispatch(
-        getEmailFooterList({ payload: { clientId, userId, departmentId } })
-      );
+      void ensureEmailFooterListLoaded();
     }
-  }, [emailFooter, emailFooterList, clientId, userId, departmentId, dispatch]);
+  }, [emailFooter, emailFooterList, ensureEmailFooterListLoaded]);
   // console.log('approvalList: ', approvalList);
     // useEffect(() => {
     //     // console.log('subjectLine:', subjectLine);
@@ -381,17 +416,7 @@ const SplitABTab = ({ fieldName, isSplit = true, isSubjectLineEnable }) => {
         clearErrors(unSubscriptionName);
 
         if (isChecked) {
-            let list = emailList(store.getState()).emailFooter;
-            if (!list?.length) {
-                await emailFooterLoader.refetch({
-                    fetcher: ({ payload } = {}) =>
-                        dispatch(getEmailFooterList({ payload, loading: false })),
-                    mode: 'create',
-                    loaderConfig: AUTHORING_FIELD_LOADER_CONFIG,
-                    params: { payload: { clientId, userId, departmentId } },
-                });
-                list = emailList(store.getState()).emailFooter;
-            }
+            const list = (await ensureEmailFooterListLoaded()) || [];
             setEmailFooterListResolved(true);
             if (!list?.length) {
                 setValue(emailFooterName, false);
@@ -1236,26 +1261,21 @@ const SplitABTab = ({ fieldName, isSplit = true, isSubjectLineEnable }) => {
                     show={state?.confirmUnsubscribeLostDataModal}
                     showCancel={true}
                     handleClose={(status) => {
-                        if (status === 1) {
-                            const navState = createCommunicationSettingsNavState('mail', {
-                                from: 'communication',
-                                tabname: 'Unsubscription',
-                                mailTabId: MAIL_TAB_ID.SUBSCRIPTION_UNSUBSCRIPTION,
-                            }, location, getValues);
-                            const encryptState = encodeUrl(navState);
-                            navigate(`/preferences/communication-settings/subscribe?q=${encryptState}`, {
-                                state: navState,
-                            });
-                            setState((pre) => ({
-                                ...pre,
-                                confirmUnsubscribeLostDataModal: false
-                            }));
-                        } else {
-                            setState((pre) => ({
-                                ...pre,
-                                confirmUnsubscribeLostDataModal: false
-                            }));
-                        }
+                        setState((pre) => ({
+                            ...pre,
+                            confirmUnsubscribeLostDataModal: false,
+                        }));
+                        if (status !== 1) return;
+
+                        dispatch(updateEmailList({ data: [], field: 'unSubscriptionList' }));
+                        const navState = createCommunicationSettingsNavState('mail', {
+                            from: 'communication',
+                            tabname: 'Unsubscription',
+                            mailTabId: MAIL_TAB_ID.SUBSCRIPTION_UNSUBSCRIPTION,
+                        }, location, getValues);
+                        navigate(`/preferences/communication-settings/subscribe?q=${encodeUrl(navState)}`, {
+                            state: navState,
+                        });
                     }}
                     text={<div>{ARE_YOU_SURE_YOU_WANT_TO_LEAVE}</div>} />
 
@@ -1265,26 +1285,20 @@ const SplitABTab = ({ fieldName, isSplit = true, isSubjectLineEnable }) => {
                     show={state?.confirmEmailFooterLostDataModal}
                     showCancel={true}
                     handleClose={(status) => {
-                        if (status === 1) {
-                            dispatch(updateEmailList({ data: [], field: 'emailFooter' }));
-            const navState = createCommunicationSettingsNavState('mail', {
-                                from: 'communication',
-                                mailTabId: MAIL_TAB_ID.EMAIL_FOOTER,
-                            }, location, getValues);
-                            const encryptState = encodeUrl(navState);
-                            navigate(`/preferences/communication-settings?q=${encryptState}`, {
-                                state: navState,
-                            });
-                            setState((pre) => ({
-                                ...pre,
-                                confirmEmailFooterLostDataModal: false
-                            }));
-                        } else {
-                            setState((pre) => ({
-                                ...pre,
-                                confirmEmailFooterLostDataModal: false
-                            }));
-                        }
+                        setState((pre) => ({
+                            ...pre,
+                            confirmEmailFooterLostDataModal: false,
+                        }));
+                        if (status !== 1) return;
+
+                        dispatch(updateEmailList({ data: [], field: 'emailFooter' }));
+                        const navState = createCommunicationSettingsNavState('mail', {
+                            from: 'communication',
+                            mailTabId: MAIL_TAB_ID.EMAIL_FOOTER,
+                        }, location, getValues);
+                        navigate(`/preferences/communication-settings?q=${encodeUrl(navState)}`, {
+                            state: navState,
+                        });
                     }}
                     text={<div>{ARE_YOU_SURE_YOU_WANT_TO_LEAVE}</div>} />
 

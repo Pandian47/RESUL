@@ -22,7 +22,8 @@ import {
 } from '../pages/analytics';
 import PreferencesRouteSkeleton from '../Components/PreferencesRouteSkeleton';
 import PreferencesSubPageRouteSkeleton from '../Components/PreferencesSubPageRouteSkeleton';
-import { RSLoaderOverlay } from 'Components/Loader';
+import LaunchPadRouteSkeleton from '../Components/LaunchPadRouteSkeleton';
+import { LoginRouteSpinner, RSLoaderOverlay } from 'Components/Loader';
 import AccountSetupPageSkeleton from '../pages/accountSetup/AccountSetupPageSkeleton';
 import SetupCompletePageSkeleton from '../pages/setupComplete/SetupCompletePageSkeleton';
 import MdcWorkflowSkeleton from 'Components/Loader/MdcWorkflowSkeleton';
@@ -55,9 +56,10 @@ const SKELETON_SUSPENSE_MAP = {
     [SKELETON_KEYS.analyticsReport]: AnalyticsReportSuspenseFallback,
     [SKELETON_KEYS.analyticsDetail]: DetailAnalyticsPageSkeleton,
     [SKELETON_KEYS.analytics]: AnalyticsSuspenseFallback,
+    [SKELETON_KEYS.launchPad]: LaunchPadRouteSkeleton,
     [SKELETON_KEYS.preferences]: PreferencesRouteSkeleton,
     [SKELETON_KEYS.preferencesSubPage]: PreferencesSubPageRouteSkeleton,
-    [SKELETON_KEYS.login]: () => <RSLoaderOverlay />,
+    [SKELETON_KEYS.login]: LoginRouteSpinner,
     [SKELETON_KEYS.genie]: () => <RSLoaderOverlay />,
     [SKELETON_KEYS.accountSetup]: AccountSetupPageSkeleton,
     [SKELETON_KEYS.setupComplete]: SetupCompletePageSkeleton,

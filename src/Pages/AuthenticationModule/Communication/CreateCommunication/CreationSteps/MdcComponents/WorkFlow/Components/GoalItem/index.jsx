@@ -15,7 +15,7 @@ import { RSPrimaryButton } from 'Components/Buttons';
 import DeleteChannel from '../ChannelItem/DeleteChannel';
 //import GoalContentPopup from '../ChannelItem/ChannelContentPopup';
 
-import _get from 'lodash/get';
+import { get as _get } from 'Utils/modules/lodashReplacements';
 
 import { getSessionId } from 'Reducers/globalState/selector';
 import { getMdcChannelResponseData } from 'Reducers/communication/createCommunication/Mdc/Canvas/request';
@@ -569,12 +569,3 @@ export default memo(({ data, isConnectable }) => {
         </>
     );
 });
-const selectBorderStyle = (isActive, canDrop) => {
-    if (isActive) {
-        return '2px solid blue';
-    } else if (canDrop) {
-        return '2px solid red';
-    } else {
-        return 'none';
-    }
-};

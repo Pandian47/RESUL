@@ -2,7 +2,6 @@ import { circle_question_mark_medium, refresh_medium } from 'Constants/GlobalCon
 import { LIST_NAME_CREATION, NUMBER_REGEX } from 'Constants/GlobalConstant/Regex';
 import { ALLOWED_FORMATS } from 'Constants/GlobalConstant/Placeholders';
 import { useEffect, useState } from 'react';
-import _get from 'lodash/get';
 import { Col, Row } from 'react-bootstrap';
 import { useFormContext } from 'react-hook-form';
 
@@ -46,11 +45,11 @@ const RenderComponent = (props) => {
     const {...rest } = columnValueConfig ?? {};
     const rules = columnValueConfig?.rules ?? {};
     const type = columnValueConfig?.type ?? 0;
-    const validationPattern = _get(rules, 'pattern', '') || _get(rest, 'pattern', '');
+    const validationPattern = rules?.pattern || rest?.pattern || '';
     const formatted = formatColumnName(friendlyName);
     const lowercaseFirstLetter = formatted?.charAt(0)?.toLowerCase() + formatted?.slice(1);
     const handleRequire = (shouldValidate) => {
-        if (shouldValidate && _get(rules, 'required', false)) {
+        if (shouldValidate && (rules?.required ?? false)) {
             return 'Upload your' + ' ' + lowercaseFirstLetter;
         }
         return '';
@@ -72,9 +71,9 @@ const RenderComponent = (props) => {
 
     switch (type) {
         case 1: {
-            const min = _get(rules, 'min', 0);
-            const max = _get(rules, 'max', 0);
-            const req = _get(rules, 'required', false);
+            const min = rules?.min ?? 0;
+            const max = rules?.max ?? 0;
+            const req = rules?.required ?? false;
             const formatted = formatColumnName(friendlyName);
             const lowercaseFirstLetter = formatted?.charAt(0)?.toLowerCase() + formatted?.slice(1);
             
@@ -89,7 +88,7 @@ const RenderComponent = (props) => {
                         defaultValue={value}
                         maxLength={max}
                         rules={{
-                            ...(_get(rules, 'required') && { required: 'Enter your ' + friendlyName}),
+                            ...(rules?.required && { required: 'Enter your ' + friendlyName}),
                             ...(min > 0 && {
                                 minLength: {
                                     value: min,
@@ -128,7 +127,7 @@ const RenderComponent = (props) => {
                             placeholder={columnValue}
                             name={columnValue}
                             rules={{
-                                ...(_get(rules, 'required') && { required: 'Enter your ' + columnValue }),
+                                ...(rules?.required && { required: 'Enter your ' + columnValue }),
                             }}
                         />
                     </div>
@@ -144,10 +143,10 @@ const RenderComponent = (props) => {
                             control={control}
                             label={columnValue}
                             defaultValue={value}
-                            data={_get(rest, 'data', [])}
+                            data={rest?.data ?? []}
                             name={columnValue}
                             rules={{
-                                ...(_get(rules, 'required') && { required: 'Enter your ' + columnValue }),
+                                ...(rules?.required && { required: 'Enter your ' + columnValue }),
                             }}
                         />
                     </div>
@@ -165,7 +164,7 @@ const RenderComponent = (props) => {
                             label={columnValue}
                             name={columnValue}
                             rules={{
-                                ...(_get(rules, 'required') && { required: 'Enter your ' + columnValue }),
+                                ...(rules?.required && { required: 'Enter your ' + columnValue }),
                             }}
                         />
                     </div>
@@ -219,7 +218,7 @@ const RenderComponent = (props) => {
                                             ? handleRequire(false)
                                             : handleRequire(true),
                                 }}
-                                required={_get(rules, 'required')}
+                                required={rules?.required}
                                 handleChange={async (e) => {
                                     const file = e.target.files[0];
                                     const formData = new FormData();

@@ -1,5 +1,6 @@
 import { circle_paid_media_large, communication_response_sync_large, custom_event_large, email_large, messaging_rcs_large, mobile_notification_large, mobile_sms_large, qrcode_large, smart_link_large, social_post_large, social_vms_large, social_whatsapp_large, web_notification_large } from 'Constants/GlobalConstant/Glyphicons';
 import TruncatedCell from 'Components/RSKendoGrid/TruncateCell';
+import { sanitizeDisplayText } from 'Utils/index';
 
 
 export const CHANNEL_IMAGE = {

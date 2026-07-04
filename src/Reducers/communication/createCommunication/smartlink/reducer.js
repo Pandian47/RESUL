@@ -81,6 +81,11 @@ const smartLinkReducer = createSlice({
             ...state,
             isSmartLinkDetailLoading: Boolean(payload),
         }),
+        markSmartLinkDetailFetched: (state, { payload }) => ({
+            ...state,
+            isSmartLinkDetailFetched: true,
+            fetchedCampaignId: payload?.campaignId ?? 0,
+        }),
         // resetSmartLink: () => initialState,
         resetSmartLink: () => ({ ...initialState }),
     },
@@ -101,7 +106,8 @@ export const {
     showTabsSmartlink,
     updateMobileChangeConfirm,
     updateEventTrack,
-    updateSmartLinkDetailLoading
+    updateSmartLinkDetailLoading,
+    markSmartLinkDetailFetched,
 } = smartLinkReducer.actions;
 
 export default smartLinkReducer.reducer;

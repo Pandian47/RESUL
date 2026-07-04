@@ -5,7 +5,7 @@ import { Container, Row, Col } from 'react-bootstrap';
 import RSTooltip from 'Components/RSTooltip';
 
 import { useHorizontalScroll } from '../hooks';
-import { TAB_LABEL_MAX_LENGTH, mapResTabberClasses } from '../utils';
+import { TAB_LABEL_MAX_LENGTH, mapResTabberClasses, renderTabPanel } from '../utils';
 
 const SlideVariant = ({
     defaultTab = 0,
@@ -182,11 +182,9 @@ const SlideVariant = ({
             </div>
 
             <div className={componentClassName}>
-                {typeof tabData[selected]?.component === 'function'
-                    ? tabData[selected].component()
-                    : typeof tabData === 'function'
-                      ? tabData(selected)
-                      : null}
+                {typeof tabData === 'function'
+                    ? tabData(selected)
+                    : renderTabPanel(tabData[selected])}
             </div>
         </div>
     );

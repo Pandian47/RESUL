@@ -3,11 +3,11 @@ import { getChannelId } from 'Utils/modules/communicationChannels';
 import { MAX_LENGTH60 } from 'Constants/GlobalConstant/Regex';
 import { ENTER_EDITOR_TEXT, ENTER_TITLE_TEXT } from 'Constants/GlobalConstant/ValidationMessage';
 import { ANDROID, ENTER_LESS_THAN_350_CHARACTERS, IOS, PREVIEW, TITLE_TEXT } from 'Constants/GlobalConstant/Placeholders';
-import { colorpicker_bg_medium, colorpicker_text_medium, editor_color_picker_medium, editor_timer_medium, user_question_mark_edge_medium, user_question_mark_medium } from 'Constants/GlobalConstant/Glyphicons';
+import { colorpicker_bg_medium, colorpicker_text_medium, editor_color_picker_medium, editor_timer_medium, user_question_mark_edge_medium } from 'Constants/GlobalConstant/Glyphicons';
 import { Fragment, memo, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { Row, Col } from 'react-bootstrap';
 import { useFormContext, useWatch } from 'react-hook-form';
-import _get from 'lodash/get';
+import { get as _get } from 'Utils/modules/lodashReplacements';
 
 import RSTabber from 'Components/RSTabber';
 import NotificationProvider from '../../context';
@@ -40,7 +40,7 @@ const ImageUploadMobile = () => {
     const { parentClientId, ...payload } = useSelector((state) => getSessionId(state));
     const { control, setValue, watch, trigger } = useFormContext();
     const [showTooltip, setShowTooltip] = useState(false);
-    const [suppressTooltip, setSuppressTooltip] = useState(false); 
+    const [suppressTooltip, setSuppressTooltip] = useState(false);
     const splitTest = useWatch({
         name: 'splitTest',
         control,
@@ -60,12 +60,12 @@ const ImageUploadMobile = () => {
                 setShowTooltip(false);
             }}
             onClick={() => {
-                    setShowTooltip(false);
-                    setSuppressTooltip(true);
-                    setTimeout(() => {
-                        setSuppressTooltip(false);
-                    }, 500);
-                }}
+                setShowTooltip(false);
+                setSuppressTooltip(true);
+                setTimeout(() => {
+                    setSuppressTooltip(false);
+                }, 500);
+            }}
         >
             <RSTooltip text="Upload image" show={showTooltip} className="lh0">
                 <ImageUpload
@@ -101,7 +101,7 @@ const ImageUploadMobile = () => {
                                     setValue('browserImage', data);
                                     setValue(`previewImage`, data);
                                     setValue(`uploadImage`, data);
-                                     setShowTooltip(false);
+                                    setShowTooltip(false);
                                     setTimeout(() => {
                                         setSuppressTooltip(false);
                                     }, 1000);
@@ -156,7 +156,7 @@ const EmojiPickerMobile = memo((props) => {
                         onEditorMaxLen(true)
                         setTimeout(() => {
                             onEditorMaxLen(false)
-                        },3000)
+                        }, 3000)
                     }
                     return;
                 }
@@ -173,44 +173,6 @@ const EmojiPickerMobile = memo((props) => {
         />
     );
 });
-const personalizationMobile = () => {
-    const { personalization, listTypeWisePersonlization } = useSelector(({ createCommunicationReducer }) => createCommunicationReducer);
-    const splitTest = useWatch({
-        name: 'splitTest',
-        control,
-    });
-
-    const { notification } = useSelector(({ createCommunicationReducer }) => createCommunicationReducer);
-    const editorTextName = splitTest ? `${notification?.mobile?.fieldNameIndex}.editorText` : 'editorText';
-
-    const [editorText] = watch([editorTextName]);
-
-    return (
-        <RSBootstrapdown
-            data={handlePersonalization(personalization, location?.audience?.length ? location?.audience : (watch('audience')?.length ? watch('audience') : getValues()?.audience), listTypeWisePersonlization)}
-            isObject
-            fieldKey="personalizationKey"
-            flatIcon
-            defaultItem={{
-                attributeName: '',
-                dataAttributeId: 0,
-                fallbackAttributeName: null,
-                personalizationKey: <i className={`${user_question_mark_medium} icon-md`} />,
-            }}
-            showUpdate={false}
-            className="no_caret"
-            onSelect={({ personalizationKey }) => {
-                const text = editorText || '';
-
-                setValue(editorTextName, text + personalizationKey);
-
-                trigger(editorTextName);
-            }}
-            showSearch
-        />
-    );
-};
-
 const Create = ({ isSplit, fieldName }) => {
     const mobileNotificationEditorMaxLength = 350;
     const inputRef = useRef();
@@ -230,7 +192,7 @@ const Create = ({ isSplit, fieldName }) => {
         underlineClick: false,
         strikeClick: false,
     });
-     const [selectedPreviewTab, setSelectedPreviewTab] =  useState('andriod')
+    const [selectedPreviewTab, setSelectedPreviewTab] = useState('andriod')
     const { personalization, listTypeWisePersonlization } = useSelector(({ createCommunicationReducer }) => createCommunicationReducer);
     const smartLinks = useSelector((state) => getSmartLinksList(state));
     const { parentClientId, ...payload } = useSelector((state) => getSessionId(state));
@@ -379,10 +341,11 @@ const Create = ({ isSplit, fieldName }) => {
 
             const { status, data } = await dispatch(getSmartUrlDetailByChannel({ payload: channelPayload }));
             if (status) {
+                const { urlName, smartCode, blastSC } = data || {};
                 const text = editorText || '';
                 const smartURL = urlName + smartCode + blastSC;
                 let finalValue;
-                
+
                 if (inputRef?.current === undefined) {
                     finalValue = text?.length > 0 ? text + ' ' + smartURL : smartURL;
                 } else {
@@ -392,7 +355,7 @@ const Create = ({ isSplit, fieldName }) => {
                     const spaceAfter = end?.length > 0 ? ' ' : '';
                     finalValue = start + spaceBefore + smartURL + spaceAfter + end;
                 }
-                
+
                 if (finalValue?.length <= mobileNotificationEditorMaxLength) {
                     setValue(editorTextName, finalValue);
                     setMaxLengthError('');
@@ -416,7 +379,7 @@ const Create = ({ isSplit, fieldName }) => {
         } else {
             const text = editorText || '';
             let finalValue;
-            
+
             if (inputRef?.current === undefined) {
                 finalValue = text?.length > 0 ? text + ' ' + smartLinkData : smartLinkData;
             } else {
@@ -426,7 +389,7 @@ const Create = ({ isSplit, fieldName }) => {
                 const spaceAfter = end?.length > 0 ? ' ' : '';
                 finalValue = start + spaceBefore + smartLinkData + spaceAfter + end;
             }
-            
+
             if (finalValue?.length <= mobileNotificationEditorMaxLength) {
                 setValue(editorTextName, finalValue);
                 setMaxLengthError('');
@@ -512,12 +475,12 @@ const Create = ({ isSplit, fieldName }) => {
         const { view } = props;
         // const { notification } = useSelector(({ createCommunicationReducer }) => createCommunicationReducer);
         // const dispatch = useDispatch();
-        
+
         const opacityToHex = (opacity) => {
             const alpha = Math.round(opacity * 255);
             return alpha.toString(16).padStart(2, '0').toUpperCase();
         };
-        
+
         const getCurrentColorValue = () => {
             const currentValue = customization?.color || '';
             if (typeof currentValue === 'string' && currentValue.length === 9) {
@@ -525,7 +488,7 @@ const Create = ({ isSplit, fieldName }) => {
             }
             return currentValue;
         };
-        
+
         return (
             <RSColorPicker
                 wrapperClass="text_editor_icon nwp"
@@ -541,7 +504,7 @@ const Create = ({ isSplit, fieldName }) => {
                         // Handle simple color selection without opacity
                         colorValue = e;
                     }
-                    
+
                     // Apply to editor with hex+opacity format
                     if (view) {
                         EditorUtils.applyInlineStyle(view, {
@@ -669,7 +632,7 @@ const Create = ({ isSplit, fieldName }) => {
     useEffect(() => {
         const textLength = editorText?.replace(/<[^>]+>/g, '')?.length || 0;
         setEditorTextLengthMobile(textLength)
-    },[editorText])
+    }, [editorText])
     const handleEditorTextLengthForMobile = (val) => {
         setEditorTextLengthMobile(val);
     };
@@ -710,13 +673,13 @@ const Create = ({ isSplit, fieldName }) => {
         });
     }, []);
     useEffect(() => {
-            const textEditorBtn = document.querySelectorAll('.k-icon-button');
-            if (textEditorBtn) {
-                textEditorBtn?.forEach((item) => {
-                    item.removeAttribute('title');
-                });
-            }
-        }, []);
+        const textEditorBtn = document.querySelectorAll('.k-icon-button');
+        if (textEditorBtn) {
+            textEditorBtn?.forEach((item) => {
+                item.removeAttribute('title');
+            });
+        }
+    }, []);
 
     const setEditorContentBackground = (color) => {
         const editorContent = document.querySelector('.k-editor-content');
@@ -940,7 +903,7 @@ const Create = ({ isSplit, fieldName }) => {
                                                     {ENTER_LESS_THAN_350_CHARACTERS}
                                                 </small>
                                             )}
-                                            {(pasteErrorMessage || 
+                                            {(pasteErrorMessage ||
                                                 maxLengthError ||
                                                 editorMaxLenError ||
                                                 errors?.editorTextLength ||
@@ -1008,8 +971,7 @@ const Create = ({ isSplit, fieldName }) => {
                                 <Col sm={5}>
                                     <div className="rsamp-text">{PREVIEW}</div>
                                     <div
-                                        className={` ${
-                                            !editorText?.length
+                                        className={` ${!editorText?.length
                                                 ? 'rs-mobile-preview-disable'
                                                 : 'rs-mobile-preview-enable'
                                             }`}
@@ -1021,9 +983,9 @@ const Create = ({ isSplit, fieldName }) => {
                                             dynamicTab={`mb0 mini mt3`}
                                             activeClass={`active`}
                                             className="rs-tabs row rsamp-dropdown"
-                                            componentClassName={`mobilepush_frame_wrapper windows ${selectedPreviewTab === 'andriod'  ?  'mobile': 'ios'} w-100`}
+                                            componentClassName={`mobilepush_frame_wrapper windows ${selectedPreviewTab === 'andriod' ? 'mobile' : 'ios'} w-100`}
                                             defaultTab={0}
-                                            callBack={( tab, index) => {
+                                            callBack={(tab, index) => {
                                                 // debugger
                                                 setSelectedPreviewTab(tab?.id)
                                             }}

@@ -222,7 +222,7 @@ const InPageContainer = ({ data, type, onBannerSelect, fieldName = '' }) => {
             cancelled = true;
         };
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [domainName, appId, type]);
+    }, [data?.domainName, data?.appId, type]);
 
     useEffect(() => {
         return () => {

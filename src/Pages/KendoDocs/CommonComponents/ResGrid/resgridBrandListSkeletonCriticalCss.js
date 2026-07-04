@@ -1,7 +1,7 @@
 /** Brand / shop list skeleton — self-contained critical CSS (no theme variables or platform classes). */
 const SKELETON_BASE = '#e0e5eb';
 const SKELETON_SHINE = '#eeeeee';
-const BORDER_COLOR = '#a6c6e2';
+const BORDER_COLOR = '#c2cfe3';
 const CARD_BOX_SHADOW = '0 0 5px rgba(0, 0, 0, 0.05), 0 0 5px rgba(0, 0, 0, 0.05)';
 const DIVIDER = '#c2cfe3';
 const CARD_RADIUS = '5px';

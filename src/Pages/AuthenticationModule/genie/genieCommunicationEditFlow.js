@@ -5,9 +5,8 @@ import { encodeUrl, encryptWithAES } from 'Utils/modules/crypto';
  * Mirrors `CommunicationCards.jsx` campaign + channel edit navigation so Plan/Create screens
  * fire the same bootstrap APIs (GetCampaignPlanByID, GetCommunicationreference, GetEmailCommunication, etc.).
  */
-import _get from 'lodash/get';
-import _forEach from 'lodash/forEach';
-import _ from 'lodash';
+import { get as _get, forEach as _forEach } from 'Utils/modules/lodashReplacements';
+import _ from 'Utils/modules/lodashReplacements';
 
 import { updateCommunicationData, updateSaveChannelsId } from 'Reducers/communication/createCommunication/plan/reducer';
 import {

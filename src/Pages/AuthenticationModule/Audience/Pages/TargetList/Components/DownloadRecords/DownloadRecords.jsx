@@ -7,8 +7,7 @@ import { Fragment, useEffect, useMemo, useRef, useState } from 'react';
 import { FormProvider, useForm } from 'react-hook-form';
 import { Col, Row } from 'react-bootstrap';
 import { useDispatch, useSelector } from 'react-redux';
-import _map from 'lodash/map';
-import _find from 'lodash/find';
+import { map as _map,find as _find } from 'Utils/modules/lodashReplacements';
 
 import { RSPrimaryButton, RSSecondaryButton } from 'Components/Buttons';
 import RSRadioButton from 'Components/FormFields/RSRadioButton';
@@ -1144,7 +1143,7 @@ const DownloadRecords = ({ showPopup, audienceValue, handleClose, isDynamic = fa
 
                             {!isDownloadOptionsLoading && download_options === 'Share list' && (
                                 <>
-                                    <div className="mt10 pl25">
+                                    <div className="mt10 pl20">
                                         <small className="pointer-event-none">
                                             {PARENT_AND_CHILD_ATTRIBUTES}{' '}
                                         </small>

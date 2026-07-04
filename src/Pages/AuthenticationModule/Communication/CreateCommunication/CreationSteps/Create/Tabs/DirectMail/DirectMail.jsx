@@ -7,12 +7,7 @@ import { getWarningPopupMessage } from 'Utils/modules/warningPopup';
 import { ENTER_TRANSFER_METHOD } from 'Constants/GlobalConstant/ValidationMessage';
 import { circle_plus_fill_medium, tag_medium } from 'Constants/GlobalConstant/Glyphicons';
 import { useEffect, useMemo, useRef, useState } from 'react';
-import _map from 'lodash/map';
-import _get from 'lodash/get';
-import _isEmpty from 'lodash/isEmpty';
-import _find from 'lodash/find';
-import _filter from 'lodash/filter';
-import _uniqBy from 'lodash/uniqBy';
+import { map as _map,get as _get  ,isEmpty as _isEmpty,find as _find,filter as _filter,uniqBy as _uniqBy } from 'Utils/modules/lodashReplacements';
 import { Row, Col } from 'react-bootstrap';
 import { useForm, FormProvider } from 'react-hook-form';
 
@@ -509,8 +504,8 @@ const DirectMail = () => {
                             />
                         </div>
                     )}
-                    <div className="form-group mb30">
-                        <Row>
+                    <div className="form-group">
+                        <Row className='align-items-end'>
                             <Col sm={{ offset: 1, span: 2 }}>
                                 <label className="control-label-left">Attributes</label>
                             </Col>
@@ -531,7 +526,7 @@ const DirectMail = () => {
                                 </div>
                             </Col>
                             <Col sm={3} className={`p0 d-flex align-items-end `}>
-                             <RSTooltip  text={'Add personalisation attributes'} className="lh0 position-relative bottom1">
+                             <RSTooltip  text={'Add personalisation attributes'} className="lh0 position-relative">
                                 <i
                                     className={`${circle_plus_fill_medium} icon-md color-primary-blue`}
                                     id="rs_data_circle_plus_fill"
@@ -542,7 +537,7 @@ const DirectMail = () => {
                         </Row>
                     </div>
 
-                    <div className="form-group fg-wl-icon mb30">
+                    <div className="form-group fg-wl-icon">
                         <Row>
                             <Col sm={{ offset: 1, span: 2 }}>
                                 <label className="control-label-left">Insert offer</label>
@@ -605,7 +600,7 @@ const DirectMail = () => {
                     </div>
 
                     {(transferMethod?.CDMTransferMethodID === 3 || transferMethod?.CDMTransferMethodID === 1) && (
-                        <div className="form-group mb20">
+                        <div className="form-group">
                             <Row>
                                 <Col sm={{ offset: 1, span: 2 }}>
                                     <label className="control-label-left">
@@ -647,6 +642,7 @@ const DirectMail = () => {
                         </div>
                     )} */}
                     {!_isEmpty(transferMethod) && (
+                        <div className='form-group mb25'>
                         <Row>
                             <Col md={{ offset: 3, span: 6 }} className="d-flex justify-content-end">
                                 <RSPrimaryButton
@@ -666,6 +662,7 @@ const DirectMail = () => {
                                 </RSPrimaryButton>
                             </Col>
                         </Row>
+                        </div>
                     )}
                 </div>
                 <div className="buttons-holder">
@@ -711,13 +708,13 @@ const DirectMail = () => {
                     </RSPrimaryButton>
                 </div>
             </form>
-            <SelectAttributeListboxModal
+           <SelectAttributeListboxModal
                 getSelectedData={(data) => {
                     setSelectedColumnData({
-                        leftAttributes: leftAttributes,
-                        rightAttributes: rightAttributes,
+                        leftAttributes: data?.leftAttributes,
+                        rightAttributes: data?.rightAttributes,
                     });
-                    setValue('attributeList', rightAttributes);
+                    setValue('attributeList', data?.rightAttributes);
                     clearErrors('attributeList');
                     UpdateState(setState, 'showAttributesModal', false);
                 }}
@@ -730,7 +727,7 @@ const DirectMail = () => {
                 show={state.showOfferModal}
                 handleClose={(status) => UpdateState(setState, 'showOfferModal', false)}
                 confirm={(data) => {
-                    UpdateState(setState, ['showOfferModal', 'offerDetails'], [false, offer]);
+                    UpdateState(setState, ['showOfferModal', 'offerDetails'], [false, data?.offer]);
                 }}
             />
             {downloadModal?.show && (

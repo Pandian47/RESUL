@@ -21,7 +21,7 @@ const DeleteSubSegment = ({
     canvasState,
     dispatch,
     basePayload,
-    type,
+    type = 'subSegment',
     isRemove,
     resetDelete,
     segmentLevel,
@@ -237,9 +237,6 @@ const DeleteSubSegment = ({
 };
 export default DeleteSubSegment;
 
-DeleteSubSegment.defaultProps = {
-    type: 'subSegment',
-};
 DeleteSubSegment.propTypes = {
     nodeId: Proptypes.string.isRequired,
     // mdcCanvas: Proptypes.object.isRequired,

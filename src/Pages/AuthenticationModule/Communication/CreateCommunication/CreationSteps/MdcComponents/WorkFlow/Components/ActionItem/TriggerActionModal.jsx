@@ -15,10 +15,6 @@ import RSBootstrapDropdown from 'Components/FormFields/RSBootstrapdown';
 import RSModal from 'Components/RSModal';
 import { RSSecondaryButton, RSPrimaryButton } from 'Components/Buttons';
 
-import _map from 'lodash/map';
-import _filter from 'lodash/filter';
-import _get from 'lodash/get';
-
 import {
     HandleUpdateEdgeLabelDateTimeValidation,
     getActionModule,
@@ -87,8 +83,8 @@ const TriggerActionModal = ({
         setShow(show);
     }, [show]);
     useEffect(() => {
-                const campaignId = _get(campaignDetails, 'campaignId', 0);
-        const primaryGoal = _get(campaignDetails, 'primaryGoal', 'R');
+                const campaignId = campaignDetails?.campaignId ?? 0;
+        const primaryGoal = campaignDetails?.primaryGoal ?? 'R';
         setCampaignId(campaignId);
         setPrimaryGoal(primaryGoal);
     }, [campaignDetails]);
@@ -103,16 +99,16 @@ const TriggerActionModal = ({
     const triggerActionValidator = ({ name, getValues, index, ele }) => {
         const selectedOption =
             primaryGoal.toLowerCase() === 'conversion'
-                ? _filter(getValues(name), { checked: true })
-                : _filter(getValues(name), { checked: true, durVal: '' });
-        const maxSelectOption = _filter(getValues(name), { checked: true });
+                ? (getValues(name) || []).filter((item) => item.checked === true)
+                : (getValues(name) || []).filter((item) => item.checked === true && item.durVal === '');
+        const maxSelectOption = (getValues(name) || []).filter((item) => item.checked === true);
                 if (
             primaryGoal.toLowerCase() !== 'conversion' &&
             selectedOption?.length > 0 &&
             selectedOption?.length <= MAX_SELECTABLE_ACTIONS &&
             maxSelectOption?.length <= MAX_SELECTABLE_ACTIONS
         ) {
-            const disabledOption = _map(getValues(name), (item) => {
+            const disabledOption = getValues(name).map((item) => {
                                 if (item.checked) {
                     let durDate = '';
                     if (item.durType.value === 'days') durDate = addDaysToDate(scheduleDate, item.durVal);
@@ -126,7 +122,7 @@ const TriggerActionModal = ({
                         replace(disabledOption);
         } else if (primaryGoal.toLowerCase() === 'conversion') {
             if (selectedOption?.length > 0 && selectedOption?.length <= MAX_SELECTABLE_ACTIONS && maxSelectOption?.length <= MAX_SELECTABLE_ACTIONS) {
-                const disabledOption = _map(getValues(name), (item) => {
+                const disabledOption = getValues(name).map((item) => {
                                         if (item.checked && item.value !== 3) {
                         let durDate = '';
                         if (item.durType.value === 'days') durDate = addDaysToDate(scheduleDate, item.durVal);
@@ -141,7 +137,7 @@ const TriggerActionModal = ({
                 setTriggerActionError('');
             }
         } else if (maxSelectOption?.length < MAX_SELECTABLE_ACTIONS) {
-            const disabledOption = _map(getValues(name), (item) => {
+            const disabledOption = getValues(name).map((item) => {
                 if (item.checked) {
                     let durDate = '';
                     if (item.durType.value === 'days') durDate = addDaysToDate(scheduleDate, item.durVal);
@@ -155,7 +151,7 @@ const TriggerActionModal = ({
                         replace(disabledOption);
             //   setTriggerActionError('');
         } else if (maxSelectOption?.length === MAX_SELECTABLE_ACTIONS) {
-            const disabledOption = _map(getValues(name), (item) => {
+            const disabledOption = getValues(name).map((item) => {
                 if (item.checked) {
                     let durDate = '';
                     if (item.durType.value === 'days') durDate = addDaysToDate(scheduleDate, item.durVal);

@@ -167,12 +167,6 @@ export const PROTECTED_PAGE_LOADERS = {
     AnalyticsReport: () =>
         import('Pages/AuthenticationModule/Analytics/Pages/CommunicationAnalytics/AnalyticsReport'),
     TrendReports: () => import('Pages/AuthenticationModule/Analytics/Pages/TrendReport'),
-    AnalyticsSSE: () => import('Pages/AuthenticationModule/AnalyticsSSR'),
-    DetailAnalyticsSSE: () =>
-        import('Pages/AuthenticationModule/AnalyticsSSR/Pages/communicationAnalytics/DetailedAnalytics'),
-    AnalyticsReportSSE: () =>
-        import('Pages/AuthenticationModule/AnalyticsSSR/Pages/communicationAnalytics/AnalyticsReport'),
-    TrendReportsSSE: () => import('Pages/AuthenticationModule/AnalyticsSSR/Pages/TrendReport'),
     Notifications: () =>
         import('Pages/AuthenticationModule/Preferences/Pages/AlertAndNotifications/AllNotifications'),
     EbuilderDemo: () => import('Pages/AuthenticationModule/Preferences/Pages/TemplateGenerator/DemoTrial'),

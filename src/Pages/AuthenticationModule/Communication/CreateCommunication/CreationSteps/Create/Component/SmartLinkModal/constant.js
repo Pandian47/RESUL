@@ -1,8 +1,7 @@
-import _get from 'lodash/get';
-import _map from 'lodash/map';
-import _filter from 'lodash/filter';
-import _forEach from 'lodash/forEach';
+/** Routes where Smart Link is view-only (Execute ROI + pre-campaign summary). */
+export const SMART_LINK_VIEW_ONLY_PATHS = ['/communication/execute'];
 
+export const isSmartLinkViewOnly = (pathname = '') => SMART_LINK_VIEW_ONLY_PATHS.includes(pathname);
 
 const createSmartLinkEntry = () => ([
     {
@@ -49,7 +48,7 @@ export const buildSmartLinkPayload = (formState, isEventTrack = false) => {
 
     function mapParams({ tags, tagValue, isUTMParameterInput, customValue, isOffer = false }) {
         return {
-            perattr: isUTMParameterInput ? customValue : _get(tags, 'attributeName', ''),
+            perattr: isUTMParameterInput ? customValue : (tags?.attributeName ?? ''),
             perattrtype: isUTMParameterInput ? 'Custom' : 'UTM',
             pertag: tagValue,
             isOffer: isOffer
@@ -85,14 +84,14 @@ export const buildSmartLinkPayload = (formState, isEventTrack = false) => {
             Iosdevice,
             deferdeeplinking: deferredDeepLink ? 'Y' : 'N',
             PhoneType: mobilePlatform,
-            MobileApp: _get(mobileApp, 'appGuid', ''),
-            AppScreen: _get(appScreen, 'activityName', ''), // _get(appScreen, 'appStoreURL', '')
-            AppScreenName: _get(appScreen, 'screenName', ''),
-            AppDpUrl: appDpURL || '', //_get(subappScreen, 'deepLinkURL', ''),
+            MobileApp: mobileApp?.appGuid ?? '',
+            AppScreen: appScreen?.activityName ?? '', // appScreen?.appStoreURL ?? ''
+            AppScreenName: appScreen?.screenName ?? '',
+            AppDpUrl: appDpURL || '', //subappScreen?.deepLinkURL ?? '',
             //Store Url
-            AppStoreUrl: typeof appScreen === 'string' ? appScreen : _get(appScreen, 'appStoreURL', ''),
-            Section: typeof subappScreen === 'string' ? subappScreen : _get(subappScreen, 'subScreenName', ''),
-            Parameter: UTMParameter ? _map(parameters, mapParams) : [],
+            AppStoreUrl: typeof appScreen === 'string' ? appScreen : (appScreen?.appStoreURL ?? ''),
+            Section: typeof subappScreen === 'string' ? subappScreen : (subappScreen?.subScreenName ?? ''),
+            Parameter: UTMParameter ? (parameters || []).map(mapParams) : [],
             customAppScreen: !!isappScreenNew,
             smartlinkFriendlyname,
         };
@@ -101,7 +100,7 @@ export const buildSmartLinkPayload = (formState, isEventTrack = false) => {
     const buildWebStorePayload = (content, smartlinkFriendlyname = '') => {
         const { parameters, all, isAndroid, isIOS, utmParameters } = content;
         return {
-            Parameter: utmParameters ? _map(parameters, mapParams) : [],
+            Parameter: utmParameters ? (parameters || []).map(mapParams) : [],
             UTMParameter: utmParameters ? 'Y' : 'N' + '|N',
             Alldevice: all ? 'Y' : 'N' + '|N',
             Andrioddevice: isAndroid ? 'Y' : 'N' + '|N',
@@ -116,8 +115,8 @@ export const buildSmartLinkPayload = (formState, isEventTrack = false) => {
         return buildAppStorePayload(link, smartlink[0], platformParams, smartlinkFriendlyname);
     };
 
-    const tabList = _filter(tabs, (name) => {
-        const isLinkValid = _get(formState[name]?.[0], 'domain', '');
+    const tabList = (tabs || []).filter((name) => {
+        const isLinkValid = formState[name]?.[0]?.domain ?? '';
         return isLinkValid;
     });
     return {
@@ -125,7 +124,7 @@ export const buildSmartLinkPayload = (formState, isEventTrack = false) => {
         userId,
         clientId,
         campaignId,
-        smartLink: _map(tabList, (tab, index) => {
+        smartLink: tabList.map((tab, index) => {
             const currentTab = formState[tab];
             const tabMeta = Array.isArray(allTabs) ? allTabs.find((t) => t?.id === tab) : null;
             const fromTabMeta =
@@ -138,11 +137,11 @@ export const buildSmartLinkPayload = (formState, isEventTrack = false) => {
             const smartlinkFriendlyname = fromTabMeta || fromFormField;
             return {
                 goalNo: index + 1,
-                smartAdaptive: _get(currentTab?.[0], 'adaptiveUrl', ''),
+                smartAdaptive: currentTab?.[0]?.adaptiveUrl ?? '',
                 smartAppStoreUrl: JSON.stringify(
-                    _map(currentTab, (link, idx, arr) => mapSmartLink(link, idx, arr, smartlinkFriendlyname)),
+                    (currentTab || []).map((link, idx, arr) => mapSmartLink(link, idx, arr, smartlinkFriendlyname)),
                 ),
-                smartURL: _get(currentTab?.[0], 'domain', ''),
+                smartURL: currentTab?.[0]?.domain ?? '',
                 smartlinkFriendlyname,
             };
         }),
@@ -152,17 +151,17 @@ export const buildSmartLinkPayload = (formState, isEventTrack = false) => {
 
 export const getExistingLinks = (formState) => {
     const {  tabs } = formState;
-    const tabList = _filter(tabs, (name) => {
-        const isLinkValid = _get(formState[name]?.[0], 'domain', '');
+    const tabList = (tabs || []).filter((name) => {
+        const isLinkValid = formState[name]?.[0]?.domain ?? '';
         return isLinkValid;
     });
     const links = {};
-     _forEach(tabList, (tab, index) => {
+    tabList.forEach((tab, index) => {
         const currentTab = formState[tab];
         links[`smartLink${index + 1}`] = {
                 goalNo: index + 1,
-                smartURL: _get(currentTab?.[0], 'domain', ''),
-                isNew: _get(currentTab?.[0], 'isNew', false),
+                smartURL: currentTab?.[0]?.domain ?? '',
+                isNew: currentTab?.[0]?.isNew ?? false,
             };
         });
     return links

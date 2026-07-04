@@ -4,7 +4,7 @@ import { WEBSITE_REGEX } from 'Constants/GlobalConstant/Regex';
 import { DUPLICATE_VALUE, ENTER_CONVERSION_URL, ENTER_VALID_CONVERSION_URL } from 'Constants/GlobalConstant/ValidationMessage';
 import { event_tracking_medium, pencil_edit_medium } from 'Constants/GlobalConstant/Glyphicons';
 import { Fragment, useState } from 'react';
-import _map from 'lodash/map';
+import { map as _map } from 'Utils/modules/lodashReplacements';
 import { Row, Col } from 'react-bootstrap';
 import { useFormContext, useFieldArray, useWatch } from 'react-hook-form';
 

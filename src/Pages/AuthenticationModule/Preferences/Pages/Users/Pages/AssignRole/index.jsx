@@ -4,9 +4,7 @@ import { assignUser } from 'Assets/Images';
 import { ADD_NEW_USER, BUSINESS_UNIT, CANCEL, SAVE, SELECT_BU } from 'Constants/GlobalConstant/Placeholders';
 import { circle_info_mini, circle_minus_fill_medium, circle_plus_fill_edge_medium, circle_question_mark_mini, retarget_list_medium } from 'Constants/GlobalConstant/Glyphicons';
 import { Fragment, useEffect, useMemo, useRef, useState } from 'react';
-import _get from 'lodash/get';
-import _find from 'lodash/find';
-import _orderBy from 'lodash/orderBy';
+import { get as _get, find as _find, orderBy as _orderBy } from 'Utils/modules/lodashReplacements';
 import { useDispatch, useSelector } from 'react-redux';
 import { Row, Col } from 'react-bootstrap';
 import { useLocation, useNavigate } from 'react-router-dom';
@@ -127,6 +125,11 @@ const AssignRole = ({
     const [searchText, setSearchText] = useState('');
     const [checkedEntityIds, setCheckedEntityIds] = useState([]);
     const [entityDropdownOpen, setEntityDropdownOpen] = useState(false);
+    const [isMac, setIsMac] = useState(false);
+
+    useEffect(() => {
+        setIsMac(navigator.platform.toLowerCase().includes('mac'));
+    }, []);
 
     const usersCount = useSelector((state) => getUsersCount(state));
     const { licenseValue } = usersCount;
@@ -266,25 +269,34 @@ const AssignRole = ({
             }
         });
 
-        // First pass: assign stable ids
-        const withIds = result.map((item, ind) => ({
+        // First pass: assign stable ids (avoid index-based ids that break parent links)
+        const withIds = result.map((item) => ({
             ...item,
-            id: `${item?.clientID}-${item?.type}-${ind}`,
+            id:
+                item.type === 'BU'
+                    ? `${item.clientID}-BU-${item.departmentID}`
+                    : `${item.clientID}-${item.type}-${item.hierarchyLevel ?? 0}`,
         }));
 
-        // Build a map: clientID → id of the first non-BU entry for that client
-        const companyIdByClientID = {};
+        // Deepest company node per client — BUs attach here (LOC > RHQ > GHQ)
+        const deepestCompanyIdByClient = {};
         withIds.forEach((item) => {
-            if (item.type !== 'BU' && !companyIdByClientID[item.clientID]) {
-                companyIdByClientID[item.clientID] = item.id;
+            if (item.type === 'BU') return;
+            const existing = deepestCompanyIdByClient[item.clientID];
+            if (!existing || (item.hierarchyLevel ?? 0) >= (existing.hierarchyLevel ?? 0)) {
+                deepestCompanyIdByClient[item.clientID] = item;
             }
         });
+
+        const companyIdByClientID = Object.fromEntries(
+            Object.entries(deepestCompanyIdByClient).map(([clientID, company]) => [clientID, company.id]),
+        );
 
         // Second pass: add parentId so the tree renderer can build the hierarchy
         return withIds.map((item) => {
             if (item.type === 'BU') {
-                // BU → parent is the company with the same clientID
-                return { ...item, parentId: companyIdByClientID[item.clientID] || null };
+                const parentCompany = deepestCompanyIdByClient[item.clientID];
+                return { ...item, parentId: parentCompany?.id ?? null };
             }
             // Company (GHQ/RHQ/LOC) → use parentClientId from API if available
             const parentClientId = item.parentClientId ?? null;
@@ -949,7 +961,7 @@ const AssignRole = ({
                     </Row>
                     <small className="align-items-center d-flex mt10">
                         {/* <i className={`${circle_info_mini} icon-xs color-primary-blue mr5`} /> */}
-                        Hold Ctrl/Cmd to select multiple users.
+                        {`Hold ${isMac ? 'Cmd' : 'Ctrl'} to select multiple users.`}
                     </small>
                 </div>
             ) : (

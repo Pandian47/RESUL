@@ -1,11 +1,17 @@
 import { truncateTitle } from 'Utils/modules/displayCore';
-import { attributeListData, enabledisableAttribute, getCategoryAttributesDataIndex, getCategoryAttributesFromStore, getCategoryGroupKey } from './constant';
+import {
+    attributeListData,
+    enabledisableAttribute,
+    getCategoryAttributesDataIndex,
+    getCategoryAttributesFromStore,
+    getCategoryGroupKey,
+    sortAttributesByCount,
+} from './constant';
 import { MAX_LENGTH50 } from 'Constants/GlobalConstant/Regex';
 import { ATTRIBUTES, DATASETS_DISABLED, SEARCH_ATTRIBUTES_VALUES } from 'Constants/GlobalConstant/Placeholders';
 import { circle_arrow_down_fill_edge_mini, circle_arrow_up_fill_edge_mini, expand_all_medium, justify_dropdown_mini } from 'Constants/GlobalConstant/Glyphicons';
 import { Fragment, useContext, useMemo, useState } from 'react';
-import _hasIn from 'lodash/hasIn';
-import _get from 'lodash/get';
+import { hasIn as _hasIn, get as _get } from 'Utils/modules/lodashReplacements';
 import { Accordion, Card } from 'react-bootstrap';
 import { useFormContext } from 'react-hook-form';
 
@@ -217,12 +223,22 @@ const Attributes = ({
     //     }
     // };
 
-    const resolveAttributeStoreIndex = (categoryIndex, item, dropdownItemIndex) => {
+    const resolveAttributeStoreIndex = (categoryIndex, item) => {
         const categoryList = attributesData[categoryIndex]?.[item.category];
-        if (!Array.isArray(categoryList)) return dropdownItemIndex;
+        if (!Array.isArray(categoryList) || !item) return -1;
 
-        const attributeIndex = categoryList.findIndex((attr) => attr.name === item.name);
-        return attributeIndex >= 0 ? attributeIndex : dropdownItemIndex;
+        return categoryList.findIndex(
+            (attr) =>
+                (item?.name && attr?.name === item.name) ||
+                (item?.nAME && attr?.nAME === item.nAME) ||
+                (item?.labelText && attr?.labelText === item.labelText) ||
+                (item?.solrFieldName &&
+                    (attr?.solrFieldName === item.solrFieldName ||
+                        attr?.sOLRFieldName === item.solrFieldName)) ||
+                (item?.sOLRFieldName &&
+                    (attr?.sOLRFieldName === item.sOLRFieldName ||
+                        attr?.solrFieldName === item.sOLRFieldName)),
+        );
     };
 
     const insertRemoveAttributes = (checked, props, index) => {
@@ -236,11 +252,11 @@ const Attributes = ({
             lookALikeAttrLists = [],
         } = filterState;
         const item = props?.item ?? props;
-        const itemIndex = props?.itemIndex;
 
-        if (!item || itemIndex == null) return;
+        if (!item) return;
 
-        const attributeStoreIndex = resolveAttributeStoreIndex(index, item, itemIndex);
+        const attributeStoreIndex = resolveAttributeStoreIndex(index, item);
+        if (attributeStoreIndex < 0) return;
 
         if (checked) {
             const findIndex = getallAttributes(getValues());
@@ -249,13 +265,17 @@ const Attributes = ({
                 const attributesTemp = [...attributesData];
 
                 const currentItem = attributesTemp[index][item.category][attributeStoreIndex];
-                const updatedItem = {
+                attributesTemp[index][item.category][attributeStoreIndex] = {
                     ...currentItem,
                     isChecked: checked,
                 };
-                attributesTemp[index][item.category][attributeStoreIndex] = updatedItem;
                 let leftpanelTemp = [...leftPanelAttributes];
-                leftpanelTemp[index][item.category].push(item);
+                const isAlreadyOnLeftPanel = leftpanelTemp[index][item.category]?.some(
+                    (attribute) => attribute.name === item.name,
+                );
+                if (!isAlreadyOnLeftPanel) {
+                    leftpanelTemp[index][item.category].push(item);
+                }
 
                 dispatchState({ type: 'UPDATE', payload: leftpanelTemp, field: 'leftPanelAttributes' });
                 dispatchState({ type: 'UPDATE', payload: attributesTemp, field: 'attributesData' });
@@ -263,30 +283,57 @@ const Attributes = ({
                 trigger();
             }
         } else {
-            let leftpanelTemp = [...leftPanelAttributes[index][item.category]];
-            leftpanelTemp = leftpanelTemp?.filter((attribute) => attribute.name !== item.name);
-            leftPanelAttributes[index][item.category] = [...leftpanelTemp];
+            const activeGroup = filterGroups?.activeGroup;
+            if (!activeGroup) return;
 
-            const removeAttributeFromList = (list) => list.filter((attribute) => attribute.name !== item.name);
+            const currentGroupFormState = watch(activeGroup) ?? [];
+            const wasInActiveGroup = currentGroupFormState.some(
+                (attribute) => attribute?.name === item.name,
+            );
 
-            let finalFormStateValue = {};
+            if (!wasInActiveGroup) return;
 
-            filterGroups?.groups?.forEach((group) => {
-                const currentGroupFormState = watch(group);
-                const updateGroupFormState = removeAttributeFromList(currentGroupFormState);
-                finalFormStateValue[group] = updateGroupFormState;
-            });
+            const removeAttributeFromList = (list) =>
+                (list ?? []).filter((attribute) => attribute?.name !== item.name);
 
-            const attributes = [...attributesData];
-            attributes[index][item.category][attributeStoreIndex].isChecked = checked;
-
-            dispatchState({ type: 'UPDATE', payload: attributes, field: 'attributesData' });
-            dispatchState({ type: 'UPDATE', payload: [...leftPanelAttributes], field: 'leftPanelAttributes' });
+            const nextActiveGroupState = removeAttributeFromList(currentGroupFormState);
+            const stillUsedInOtherGroups = isAttributeUsedInOtherGroups(item, activeGroup);
 
             reset((formState) => ({
                 ...formState,
-                ...finalFormStateValue,
+                [activeGroup]: nextActiveGroupState,
             }));
+
+            if (stillUsedInOtherGroups) {
+                return;
+            }
+
+            let leftpanelTemp = [...(leftPanelAttributes[index]?.[item.category] ?? [])];
+            leftpanelTemp = leftpanelTemp.filter((attribute) => attribute.name !== item.name);
+
+            const attributes = [...attributesData];
+            const storeItem = attributes[index]?.[item.category]?.[attributeStoreIndex];
+            if (!storeItem) return;
+
+            attributes[index][item.category][attributeStoreIndex] = {
+                ...storeItem,
+                isChecked: checked,
+            };
+
+            const nextLeftPanelAttributes = leftPanelAttributes.map((categoryGroup, categoryGroupIndex) => {
+                if (categoryGroupIndex !== index) return categoryGroup;
+                return {
+                    ...categoryGroup,
+                    [item.category]: leftpanelTemp,
+                };
+            });
+
+            dispatchState({ type: 'UPDATE', payload: attributes, field: 'attributesData' });
+            dispatchState({
+                type: 'UPDATE',
+                payload: nextLeftPanelAttributes,
+                field: 'leftPanelAttributes',
+            });
         }
     };
 
@@ -300,7 +347,7 @@ const Attributes = ({
 
     const RenderAttribute = ({ item: itemProps, index: categoryIndex }) => {
         const attributeItem = itemProps?.item ?? itemProps;
-        const itemIndex = itemProps?.itemIndex;
+        const itemIndex = itemProps?.itemIndex ?? attributeItem?.itemIndex;
 
         if (!attributeItem) return null;
 
@@ -394,14 +441,21 @@ const Attributes = ({
         ? true
         : !getListnameState?.invalid && !getListerrorState && !_isEmpty;
 
-    const isAttributeSelectedInFilters = (attributeItem) => {
-        if (!attributeItem?.labelText) return false;
-        if (attributeItem?.isChecked) return true;
-
-        return filterGroups?.groups?.some((group) =>
-            Boolean(enabledisableAttribute(getValues()[group], attributeItem.labelText)),
+    const isAttributeInActiveGroup = (attributeItem) => {
+        if (!attributeItem?.labelText || !filterGroups?.activeGroup) return false;
+        return Boolean(
+            enabledisableAttribute(getValues()[filterGroups.activeGroup], attributeItem.labelText),
         );
     };
+
+    const isAttributeUsedInOtherGroups = (attributeItem, excludeGroup = null) =>
+        filterGroups?.groups?.some(
+            (group) =>
+                group !== excludeGroup &&
+                Boolean(enabledisableAttribute(getValues()[group], attributeItem.labelText)),
+        ) ?? false;
+
+    const isAttributeSelectedInFilters = (attributeItem) => isAttributeInActiveGroup(attributeItem);
 
     const handleClickOff = (list) => {
         if (list?.category === 'File' && locationAudience?.isMDCSubSegment && SubSegmentExp_List?.[0]?.listType === 1) {
@@ -422,7 +476,18 @@ const Attributes = ({
         return finalActiveClass;
     };
     const attributeClass = (list) => {
-        return `${handleClickOff(list) ? 'click-off ' : ''} ${handleActiveClassAdd(list)}`;
+        return `${handleClickOff(list) ? 'pe-none click-off ' : ''} ${handleActiveClassAdd(list)}`;
+    };
+
+    const isAttributeSelectionDisabled = (list) => {
+        if (handleClickOff(list)) return true;
+        if ((list?.name ?? list?.nAME) === ZERO_DAY_FIELD_NAME && zeroDayAttributeDisable(attributes)) {
+            return true;
+        }
+        if (filterGroups?.activeGroup === 'lookALikeAttrLists' && !list?.isLookAlike) {
+            return true;
+        }
+        return false;
     };
 
     const renderMatchedAttributes = (matchedAttributes, sectionTitle) => {
@@ -443,7 +508,7 @@ const Attributes = ({
                                 className={`${attributeClass(attribute)} ${
                                     (attribute.name ?? attribute.nAME) === ZERO_DAY_FIELD_NAME &&
                                     zeroDayAttributeDisable(attributes)
-                                        ? 'click-off'
+                                        ? 'pe-none click-off'
                                         : ''
                                 } ${attribute?.category.toLowerCase() === 'versium' ? 'bg-versium-color' : ''} ${
                                     attribute?.isLookAlike ? 'bg-primary-blue text-white' : ''
@@ -451,7 +516,7 @@ const Attributes = ({
                                     filterGroups?.activeGroup === 'lookALikeAttrLists'
                                         ? attribute?.isLookAlike
                                             ? ''
-                                            : 'click-off'
+                                            : 'pe-none click-off'
                                         : ''
                                 }`}
                                 title={
@@ -462,6 +527,7 @@ const Attributes = ({
                                         : ''
                                 }
                                 onClick={async () => {
+                                    if (isAttributeSelectionDisabled(attribute)) return;
                                     const findIndex = getallAttributes(getValues());
                                     if (findIndex === -1 && formState.isValid) {
                                         const finalName = attribute.name ?? attribute.nAME;
@@ -673,7 +739,9 @@ const Attributes = ({
                                         const groupHead = getCategoryGroupKey(attribute);
                                         const attributeValues = attribute[groupHead];
                                         const sortAttributeValues = attributeValues?.length
-                                            ? attributeValues?.sort((a, b) => a.labelText.localeCompare(b.labelText))
+                                            ? [...attributeValues].sort((a, b) =>
+                                                  a.labelText.localeCompare(b.labelText),
+                                              )
                                             : attributeValues;
                                         const attributesDataIndex = getCategoryAttributesDataIndex(
                                             attributesData,
@@ -685,7 +753,7 @@ const Attributes = ({
                                         );
                                         const resolvedAttributesDataIndex =
                                             attributesDataIndex >= 0 ? attributesDataIndex : attributeIdx;
-                                        let sliceValue =
+                                        const sliceValue =
                                             ispartnerDigipopstate &&
                                             Object.keys(ispartnerDigipopstate)?.length > 0 &&
                                             ispartnerDigipopstate?.listId === 2
@@ -693,8 +761,13 @@ const Attributes = ({
                                                 : data?.length > 2
                                                 ? 5
                                                 : 20;
+                                        const sortedCategoryAttributes = sortAttributesByCount(
+                                            allAtttributes,
+                                            ZERO_DAY_FIELD_NAME,
+                                        );
+                                        const dropdownAttributes = sortedCategoryAttributes.slice(sliceValue);
                                         const isAttributeDropdownClickOff =
-                                            allAtttributes?.length <= sliceValue ||
+                                            sortedCategoryAttributes.length <= sliceValue ||
                                             (!isPersona && !updateVersium && listValue?.length < 3);
 
                                         return (
@@ -748,12 +821,10 @@ const Attributes = ({
                                                                 icon={` ${justify_dropdown_mini} icon-xs ${
                                                                     isAttributeDropdownClickOff ? '' : 'cp'
                                                                 } color-primary-blue`}
-                                                                data={allAtttributes?.slice(
-                                                                    sliceValue,
-                                                                    allAtttributes?.length,
-                                                                )?.map(item => ({
+                                                                data={dropdownAttributes.map((item, dropdownIndex) => ({
                                                                     ...item,
-                                                                    disabled: item?.sOLRCountValue === 0
+                                                                    itemIndex: dropdownIndex,
+                                                                    disabled: item?.sOLRCountValue === 0,
                                                                 }))}
                                                                 isCustomRender
                                                                 itemRender={(itemProps) => (
@@ -786,7 +857,7 @@ const Attributes = ({
                                                                             (list.name ?? list.nAME) ===
                                                                                 ZERO_DAY_FIELD_NAME &&
                                                                             zeroDayAttributeDisable(attributes)
-                                                                                ? 'click-off'
+                                                                                ? 'pe-none click-off'
                                                                                 : ''
                                                                         } ${
                                                                             list?.category.toLowerCase() === 'versium'
@@ -799,7 +870,7 @@ const Attributes = ({
                                                                             'lookALikeAttrLists'
                                                                                 ? list?.isLookAlike
                                                                                     ? ''
-                                                                                    : 'click-off'
+                                                                                    : 'pe-none click-off'
                                                                                 : ''
                                                                         }`}
                                                                         title={
@@ -810,6 +881,9 @@ const Attributes = ({
                                                                                 : ''
                                                                         }
                                                                         onClick={async () => {
+                                                                            if (isAttributeSelectionDisabled(list)) {
+                                                                                return;
+                                                                            }
                                                                             const findIndex = getallAttributes(
                                                                                 getValues(),
                                                                             );

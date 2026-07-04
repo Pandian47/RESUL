@@ -2,7 +2,7 @@ import { formatName } from 'Utils/modules/formatters';
 import { memo, useContext, useState } from 'react';
 import { Col } from 'react-bootstrap';
 import { useFormContext } from 'react-hook-form';
-import _find from 'lodash/find';
+import { find as _find } from 'Utils/modules/lodashReplacements';
 
 import RSCheckbox from 'Components/FormFields/RSCheckbox';
 

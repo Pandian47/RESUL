@@ -4,7 +4,7 @@ import { gridLoadingSkeletonCriticalCss } from 'Pages/KendoDocs/CommonComponents
 const DASK_PAGE_BG = '#f5f7fc';
 const DASK_SURFACE = '#ffffff';
 const DASK_SKELETON_BG = '#e2e7ee';
-const DASK_TAB_BG = '#e9e9e9';
+const DASK_TAB_BG = '#e2e7ee';
 const DASK_BORDER = '#c2cfe3';
 const DASK_PAGE_MAX_WIDTH = 1260;
 const DASK_BORDER_RADIUS = 5;
@@ -288,8 +288,7 @@ ${scope('.csr-reach-portlet.skeleton-overview-card .portlet-count-middle li:not(
     position: absolute;
     left: -9px;
     top: 50%;
-    margin-top: -9px;
-    height: 18px;
+    height: 28px;
     border-left: 1px solid #e9e9e9;
 }
 ${scope('.csr-reach-portlet.skeleton-overview-card .skeleton-comparison-bar')} {
@@ -350,11 +349,13 @@ ${scope('.dask-portlet-header__tabs')} {
     align-items: center;
     gap: 0;
 }
-${scope('.dask-portlet-header__pipe')} {
-    margin: 0 10px;
-    color: ${DASK_BORDER};
-    font-weight: bold;
-    line-height: 1;
+${scope('.dask-portlet-header__pipe::before')} {
+    content: '';
+    position: absolute;
+    left: -9px;
+    top: 50%;
+    height: 28px;
+    border-left: 1px solid #e9e9e9;
 }
 ${scope('.dask-portlet-chart')},
 ${scope('.dask-portlet-body')} {
@@ -744,6 +745,10 @@ ${scope('.page-content > .container.px0 > .main-heading-wrapper .mhw-container')
     margin-top: 0;
     padding-top: 0;
     box-sizing: border-box;
+}
+.csr-page-header.main-heading-wrapper.rs-page-header-skeleton {
+padding-left : 0 !important;
+padding-right: 0 !important;
 }
 ${gridLoadingSkeletonCriticalCss}
 `;

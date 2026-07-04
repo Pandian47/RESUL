@@ -1,7 +1,6 @@
-import { APP_ANALYTICS_CONTENT, APP_ANALYTICS_SAVE_MOBILE_CAPTURE_FIELDS, CHECK_EMAIL_SPAM, CLIENT_SENDER_ID_EMAIL, GET_ALL_VIDEOANALYTICS_CONTENT, GET_ANALYTICS_CAPTURE_FIELDS, GET_ATTRIBUTE_VALUES, GET_AUDIO_LIST_BY_APP, GET_CALL_CENTER_BY_ID, GET_CAMPAIGN_BLAST_DETAILS, GET_CDM_TRANSFERMRTHOD, GET_COMMUNICATION_IMPORTCAMPAIGN, GET_CONTACT_BY_USERID, GET_CONVERSION_MATCHING_KEY, GET_CROSS_BU_STATUS, GET_DIGIPOP_AUDIENCE, GET_DIGIPOP_COMMUNICATION, GET_DIGIPOP_IMPRESSIONBALANCE, GET_DIRECTMAIL, GET_DOMIAN_LIST, GET_EMAIL_COMMUNICATION, GET_EMAIL_FOOTER_LIST, GET_FACEBOOK_CITIES_BASED_COUNTRY, GET_FACEBOOK_COUNTRIES, GET_HSM_TEMPLATE, GET_HSM_TEMPLATE_NEW, GET_INBOX_CLASSIFICATIONS, GET_MOBILE_PUSH_BY_ID, GET_OFFLINECONVERSION_ATTRIBUTES, GET_OFFLINECONVERSION_DETAILS, GET_OFFLINECONVERSION_VALUES, GET_OFFLINE_CONVERSION_BU, GET_PAID_MEDIA_LIST, GET_PAID_MEDIA_POST, GET_PAID_MEDIA_SAVE_LIST, GET_PERSONALIZATION_FIELDS, GET_PUSH_NOTIFY_DOMAIN, GET_QR_CODE_CAMAPIGN, GET_QR_CODE_DOWNLOAD, GET_RCS_CAMPAIGN_BYID, GET_RCS_CONTENT_TEMPLATEID, GET_RCS_SENDERNAME, GET_RCS_TEMPLATE, GET_RECIPIENT_COMMUNICATION, GET_RECIPIENT_FORMS_CAMPAIGN, GET_RECIPIENT_FORMS_ID, GET_SCREEN_LIST, GET_SENDER_NAME, GET_SENDLIVETEST, GET_SMS_CAMPAIGN_BY_ID, GET_SMS_LANGUAGE, GET_SMS_SETTINGS, GET_SMS_SETTINGS_DETAIL, GET_SMTP_SETTINGS, GET_SOCIAL_MEDIA_APP_KEYS, GET_SOCIAL_MEDIA_SETUP, GET_SOCIAL_POST_BY_LEVEL, GET_SUB_SCREEN_LIST, GET_SYNC_BANNER_DETAILS, GET_TEMPLATE_LANGUAGE, GET_UNSUBSCRIPTION, GET_UPLOADSIZE, GET_VENDOR_FROM_REMOTESETTING, GET_VMS_CAMPAIGN_BY_ID, GET_VMS_LANGUAGE, GET_VMS_SENDER_NAME, GET_VMS_TEMPLATE_LIST, GET_WEBANALYTICS, GET_WEB_NOTIFY_DOMAINS, GET_WEB_PUSH_BY_ID, GET_WHATSAPP_CAMPAIGN_BY_ID, GET_WHATSAPP_CAMPAIGN_BY_ID_NEW, IMG_UPLOAD_SOCIAL_POST, MANAGE_SOCIAL_POST, SAVE_AND_UPDATE_PAID_MEDIA, SAVE_CALL_CENTER, SAVE_DIGIPOP_COMMUNICATION, SAVE_DIRECTMAIL, SAVE_EMAIL_COMMUNICATION, SAVE_EMAIL_TEMPLATE_CONTENT, SAVE_MOBILE_ANALYTICS, SAVE_MOBILE_PUSH, SAVE_OFFLINECONVERSION, SAVE_RCS_CAMPAIGN, SAVE_SMS_CAMPAIGN, SAVE_VIDEO_CAMPAIGN, SAVE_VMS, SAVE_WEB_PUSH, SAVE_WHATSAPP_CAMPAIGN, SAVE_WHATSAPP_CAMPAIGN_NEW, SENTIMENT_GET, SENTIMENT_NAME_EXIST, SENTIMENT_SAVE, SUBJECT_ANALYSIS, SUBJECT_ANALYSIS_ENABLE, UPDATE_DIGIPOP_COMMUNICATION, UPDATE_QR_CODE, UPDATE_SENDER_DETAILS, UPLOAD_AUDIO_FILE, UPLOAD_COMMUNICATIONFILE, UPLOAD_COMMUNICATIONFILE_WEB, UPLOAD_IMAGE, UPLOAD_IMG_QR, UPLOAD_MOBILE_PUSH, UPLOAD_RICHIMAGEFILE, UPLOAD_VIDEO_DOCUMENT, UPLOAD_WEB_PUSH, VIDEO_ANALYTICS_DOMAIN_LIST, VIDEO_UPLOAD_SOCIAL_POST, VIDEO_VALIDATION, WEBANALYTICS_DOMAIN_LIST, WEBANALYTICS_LIST, WEBANALYTICS_SAVE, WEBANALYTICS_SAVE_CAPTURE_FIELDS, WEBANALYTICS_SUBSCRPTION_FORMLIST } from 'Constants/EndPoints';
+import { APP_ANALYTICS_CONTENT, APP_ANALYTICS_SAVE_MOBILE_CAPTURE_FIELDS, CHECK_EMAIL_SPAM, CLIENT_SENDER_ID_EMAIL, GET_ALL_VIDEOANALYTICS_CONTENT, GET_ANALYTICS_CAPTURE_FIELDS, GET_ATTRIBUTE_VALUES, GET_AUDIO_LIST_BY_APP, GET_CALL_CENTER_BY_ID, GET_CAMPAIGN_BLAST_DETAILS, GET_CDM_TRANSFERMRTHOD, GET_COMMUNICATION_IMPORTCAMPAIGN, GET_CONTACT_BY_USERID, GET_CONVERSION_MATCHING_KEY, GET_CROSS_BU_STATUS, GET_DIGIPOP_AUDIENCE, GET_DIGIPOP_COMMUNICATION, GET_DIGIPOP_IMPRESSIONBALANCE, GET_DIRECTMAIL, GET_DOMIAN_LIST, GET_EMAIL_COMMUNICATION, GET_EMAIL_FOOTER_LIST, GET_FACEBOOK_CITIES_BASED_COUNTRY, GET_FACEBOOK_COUNTRIES, GET_HSM_TEMPLATE_NEW, GET_INBOX_CLASSIFICATIONS, GET_MOBILE_PUSH_BY_ID, GET_OFFLINECONVERSION_ATTRIBUTES, GET_OFFLINECONVERSION_DETAILS, GET_OFFLINECONVERSION_VALUES, GET_OFFLINE_CONVERSION_BU, GET_PAID_MEDIA_LIST, GET_PAID_MEDIA_POST, GET_PAID_MEDIA_SAVE_LIST, GET_PERSONALIZATION_FIELDS, GET_PUSH_NOTIFY_DOMAIN, GET_QR_CODE_CAMAPIGN, GET_QR_CODE_DOWNLOAD, GET_RCS_CAMPAIGN_BYID, GET_RCS_CONTENT_TEMPLATEID, GET_RCS_SENDERNAME, GET_RCS_TEMPLATE, GET_RECIPIENT_COMMUNICATION, GET_RECIPIENT_FORMS_CAMPAIGN, GET_RECIPIENT_FORMS_ID, GET_SCREEN_LIST, GET_SENDER_NAME, GET_SENDLIVETEST, GET_SMS_CAMPAIGN_BY_ID, GET_SMS_LANGUAGE, GET_SMS_SETTINGS_DETAIL, GET_SOCIAL_MEDIA_APP_KEYS, GET_SOCIAL_MEDIA_SETUP, GET_SOCIAL_POST_BY_LEVEL, GET_SUB_SCREEN_LIST, GET_SYNC_BANNER_DETAILS, GET_TEMPLATE_LANGUAGE, GET_UNSUBSCRIPTION, GET_UPLOADSIZE, GET_VENDOR_FROM_REMOTESETTING, GET_VMS_CAMPAIGN_BY_ID, GET_VMS_LANGUAGE, GET_VMS_SENDER_NAME, GET_VMS_TEMPLATE_LIST, GET_WEBANALYTICS, GET_WEB_NOTIFY_DOMAINS, GET_WEB_PUSH_BY_ID, GET_WHATSAPP_CAMPAIGN_BY_ID, GET_WHATSAPP_CAMPAIGN_BY_ID_NEW, IMG_UPLOAD_SOCIAL_POST, MANAGE_SOCIAL_POST, SAVE_AND_UPDATE_PAID_MEDIA, SAVE_CALL_CENTER, SAVE_DIGIPOP_COMMUNICATION, SAVE_DIRECTMAIL, SAVE_EMAIL_COMMUNICATION, SAVE_EMAIL_TEMPLATE_CONTENT, SAVE_MOBILE_ANALYTICS, SAVE_MOBILE_PUSH, SAVE_OFFLINECONVERSION, SAVE_RCS_CAMPAIGN, SAVE_SMS_CAMPAIGN, SAVE_VIDEO_CAMPAIGN, SAVE_VMS, SAVE_WEB_PUSH, SAVE_WHATSAPP_CAMPAIGN, SAVE_WHATSAPP_CAMPAIGN_NEW, SENTIMENT_GET, SENTIMENT_NAME_EXIST, SENTIMENT_SAVE, SUBJECT_ANALYSIS, SUBJECT_ANALYSIS_ENABLE, UPDATE_DIGIPOP_COMMUNICATION, UPDATE_QR_CODE, UPDATE_SENDER_DETAILS, UPLOAD_AUDIO_FILE, UPLOAD_COMMUNICATIONFILE, UPLOAD_COMMUNICATIONFILE_WEB, UPLOAD_IMAGE, UPLOAD_IMG_QR, UPLOAD_MOBILE_PUSH, UPLOAD_RICHIMAGEFILE, UPLOAD_VIDEO_DOCUMENT, UPLOAD_WEB_PUSH, VIDEO_ANALYTICS_DOMAIN_LIST, VIDEO_VALIDATION, WEBANALYTICS_LIST, WEBANALYTICS_SAVE, WEBANALYTICS_SAVE_CAPTURE_FIELDS, WEBANALYTICS_SUBSCRPTION_FORMLIST } from 'Constants/EndPoints';
 import request from 'Utils/Http';
-import _map from 'lodash/map';
-import _uniqBy from 'lodash/uniqBy';
+import { map as _map, uniqBy as _uniqBy } from 'Utils/modules/lodashReplacements';
 
 import { updateAudience, updateEmailList, updateSmsList, updatePersonaLization, updateVoiceList, updateDirectMailList, updateVmsList, updateSocialMediaSetUp, updateQr, updateWebAnalytics, updateORMAnalytics, updateVideoAnalytics, updateNotificationWeb, updateNotificationMobile, updateOfflineConversion, updateOfflineConversionAttributes, updateSpamScore, updateFilterAudience, updateRCSList, updateListTypeWisePersonaLization, updateWATemplateList } from './reducer';
 
@@ -27,6 +26,11 @@ const runSafeOkHandler = (handler, fallbackDispatch) => {
         fallbackDispatch?.();
     }
 };
+
+const sortPersonalizationByAttributeName = (list = []) =>
+    [...list].sort((a, b) =>
+        (a?.attributeName ?? '').localeCompare(b?.attributeName ?? '', undefined, { sensitivity: 'base' }),
+    );
 
 export const getAudienceList =
     ({ payload, isFilter = false, audienceList = [], loading = true }) =>
@@ -114,26 +118,6 @@ export const getCampaignBlastDetails =
         return response;
     };
 
-export const getSmsSettings =
-    ({ payload }) =>
-    async (dispatch) =>
-        dispatch(
-            request.post({
-                url: GET_SMS_SETTINGS,
-                payload,
-                loading: true,
-                ok: ({ data }) => {
-                    try {
-                        let { data: res, status } = data || {};
-                        res = status && Array.isArray(res) ? res : [];
-                        dispatch(updateSmsList({ data: res, field: 'smsSettings' }));
-                    } catch {
-                        dispatch(updateSmsList({ data: [], field: 'smsSettings' }));
-                    }
-                },
-            }),
-        );
-
 export const getSmsSettingsDetail =
     ({ payload, loading = true }) =>
     async (dispatch) =>
@@ -183,10 +167,6 @@ const buildSubjectLineAnalysisSignature = (payload = {}) =>
         subjectLine: payload?.subjectLine ?? '',
     });
 
-export const resetSubjectLineAnalysisCache = () => {
-    lastSubjectLineAnalysisSignature = null;
-};
-
 export const getSubjectLineAnalysis =
     ({ payload, loading = true, forceRefetch = false }) =>
     async (dispatch) => {
@@ -226,6 +206,7 @@ export const getSubjectLineAnalysisEnable =
             }),
         );
 const lastCheckSpamSignatureByKey = {};
+const checkSpamInFlightByKey = {};
 
 const buildCheckSpamSignature = (payload = {}) =>
     JSON.stringify({
@@ -237,27 +218,24 @@ const buildCheckSpamSignature = (payload = {}) =>
         subjectLine: payload?.subjectLine ?? '',
     });
 
-export const resetCheckSpamCache = (key) => {
-    if (key) {
-        delete lastCheckSpamSignatureByKey[key];
-    } else {
-        Object.keys(lastCheckSpamSignatureByKey).forEach((k) => delete lastCheckSpamSignatureByKey[k]);
-    }
-};
-
 export const getCheckSpam =
     ({ payload, loading = true, forceRefetch = false }) =>
     async (dispatch) => {
         const cacheKey = `${payload?.spamScore ?? 'default'}::${payload?.top3 ?? 'default'}`;
         const signature = buildCheckSpamSignature(payload);
+        const inFlightKey = `${cacheKey}::${signature}`;
 
         if (!forceRefetch && lastCheckSpamSignatureByKey[cacheKey] === signature) {
-            return;
+            return checkSpamInFlightByKey[inFlightKey];
+        }
+
+        if (checkSpamInFlightByKey[inFlightKey]) {
+            return checkSpamInFlightByKey[inFlightKey];
         }
 
         lastCheckSpamSignatureByKey[cacheKey] = signature;
 
-        return dispatch(
+        const requestPromise = dispatch(
             request.post({
                 url: CHECK_EMAIL_SPAM,
                 payload,
@@ -285,6 +263,13 @@ export const getCheckSpam =
                 },
             }),
         );
+
+        checkSpamInFlightByKey[inFlightKey] = requestPromise;
+        return requestPromise.finally(() => {
+            if (checkSpamInFlightByKey[inFlightKey] === requestPromise) {
+                delete checkSpamInFlightByKey[inFlightKey];
+            }
+        });
     };
 
 export const getSenderName =
@@ -353,18 +338,20 @@ export const getPersonalizationFields =
                     runSafeOkHandler(() => {
                         let { data: res, status } = data || {};
                         if (status) {
-                            const personalization = toSafeArray(res, true).map((item) => {
-                                const safeItem = ensureObject(item);
-                                const finalFallbackAttributeName =
-                                    safeItem?.fallbackAttributeName && payload?.ListType != 1
-                                        ? ` | [[${safeItem.fallbackAttributeName}]]`
-                                        : '';
-                                return {
-                                    ...safeItem,
-                                    personalizationKey: `[[${safeItem?.attributeName}]]${finalFallbackAttributeName}`,
-                                    key: `[[${safeItem?.attributeName}]]`,
-                                };
-                            });
+                            const personalization = sortPersonalizationByAttributeName(
+                                toSafeArray(res, true).map((item) => {
+                                    const safeItem = ensureObject(item);
+                                    const finalFallbackAttributeName =
+                                        safeItem?.fallbackAttributeName && payload?.ListType != 1
+                                            ? ` | [[${safeItem.fallbackAttributeName}]]`
+                                            : '';
+                                    return {
+                                        ...safeItem,
+                                        personalizationKey: `[[${safeItem?.attributeName}]]${finalFallbackAttributeName}`,
+                                        key: `[[${safeItem?.attributeName}]]`,
+                                    };
+                                }),
+                            );
                             if (payload?.ListType) {
                                 dispatch(
                                     updateListTypeWisePersonaLization({
@@ -601,10 +588,25 @@ export const getUnSubscriptionList =
             }),
         );
 
+let emailFooterListInFlight = null;
+
+const buildEmailFooterListSignature = (payload = {}) =>
+    JSON.stringify({
+        clientId: payload?.clientId ?? '',
+        userId: payload?.userId ?? '',
+        departmentId: payload?.departmentId ?? '',
+    });
+
 export const getEmailFooterList =
     ({ payload, loading = true }) =>
-    async (dispatch) =>
-        dispatch(
+    async (dispatch) => {
+        const signature = buildEmailFooterListSignature(payload);
+
+        if (emailFooterListInFlight?.signature === signature) {
+            return emailFooterListInFlight.promise;
+        }
+
+        const requestPromise = dispatch(
             request.post({
                 url: GET_EMAIL_FOOTER_LIST,
                 payload,
@@ -618,6 +620,14 @@ export const getEmailFooterList =
                 },
             }),
         );
+
+        emailFooterListInFlight = { signature, promise: requestPromise };
+        return requestPromise.finally(() => {
+            if (emailFooterListInFlight?.promise === requestPromise) {
+                emailFooterListInFlight = null;
+            }
+        });
+    };
 export const getDomainNameList =
     ({ payload, loading = true }) =>
     async (dispatch) => {
@@ -706,21 +716,6 @@ export const uploadCommunicationFileWeb =
             }),
         );
 
-export const getSmtpSetting =
-    ({ payload }) =>
-    async (dispatch) =>
-        dispatch(
-            request.post({
-                url: GET_SMTP_SETTINGS,
-                payload,
-                loading: true,
-                ok: ({ data }) => {
-                    let { data: response, status } = data;
-                    response = toSafeArray(response, status);
-                    dispatch(updateEmailList({ data: response, field: 'smtpSettings' }));
-                },
-            }),
-        );
 export const saveEmailCampaign =
     ({ payload, savedChannelsId, loading = true }) =>
     async (dispatch) =>
@@ -747,13 +742,13 @@ export const saveEmailCampaign =
         );
 
 export const saveEmailTemplateContent =
-    ({ payload, savedChannelsId }) =>
+    ({ payload, savedChannelsId ,loading = false}) =>
     async (dispatch) =>
         dispatch(
             request.post({
                 url: SAVE_EMAIL_TEMPLATE_CONTENT,
                 payload,
-                loading: true,
+                loading: loading,
                 isFailureCheck: true,
                 ok: ({ data }) => {
                     const { status } = data;
@@ -801,22 +796,6 @@ export const getEmailCommunicationById =
             }),
         );
     };
-
-export const getHsmTemplate =
-    ({ payload }) =>
-    async (dispatch) =>
-        dispatch(
-            request.post({
-                url: GET_HSM_TEMPLATE,
-                payload,
-                loading: true,
-                ok: ({ data }) => {
-                    const { status, data: response } = data;
-                    const payload = toSafeArray(response, status);
-                    dispatch(updateSmsList({ data: payload, field: 'hsmTemplate' }));
-                },
-            }),
-        );
 
 export const getHsmTemplateNew =
     ({ payload, loading = true }) =>
@@ -944,19 +923,6 @@ export const imageUplodaSocilaPost = (payload) => async (dispatch) => {
     );
 };
 
-export const videoUploadSocialPost = (payload) => async (dispatch) => {
-    return dispatch(
-        request.post({
-            url: VIDEO_UPLOAD_SOCIAL_POST,
-            payload,
-            loading: true,
-            isFailureCheck: true,
-            ok: ({ data }) => {},
-            fail: (error) => {},
-        }),
-    );
-};
-
 /** Social post uploads: images (multi), PDFs, and videos — FormData key `File` to `Communication/UploadDocuments`. */
 export const uploadSocialPostDocuments =
     ({ payload ,loading}) =>
@@ -965,7 +931,7 @@ export const uploadSocialPostDocuments =
             request.post({
                 url: UPLOAD_VIDEO_DOCUMENT,
                 payload,
-                loading: loading ?? true,
+                loading: false,
                 ok: () => {},
                 fail: () => {},
             }),
@@ -1192,27 +1158,6 @@ export const getPaidMediaSavedData =
         );
     };
 
-export const getWebAnalyticsDomainList =
-    ({ payload }) =>
-    async (dispatch) => {
-        return dispatch(
-            request.post({
-                url: WEBANALYTICS_DOMAIN_LIST,
-                payload,
-                loading: true,
-                ok: ({ data }) => {
-                    const { data: res, status } = data;
-                    const response = toSafeArray(res, status);
-                    dispatch(
-                        updateWebAnalytics({
-                            data: response,
-                            field: 'webAnalyticsDomainList',
-                        }),
-                    );
-                },
-            }),
-        );
-    };
 export const getWebAnalyticsData =
     ({ payload, loading = true, isEnableLoader }) =>
     async (dispatch) => {
@@ -1431,7 +1376,7 @@ export const getRecipientFormsCampaign =
                 loading,
                 ok: ({ data }) => {
                     const { data: res, status } = data;
-                    const response = toSafeObject(res, status);
+                    const response = status ? res : {};
                     dispatch(
                         updateQr({
                             data: !!response && !!response?.length ? response : [{ formId: 0, formName: 'Select KYC' }],
@@ -1474,7 +1419,7 @@ export const uploadImageQR =
             request.post({
                 url: UPLOAD_IMG_QR,
                 payload,
-                loading: true,
+                loading: false,
                 ok: ({ data }) => {
                     const { data: res, status } = data;
                     const response = toSafeObject(res, status);
@@ -1494,7 +1439,7 @@ export const getQRCodeDownloadURL =
             request.post({
                 url: GET_QR_CODE_DOWNLOAD,
                 payload,
-                loading: true,
+                loading: false,
                 isFailureCheck: true,
                 ok: ({ data }) => {
                     const { data: res, status } = data;

@@ -1,3 +1,5 @@
+import { parseAudienceJsonArray } from 'Pages/AuthenticationModule/Audience/audienceDefaults';
+
 const DATA_ARGUMENTATION = [
     {
         id: 1,
@@ -201,6 +203,36 @@ export const updateName = (name) => {
     return updatedName;
 };
 
+export const getProfileSegmentLabel = (item) =>
+    item?.dataSegmentKey ?? item?.dataSegment ?? item?.patternSegment ?? '';
+
+export const normalizeProfileSegmentItem = (item) => {
+    if (!item || typeof item !== 'object' || Array.isArray(item)) {
+        return {};
+    }
+
+    const rawRule = item?.dataSegmentRule ?? item?.patternSegmentRule;
+
+    return {
+        ...item,
+        dataSegmentKey: getProfileSegmentLabel(item),
+        dataSegmentRule: Array.isArray(rawRule) ? rawRule : parseAudienceJsonArray(rawRule, []),
+        dataSegmentScore: item?.dataSegmentScore ?? item?.patternSegmentScore ?? 0,
+    };
+};
+
+export const findProfileSegmentByType = (profileList, type) => {
+    if (!Array.isArray(profileList) || !type) {
+        return {};
+    }
+
+    const match = profileList.find(
+        (item) => updateName(getProfileSegmentLabel(item)) === updateName(type),
+    );
+
+    return normalizeProfileSegmentItem(match);
+};
+
 const handleSegementName = (name) => {
     const segmentMap = {
         dataaugmentation: 'Data augmentation',
@@ -215,7 +247,7 @@ const handleSegementName = (name) => {
 const getUpdatePayloadData = (apiData, currdata, userId, formState) => {
     const { fieldName, currFromStateData, id, apiKeysDetail } = currdata;
     const filterProfileData = apiData?.filter(
-        (item) => updateName(item?.dataSegment) === updateName(handleSegementName(fieldName)),
+        (item) => updateName(getProfileSegmentLabel(item)) === updateName(handleSegementName(fieldName)),
     );
     let finalData = [];
 

@@ -9,6 +9,7 @@ import PreferencesSubPageRouteSkeleton, {
     PREFERENCES_SUBPAGE_VARIANT,
     resolvePreferencesSubPageVariant,
 } from './PreferencesSubPageRouteSkeleton';
+import LaunchPadRouteSkeleton from './LaunchPadRouteSkeleton';
 import { MainNavBar, pageLayoutSkeletonCriticalCss } from './common/pageLoadingScene';
 import { BreadcrumbSkeleton, skeletonShellSharedCriticalCss } from './common';
 import {
@@ -44,6 +45,15 @@ const MainPageSkeleton = ({ variant: variantProp, withAppShell = false, activeTa
 
     if (variant === 'mdcWorkflow') {
         return <MdcWorkflowSkeleton />;
+    }
+
+    if (variant === 'launchPad') {
+        return (
+            <LaunchPadRouteSkeleton
+                withAppShell={withAppShell}
+                activeNavIndex={withAppShell ? getMainNavActiveIndex(pathname) : -1}
+            />
+        );
     }
 
     if (variant === 'preferences' && withAppShell) {
@@ -285,6 +295,7 @@ MainPageSkeleton.propTypes = {
         'dashboard',
         'preferences',
         'preferencesSubPage',
+        'launchPad',
         'genie',
         'default',
     ]),

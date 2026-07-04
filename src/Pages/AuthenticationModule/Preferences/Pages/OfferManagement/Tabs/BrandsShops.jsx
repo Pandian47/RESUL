@@ -2,8 +2,7 @@ import { encodeUrl } from 'Utils/modules/crypto';
 import { ADD, MANAGE_CATEGORY } from 'Constants/GlobalConstant/Placeholders';
 import { circle_plus_fill_edge_large, settings_medium } from 'Constants/GlobalConstant/Glyphicons';
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import _findIndex from 'lodash/findIndex';
-import _map from 'lodash/map';
+import { findIndex as _findIndex, map as _map } from 'Utils/modules/lodashReplacements';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 

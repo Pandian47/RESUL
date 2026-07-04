@@ -1,3 +1,4 @@
+import { find as _find } from 'Utils/modules/lodashReplacements';
 import { formatNumber, formatTime } from 'Utils/modules/campaignUtils';
 import { getUserDetails, encodeUrl, getPermissions } from 'Utils/modules/crypto';
 import { downloadCSV } from 'Utils/modules/download';
@@ -96,7 +97,6 @@ import { Col, Row } from 'react-bootstrap';
 import { useForm } from 'react-hook-form';
 import { useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
-import _find from 'lodash/find';
 
 // Local imports
 // Components

@@ -1,4 +1,4 @@
-import { CREATE_DYNAMIC_LIST, DUPLICATE_DYNAMIC_LIST, DYNAMIC_LIST_DOWNLOAD, DYNAMIC_LIST_DOWNLOAD_FILE, DYNAMIC_LIST_GET_CUSTOM_EVENTS_VALUE, DYNAMIC_LIST_GET_TRIGGER_ATTRIBUTES, DYNAMIC_LIST_GET_TRIGGER_ATTRIBUTES_VALUES, DYNAMIC_LIST_GET_TRIGGER_BASE_DDL, DYNAMIC_LIST_GET_TRIGGER_SOURCE, DYNAMIC_LIST_MORE_INFO, DYNAMIC_LIST_SEARCH_COUNT, DYNAMIC_LIST_SEARCH_NAME, DYNAMIC_TIME_ZONE_DETAILS, GET_DYNAMIC_LISTS, GET_DYNAMIC_LISTS_BY_ID, GET_DYNAMIC_LIST_SCHEDULE, GET_GEOFENCES_LISTS, GET_GEO_FENCE_DETAILS_BY_ID, IS_LIST_NAME_EXIST, RFA_DYNAMIC_LIST_APPROVE, RFA_DYNAMIC_LIST_REJECT, STOP_DYNAMIC_LIST_SCHEDULE } from 'Constants/EndPoints';
+import { CREATE_DYNAMIC_LIST, DUPLICATE_DYNAMIC_LIST, DYNAMIC_LIST_DOWNLOAD, DYNAMIC_LIST_DOWNLOAD_FILE, DYNAMIC_LIST_GET_CUSTOM_EVENTS_VALUE, DYNAMIC_LIST_GET_TRIGGER_ATTRIBUTES, DYNAMIC_LIST_GET_TRIGGER_ATTRIBUTES_VALUES, DYNAMIC_LIST_GET_TRIGGER_BASE_DDL, DYNAMIC_LIST_GET_TRIGGER_SOURCE, DYNAMIC_LIST_MORE_INFO, DYNAMIC_LIST_SEARCH_COUNT, DYNAMIC_LIST_SEARCH_NAME, DYNAMIC_TIME_ZONE_DETAILS, GET_DYNAMIC_LISTS, GET_DYNAMIC_LISTS_BY_ID, GET_DYNAMIC_LIST_SCHEDULE, GET_GEOFENCES_LISTS, IS_LIST_NAME_EXIST, RFA_DYNAMIC_LIST_APPROVE, RFA_DYNAMIC_LIST_REJECT, STOP_DYNAMIC_LIST_SCHEDULE } from 'Constants/EndPoints';
 import request from 'Utils/Http';
 
 import {
@@ -50,11 +50,14 @@ export const buildAttributeCachePath = (payload = {}) => {
     return { attributeName, cacheKey: String(triggerddlValue) };
 };
 
+/** Empty arrays are persisted on failure but must not block refetch. */
+export const hasUsableTriggerListCache = (data) => Array.isArray(data) && data.length > 0;
+
 export const getCachedTriggerAttributeValues = (state, payload) => {
     const sessionKey = buildDynamicListSessionKey(payload);
     const { attributeName, cacheKey } = buildAttributeCachePath(payload);
     const cached = state?.dynamicListReducer?.attributeValues?.[sessionKey]?.[attributeName]?.[cacheKey];
-    return cached !== undefined ? cached : undefined;
+    return hasUsableTriggerListCache(cached) ? cached : undefined;
 };
 
 const writeTriggerAttributeCache = (dispatch, payload, data) => {
@@ -77,26 +80,6 @@ const applyTriggerAttrData = (data, payload, setTriggerValues) => {
         }
     } else if (isTwoDimensionalPayload(payload)) {
         setTriggerValues((prev) => ({ ...prev, [payload?.attributeName + 2]: [] }));
-    } else {
-        setTriggerValues([]);
-    }
-};
-
-const applyAttributeValues = (payload, setTriggerValues, data) => {
-    applyTriggerAttrData({ status: true, data }, payload, setTriggerValues);
-};
-
-const clearAttributeValues = (payload, setTriggerValues) => {
-    if (
-        payload?.fieldType === '2D' &&
-        (payload?.triggerSourceId === 13 ||
-            payload?.triggerSourceId === 27 ||
-            payload?.triggerSourceId === 18)
-    ) {
-        setTriggerValues((prev) => ({
-            ...prev,
-            [payload?.attributeName + 2]: [],
-        }));
     } else {
         setTriggerValues([]);
     }
@@ -143,10 +126,10 @@ export const getCachedTriggerAttributes = (state, payload) => {
     const sessionEntry = state?.dynamicListReducer?.triggerAttributes?.[sessionKey];
     const entry = sessionEntry?.[triggerSourceId] ?? state?.dynamicListReducer?.triggerAttributes?.[triggerSourceId];
     if (Array.isArray(entry)) {
-        return entry;
+        return hasUsableTriggerListCache(entry) ? entry : undefined;
     }
     const cached = entry?.[cacheKey];
-    return cached !== undefined ? cached : undefined;
+    return hasUsableTriggerListCache(cached) ? cached : undefined;
 };
 
 const writeTriggerAttributesCache = (dispatch, payload, data) => {
@@ -184,16 +167,6 @@ const fetchTriggerAttributesFromApi = (dispatch, payload, loading) =>
         );
     });
 
-export const resolveTriggerAttributes = async ({ dispatch, getState, payload, loading = false }) => {
-    const cached = getCachedTriggerAttributes(getState(), payload);
-    if (cached !== undefined) {
-        return { status: true, data: cached, isCacheHit: true };
-    }
-
-    const result = await dispatch(getTriggerAttributes({ payload, loading }));
-    return { status: result?.status, data: result?.data ?? [], isCacheHit: false };
-};
-
 export const getTriggerAttributes =
     ({ payload, loading = false }) =>
     async (dispatch, getState) => {
@@ -206,7 +179,10 @@ export const getTriggerAttributes =
 
         const l1Cached = triggerAttributesCache.get(key);
         if (l1Cached && Date.now() - l1Cached.ts < TRIGGER_ATTRIBUTES_IN_FLIGHT_TTL_MS) {
-            return l1Cached.data;
+            const list = l1Cached.data?.data ?? l1Cached.data;
+            if (hasUsableTriggerListCache(list)) {
+                return l1Cached.data;
+            }
         }
 
         if (triggerAttributesInFlight.has(key)) {
@@ -288,22 +264,6 @@ const fetchTriggerBaseDDLFromApi = (dispatch, payload, loading) =>
                 }),
         );
     });
-
-export const resolveTriggerBaseDDLData = async ({
-    dispatch,
-    getState,
-    payload,
-    isPageHeader = false,
-    loading,
-}) => {
-    const cached = getCachedTriggerBaseDDL(getState(), payload);
-    if (cached !== undefined) {
-        return { status: true, data: cached, isCacheHit: true };
-    }
-
-    const result = await dispatch(getTriggerBaseDDLData({ payload, isPageHeader, loading }));
-    return { status: result?.status, data: result?.data ?? [], isCacheHit: false };
-};
 
 export const getTriggerBaseDDLData =
     ({ payload, isPageHeader = false, loading }) =>
@@ -387,8 +347,11 @@ export const getTriggerAttributeValuesData =
 
         const l1Cached = triggerAttrCache.get(key);
         if (l1Cached && Date.now() - l1Cached.ts < TRIGGER_ATTR_IN_FLIGHT_TTL_MS) {
-            applyTriggerAttrData(l1Cached.data, payload, setTriggerValues);
-            return l1Cached.data;
+            const list = l1Cached.data?.data ?? l1Cached.data;
+            if (hasUsableTriggerListCache(list)) {
+                applyTriggerAttrData(l1Cached.data, payload, setTriggerValues);
+                return l1Cached.data;
+            }
         }
 
         if (triggerAttrInFlight.has(key)) {
@@ -440,6 +403,29 @@ export const getWebDomains =
                 },
             }),
         );
+
+
+        
+        export const getTrrAttributeValues =
+    ({ payload, loading = false }) =>
+    async (dispatch) =>
+        dispatch(
+            request.post({
+                url: DYNAMIC_LIST_GET_TRIGGER_ATTRIBUTES_VALUES,
+                payload,
+                loading,
+                ok: ({ data }) => {
+                    if (data.status) {
+                    } else {
+
+                    }
+                    return { status: data.status, data: data.data ?? [] };
+                },
+                fail: () => {
+                    return { status: false, data: [] };
+                },
+            }),
+        );
 export const getCustomEventsValueData =
     ({ payload, loading = false }) =>
     async (dispatch) =>
@@ -449,14 +435,18 @@ export const getCustomEventsValueData =
                 payload,
                 loading,
                 ok: ({ data }) => {
+                    const shouldUpdateCustomAttributesState = !payload?.attributevalue;
+
                     if (data.status) {
-                        dispatch(
-                            get_dynamic_list({
-                                field: 'customAttributes',
-                                data: { field: payload.columnName, data: data?.data },
-                            }),
-                        );
-                    } else {
+                        if (shouldUpdateCustomAttributesState) {
+                            dispatch(
+                                get_dynamic_list({
+                                    field: 'customAttributes',
+                                    data: { field: payload.columnName, data: data?.data },
+                                }),
+                            );
+                        }
+                    } else if (shouldUpdateCustomAttributesState) {
                         dispatch(
                             get_dynamic_list({
                                 field: 'customAttributes',
@@ -467,12 +457,14 @@ export const getCustomEventsValueData =
                     return { status: data.status, data: data.data ?? [] };
                 },
                 fail: () => {
-                    dispatch(
-                        get_dynamic_list({
-                            field: 'customAttributes',
-                            data: { field: payload.columnName, data: [] },
-                        }),
-                    );
+                    if (!payload?.attributevalue) {
+                        dispatch(
+                            get_dynamic_list({
+                                field: 'customAttributes',
+                                data: { field: payload.columnName, data: [] },
+                            }),
+                        );
+                    }
                     return { status: false, data: [] };
                 },
             }),
@@ -503,28 +495,6 @@ export const getGeoFencesLists = (payload) => async (dispatch) => {
             }),
         );
 };
-
-export const getGeoFenceDetailsByID =
-    ({ payload, setClusterDetails = () => {} }) =>
-    async (dispatch) => {
-                return dispatch(
-            request.post({
-                url: GET_GEO_FENCE_DETAILS_BY_ID,
-                payload,
-                loading: true,
-                ok: ({ data }) => {
-                                        if (data.status && data?.data) {
-                                                setClusterDetails(data?.data);
-                    } else {
-                                                setClusterDetails(null);
-                    }
-                },
-                fail: (err) => {
-                                        setClusterDetails(null);
-                },
-            }),
-        );
-    };
 
 export const getCustomEventsAttributesData =
     ({ payload, setTriggerValues, loading = false }) =>
@@ -699,7 +669,7 @@ export const approveDynamicList =
             request.post({
                 url: RFA_DYNAMIC_LIST_APPROVE,
                 payload,
-                loading: true,
+                loading: false,
                 ok: ({ data }) => {},
                 fail: (err) => {
                                     },
@@ -712,7 +682,7 @@ export const rejectDynamicList =
             request.post({
                 url: RFA_DYNAMIC_LIST_REJECT,
                 payload,
-                loading: true,
+                loading: false,
                 ok: ({ data }) => {},
                 fail: (err) => {
                                     },
@@ -756,7 +726,7 @@ export const getDynamicListScheduleDetails = (payload) => async (dispatch) => {
         request.post({
             url: GET_DYNAMIC_LIST_SCHEDULE,
             payload,
-            loading: true,
+            loading: false,
             ok: (res) => {
                 const {
                     data: { data, status },

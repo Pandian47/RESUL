@@ -1,7 +1,6 @@
 import { cloneElement, isValidElement } from 'react';
 import { NEW_EMAIL_REGEX } from 'Constants/GlobalConstant/Regex';
-import _map from 'lodash/map';
-import _method from 'lodash/method';
+import { map as _map, method as _method } from 'Utils/modules/lodashReplacements';
 export const validateTestEmail = (value = '') => {
         let isValid = [false, ''];
 
@@ -83,31 +82,5 @@ export const COUNTRY_DIALCODE = {
     BE: { countryCode: '32', minLength: 9, maxLength: 9 },
     CH: { countryCode: '41', minLength: 9, maxLength: 9 },
 };
-
-export function generateCountryMasks() {
-    const masks = {};
-
-    Object.entries(COUNTRY_DIALCODE).forEach(([country, rules]) => {
-        const { minLength, maxLength } = rules;
-
-        let maskList = [];
-
-        // If min == max → generate exactly 1 mask repeated 5 times
-        if (minLength === maxLength) {
-            const mask = '.'.repeat(minLength);
-            maskList = Array(5).fill(mask);
-        } else {
-            // Generate 5 random lengths between min and max
-            for (let i = 0; i < 5; i++) {
-                const randomLength = minLength + Math.floor(Math.random() * (maxLength - minLength + 1));
-                maskList.push('.'.repeat(randomLength));
-            }
-        }
-
-        masks[country.toLowerCase()] = maskList.join(',');
-    });
-
-    return masks;
-}
 
 export const restFieldList = ['approvalFrom', 'approvalCount', 'followHierarchy'];

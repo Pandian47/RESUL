@@ -7,7 +7,7 @@ import { numberWithCommas } from 'Utils/modules/formatters';
 import { ARE_YOU_SURE_ARCHIVE, COMMUNICATION_TYPE, CONVERSION, CREATED_ON, DELIVERY_METHOD, ENGAGEMENT, INFO, OK, REACH, TOTAL_AUDIENCE } from 'Constants/GlobalConstant/Placeholders';
 import { circle_info_medium, circle_info_mini, menu_dot_medium } from 'Constants/GlobalConstant/Glyphicons';
 import { useEffect, useRef, useState } from 'react';
-import _get from 'lodash/get';
+import { get as _get } from 'Utils/modules/lodashReplacements';
 
 import { Col } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';

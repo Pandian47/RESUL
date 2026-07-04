@@ -1,4 +1,4 @@
-import _isNil from 'lodash/isNil';
+import { isNil as _isNil } from 'Utils/modules/lodashReplacements';
 import {
     finalPayload,
     getListMaxValue,
@@ -196,21 +196,26 @@ const getallAttributes = (attributes) => {
     const {
         filterLists,
         zeroDayLists = [],
-        inclusions = [],
-        exclusions = [],
+        inclusionLists = [],
+        exclusionLists = [],
         lookALikeAudLists = [],
         lookALikeAttrLists = [],
     } = attributes;
-    // const inclusions = inclusionLists?.length ? inclusionLists : [];
-    // const exclusions = exclusionLists?.length ? exclusionLists : [];
+    const inclusions = inclusionLists?.length ? inclusionLists : [];
+    const exclusions = exclusionLists?.length ? exclusionLists : [];
     const getCurrentAttributes = [
-        ...filterLists,
+        ...(filterLists ?? []),
         ...zeroDayLists,
         ...inclusions,
         ...exclusions,
         ...lookALikeAudLists,
         ...lookALikeAttrLists,
     ];
+    Object.entries(attributes).forEach(([key, value]) => {
+        if (/^(inclusionLists|exclusionLists)\d+$/.test(key) && Array.isArray(value)) {
+            getCurrentAttributes.push(...value);
+        }
+    });
     return getCurrentAttributes.findIndex(
         ({ attributeValue, attributeValueOne, attributeType, fieldType, sOLRFieldName, communicationName }) => {
             if (attributeType === 'Has no value' || attributeType === 'Has value') return false;
@@ -437,6 +442,51 @@ const buildTLDuplicateRuleKey = (group) => {
 
     let key = `${updateAttributeType || ''}_${attrValNormalized || ''}_${groupName || ''}`;
 
+    if (group?.sOLRFieldName === 'Campaign_summary_s') {
+        let communicationType = group?.communicationType
+            ? group?.communicationType
+            : typeStatus?.length
+            ? typeStatus[0]
+            : '';
+        let communicationStatus = group?.communicationStatus
+            ? group?.communicationStatus
+            : typeStatus?.length
+            ? typeStatus[1] ?? ''
+            : '';
+
+        const normalizeCommType = (val) => {
+            if (!val) return '';
+            if (typeof val === 'object') {
+                return val.type || val.label || '';
+            }
+            const num = Number(val);
+            if (Number.isFinite(num)) {
+                const found = communicationTypes.find(c => c.id === num);
+                if (found) return found.type || found.label || '';
+            }
+            return String(val);
+        };
+
+        const normalizeCommStatus = (val, typeVal) => {
+            if (!val) return '';
+            if (typeof val === 'object') {
+                return val.status || val.label || '';
+            }
+            const num = Number(val);
+            if (Number.isFinite(num)) {
+                const channelType = normalizeCommType(typeVal);
+                const statusList = communicationStatus[channelType] || [];
+                const found = statusList.find(s => s.id === num);
+                if (found) return found.status || found.label || '';
+            }
+            return String(val);
+        };
+
+        const commTypeVal = normalizeCommType(communicationType);
+        const commStatusVal = normalizeCommStatus(communicationStatus, communicationType);
+        key = `${key}_${commTypeVal}_${commStatusVal}`;
+    }
+
     if (updateAttributeType === 'Between') {
         key = `${key}_${group?.attributeValueOne || ''}`;
     }
@@ -474,7 +524,7 @@ function findTLDuplicates(groups = []) {
     const ruleKeyFirstOwner = new Map();
 
     const markDuplicateRow = (groupSet, rowIndex) => {
-        add(groupSet);
+        errors.add(groupSet);
         if (rowIndex != null) {
             duplicateIndexByGroup[groupSet] = rowIndex;
         }
@@ -504,19 +554,6 @@ function findTLDuplicates(groups = []) {
         duplicateIndexByGroup,
     };
 }
-
-export const handleRecount = (filterGroups, getValues) => {
-    const temp = { ...filterGroups };
-    const groupList = temp?.groups?.map((field) => {
-        const getItems = getValues(field);
-        return getItems?.map((listItem) => ({
-            ...listItem,
-            isStatus: false,
-        }));
-    });
-
-    return groupList;
-};
 
 const handleExclusionMerge = (list, objectIndex) => {
     const updatedObjects = [...list];
@@ -759,6 +796,8 @@ export {
     checkIsEmpty,
 };
 
+const controlCharPattern = new RegExp('[' + String.fromCharCode(0) + '-' + String.fromCharCode(31) + ']', 'g');
+
 export const getSideList = (
     editList,
     isPersona = false,
@@ -773,7 +812,11 @@ export const getSideList = (
         parseSideFieldList = editList;
     } else {
         if (typeof editList === 'string' && editList) {
-            parseSideFieldList = JSON.parse(editList);
+            try {
+                parseSideFieldList = JSON.parse(editList.replace(controlCharPattern, ''));
+            } catch {
+                parseSideFieldList = undefined;
+            }
         } else {
             parseSideFieldList = editList;
         }

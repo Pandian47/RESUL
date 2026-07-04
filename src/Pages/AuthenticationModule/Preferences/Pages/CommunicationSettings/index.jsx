@@ -1,6 +1,6 @@
 import { encodeUrl } from 'Utils/modules/crypto';
 import { useEffect, useLayoutEffect, useState } from 'react';
-import _get from 'lodash/get';
+import { get as _get } from 'Utils/modules/lodashReplacements';
 import { Container } from 'react-bootstrap';
 import { useLocation, useNavigate } from 'react-router-dom';
 import RSPageHeader from 'Components/RSPageHeader';

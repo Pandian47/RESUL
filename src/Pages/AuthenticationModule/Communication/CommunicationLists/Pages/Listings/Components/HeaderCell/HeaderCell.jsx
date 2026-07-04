@@ -4,8 +4,7 @@ import { circle_plus_fill_edge_large } from 'Constants/GlobalConstant/Glyphicons
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
-import _get from 'lodash/get';
-import isEqual from 'lodash/isEqual';
+import { get as _get, isEqual } from 'Utils/modules/lodashReplacements';
 
 import RSAdvanceSearchNew, {
     buildAdvanceSearchPersistStorageKey,
@@ -46,7 +45,7 @@ import {
 } from 'Constants/AdvanceSearch';
 
 /** Same options as RESUL-Proto `GRID_DROPDOWN_DATA` (corrected spelling); default selection = My communications. */
-export const LISTING_SCOPE_DROPDOWN_DATA = ['All communications', 'My communications'];
+export const LISTING_SCOPE_DROPDOWN_DATA = ['All communications', 'My communications','Golden communications'];
 
 /** Debounce for CommunicationlistSearchName (name suggestions only). */
 const LISTING_NAME_SUGGEST_DEBOUNCE_MS = 400;
@@ -104,6 +103,8 @@ const HeaderCell = ({ requestPayload, setRequestPayload, setCampaignData, setFor
     const [currentFilters, setCurrentFilters] = useState({});
     const [myCommunicationsOnly, setMyCommunicationsOnly] = useState(true);
     const myCommunicationsOnlyRef = useRef(true);
+    const [isGoldenCampaignOnly, setIsGoldenCampaignOnly] = useState(false);
+    const isGoldenCampaignOnlyRef = useRef(false);
     const handleMyCommunicationsToggleRef = useRef(() => { });
 
     const requestPayloadRef = useRef(requestPayload);
@@ -215,9 +216,11 @@ const HeaderCell = ({ requestPayload, setRequestPayload, setCampaignData, setFor
 
     getListRef.current = getList;
 
-    handleMyCommunicationsToggleRef.current = async (checked) => {
+    handleMyCommunicationsToggleRef.current = async (checked, golden = false) => {
         setMyCommunicationsOnly(checked);
         myCommunicationsOnlyRef.current = checked;
+        setIsGoldenCampaignOnly(golden);
+        isGoldenCampaignOnlyRef.current = golden;
         const { pageSize, ...restRequestPayload } = requestPayloadRef.current;
         const payload = buildSearchPayload({
             filters: currentFiltersRef.current,
@@ -227,6 +230,7 @@ const HeaderCell = ({ requestPayload, setRequestPayload, setCampaignData, setFor
             clientId,
             userId,
             pageSize,
+            overrides: { isGoldenCampaign: golden },
             myCommunicationsOnly: checked,
             advanceFilterConfig: advanceFilterConfigRef.current,
         });
@@ -287,10 +291,15 @@ const HeaderCell = ({ requestPayload, setRequestPayload, setCampaignData, setFor
                 return;
             }
 
+            /** Golden communications is a deliberate scope choice — don't silently fall back to “My communications”. */
+            if (isGoldenCampaignOnlyRef.current) return;
+
             if (hasPersistedAdvanceFilters(persistListingFiltersKey)) return;
 
             myCommunicationsOnlyRef.current = true;
             setMyCommunicationsOnly(true);
+            isGoldenCampaignOnlyRef.current = false;
+            setIsGoldenCampaignOnly(false);
 
             const nextFilters = { ...(currentFiltersRef.current || {}) };
             if (currentUser) {
@@ -707,6 +716,8 @@ const HeaderCell = ({ requestPayload, setRequestPayload, setCampaignData, setFor
         setFormState({});
         setMyCommunicationsOnly(true);
         myCommunicationsOnlyRef.current = true;
+        setIsGoldenCampaignOnly(false);
+        isGoldenCampaignOnlyRef.current = false;
         const start = getTimezoneAdjustedStartDate();
         const { pageSize } = requestPayload;
         const payload = buildClearPayload({
@@ -817,14 +828,19 @@ const HeaderCell = ({ requestPayload, setRequestPayload, setCampaignData, setFor
                         <BootstrapDropdown
                             data={LISTING_SCOPE_DROPDOWN_DATA}
                             defaultItem={
-                                myCommunicationsOnly ? 'My communications' : 'All communications'
+                                isGoldenCampaignOnly
+                                    ? 'Golden communications'
+                                    : myCommunicationsOnly
+                                        ? 'My communications'
+                                        : 'All communications'
                             }
                             alignRight
                             containerClass="comm-listing-scope-dd"
                             className="comm-listing-scope-dd__rs"
                             onSelect={(item) => {
-                                const next = item === 'My communications';
-                                void handleMyCommunicationsToggleRef.current(next);
+                                const nextGolden = item === 'Golden communications';
+                                const nextMy = item === 'My communications';
+                                void handleMyCommunicationsToggleRef.current(nextMy, nextGolden);
                             }}
                         />
                     </div>

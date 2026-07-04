@@ -86,21 +86,6 @@ export const convertToNumeric = (fieldValue, originalValue = null) => {
 };
 
 /**
- * Safely retrieves a nested property from an object
- * Used throughout grid components for safe property access
- * 
- * @param {*} obj - Object to retrieve from
- * @param {string} path - Dot notation path (e.g., 'user.profile.name')
- * @param {*} defaultValue - Value to return if path not found
- * @returns {*} Value at path or defaultValue
- */
-export const safeGet = (obj, path, defaultValue = null) => {
-  if (obj == null || path == null || path === '') return defaultValue;
-  const value = String(path).split('.').reduce((acc, part) => acc?.[part], obj);
-  return value !== undefined ? value : defaultValue;
-};
-
-/**
  * Checks if an array or object is empty and safe to process
  * 
  * @param {*} value - Value to check

@@ -49,7 +49,7 @@
             content: '';
             position: absolute;
             left: 0;
-            bottom: 4px;
+            bottom: 3px;
             width: 15px;
             height: 1px;
             border-bottom: 3px solid $primary-red;
@@ -150,10 +150,11 @@
 
         .validation-message {
             font-size: $font-xsm;
-            padding-right: 15px;
-            padding-bottom: 5px;
-            top: 0;
+            padding-right: 12px;
+            padding-bottom: 6px;
+            top: 4px;
             width: 90%;
+            padding-left: 0;
         }
     }
 }

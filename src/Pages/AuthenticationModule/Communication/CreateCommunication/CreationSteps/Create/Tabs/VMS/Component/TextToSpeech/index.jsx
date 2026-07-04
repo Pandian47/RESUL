@@ -1,10 +1,9 @@
 import { REPEAT_TIMES, TEXT_EDITOR_INFO } from '../../constant';
 import { ENTER_EDITOR_TEXT, SELECT_LANGUAGE, SELECT_REPEAT_TIMES, SELECT_TEMPLATE_NAME } from 'Constants/GlobalConstant/ValidationMessage';
 import { LANGUAGE, NO_OF_REPEATS, REPEAT, TEMPLATE_NAME, TEXT } from 'Constants/GlobalConstant/Placeholders';
-import { circle_question_mark_medium, circle_question_mark_mini } from 'Constants/GlobalConstant/Glyphicons';
+import { circle_question_mark_mini } from 'Constants/GlobalConstant/Glyphicons';
 import { Fragment, useContext, useRef } from 'react';
-import _get from 'lodash/get';
-import _isEmpty from 'lodash/isEmpty';
+import { get as _get, isEmpty as _isEmpty } from 'Utils/modules/lodashReplacements';
 import { useSelector } from 'react-redux';
 import { Row, Col } from 'react-bootstrap';
 import { useFormContext, Controller } from 'react-hook-form';
@@ -100,13 +99,15 @@ const TextToSpeech = () => {
     }`;
     return (
         <Fragment>
-            <div className="form-group mt50">
+            <div className="form-group mt20">
                 <Row>
-                    <Col sm={{ offset: 1, span: 2 }}>
-                        <label className="control-label-left">{TEMPLATE_NAME}</label>
+                <Col sm={3}  style={{ width: '20%' }}>
+                <label className="control-label-left">{TEMPLATE_NAME}</label>
                     </Col>
-                    <Col sm={6} className="ml8 pr0">
-                        <RSKendoDropdown
+                    <Col
+                        sm={6}
+                        style={{ width: '544px' }}
+                    >                        <RSKendoDropdown
                             control={control}
                             name={'templateName'}
                             data={template}
@@ -124,11 +125,13 @@ const TextToSpeech = () => {
             </div>
             <div className="form-group">
                 <Row>
-                    <Col sm={{ offset: 1, span: 2 }}>
+                <Col sm={3}  style={{ width: '20%' }}>
                         <label className="control-label-left">{LANGUAGE}</label>
                     </Col>
-                    <Col sm={6} className="ml8 pr0">
-                        <RSKendoDropdown
+                    <Col
+                        sm={6}
+                        style={{ width: '544px' }}
+                    >                           <RSKendoDropdown
                             control={control}
                             name={'language'}
                             data={language}
@@ -146,11 +149,13 @@ const TextToSpeech = () => {
             </div>
             <div className="form-group">
                 <Row>
-                    <Col sm={{ offset: 1, span: 2 }}>
+                <Col sm={3}  style={{ width: '20%' }}>
                         <label className="control-label-left">{TEXT}</label>
                     </Col>
-                    <Col sm={6} className="ml8 pr0">
-                        <div className="rs-textarea-wrapper form-floating rs-kendo-editor-wrapper VMS_textarea_wrapper">
+                    <Col
+                        sm={6}
+                        style={{ width: '544px' }}
+                    >                           <div className="rs-textarea-wrapper form-floating rs-kendo-editor-wrapper VMS_textarea_wrapper">
                             {editorErrorMessage && <div className="validation-message">{editorErrorMessage}</div>}
                             <Controller
                                 control={control}
@@ -208,22 +213,17 @@ const TextToSpeech = () => {
                             </div>
                         </div>
                     </Col>
-                    {/* <Col sm={1} className="fg-icons-wrapper pl0">
-                        <div className="fg-icons">
-                            <RSPPophover text={TEXT_EDITOR_INFO}>
-                                <i className={`${circle_question_mark_medium} icon-md color-primary-blue`} />
-                            </RSPPophover>
-                        </div>
-                    </Col> */}
                 </Row>
             </div>
             <div className="form-group">
                 <Row>
-                    <Col sm={{ offset: 1, span: 2 }}>
+                <Col sm={3}  style={{ width: '20%' }}>
                         <label className="control-label-left">{REPEAT}</label>
                     </Col>
-                    <Col sm={6} className="ml8 pr0">
-                        <RSKendoDropdown
+                    <Col
+                        sm={6}
+                        style={{ width: '544px' }}
+                    >                           <RSKendoDropdown
                             control={control}
                             name={'repeat'}
                             required

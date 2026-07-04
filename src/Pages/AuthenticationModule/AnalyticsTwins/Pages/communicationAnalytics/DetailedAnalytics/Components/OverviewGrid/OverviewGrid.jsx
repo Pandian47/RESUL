@@ -55,7 +55,7 @@ const OverviewGrid = ({
                 <div className="d-flex align-items-center">
                     <h3 className="pr10 mb-0">{OVERVIEW}</h3>
                     {isTime && <small className="pr10 font-xsm position-relative top1">({AS_ON}:  {getUserCurrentFormat(date,{isOffset:true})?.utcformat})</small>}
-                    <span className={`${downloadUI ? 'mt-3' : 'position-relative top5'}`}>
+                    <span className={`${downloadUI ? 'mt-3' : ''}`}>
                         <RSTooltip text={PREVIEW} className="lh0">
                             {isPreview && (
                                 <i

@@ -10,15 +10,10 @@ import { createCommunicationSettingsNavState, NOTIFICATION_TAB_ID } from 'Utils/
 import { getWarningPopupMessage } from 'Utils/modules/warningPopup';
 import { AUDIENCE_TOOLTIP_TEXT, buildInPageSplitInitFromForm, buildPayload, CAUROSEL_NAME, DELIVERY_TYPE_FOR_MOBILE, findLayoutPositionData, FORM_INITIAL_STATE, getCreateContentRenderConfig, getMobileEditFormData, getMobileNotificationContentClickOffClass, getMobileSplitImportValidationError, getSplitTabKeysForValidation, handleFieldValueCheck, hasMobileImportFileContent, IN_PAGE_SPLIT_CONTENT_DEFAULTS, INITIAL_CAROUSEL_STATE, INITIAL_SPLIT_AB_STATE, isInPageBannerSelected, isMobileNotificationContentVisible, MODAL_POSISTION_FOR_MOBILE, refreshFieldsOnSplitAB, refreshLayoutPosition, SEND_PUSH, shouldEnableSplitSize, shouldShowSplitABSwitch, splitObj, WATCHLIST } from './constant';
 import { ENTER_DOMAIN, ENTER_HASHTAG, ENTER_INBOX_CLASSIFICATION, SELECT_INBOX_CLASSIFICATION, SELECT_LAYOUT_POSITION, SELECT_MOBILE_APP, SELECT_POSITION, SELECT_PUSHTYPE, SELECT_SEND_PUSH } from 'Constants/GlobalConstant/ValidationMessage';
-import { ADJUST_SPLIT_SIZE, ARE_YOU_SURE_WANT_TO_RESET, AUDIENCE, AUDIENCE_CHANGE_CONFIRMATION, AUDIENCE_COUNT_ZERO_ENABLE_AUTO_REFRESH, AUTO_REFRESH, AUTO_REFRESH_POP_HOVER_TEXT, AUTO_SCHEDULE, AUTO_SCHEDULE_SPLITS, CANCEL, CHECK_START_DATE_AND_END_DATE, CLOSE, COMMUNICATION_LIST_SCREEN, COMMUNICATION_SCHEDULED, IGNORE_CHANNEL, INBOX_CLASSIFICATION, LAYOUT_POSITION, MINIMUM_DIFFERENCE_SPLITS, MOBILE_APP, NEXT, OK, POSITION, PUSH_TYPE, RESET, RESET_DOMAIN, SAVE, SPLIT_AB_TEST, SPLIT_AB_TEST_TEXT, SPLIT_AB_TURNOFF, UPLOAD_MEDIA, WARNING, YES } from 'Constants/GlobalConstant/Placeholders';
+import { ADJUST_SPLIT_SIZE, ARE_YOU_SURE_WANT_TO_RESET, AUDIENCE, AUDIENCE_CHANGE_CONFIRMATION, AUDIENCE_COUNT_ZERO_ENABLE_AUTO_REFRESH, AUTO_REFRESH, AUTO_REFRESH_POP_HOVER_TEXT, AUTO_SCHEDULE, AUTO_SCHEDULE_SPLITS, CANCEL, CHECK_START_DATE_AND_END_DATE, CLOSE, COMMUNICATION_LIST_SCREEN, COMMUNICATION_SCHEDULED, IGNORE_CHANNEL, INBOX_CLASSIFICATION, LAYOUT_POSITION, MANDATORY_SMARTLINK, MINIMUM_DIFFERENCE_SPLITS, MOBILE_APP, MOBILE_SMARTLINK_MANDATORY, NEXT, OK, POSITION, PUSH_TYPE, RESET, RESET_DOMAIN, SAVE, SPLIT_AB_TEST, SPLIT_AB_TEST_TEXT, SPLIT_AB_TURNOFF, UPLOAD_MEDIA, WARNING, YES } from 'Constants/GlobalConstant/Placeholders';
 import { adjust_split_medium, circle_minus_fill_large, circle_minus_fill_medium, circle_plus_fill_edge_medium, circle_plus_fill_medium, circle_plus_medium, circle_question_mark_medium, circle_question_mark_mini, close_medium, close_mini, restart_medium, save_mini, shield_medium, shield_tick_medium, timer_medium } from 'Constants/GlobalConstant/Glyphicons';
 import { Fragment, useEffect, useMemo, useRef, useState } from 'react';
-import _map from 'lodash/map';
-import _get from 'lodash/get';
-import _find from 'lodash/find';
-import _forEach from 'lodash/forEach';
-import _cloneDeep from 'lodash/cloneDeep';
-import _isEmpty from 'lodash/isEmpty';
+import { map as _map,get as _get,find as _find,forEach as _forEach,cloneDeep as _cloneDeep,isEmpty as _isEmpty } from 'Utils/modules/lodashReplacements';
 import { Row, Col } from 'react-bootstrap';
 import { useForm, FormProvider } from 'react-hook-form';
 
@@ -71,7 +66,7 @@ import { updateVerticalTab, updateTab, updateDirtyState, resetCreateCommunicatio
 import { getSmartUrl } from 'Reducers/communication/createCommunication/smartlink/request';
 import { getRequestApprovalList, getSessionId, getUtcTimeData } from 'Reducers/globalState/selector';
 import { updateSmartLinkShow } from 'Reducers/communication/createCommunication/execute/reducer';
-import { getGeneratedLink, getMobileAppId, getSmartLinksListWithLabels } from 'Reducers/communication/createCommunication/smartlink/selectors';
+import { getGeneratedLink, getMobileSmartLinkOverlayMessage, getResolvedMobileAppId, getSmartLinksListWithLabels, smartlinkEdit } from 'Reducers/communication/createCommunication/smartlink/selectors';
 import { getAudioListByApp, getInboxClassification, getMobileApp, getMobilePushById, getNotificationWebPush, getRecipientForNotification, saveMobilePush } from 'Reducers/communication/createCommunication/Create/request';
 import { updateChannelAudiences } from 'Reducers/communication/createCommunication/plan/reducer';
 import { useNavigate } from 'react-router-dom';
@@ -134,7 +129,20 @@ const MobileNotification = ({ type, mCampType }) => {
         smartLinks = [];
     }
     const smartLinksWithLabels = useSelector((state) => getSmartLinksListWithLabels(state));
-    const mobileAppId = useSelector((state) => getMobileAppId(state));
+    const resolvedMobileAppId = useSelector((state) => getResolvedMobileAppId(state));
+    const editFlow = useSelector((state) => smartlinkEdit(state));
+
+    const smartLinkOverlayMessage = useMemo(
+        () =>
+            getMobileSmartLinkOverlayMessage({
+                smartLink1,
+                smartLink,
+                editFlow,
+                noSmartLinkMessage: MANDATORY_SMARTLINK,
+                mobileNotSetupMessage: MOBILE_SMARTLINK_MANDATORY,
+            }),
+        [smartLink1, smartLink, editFlow],
+    );
 
     const audienceLoader = useApiLoader();
     const inboxClassificationLoader = useApiLoader();
@@ -529,18 +537,18 @@ const MobileNotification = ({ type, mCampType }) => {
 
     useEffect(() => {
         if (checkSave) {
-            if (!mobileAppId || !smartLink1 || !Object.values(smartLink)[0]) setIsSmartLink(true);
+            if (!resolvedMobileAppId || !smartLink1 || !Object.values(smartLink)[0]) setIsSmartLink(true);
             else setIsSmartLink(false);
         } else {
-            if (!mobileAppId || !smartLink1 || !Object.values(smartLink)[0]) setIsSmartLink(true);
+            if (!resolvedMobileAppId || !smartLink1 || !Object.values(smartLink)[0]) setIsSmartLink(true);
             else setIsSmartLink(false);
         }
-    }, [smartLink1, smartLink, mobileAppId, showSmartLink]);
+    }, [smartLink1, smartLink, resolvedMobileAppId, showSmartLink]);
 
     useEffect(() => {
-        mobileAppId && _get(location, 'campaignId', 0) > 0;
-        getMobileAppData(mobileAppId);
-    }, [mobileAppId, location]);
+        resolvedMobileAppId && _get(location, 'campaignId', 0) > 0;
+        getMobileAppData(resolvedMobileAppId);
+    }, [resolvedMobileAppId, location]);
 
     useEffect(() => {
         if (deliveryType?.id === 5) {
@@ -956,7 +964,7 @@ const MobileNotification = ({ type, mCampType }) => {
                     mobAudience,
                     setDirtyReset,
                     setEditAutoScheduleDetails,
-                    mobileAppId,
+                    resolvedMobileAppId,
                     isTemplateFlow
                 );
 
@@ -2310,6 +2318,7 @@ const MobileNotification = ({ type, mCampType }) => {
                         >
                             {isSmartLink && isCommunicationEditable && (
                                 <SmartLinkEnable
+                                    message={smartLinkOverlayMessage}
                                     secondaryButton={false}
                                     onSave={() => setIsSmartLink(false)}
                                     onReject={() => {
@@ -2818,7 +2827,7 @@ const MobileNotification = ({ type, mCampType }) => {
                                 <InpageContainer
                                     data={{
                                         mobileApp: mobileApp,
-                                        appId: mobileApp?.appGuId || mobileAppId || '',
+                                        appId: mobileApp?.appGuId || resolvedMobileAppId || '',
                                         domainName: '',
                                         bannerDetails: notification?.mobile?.inPageBanner,
                                         editDetails: {

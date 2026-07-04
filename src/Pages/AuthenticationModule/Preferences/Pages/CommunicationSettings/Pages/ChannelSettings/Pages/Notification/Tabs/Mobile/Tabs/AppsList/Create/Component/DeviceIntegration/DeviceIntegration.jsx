@@ -3,7 +3,7 @@ import { APNS_APPLE_ID_INVALID, APNS_KEY_ID_REQUIRED, APNS_TEAM_ID_REQUIRED, BUN
 import { APNS_KEY_ID, APNS_TEAM_ID, APPSTORE_URL, BUNDLE_ID, ENVIRONMENT_HELP_TEXT, FCM_SENDERID, FCM_SEVERKEY, LANGUAGE, MOBILE_PLATFORM, PLAYSTORE_URL } from 'Constants/GlobalConstant/Placeholders';
 import { circle_minus_fill_medium, circle_plus_fill_edge_medium, circle_question_mark_mini } from 'Constants/GlobalConstant/Glyphicons';
 import { useState } from 'react';
-import _cloneDeep from 'lodash/cloneDeep';
+import { cloneDeep as _cloneDeep } from 'Utils/modules/lodashReplacements';
 import { Accordion, Row, Col } from 'react-bootstrap';
 import { useFieldArray, useFormContext, useWatch } from 'react-hook-form';
 

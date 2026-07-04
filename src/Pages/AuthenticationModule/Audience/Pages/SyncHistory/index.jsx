@@ -42,9 +42,8 @@ const SyncHistory = () => {
     const [graphToggle, setGraphToggle] = useState(true);
     const currentUTCdateTime = safeToDate(utcTimeData?.utcTime, { resetTime: false, fallback: new Date() });
     const locationState = useQueryParams('/audience');
-    const [currTab, setCurrTab] = useState(locationState?.connectionMode === 2 ? 1 : 0);
 
-    const { selectedIdx, tabconfig, setSelectedIndex } = useTabState({
+    const { selectedIdx, tabconfig, setSelectedIndex, setSelectedIdx } = useTabState({
         defaultTab: locationState?.connectionMode === 2 ? 1 : 0,
         tabData: TAB_CONFIG,
         callBack: (tab = {}, tabIdx) => {
@@ -58,7 +57,6 @@ const SyncHistory = () => {
                 itemsPerPage: pageSize,
             }));
             setConfig(true);
-            setCurrTab(tabIdx ?? 0);
             dispatch(
                 updateSynchistory({
                     syncHistory: [],
@@ -132,9 +130,8 @@ const SyncHistory = () => {
 
     useEffect(() => {
         const tabIdx = locationState?.connectionMode === 2 ? 1 : 0;
-        setCurrTab(tabIdx);
-        setSelectedIndex(tabIdx);
-    }, [locationState?.connectionMode]);
+        setSelectedIdx(tabIdx);
+    }, [locationState?.connectionMode, setSelectedIdx]);
 
     useSkipFirstRender(() => {
         const start = getTimezoneAdjustedStartDate();
@@ -331,9 +328,9 @@ const SyncHistory = () => {
                                                 <i
                                                     className={`${
                                                         graphToggle
-                                                            ? data_attributes_schema_medium
+                                                            ? data_attributes_schema_large
                                                             : list_large
-                                                    } icon-md color-primary-blue ${!graphToggle && 'pl15'}`}
+                                                    } icon-lg color-primary-blue ${!graphToggle && 'pl15'}`}
                                                     onClick={() => {
                                                         if (graphToggle) {
                                                             openPipelineView();
@@ -360,7 +357,7 @@ const SyncHistory = () => {
                                     </ul>
                                 </div>
 
-                                <div className={graphToggle ? undefined : 'd-none'}>
+                                <div className={graphToggle ? '' : 'd-none'}>
                                     <div className="tabs-content mb20 pb70">
                                         {tabconfig?.[selectedIdx]?.component?.()}
                                     </div>

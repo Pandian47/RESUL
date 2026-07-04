@@ -2,7 +2,7 @@ import { checkRFAApproved, checkTrigger, statusIdCheck } from 'Utils/modules/cam
 import { MAX_LENGTH150 } from 'Constants/GlobalConstant/Regex';
 import { ADD_VIEW_IN_BROWSER, EMAIL_NOT_DISPLAYING, INBOX_FIRST_LINE_MESSAGE, INBOX_FIRST_LINE_PREVIEW, RES_75_CHARACTERS, VIEW_IN_BROWSER } from 'Constants/GlobalConstant/Placeholders';
 import { useEffect, useCallback, useRef, useState } from 'react';
-import _get from 'lodash/get';
+import { get as _get } from 'Utils/modules/lodashReplacements';
 import { useFormContext } from 'react-hook-form';
 import { EditorTools } from '@progress/kendo-react-editor';
 import { Row, Col } from 'react-bootstrap';
@@ -19,6 +19,9 @@ import { useSelector } from 'react-redux';
 import useQueryParams from 'Hooks/useQueryParams';
 import RSEmojiPickerInput from 'Components/EmojiPickerInput';
 import SmartLinkInsertingOverlay from 'Components/SmartLinkInsertingOverlay';
+
+const EmailPersonalizeTool = (props) => <Personalize {...props} alignRight={true} />;
+
 const {
     Bold,
     Italic,
@@ -136,6 +139,7 @@ const TextEditor = ({ isSplit = false, fieldName = '', className }) => {
     const SmartLinkWithClass = (props) => (
         <SmartLink
             {...props}
+            alignRight={true}
             customClass="email-editor-smartlink"
             onLoadingChange={setIsSmartLinkInserting}
         />
@@ -191,7 +195,7 @@ const TextEditor = ({ isSplit = false, fieldName = '', className }) => {
         [InsertLinks, Unlink, ImageUploadTool],
         [OrderedList, UnorderedList],
         [AlignLeft, AlignCenter, AlignRight, AlignJustify],
-        [InsertOffer, Personalize, SmartLinkTool],
+        [InsertOffer, EmailPersonalizeTool, SmartLinkTool],
     ];
 
     const editorClassName = `rs-kendo-editor rsk-dd-start${

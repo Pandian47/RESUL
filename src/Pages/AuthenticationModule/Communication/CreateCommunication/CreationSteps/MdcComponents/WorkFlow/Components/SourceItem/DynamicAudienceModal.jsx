@@ -13,8 +13,7 @@ import { Container, Row, Col } from 'react-bootstrap';
 import RSModal from 'Components/RSModal';
 import { RSSecondaryButton, RSPrimaryButton } from 'Components/Buttons';
 import { pencil_edit_mini } from 'Constants/GlobalConstant/Glyphicons';
-import _get from 'lodash/get';
-import _find from 'lodash/find';
+import { get as _get, find as _find } from 'Utils/modules/lodashReplacements';
 
 
 import RSKendoDropDownList from 'Components/FormFields/RSKendoDropdown';
@@ -385,7 +384,7 @@ const DynamicAudienceModal = ({
                              <Col sm={2} className="text-left">
                                 <label className="control-label-left fs19">{"Audience"}</label>
                             </Col>
-                            <Col sm={7} className={`${disableSave || isAudienceFieldLoading ? 'click-off' : ''}`}>
+                            <Col sm={6} className={`${disableSave || isAudienceFieldLoading ? 'click-off' : ''} pr0`}>
                                 <RSKendoDropDownList
                                     control={control}
                                     name="dynamicList"

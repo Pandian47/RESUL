@@ -2,7 +2,7 @@ import { MAX_LENGTH150, URLPATTERN } from 'Constants/GlobalConstant/Regex';
 import { ADD_VIEW_IN_BROWSER, COMMUNICATION_URL, EMAIL_NOT_DISPLAYING, INBOX_FIRST_LINE_MESSAGE, INBOX_FIRST_LINE_PREVIEW, RES_75_CHARACTERS, VIEW_IN_BROWSER } from 'Constants/GlobalConstant/Placeholders';
 import { email_preview_medium, import_link_large, restart_medium, spam_assassin_medium, zip_large } from 'Constants/GlobalConstant/Glyphicons';
 import { Fragment, useEffect, useRef, useState } from 'react';
-import _get from 'lodash/get';
+import { get as _get } from 'Utils/modules/lodashReplacements';
 
 import { useDispatch, useSelector } from 'react-redux';
 import { Row, Col } from 'react-bootstrap';
@@ -21,6 +21,7 @@ import useQueryParams from 'Hooks/useQueryParams';
 import { getSessionId } from 'Reducers/globalState/selector';
 import { update_failures_API_Errors } from 'Reducers/globalState/reducer';
 import { iframeStyles } from 'Pages/AuthenticationModule/Components/Import/constant';
+import { UpdateState } from 'Utils/modules/misc';
 const scriptTagStartText = '<!-- Start of Script Conditions -->';
 const scripttagEndText = '<!-- End of Script Conditions -->';
 const tagStartText = '<!-- TCTAG:- [START] -->';
@@ -740,13 +741,3 @@ const Import = ({ fieldName = '', isSplit = false, showBrowerText = false, isNot
 };
 
 export default Import;
-
-function findParagraphWithText(text) {
-    const paragraphs = document.querySelectorAll('p');
-    for (const paragraph of paragraphs) {
-        if (paragraph.textContent.includes(text)) {
-            return paragraph;
-        }
-    }
-    return null;
-}

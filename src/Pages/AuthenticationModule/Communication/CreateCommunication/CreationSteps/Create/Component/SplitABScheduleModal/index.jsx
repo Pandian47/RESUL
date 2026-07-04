@@ -3,8 +3,7 @@ import { AUTO_SCHEDULE, CANCEL, CONTENT, DURATION, MUST_BE_2_DAYS, SAVE, SCHEDUL
 import { time_medium } from 'Constants/GlobalConstant/Glyphicons';
 import { Fragment, useEffect, useMemo, useState } from 'react';
 import PropTypes from 'prop-types';
-import _get from 'lodash/get';
-import _forEach from 'lodash/forEach';
+import { get as _get,forEach as _forEach  } from 'Utils/modules/lodashReplacements';
 import { Row, Col } from 'react-bootstrap';
 import { useFormContext } from 'react-hook-form';
 

@@ -1,4 +1,4 @@
-import { circle_plus_medium } from 'Constants/GlobalConstant/Glyphicons';
+import { circle_plus_fill_medium } from 'Constants/GlobalConstant/Glyphicons';
 import Icon from 'Components/Icon/Icon';
 import RSTooltip from 'Components/RSTooltip';
 
@@ -9,10 +9,10 @@ const NewAttributeBtn = ({ title ='' , handleModalAttribute =() =>{} , show= '',
                 <span className = {titleClassName}>{title}</span>
                 <RSTooltip text={'Add'} position='top' className='lh0'>
                 <Icon
-                    icon={circle_plus_medium}
+                    icon={circle_plus_fill_medium}
                     position="bottom"
                     size={iconSize}
-                    color="primary-color"
+                    color="color-primary-blue"
                     // callBack={handleModalAttribute}
                 />
                 </RSTooltip>

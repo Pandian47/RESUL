@@ -1,7 +1,6 @@
 import { AUDIENCE_UPLOAD_LIST_LABELS as L } from 'Pages/AuthenticationModule/Audience/audienceUploadListLabels';
 import { AUDIENCE_GLYPH as G } from 'Pages/AuthenticationModule/Audience/audienceGlyphs';
 import { Fragment } from 'react';
-import _map from 'lodash/map';
 
 const getFileTypeLabel = (fileType) => {
     return fileType && fileType.toLowerCase() === 'excel' ? 'excel' : 'CSV';
@@ -144,7 +143,7 @@ export const getListsConstant = (fileType = 'CSV') => {
 
 export const ListComponent = ({ options }) => (
     <Fragment>
-        {_map(options, ({ text, id }) => (
+        {options.map(({ text, id }) => (
             <li key={id}>
                 <i className={`${G.circle_arrow_right_mini} icon-xs color-white cursor-normal`} />
                 <span>{text}</span>

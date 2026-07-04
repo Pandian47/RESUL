@@ -1,5 +1,5 @@
 import { createSlice } from '@reduxjs/toolkit';
-import _map from 'lodash/map';
+import { map as _map } from 'Utils/modules/lodashReplacements';
 import initialState from './initialState';
 import { updateErrorArray } from 'Utils/modules/display';
 
@@ -32,7 +32,16 @@ const globalstate = createSlice({
         update_consumptionMonth: (state, { payload }) => ({ ...state, consumptionMM: payload }),
         latest_consumptionYear: (state, { payload }) => ({ ...state, u_consumptionYY: payload }),
         latest_consumptionMonth: (state, { payload }) => ({ ...state, u_consumptionMM: payload }),
-        updateSessionModal: (state, { payload }) => ({ ...state, showSessionModal: payload }),
+        updateSessionModal: (state, { payload }) => ({
+            ...state,
+            showSessionModal: payload,
+            ...(payload === true ? { pendingSessionRecovery: true } : {}),
+        }),
+        notifySessionRecovered: (state) => ({
+            ...state,
+            sessionRecoverySeq: (state.sessionRecoverySeq ?? 0) + 1,
+            pendingSessionRecovery: false,
+        }),
         updateRetry: (state, { payload }) => ({ ...state, retryTime: state.retryTime++, retryMethod: payload }),
         resetRetry: (state) => ({ ...state, retryTime: 0, retryMethod: null }),
         updateApprovalList: (state, { payload }) => {
@@ -158,6 +167,7 @@ export const {
     resetGlobalState,
     updateAuth,
     updateSessionModal,
+    notifySessionRecovered,
     updateRetry,
     resetRetry,
     updateBuAndDepId,

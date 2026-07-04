@@ -31,8 +31,16 @@ const renderLazyChannel = (LazyComponent, fallback) => () => (
     </Suspense>
 );
 
+/** Icon sub-tab chunk load — skeleton supplies the bordered panel (no parent box yet). */
 const renderLazyInner = (LazyComponent) => () => (
     <Suspense fallback={<CommunicationSettingsInnerTabLoadingBlock />}>
+        <LazyComponent />
+    </Suspense>
+);
+
+/** Horizontal sub-tab chunk load — parent already has `box-design bd-top-border`. */
+export const renderEmbeddedLazyInner = (LazyComponent) => () => (
+    <Suspense fallback={<CommunicationSettingsInnerTabLoadingBlock embedded />}>
         <LazyComponent />
     </Suspense>
 );

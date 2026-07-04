@@ -58,12 +58,6 @@ export const getInsightChartType = (charttype) => {
     return 'pie';
 };
 
-/** True when column name refers to a day dimension (e.g. Day, Day wise, Day Wise). */
-export const isDayRelatedColumn = (column) => {
-    const text = String(column || '').toLowerCase();
-    return /\bday\b/.test(text) || /\bday[-\s]?wise\b/.test(text);
-};
-
 /** Normalize column for case-insensitive comparisons (trim, lowercase, single spaces). */
 export const normalizeInsightColumn = (column) =>
     String(column || '')
@@ -83,27 +77,6 @@ export const INSIGHT_COLUMN_CHART_OVERRIDES = [
         columns: ['data storage', 'storage'],
     },
 ];
-
-const columnMatchesOverride = (normalizedColumn, columns = []) =>
-    columns.some((matcher) => {
-        if (typeof matcher === 'function') return matcher(normalizedColumn);
-        if (matcher instanceof RegExp) return matcher.test(normalizedColumn);
-        return normalizedColumn === normalizeInsightColumn(matcher);
-    });
-
-/** First matching override for this column + resolved API chart type, or null. */
-export const getColumnChartOverride = (resolvedChartType, column) => {
-    const normalized = normalizeInsightColumn(column);
-    for (const rule of INSIGHT_COLUMN_CHART_OVERRIDES) {
-        if (rule.fromApiTypes?.length && !rule.fromApiTypes.includes(resolvedChartType)) {
-            continue;
-        }
-        if (columnMatchesOverride(normalized, rule.columns)) {
-            return rule.chartType;
-        }
-    }
-    return null;
-};
 
 const INSIGHT_DATE_PARSE_FORMATS = [
     'YYYY-MM-DD',
@@ -148,10 +121,6 @@ export const isDateFormatLabel = (label) => {
 const INSIGHT_BUCKET_LABEL_REGEX = /^(others?|unknown|n\/a|na|none|null|undefined|-)$/i;
 
 export const isInsightBucketLabel = (label) => INSIGHT_BUCKET_LABEL_REGEX.test(String(label ?? '').trim());
-
-/** True when at least one value label is a time. */
-export const insightValuesHasTimeLabels = (values) =>
-    (values || []).some((v) => isTimeFormatLabel(v?.label));
 
 /** Time labels mixed only with bucket labels (e.g. 03:12, 16:35, Others). */
 export const insightValuesHasTimeAndBuckets = (values) => {
@@ -285,9 +254,6 @@ export const buildInsightClockGaugeArgs = (values, height = 325) => {
 
     return { height, series, data: [maxHour, maxHour + 1] };
 };
-
-/** @deprecated Use getInsightChartType(charttype) — API charttype is authoritative. */
-export const resolveInsightChartType = (charttype) => getInsightChartType(charttype);
 
 /** Use clock gauge (gaugeChartOptions) for hour/time columns or time (+ bucket) labels. */
 export const shouldUseClockGauge = (column, values) => shouldResolveToInsightGauge(column, values);

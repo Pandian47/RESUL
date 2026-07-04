@@ -1,11 +1,11 @@
 import { csv_download_large, download_medium } from 'Constants/GlobalConstant/Glyphicons';
 import { encodeUrl } from 'Utils/modules/crypto';
-import { getUserCurrentFormat, getYYMMDD } from 'Utils/modules/dateTime';
+import { getUserCurrentFormat, getYYMM, getYYMMDD } from 'Utils/modules/dateTime';
 import { truncateTitle } from 'Utils/modules/displayCore';
 import { downloadCSVcommasFile } from 'Utils/modules/download';
 import { numberWithCommas } from 'Utils/modules/formatters';
 import { useEffect, useState } from 'react';
-import _map from 'lodash/map';
+import { map as _map } from 'Utils/modules/lodashReplacements';
 import KendoGrid from 'Components/RSKendoGrid';
 
 
@@ -22,6 +22,8 @@ import { useNavigate } from 'react-router-dom';
 import { updateAnalyticsDetail } from 'Reducers/analytics/communicationAnalytics/reducer';
 import ConsumptionChannelHeader from '../../ConsumptionChannelHeader/ConsumptionChannelHeader';
 import { commonConsumptionColumns } from '../../../../constant';
+import {getFirstDayOfMonth, getCurrentDateOfMonth} from 'Utils/modules/dateTime.jsx'
+
 const ConsumptionSocialMedia = () => {
     const dispatch = useDispatch();
     const navigate = useNavigate();

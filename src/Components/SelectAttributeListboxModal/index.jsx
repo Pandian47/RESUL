@@ -4,7 +4,7 @@ import { Row, Col } from 'react-bootstrap';
 import { RSPrimaryButton, RSSecondaryButton } from 'Components/Buttons';
 import ResKendoListbox from 'Pages/KendoDocs/CommonComponents/ResKendoListbox';
 import RSModal from 'Components/RSModal';
-import _isEqual from 'lodash/isEqual';
+import { isEqual as _isEqual } from 'Utils/modules/lodashReplacements';
 import RSInput from 'Components/FormFields/RSInput';
 import { useForm } from 'react-hook-form';
 

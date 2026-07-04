@@ -2,7 +2,6 @@ import { pieChartOptions } from 'Constants/Charts';
 import { useState } from 'react';
 import { Col } from 'react-bootstrap';
 import { useSelector } from 'react-redux';
-import _map from 'lodash/map';
 
 import RSHighchartsContainer from 'Components/Highcharts';
 import { getKnownToUnknown, getSummaryList } from 'Reducers/analyticsTwins/analyticsSummary/selector';
@@ -40,7 +39,7 @@ const UnknownToKnown = ({ date }) => {
                                     smallText={`As on: (${date})`}
                                     options={pieChartOptions({
                                         height: 200,
-                                        series: _map(knownToUnknown, ({ name, intValue: y }) => ({
+                                        series: (knownToUnknown ?? []).map(({ name, intValue: y }) => ({
                                             name,
                                             y,
                                         })),
@@ -54,7 +53,7 @@ const UnknownToKnown = ({ date }) => {
                                 smallText={`As on: (${date})`}
                                 options={pieChartOptions({
                                     height: 200,
-                                    series: _map(customer, ({ name, color, intValue: y }) => ({
+                                    series: (customer ?? []).map(({ name, color, intValue: y }) => ({
                                         name,
                                         color,
                                         y,

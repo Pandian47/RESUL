@@ -1,14 +1,8 @@
 ﻿import { alert_medium, circle_arrow_right_medium, settings_medium } from 'Constants/GlobalConstant/Glyphicons';
 import { memo, useContext, useEffect, useState } from 'react';
-import _get from 'lodash/get';
-import _find from 'lodash/find';
-import _differenceBy from 'lodash/differenceBy';
-import _differenceWith from 'lodash/differenceWith';
-import _isEqual from 'lodash/isEqual';
-import _filter from 'lodash/filter';
+import { get as _get, find as _find, differenceBy as _differenceBy, differenceWith as _differenceWith, isEqual as _isEqual, filter as _filter, cloneDeep as _cloneDeep } from 'Utils/modules/lodashReplacements';
 
 import TriggerActionModal from './TriggerActionModal';
-import _cloneDeep from 'lodash/cloneDeep';
 import CreateWorkFlowContext, { CreateWorkFlowOtherContext } from '../../context';
 import {
     GenerateNodeId,

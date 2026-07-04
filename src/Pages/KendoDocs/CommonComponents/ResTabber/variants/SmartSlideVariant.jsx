@@ -1,7 +1,7 @@
 import { ADD, ARE_YOU_SURE_REMOVE, ARE_YOU_SURE_RESET, ARE_YOU_SURE_WANT_TO_RESET, CONFIRMATION, DO_YOU_WISH_TO_CONTINUE_NEW, EDIT, REMOVE, RESET, SWITCHING_TABS_WILL_DESCARD_NEW } from 'Constants/GlobalConstant/Placeholders';
 import { arrow_left_mini, arrow_right_mini, pencil_edit_medium, restart_medium } from 'Constants/GlobalConstant/Glyphicons';
 import { Fragment, memo, useEffect, useRef, useState } from 'react';
-import _isNil from 'lodash/isNil';
+import { isNil as _isNil } from 'Utils/modules/lodashReplacements';
 import { useSelector } from 'react-redux';
 import { Row, Col } from 'react-bootstrap';
 
@@ -10,7 +10,7 @@ import RSConfirmationModal from 'Components/ConfirmationModal';
 import { ConditionalWrapper, Wrapper } from 'Components/RSTabber/Component/RSTab/constant.jsx';
 import TabLabelEditor from 'Components/RSTabSlide/TabLabelEditor';
 import TruncatedCell from 'Components/RSKendoGrid/TruncateCell.jsx'
-import { mapResTabberClasses } from '../utils';
+import { mapResTabberClasses, renderTabPanel } from '../utils';
 import { SMART_SLIDE_DEFAULT_TAB_MAX } from '../config';
 import { selectCreateCommunicationState } from 'Reducers/communication/createCommunication/Create/selectors';
 
@@ -551,9 +551,7 @@ const SmartSlideVariant = ({
             </div>
 
             <div className={componentClassName || componentClassname}>
-                {tabData[defaultTab] &&
-                    typeof tabData[defaultTab].component === 'function' &&
-                    tabData[defaultTab].component()}
+                {renderTabPanel(tabData[defaultTab])}
             </div>
         </div>
     );

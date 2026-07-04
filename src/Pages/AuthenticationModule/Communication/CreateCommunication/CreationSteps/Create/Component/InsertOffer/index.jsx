@@ -43,19 +43,11 @@ const InsertOffer = (props) => {
                 show={show}
                 handleClose={() => setShow(!show)}
                 confirm={(data) => {
+                    const { offerVal } = data;
                     if (textArea) {
                         props?.insert(`[${offerVal}]`);
                         setShow(!show);
                     } else {
-                        // const state = props?.view.state;
-                        // const tr = state.tr;
-                        // const markType = state.schema.marks.style;
-                        // const mark = markType.create({ class: 'offer' });
-                        // const content = state.schema.text(`[${offerVal}]`);
-                        // tr.addStoredMark(mark);
-                        // // https://prosemirror.net/docs/ref/#state.Transaction.replaceSelectionWith
-                        // tr.replaceSelectionWith(content, true);
-                        // props?.view.dispatch(tr);
                         replaceTextWithBounds(props.view, `[OFFER_CODE_`, `]`, `[${offerVal?.replace(/\s+/g, '')}]`, onEditorMaxLen, maxLength);
                         setShow(!show);
                     }

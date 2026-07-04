@@ -1,6 +1,6 @@
 import { memo } from 'react';
 import PropTypes from 'prop-types';
-import { get } from 'lodash';
+import { get } from 'Utils/modules/lodashReplacements';
 import { Controller } from 'react-hook-form';
 import { DropDownButton } from '@progress/kendo-react-buttons';
 

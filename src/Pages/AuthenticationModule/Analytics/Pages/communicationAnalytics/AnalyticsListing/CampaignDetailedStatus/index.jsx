@@ -8,7 +8,6 @@ import { GetpopoverContent, getListingPreviewNoDataPopover, isListingPreviewElig
 import { REPORT } from 'Constants/GlobalConstant/Placeholders';
 import { analytics_medium, eye_medium, winner_mini } from 'Constants/GlobalConstant/Glyphicons';
 import { Fragment, cloneElement, useEffect, useMemo, useRef, useState } from 'react';
-import _get from 'lodash/get';
 import { useForm } from 'react-hook-form';
 import RSTooltip from 'Components/RSTooltip';
 import RSPPophover from 'Components/RSPPophover';
@@ -33,7 +32,16 @@ import { PREVIEW_SOURCE } from 'Utils/modules/preview';
 import { splitA, splitB, splitC, splitD } from 'Constants/GlobalConstant/Colors/colorsVariable';
 import TruncateCell from 'Components/RSKendoGrid/TruncateCell';
 
-const DetailedStatus = ({ content, dataItem, idx, splitIndex = null, hasGrouping = false }) => {
+const DetailedStatus = ({
+    content,
+    dataItem,
+    idx,
+    splitIndex = null,
+    hasGrouping = false,
+    hideTotalSent = false,
+    hideReachColumn = false,
+    hideReachDelivered = false,
+}) => {
     // console.log('content: dataItem', content);
     const navigate = useNavigate();
     const dispatch = useDispatch();
@@ -73,7 +81,7 @@ const DetailedStatus = ({ content, dataItem, idx, splitIndex = null, hasGrouping
     const isSplit = content.isSplitAB;
     const isGrouping = content?.isGrouping || false;
     const groupDetails = content?.SplitDetails || [];
-    const campaignType = _get(dataItem, 'campaignTypeValue', '').slice(0, 1);
+    const campaignType = (dataItem?.campaignTypeValue ?? '').slice(0, 1);
     const isLimitList = content?.isLimitList || false;
     const limitliststatusId = content?.limitListStatusId;
     const triggerPlayPauseStatus = content?.triggerPlayPauseStatus;
@@ -284,7 +292,7 @@ const DetailedStatus = ({ content, dataItem, idx, splitIndex = null, hasGrouping
         const { id, type } = choice;
         const payload = {
             statusId: id,
-            channelId: _get(channelDetails, 'channelId', 0),
+            channelId: channelDetails?.channelId ?? 0,
             campaignId: dataItem?.campaignID || 0,
             departmentId,
             userId,
@@ -517,7 +525,7 @@ const DetailedStatus = ({ content, dataItem, idx, splitIndex = null, hasGrouping
                         </Fragment>
                     </div>
                 </td>
-                {content?.channelId !== 7 && (
+                {!hideTotalSent && (
                     <td className="text-end rs-cl-col-metrics">
                         <span
                             className={`${content?.totalSentCount > 0 ? '' : 'pe-none click-off'} ${
@@ -536,50 +544,43 @@ const DetailedStatus = ({ content, dataItem, idx, splitIndex = null, hasGrouping
                                     channelName: content.channelName,
                                 };
                                 const encryptState = encodeUrl(state);
-                                // navigate(`${url}?q=${encryptState}`, {
-                                //     state,
-                                // });
-                                // navigate(`/preferences/consumptions/consumption-channel`, {
-                                //     state: {
-                                //         channelId: content?.channelId,
-                                //         channelName: content.channelName,
-                                //     },
-                                // })
                             }}
                         >
-                            { content?.channelId === 7 ? 'NA' : numberWithCommas(content?.totalSentCount)}{' '}
+                            {content?.channelId === 7 ? 'NA' : numberWithCommas(content?.totalSentCount ?? 0)}
                         </span>
                     </td>
                 )}
-
-                {/* {/ <td className={`cp splitab-underline text-right `}> /} */}
-                {content?.channelId !== 10 && (
+                {!hideReachColumn && (
                     <td className="text-end rs-cl-col-metrics">
-                        <span className={`  ${content?.channelId === 6 ? 'd-none' : ''}`}>
-                            {showNaForReach ? 'NA' : numberWithCommas(content?.reachCount)}
+                        <span className={`${content?.channelId === 6 ? 'd-none' : ''}`}>
+                            {showNaForReach ? 'NA' : numberWithCommas(content?.reachCount ?? 0)}
                         </span>
                     </td>
                 )}
                 <td className="text-end rs-cl-col-metrics">
-                    <span className={`  ${content?.channelId === 6 ? 'd-none' : ''}`}>
-                        {numberWithCommas(content?.engagementCount)}
+                    <span className={`${content?.channelId === 6 ? 'd-none' : ''}`}>
+                        {numberWithCommas(content?.engagementCount ?? 0)}
                     </span>
                 </td>
                 <td className="text-end rs-cl-col-metrics">
-                    <span className={`  ${content?.channelId === 6 ? 'd-none' : ''}`}>
-                        {numberWithCommas(content?.conversionCount)}
+                    <span className={`${content?.channelId === 6 ? 'd-none' : ''}`}>
+                        {numberWithCommas(content?.conversionCount ?? 0)}
                     </span>
                 </td>
-                {content?.channelId !== 10 && content?.channelId !== 7 && (
+                {!hideReachDelivered && (
                     <>
                         <td className="text-end rs-cl-col-metrics">
-                            <span className={`  ${content?.channelId === 6 || content?.channelId === 3 ? 'd-none' : ''}`}>
-                                {showNaForReachDeliveredUndelivered ? 'NA' : numberWithCommas(content?.deliveredCount)}
+                            <span className={`${content?.channelId === 6 || content?.channelId === 3 ? 'd-none' : ''}`}>
+                                {showNaForReachDeliveredUndelivered
+                                    ? 'NA'
+                                    : numberWithCommas(content?.deliveredCount ?? 0)}
                             </span>
                         </td>
                         <td className="text-end rs-cl-col-metrics">
-                            <span className={`  ${content?.channelId === 6 || content?.channelId === 3 ? 'd-none' : ''}`}>
-                                {showNaForReachDeliveredUndelivered ? 'NA' : numberWithCommas(content?.undeliveredCount)}
+                            <span className={`${content?.channelId === 6 || content?.channelId === 3 ? 'd-none' : ''}`}>
+                                {showNaForReachDeliveredUndelivered
+                                    ? 'NA'
+                                    : numberWithCommas(content?.undeliveredCount ?? 0)}
                             </span>
                         </td>
                     </>

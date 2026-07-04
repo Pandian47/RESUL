@@ -350,16 +350,3 @@ export const buildPayload = (formState, isEngagement, isConverison, campaignId, 
 //     },
 // };
 
-const WEB_FIELD_TRACK_INITIAL_STATE = {
-    channelType: 'E',
-    appGuid: '',
-    deviceOs: '',
-    deviceType: 'Web',
-    goalType: '',
-    linkURL: '',
-    formFieldsToCapture: { campaignStartDate: '', campaignEndDate: '', fieldCaptureList: [], minDuration: '' },
-    domainName: '',
-};
-export const buildWebFieldTrackPayload = (userDetails) => {
-    return { ...userDetails, ...WEB_FIELD_TRACK_INITIAL_STATE };
-};

@@ -19,6 +19,7 @@ import GridLoadingSkeleton from 'Pages/KendoDocs/CommonComponents/ResKendoGrid/G
 import RSSkeletonTable from 'Components/RSSkeleton/RSSkeletonTable';
 import SkeletonGalleryCard from 'Components/Skeleton/Components/SkeletonGalleryCard.jsx';
 
+import PlanProgressStepsSkeleton from 'Components/Skeleton/pages/communication/creation/PlanProgressStepsSkeleton';
 import LicenceInfoSkeleton from 'Pages/AuthenticationModule/Preferences/Pages/LicenceInfo/LicenceInfoSkeleton';
 import NoDataAvailableRender from 'Components/FormFields/Component/NoDataAvailableRender';
 import {
@@ -390,6 +391,7 @@ const SUBPAGE_TITLE_WIDTH = {
     [PREFERENCES_SUBPAGE_VARIANT.DATA_EXCHANGE]: 160,
     [PREFERENCES_SUBPAGE_VARIANT.INVOICE_LIST]: 120,
     [PREFERENCES_SUBPAGE_VARIANT.LICENSE_INFO]: 120,
+    [PREFERENCES_SUBPAGE_VARIANT.COMPANY_ASSIGN_ROLE]: 220,
 };
 
 const PrefFieldSkeleton = ({ sm = 6, xs = 12, stopAnimation = false }) => (
@@ -639,15 +641,6 @@ MyProfileLoadingShell.propTypes = {
 /** Full page-content wrapper for route / bootstrap skeleton. */
 const MyProfileBodySkeleton = () => <MyProfilePageContentSkeleton />;
 
-const RegionPillsSkeleton = () => (
-    <div className="pref-sk-region-pills" aria-hidden="true">
-        {Array.from({ length: 4 }, (_, i) => (
-            <CommonSkeleton key={i} box width={72} height={24} stopAnimation mainClass="pref-sk-region-pill" />
-        ))}
-        <CommonSkeleton box width={180} height={18} stopAnimation mainClass="pref-sk-region-check" />
-    </div>
-);
-
 /** Centered no-data card over preferences form skeleton panels. */
 const PrefSubPageNoDataOverlay = () => (
     <div className="pref-subpage-no-data-overlay" role="status" aria-live="polite">
@@ -839,39 +832,130 @@ const TagPanelSkeleton = ({ titleWidth = 120, stopAnimation = false }) => (
     </div>
 );
 
+const PrefAssignRoleSkelBar = ({ className = '' }) => (
+    <div className={`pref-sk-assign-bar ${className}`.trim()} aria-hidden="true" />
+);
+
+const AssignRoleEntityRowSkeleton = () => (
+    <Row className="pref-sk-assign-entity-row p10 mx0 align-items-center">
+        <Col md={4} className="pl15">
+            <PrefAssignRoleSkelBar className="pref-sk-assign-bar--bu-label" />
+        </Col>
+        <Col md={6}>
+            <PrefAssignRoleSkelBar className="pref-sk-assign-bar--role-field" />
+        </Col>
+        <Col md={2} className="d-flex justify-content-end p10">
+            <PrefAssignRoleSkelBar className="pref-sk-assign-bar--remove-icon" />
+        </Col>
+    </Row>
+);
+
+const AssignRoleEntityCardSkeleton = ({ rowCount = 2 }) => (
+    <div className="pref-sk-assign-entity-card mb15">
+        <div className="pref-sk-assign-entity-header d-flex align-items-center justify-content-between">
+            <PrefAssignRoleSkelBar className="pref-sk-assign-bar--card-name" />
+            <PrefAssignRoleSkelBar className="pref-sk-assign-bar--card-meta" />
+        </div>
+        <div className="pref-sk-assign-entity-body">
+            {Array.from({ length: rowCount }, (_, index) => (
+                <AssignRoleEntityRowSkeleton key={index} />
+            ))}
+        </div>
+    </div>
+);
+
+const COMPANY_ASSIGN_ROLE_PROGRESS_STEP_COUNT = 3;
+
+/** Page header + wizard steps while assign-role APIs load inline (not route bootstrap). */
+export const CompanyAssignRoleWizardChromeSkeleton = ({
+    showHeader = true,
+    showSteps = true,
+    className = '',
+}) => (
+    <div className={className} aria-hidden="true">
+        {showHeader ? (
+            <RSPageHeaderSkeleton
+                variant="tabber"
+                titleWidth={SUBPAGE_TITLE_WIDTH[PREFERENCES_SUBPAGE_VARIANT.COMPANY_ASSIGN_ROLE]}
+                showBack
+            />
+        ) : null}
+        {showSteps ? <PlanProgressStepsSkeleton stepCount={COMPANY_ASSIGN_ROLE_PROGRESS_STEP_COUNT} /> : null}
+    </div>
+);
+
 /** Assign role step — left user list + right assignment panel. */
 export const CompanyAssignRoleSkeleton = () => (
     <>
-        <div className="box-design rs-box rs-assign-role pref-company-assign-role-skeleton" aria-hidden="true">
-            <Row className="mb10 res-gx-0">
+        <div className="box-design rs-box pref-company-assign-role-skeleton" aria-hidden="true">
+            <Row className="mb10 res-gx-0 align-items-center">
                 <Col md={3} className="pr0">
-                    <div className="d-flex justify-content-between align-items-center mb-3">
-                        <CommonSkeleton box height={32} width="75%" stopAnimation />
-                        <CommonSkeleton circle width={32} height={32} stopAnimation />
+                    <div className="d-flex justify-content-between align-items-center position-relative gap-2">
+                        <PrefAssignRoleSkelBar className="pref-sk-assign-bar--toolbar-dropdown" />
+                        <PrefAssignRoleSkelBar className="pref-sk-assign-bar--toolbar-icon" />
                     </div>
-                    {Array.from({ length: 8 }, (_, i) => (
-                        <div
-                            key={i}
-                            className={`pref-sk-assign-user-row d-flex flex-column gap-1 mb-2 py-2 px-2 ${i % 2 !== 0 ? 'pref-sk-assign-user-row--alt' : ''
-                                }`}
-                        >
-                            <CommonSkeleton box height={14} width="65%" stopAnimation />
-                            <CommonSkeleton box height={12} width="45%" stopAnimation />
-                        </div>
-                    ))}
                 </Col>
-                <Col md={9}>
-                    <div className="d-flex justify-content-between align-items-center mb-3">
-                        <CommonSkeleton box height={32} width="40%" stopAnimation />
-                        <CommonSkeleton circle width={32} height={32} stopAnimation />
-                    </div>
-                    <CommonSkeleton box height={200} width="100%" stopAnimation mainClass="pref-sk-assign-empty-panel" />
+                <Col md={1} />
+                <Col md={7} className="d-flex align-items-center">
+                    <PrefAssignRoleSkelBar className="pref-sk-assign-bar--toolbar-select" />
+                </Col>
+                <Col className="d-flex justify-content-end">
+                    <PrefAssignRoleSkelBar className="pref-sk-assign-bar--toolbar-icon" />
                 </Col>
             </Row>
+
+            <Row className="res-gx-0">
+                <Col
+                    md={3}
+                    className="box-design pref-sk-assign-user-list css-scrollbar p0 position-relative no-box-shadow"
+                >
+                    <ul className="pref-sk-assign-user-list-group">
+                        {Array.from({ length: 10 }, (_, index) => (
+                            <li
+                                key={index}
+                                className={`pref-sk-assign-user-card ${
+                                    index === 1 ? 'pref-sk-assign-user-card--active' : ''
+                                }`}
+                            >
+                                <div className="pref-sk-assign-user-card-info d-flex flex-column gap-2 py-1">
+                                    <PrefAssignRoleSkelBar
+                                        className={
+                                            index % 2 === 0
+                                                ? 'pref-sk-assign-bar--user-name'
+                                                : 'pref-sk-assign-bar--user-name-short'
+                                        }
+                                    />
+                                    <PrefAssignRoleSkelBar
+                                        className={
+                                            index % 3 === 0
+                                                ? 'pref-sk-assign-bar--user-status'
+                                                : 'pref-sk-assign-bar--user-status-short'
+                                        }
+                                    />
+                                </div>
+                            </li>
+                        ))}
+                    </ul>
+                </Col>
+
+                <Col md={1} className="d-flex justify-content-center align-self-xl-center" />
+
+                <Col md={8}>
+                    <div className="box-design pref-sk-assign-entity-panel css-scrollbar p0 no-box-shadow position-relative">
+                        <div className="pref-sk-assign-entity-cards">
+                            <AssignRoleEntityCardSkeleton rowCount={2} />
+                            <AssignRoleEntityCardSkeleton rowCount={2} />
+                            <AssignRoleEntityCardSkeleton rowCount={2} />
+                        </div>
+                    </div>
+                </Col>
+            </Row>
+
+            <PrefAssignRoleSkelBar className="pref-sk-assign-bar--hint mt10" />
         </div>
         <div className="buttons-holder pref-sk-assign-role-actions d-flex justify-content-end gap-3">
-            <CommonSkeleton box width={56} height={20} stopAnimation />
-            <CommonSkeleton box width={88} height={36} stopAnimation />
+            <PrefAssignRoleSkelBar className="pref-sk-assign-bar--action-text" />
+            <PrefAssignRoleSkelBar className="pref-sk-assign-bar--action-btn" />
         </div>
     </>
 );
@@ -1264,24 +1348,31 @@ const TemplateGalleryTabbedToolbarSkeleton = () => (
 
 /** Inner template galleries — tabs + toolbar + 4 template cards (email/webpush/mobile). */
 export const TemplateGalleryInnerTabbedSkeleton = () => (
-    <>
+    <div className="pref-tg-inner-tabbed-skeleton">
         <TabBarViewSkeleton
             tabCount={3}
             colClass="col-md-4"
             scopeClass="pref-tg-tabs-skeleton"
-            tabsRowClass="rs-tabs row rst-left-space mb0 mini w-100 m-0"
+            tabsRowClass="rs-tabs row rst-left-space mb0 mini w-100 m-0 "
             omitColClass={false}
+            resolvedContainerClass={'px0'}
         />
         <TemplateGalleryTabbedToolbarSkeleton />
         <Row className="mt15 mb15">
             {Array.from({ length: 4 }, (_, idx) => (
-                <SkeletonGalleryCard key={`loading-skeleton-${idx}`} isLoading={true} />
+                <SkeletonGalleryCard
+                    key={`loading-skeleton-${idx}`}
+                    isLoading
+                    col={3}
+                    hideBottomAccent
+                    cardPadding={10}
+                />
             ))}
         </Row>
         <div className="d-flex justify-content-center pref-sk-pager" aria-hidden="true">
             <CommonSkeleton box height={28} width={220} stopAnimation />
         </div>
-    </>
+    </div>
 );
 
 /** Landing page template gallery — tabs + toolbar + 4 template cards. */
@@ -1297,76 +1388,19 @@ export const TemplateGalleryLandingInnerSkeleton = () => (
         <TemplateGalleryTabbedToolbarSkeleton />
         <Row className="mt15 mb15">
             {Array.from({ length: 4 }, (_, idx) => (
-                <SkeletonGalleryCard key={`loading-skeleton-${idx}`} isLoading={true} />
+                <SkeletonGalleryCard
+                    key={`loading-skeleton-${idx}`}
+                    isLoading
+                    col={3}
+                    hideBottomAccent
+                    cardPadding={10}
+                />
             ))}
         </Row>
         <div className="d-flex justify-content-center pref-sk-pager" aria-hidden="true">
             <CommonSkeleton box height={28} width={220} stopAnimation />
         </div>
     </>
-);
-
-/** Form builder edit — matches InfoCard toolbar, field carousel, canvas, FormSidebar. */
-export const FormGeneratorBuilderSkeleton = () => (
-    <div className="pref-form-generator-builder-skeleton" aria-hidden="true">
-        <div className="d-flex align-items-center flex-wrap gap-3 mb-3 py-2 px-2 border-bottom bg-white">
-            <CommonSkeleton box height={32} width={96} stopAnimation />
-            <CommonSkeleton box height={22} width={220} stopAnimation />
-            <div className="ms-auto d-flex gap-2">
-                <CommonSkeleton box height={32} width={72} stopAnimation />
-                <CommonSkeleton box height={36} width={168} stopAnimation />
-            </div>
-        </div>
-        <div className="d-flex flex-wrap gap-2 mb-3 justify-content-center">
-            {Array.from({ length: 8 }, (_, i) => (
-                <CommonSkeleton key={`fg-tool-${i}`} box height={56} width={68} stopAnimation />
-            ))}
-        </div>
-        <Row className="g-3">
-            <Col xl={8} lg={7} xs={12}>
-                <CommonSkeleton box height={52} width="100%" stopAnimation mainClass="mb-0 rounded-0" />
-                <div className="bg-white border p-3">
-                    {Array.from({ length: 5 }, (_, i) => (
-                        <Row key={`fg-field-${i}`} className="align-items-center mb-3 g-2">
-                            <Col xs={12} sm={3}>
-                                <CommonSkeleton box height={16} width="75%" stopAnimation />
-                            </Col>
-                            <Col xs={12} sm={7}>
-                                <CommonSkeleton box height={36} width="100%" stopAnimation />
-                            </Col>
-                            <Col xs={12} sm={2}>
-                                <CommonSkeleton box height={24} width={40} stopAnimation />
-                            </Col>
-                        </Row>
-                    ))}
-                    <div className="d-flex gap-2 mt-2">
-                        <CommonSkeleton box height={34} width={88} stopAnimation />
-                        <CommonSkeleton box height={34} width={88} stopAnimation />
-                    </div>
-                </div>
-            </Col>
-            <Col xl={4} lg={5} xs={12}>
-                <CommonSkeleton box height={14} width={56} stopAnimation mainClass="mb-2" />
-                <div className="d-flex gap-2 mb-3">
-                    {Array.from({ length: 3 }, (_, i) => (
-                        <CommonSkeleton key={`fg-layout-${i}`} box height={72} width="100%" stopAnimation />
-                    ))}
-                </div>
-                {Array.from({ length: 5 }, (_, i) => (
-                    <CommonSkeleton
-                        key={`fg-prop-${i}`}
-                        box
-                        height={32}
-                        width="100%"
-                        stopAnimation
-                        mainClass="mb-2"
-                    />
-                ))}
-                <CommonSkeleton box height={96} width="100%" stopAnimation mainClass="mt-2" />
-                <CommonSkeleton box height={96} width="100%" stopAnimation mainClass="mt-2" />
-            </Col>
-        </Row>
-    </div>
 );
 
 /** CSV download modal — form rows. */
@@ -1424,45 +1458,6 @@ export const FormGeneratorRmModalSkeleton = () => (
         </Row>
     </>
 );
-
-/** Publish modal — horizontal pulish_form_tabbar + Publish URL row (form-embedAPI). */
-export const FormGeneratorPublishModalSkeleton = ({ fromTellAFriend = false }) => {
-    const tabCount = fromTellAFriend ? 3 : 4;
-    const tabColClass = fromTellAFriend ? 'col-sm-4' : 'col-sm-3';
-
-    return (
-        <div className="pref-form-generator-publish-skeleton rs-vertical-tabs-wrapper" aria-hidden="true">
-            <div className="fullWhiteBackground mb0">
-                <Row className="mx-0">
-                    <ul className="rs-tabs row rst-left-space pulish_form_tabbar mb0 mini w-100 m-0 list-unstyled pref-fg-publish-tabs-skeleton__list">
-                        {Array.from({ length: tabCount }, (_, index) => (
-                            <li key={`fg-publish-tab-${index}`} className={`tabDefault ${tabColClass}`}>
-                                <CommonSkeleton box height={41} width="100%" stopAnimation />
-                            </li>
-                        ))}
-                    </ul>
-                </Row>
-            </div>
-            <Container className="px0">
-                <div className="form-group mt20">
-                    <CommonSkeleton box height={19} width={140} stopAnimation mainClass="mb20" />
-                    <div className="pref-fg-publish-url-row d-flex align-items-center justify-content-between mb15 p0">
-                        <div className="pref-fg-publish-url-field d-flex align-items-center border-bottom w-100">
-                            <CommonSkeleton box height={20} width="92%" stopAnimation />
-                        </div>
-                        <CommonSkeleton
-                            box
-                            height={24}
-                            width={24}
-                            stopAnimation
-                            mainClass="flex-shrink-0 ml11"
-                        />
-                    </div>
-                </div>
-            </Container>
-        </div>
-    );
-};
 
 /** Form generator — toolbar + grid skeleton. */
 export const TemplateGalleryFormGeneratorSkeleton = () => (
@@ -1871,21 +1866,6 @@ AudienceScoreTabContentSkeletonGate.propTypes = {
     children: PropTypes.oneOfType([PropTypes.node, PropTypes.func]),
 };
 
-/** Route refresh — header + filters + score band + vertical tabs + persona panel. */
-export const AudienceScoreRouteSkeleton = () => (
-    <>
-        <RSPageHeaderSkeleton
-            variant="tabber"
-            className="pref-subpage-header-skeleton pref-as-header-skeleton"
-            titleWidth={SUBPAGE_TITLE_WIDTH[PREFERENCES_SUBPAGE_VARIANT.AUDIENCE_SCORE]}
-            showBack
-        />
-        <Container fluid>
-            <AudienceScorePageSkeleton />
-        </Container>
-    </>
-);
-
 const DeSkelBar = ({ width, height = 24, circle = false, className = '' }) => (
     <span
         className={`skeleton-shimmer pref-de-skel-bar${circle ? ' pref-de-skel-bar--circle' : ''} ${className}`.trim()}
@@ -2177,21 +2157,6 @@ DataExchangeTabContentSkeletonGate.propTypes = {
     tab: PropTypes.oneOf(['ingestion', 'api']),
     children: PropTypes.node,
 };
-
-/** Route refresh — header + top tabs + ingestion layout. */
-export const DataExchangeRouteSkeleton = () => (
-    <>
-        <RSPageHeaderSkeleton
-            variant="dataExchange"
-            className="pref-subpage-header-skeleton pref-de-header-skeleton"
-            titleWidth={SUBPAGE_TITLE_WIDTH[PREFERENCES_SUBPAGE_VARIANT.DATA_EXCHANGE]}
-            showBack
-        />
-        <div className="pref-de-route-body">
-            <DataExchangePageSkeleton />
-        </div>
-    </>
-);
 
 /** Body only — offset tabs + tab body (RSTabbarFluid), fixed left sidebar, filter-group card grid. */
 export const DataCataloguePageSkeleton = () => (
@@ -2501,7 +2466,7 @@ export const CommunicationSettingsFrequencyCapRouteSkeleton = () => (
     </>
 );
 
-/** Quiet hours create / edit — mirrors QuietHoursCreate field layout (Col md={10}). */
+/** Quiet hours create / edit — mirrors QuietHoursCreate field layout (Col md={12}). */
 export const CommunicationSettingsQuietHoursFormSkeleton = ({ embedded = false }) => (
     <div
         className={`${embedded ? 'quiet-hours-form' : 'box-design bd-top-border quiet-hours-form'
@@ -2512,19 +2477,15 @@ export const CommunicationSettingsQuietHoursFormSkeleton = ({ embedded = false }
             <CommonSkeleton box height={20} width={160} />
         </div>
         <Row>
-            <Col md={10}>
+            <Col md={12}>
                 <Row className="form-group mt20">
-                    <PrefFieldSkeleton sm={12} />
-                </Row>
-                <Row className="form-group">
                     <PrefFieldSkeleton sm={6} />
                     <PrefFieldSkeleton sm={6} />
                 </Row>
-                <Row className="form-group">
+                <Row className="form-group mb25">
                     <PrefFieldSkeleton sm={6} />
                     <PrefFieldSkeleton sm={6} />
                 </Row>
-                <CommonSkeleton box height={12} width="68%" mainClass="mb15" />
 
                 <div className="form-group">
                     <CommonSkeleton box height={12} width={100} mainClass="mb10 pref-sk-label" />
@@ -2690,23 +2651,77 @@ export const CommunicationSettingsGoalsBenchmarkRouteSkeleton = () => (
     </>
 );
 
+/** Channel benchmark — Communication goals link + target icon (matches live top-sub-heading). */
+const GoalsBenchmarkCommunicationGoalsToolbarSkeleton = () => (
+    <div className="flex-row top-sub-heading pref-sk-goals-benchmark-toolbar" aria-hidden="true">
+        <div className="fr flex-right tsh-icons pref-sk-goals-benchmark-toolbar__actions">
+            <ul className="rs-list-group-horizontal jc-right pref-sk-goals-benchmark-toolbar__list">
+                <li className="pref-sk-goals-benchmark-toolbar__item">
+                    <CommonSkeleton
+                        box
+                        height={14}
+                        width={132}
+                        stopAnimation
+                        mainClass="pref-sk-goals-benchmark-toolbar__label"
+                    />
+                    <CommonSkeleton
+                        circle
+                        height={32}
+                        width={32}
+                        stopAnimation
+                        mainClass="pref-sk-goals-benchmark-toolbar__icon"
+                    />
+                </li>
+            </ul>
+        </div>
+    </div>
+);
+
+const GoalsBenchmarkFieldSkeleton = ({ sm = 4 }) => (
+    <Col sm={sm}>
+        <div className="form-group pref-sk-field pref-sk-goals-benchmark-field">
+            <CommonSkeleton
+                box
+                height={12}
+                width={112}
+                stopAnimation
+                mainClass="pref-sk-label pref-sk-goals-benchmark-field__label"
+            />
+            <CommonSkeleton box height={32} width="100%" stopAnimation mainClass="pref-sk-goals-benchmark-field__input" />
+        </div>
+    </Col>
+);
+
 /** Channel benchmark create / edit — two rows of three fields (matches live form header). */
 export const CommunicationSettingsGoalsBenchmarkEditFormSkeleton = () => (
     <div className="box-design pref-cs-goals-benchmark-form-skeleton" aria-hidden="true">
-        <div className="form-group mt25">
+        <div className="form-group pref-sk-goals-benchmark-form-skeleton__row">
             <Row>
-                <PrefFieldSkeleton sm={4} />
-                <PrefFieldSkeleton sm={4} />
-                <PrefFieldSkeleton sm={4} />
+                <GoalsBenchmarkFieldSkeleton sm={4} />
+                <GoalsBenchmarkFieldSkeleton sm={4} />
+                <GoalsBenchmarkFieldSkeleton sm={4} />
             </Row>
         </div>
-        <div className="form-group mb0">
+        <div className="form-group pref-sk-goals-benchmark-form-skeleton__row pref-sk-goals-benchmark-form-skeleton__row--last">
             <Row>
-                <PrefFieldSkeleton sm={4} />
-                <PrefFieldSkeleton sm={4} />
+                <GoalsBenchmarkFieldSkeleton sm={4} />
+                <GoalsBenchmarkFieldSkeleton sm={4} />
                 <Col sm={4}>
-                    <div className="form-group pref-sk-field mb0">
-                        <CommonSkeleton box height={98} width="100%" stopAnimation />
+                    <div className="form-group pref-sk-field pref-sk-goals-benchmark-field">
+                        <CommonSkeleton
+                            box
+                            height={12}
+                            width={80}
+                            stopAnimation
+                            mainClass="pref-sk-label pref-sk-goals-benchmark-field__label"
+                        />
+                        <CommonSkeleton
+                            box
+                            height={98}
+                            width="100%"
+                            stopAnimation
+                            mainClass="pref-sk-goals-benchmark-field__textarea"
+                        />
                     </div>
                 </Col>
             </Row>
@@ -2729,6 +2744,7 @@ export const CommunicationSettingsGoalsBenchmarkEditSkeletonGate = ({
             <style>{preferencesSkeletonCriticalCss}</style>
             <style>{communicationSettingsSkeletonCriticalCss}</style>
             <div className="preferences-skeleton-scope pref-cs-goals-benchmark-skeleton-scope communication-settings-goals-benchmark-skeleton">
+                <GoalsBenchmarkCommunicationGoalsToolbarSkeleton />
                 <CommunicationSettingsGoalsBenchmarkEditFormSkeleton />
             </div>
         </>
@@ -2744,9 +2760,9 @@ CommunicationSettingsGoalsBenchmarkEditSkeletonGate.propTypes = {
 /** Route refresh — `/preferences/goals-and-benchmark/channel-benchmark`. */
 export const GoalsBenchmarkEditRouteSkeleton = () => (
     <Container fluid>
-        <div className="page-content">
+        <div className="page-content isVerticalTabbar pref-sk-goals-benchmark-page-scope communication-settings-goals-benchmark-skeleton">
             <Container className="px0">
-                
+                <GoalsBenchmarkCommunicationGoalsToolbarSkeleton />
                 <CommunicationSettingsGoalsBenchmarkEditFormSkeleton />
             </Container>
         </div>
@@ -2806,14 +2822,6 @@ CommunicationSettingsSmtpInnerContentSkeleton.propTypes = {
     showInnerTabs: PropTypes.bool,
     innerTabCount: PropTypes.number,
 };
-
-/** In-page SMTP grid loading (heading + table inside tab body). */
-export const CommunicationSettingsSmtpGridSkeleton = () => (
-    <>
-        <CommunicationSettingsSmtpHeadingSkeleton />
-        <CommunicationSettingsSmtpTableSkeleton />
-    </>
-);
 
 /** Vertical tabs + icon sub-tabs + Kendo panel — Bootstrap row matches live `rs-vertical-tabs-wrapper`. */
 export const CommunicationSettingsChannelSkeleton = ({
@@ -2928,36 +2936,32 @@ export const CommunicationSettingsNotificationTabLoadingBlock = () => (
 );
 
 /** Lazy icon sub-tab (SMTP, Sub/Un-sub, WhatsApp, VMS, …) — full box panel under live icon sub-tabs. */
-export const CommunicationSettingsInnerTabLoadingBlock = () => (
+export const CommunicationSettingsInnerTabLoadingBlock = ({ embedded = false } = {}) => (
     <>
         <style>{communicationSettingsSkeletonCriticalCss}</style>
         <div
-            className="tabs-content res-tabs-content pref-cs-mail-tabs-content box-design bd-top-border"
-            style={{
-                borderTopLeftRadius: 0,
-                borderTopRightRadius: 0,
-            }}
+            className={
+                embedded
+                    ? 'pref-cs-inner-tab-skeleton-embedded'
+                    : 'tabs-content res-tabs-content pref-cs-mail-tabs-content box-design bd-top-border'
+            }
+            style={
+                embedded
+                    ? undefined
+                    : {
+                          borderTopLeftRadius: 0,
+                          borderTopRightRadius: 0,
+                      }
+            }
         >
-            <CommunicationSettingsSmtpInnerContentSkeleton />
+            <CommunicationSettingsSmtpInnerContentSkeleton showInnerTabs={!embedded} />
         </div>
     </>
 );
 
-/** Email footer has no right-aligned inner tabs — panel skeleton only. */
-export const CommunicationSettingsEmailFooterInnerTabLoadingBlock = () => (
-    <>
-        <style>{communicationSettingsSkeletonCriticalCss}</style>
-        <div
-            className="tabs-content res-tabs-content pref-cs-mail-tabs-content box-design bd-top-border"
-            style={{
-                borderTopLeftRadius: 0,
-                borderTopRightRadius: 0,
-            }}
-        >
-            <CommunicationSettingsSmtpInnerContentSkeleton showInnerTabs={false} />
-        </div>
-    </>
-);
+CommunicationSettingsInnerTabLoadingBlock.propTypes = {
+    embedded: PropTypes.bool,
+};
 
 const PrefCsEditFieldSkeleton = () => (
     <div className="form-group fg-default-value pref-cs-edit-field">
@@ -3728,25 +3732,27 @@ export const CreateOfferFormSkeleton = () => (
 );
 
 /** Offer listing tab — matches live `OfferListing` (`page-content` + toolbar + grid). */
-export const OfferListingTabSkeleton = () => (
+export const OfferListingTabSkeleton = ({ flushToolbar = false }) => (
     <div className="page-content">
-        <div className="flex-row justify-content-end top-sub-heading pref-sk-offer-toolbar">
+        <div
+            className={`flex-row justify-content-end top-sub-heading pref-sk-offer-toolbar${flushToolbar ? ' pref-sk-offer-toolbar--flush mt0' : ''}`}
+        >
             <ul className="rs-list-group-horizontal jc-right d-flex align-items-center gap-2 list-unstyled m0 p0">
                 <li>
-                    <CommonSkeleton box width={220} height={32} stopAnimation />
+                    <CommonSkeleton box width={220} height={24} stopAnimation />
                 </li>
                 <li>
-                    <CommonSkeleton circle width={32} height={32} stopAnimation />
+                    <CommonSkeleton circle width={24} height={24} stopAnimation />
                 </li>
                 <li>
-                    <CommonSkeleton circle width={32} height={32} stopAnimation />
+                    <CommonSkeleton circle width={24} height={24} stopAnimation />
                 </li>
                 <li>
-                    <CommonSkeleton circle width={32} height={32} stopAnimation />
+                    <CommonSkeleton circle width={24} height={24} stopAnimation />
                 </li>
             </ul>
         </div>
-        <div className="mt21 pref-offer-grid-skeleton offer-management">
+        <div className="pref-offer-grid-skeleton offer-management">
             <GridLoadingSkeleton
                 rows={5}
                 columns={8}
@@ -3757,6 +3763,10 @@ export const OfferListingTabSkeleton = () => (
         </div>
     </div>
 );
+
+OfferListingTabSkeleton.propTypes = {
+    flushToolbar: PropTypes.bool,
+};
 
 /** Brands & shops tab — toolbar + stacked brand cards (`BrandsShops.jsx`). */
 export const BrandsShopsTabSkeleton = () => (
@@ -4136,10 +4146,14 @@ const TemplateGalleryBodySkeleton = () => (
 
 const TemplateGalleryInnerTabbedBodySkeleton = () => (
     <Container fluid>
-        <div className="page-content pc-template-gallery-inner">
-            <Container className="px0">
-                <TemplateGalleryInnerTabbedSkeleton />
-            </Container>
+        <div className="pc-tabs-wrapper">
+            <div className="page-content pc-template-gallery-inner">
+                <Container className="px0">
+                    <div className="page-content">
+                        <TemplateGalleryInnerTabbedSkeleton />
+                    </div>
+                </Container>
+            </div>
         </div>
     </Container>
 );
@@ -4417,7 +4431,12 @@ const PreferencesSubPageBodySkeleton = ({ variant }) => {
             <Container fluid>
                 <div className="page-content pc-company-assign-role">
                     <Container className="px0">
-                        <CompanyAssignRoleSkeleton />
+                        <Row className="mt21">
+                            <Col sm={12}>
+                                <CompanyAssignRoleWizardChromeSkeleton showHeader={false} />
+                                <CompanyAssignRoleSkeleton />
+                            </Col>
+                        </Row>
                     </Container>
                 </div>
             </Container>
@@ -4521,6 +4540,7 @@ const PreferencesSubPageRouteSkeleton = ({
                 : 'tabber';
 
     const isCommunicationSettings = variant === PREFERENCES_SUBPAGE_VARIANT.COMMUNICATION_SETTINGS;
+    const isGoalsBenchmarkEdit = variant === PREFERENCES_SUBPAGE_VARIANT.GOALS_BENCHMARK_EDIT;
     const isCommunicationSubscription = variant === PREFERENCES_SUBPAGE_VARIANT.COMMUNICATION_SUBSCRIPTION;
     const isAudienceScore = variant === PREFERENCES_SUBPAGE_VARIANT.AUDIENCE_SCORE;
     const dataExchangeHeaderClassName = isDataExchange
@@ -4574,6 +4594,7 @@ const PreferencesSubPageRouteSkeleton = ({
         isAudienceScore ? 'pc-audience-score' : '',
         isDataExchange ? 'pc-data-exchange' : '',
         variant === PREFERENCES_SUBPAGE_VARIANT.LICENSE_INFO ? 'rs-licence-info-skeleton-scope' : '',
+        isGoalsBenchmarkEdit ? 'pref-sk-goals-benchmark-page-scope' : '',
     ]
         .filter(Boolean)
         .join(' ');

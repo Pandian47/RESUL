@@ -149,11 +149,13 @@ const SMTPGrid = () => {
                                 field: 'domainName',
                                 title: 'Domain name',
                                 filter: 'text',
+                                width: '200',
                             },
                             {
                                 field: 'smtpType',
                                 title: 'SMTP type',
                                 filter: 'text',
+                                width: '200',
                                 cell: ({ dataItem }) => {
                                     return (
                                         <td className="text-left">

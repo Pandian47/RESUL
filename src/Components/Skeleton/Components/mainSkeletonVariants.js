@@ -135,6 +135,9 @@ export const getMainSkeletonVariant = (pathname = '') => {
         return 'dashboard';
     }
     const normalized = pathname.replace(/\/+$/, '') || '/';
+    if (normalized === '/launch-pad') {
+        return 'launchPad';
+    }
     if (normalized === '/preferences') {
         return 'preferences';
     }

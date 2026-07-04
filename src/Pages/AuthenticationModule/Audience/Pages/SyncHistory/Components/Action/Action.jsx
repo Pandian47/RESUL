@@ -10,12 +10,12 @@ const getStatusConfig = (importStatus, isInvalid) => {
         },
         error: {
             icon: alert_medium,
-            color: 'color-notification pointer-event-none',
+            color: 'color-red-medium pointer-event-none',
             tooltip: 'Error',
         },
         invalid: {
             icon: alert_medium,
-            color: 'color-notification',
+            color: 'color-red-medium',
             tooltip: 'Alert',
         },
         success: {
@@ -35,11 +35,9 @@ const Action = ({ importStatus, isInvalid = false}) => {
     const { icon, color, tooltip } = getStatusConfig(importStatus, isInvalid);
 
     return (
-        <div className="d-flex gap-2">
             <RSTooltip text={tooltip} position="top" className="lh0 mr10" innerContent={false}>
                 <i className={`${icon} icon-md ${color}`} />
             </RSTooltip>
-        </div>
     );
 };
 

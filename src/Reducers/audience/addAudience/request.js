@@ -1,10 +1,9 @@
-import { AUDIENCE_ATTRIBUTES_MAPPING, AUDIENCE_FILENAME_EXISTS, AUDIENCE_GET_ATTRIBUTES, AUDIENCE_IMPORT_SOURCE, AUDIENCE_LIST_INSIGHT, AUDIENCE_SAVE_COLUMN_MAPPING, AUDIENCE_SAVE_MYSQL_COLUMN_MAPPING, AUDIENCE_UPLOAD_FILES, AUDIENCE_UPLOAD_VALIDATION, CONNECT_FTP, CONNECT_TL_FTP, CUSTOM_TABLE_EXISTS, DATAEXCHANGE_ATTRIBUTES_SAVE, FRIENDLYNAME_CHECK, GET_AUDIENCE_LIST_COUNT, GET_CRM_TABLE_COLUMNS, GET_DEDUPE_SETTING_BY_ID, GET_DEDUP_ATTRIBUTE, IMPORT_DESCRIPTION_EXISTS, RETURN_TO_ADD_AUDIENCE, SAVE_DEDUP_ATTRIBUTE_SETTING, SAVE_MYSQL, SYNC_CRM_EXISTING, TL_FTP_ATTRIBUTES_MAPPING, TL_FTP_ATTRIBUTES_SAVE } from 'Constants/EndPoints';
+import { AUDIENCE_ATTRIBUTES_MAPPING, AUDIENCE_FILENAME_EXISTS, AUDIENCE_IMPORT_SOURCE, AUDIENCE_LIST_INSIGHT, AUDIENCE_SAVE_COLUMN_MAPPING, AUDIENCE_SAVE_MYSQL_COLUMN_MAPPING, AUDIENCE_UPLOAD_FILES, AUDIENCE_UPLOAD_VALIDATION, CONNECT_FTP, CONNECT_TL_FTP, CUSTOM_TABLE_EXISTS, DATAEXCHANGE_ATTRIBUTES_SAVE, FRIENDLYNAME_CHECK, GET_AUDIENCE_LIST_COUNT, GET_CRM_TABLE_COLUMNS, GET_DEDUPE_SETTING_BY_ID, GET_DEDUP_ATTRIBUTE, IMPORT_DESCRIPTION_EXISTS, RETURN_TO_ADD_AUDIENCE, SAVE_DEDUP_ATTRIBUTE_SETTING, SYNC_CRM_EXISTING, TL_FTP_ATTRIBUTES_MAPPING, TL_FTP_ATTRIBUTES_SAVE } from 'Constants/EndPoints';
 import request from 'Utils/Http';
 
 import {
     resetCsvFiles,
     updateCsvFiles,
-    updateDataAttribute,
     updateCSVFile,
     updateImportAudience,
     checkFTPConnection,
@@ -224,39 +223,6 @@ export const attributeMapping = ({ payload }) => {
     };
 };
 
-export const getDataAttribute = () => async (dispatch) =>
-    dispatch(
-        request.post({
-            url: AUDIENCE_GET_ATTRIBUTES,
-            loading: true,
-            ok: ({ data: response }) => {
-                const { status, data } = response;
-                if (status) {
-                    const newAttribute = {
-                        dataAttributeID: data?.length + 2,
-                        attributeName: 'New attribute',
-                    };
-                    const ignoreAttribute = {
-                        dataAttributeID: 8,
-                        attributeName: '<< Ignore >>',
-                    };
-                    const attributes = [
-                        ...data.map((attribute) => ({
-                            dataAttributeID: attribute.dataAttributeID,
-                            attributeName: attribute.uiPrintableName,
-                        })),
-                        ignoreAttribute,
-                        newAttribute,
-                    ];
-                    dispatch(updateDataAttribute(attributes));
-                } else {
-                    dispatch(updateDataAttribute([]));
-                }
-            },
-            err: (err) => {},
-        }),
-    );
-
 export const saveAudiencecolumnMapping =
     ({ payload, dispatchState, navigate, loading = true }) =>
     async (dispatch) =>
@@ -470,22 +436,6 @@ export const saveSFTPColumnMapping =
                 isFailureCheck: true,
             }),
         );
-export const saveMySql =
-    ({ payload }) =>
-    async (dispatch) => {
-        return dispatch(
-            request.post({
-                url: SAVE_MYSQL,
-                payload,
-                loading: true,
-                ok: ({ data }) => {
-                    // checkFTPConnection(data);
-                },
-                fail: (err) => {},
-            }),
-        );
-    };
-
 export const save_Connectors_ColumnMapping =
     ({ payload, dispatchState, navigate, loading = true }) =>
     async (dispatch) =>

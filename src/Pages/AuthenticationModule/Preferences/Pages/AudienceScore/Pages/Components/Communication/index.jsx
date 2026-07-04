@@ -4,15 +4,19 @@ import { circle_minus_fill_medium, circle_plus_fill_medium } from 'Constants/Glo
 import { useEffect } from 'react';
 import { Col, Row } from 'react-bootstrap';
 import { useFieldArray, useFormContext } from 'react-hook-form';
-import slice from 'lodash/slice';
+import { slice } from 'Utils/modules/lodashReplacements';
 
 import RSInput from 'Components/FormFields/RSInput';
 import RSKendoDropDownList from 'Components/FormFields/RSKendoDropdown';
 import RSTooltip from 'Components/RSTooltip';
 
 import { HorizontalSkeleton } from 'Components/Skeleton/Skeleton';
+import { asAudienceScoreList } from '../constants';
 
-const CommunicaitionCard = ({ constants, name, head, allChannel, dropDownData }) => {
+const CommunicaitionCard = ({ constants, name, head, allChannel, dropDownData, isLoading = false }) => {
+    const safeConstants = asAudienceScoreList(constants);
+    const safeAllChannel = asAudienceScoreList(allChannel);
+    const safeDropDownData = asAudienceScoreList(dropDownData);
     const {
         control,
         trigger,
@@ -29,46 +33,34 @@ const CommunicaitionCard = ({ constants, name, head, allChannel, dropDownData })
 
     useEffect(() => {
         let temp;
-        temp = slice(constants, 0, 3);
+        temp = slice(safeConstants, 0, 3);
         if (name === 'CampaingDetails') {
-            const filteredChannel = allChannel.find((item) => item?.campaignSegment === name);
+            const filteredChannel = safeAllChannel.find((item) => item?.campaignSegment === name);
             if (filteredChannel?.campaignSegmentRule) {
                 const campaignSegmentRuleData = Object.keys(filteredChannel.campaignSegmentRule);
-                temp = slice(constants, 0, campaignSegmentRuleData?.length);
+                temp = slice(safeConstants, 0, campaignSegmentRuleData?.length);
             }
         }
         reset((prev) => ({
             ...prev,
             [`${name}Values`]: temp,
         }));
-    }, [constants, allChannel, name]);
+    }, [safeConstants, safeAllChannel, name, reset]);
 
     useEffect(() => {
-        if (allChannel?.length > 0) {
-            const filteredChannel = allChannel.find((item) => item?.campaignSegment === head);
+        if (safeAllChannel.length > 0) {
+            const filteredChannel = safeAllChannel.find((item) => item?.campaignSegment === head);
             setValue(`${name}Values[Total]`, filteredChannel?.responseScore);
         }
         if (name === 'CampaingDetails') {
-            const filteredChannel = allChannel.find((item) => item?.campaignSegment === name);
+            const filteredChannel = safeAllChannel.find((item) => item?.campaignSegment === name);
             if (filteredChannel?.campaignSegmentRule) {
-                // const campaignSegmentRuleData = Object.keys(filteredChannel.campaignSegmentRule);
-
-                // const filterAttrtibute = filter((item) =>
-                //     campaignSegmentRuleData.some((ele) => Number(ele) === item.campaignAttributeId),
-                // );
-                // // console.log(filterAttrtibute,'filterAttrtibute');
-                // const finalFormatData = getCommuAttribute(constants);
-                // let temp = slice(finalFormatData, 0, campaignSegmentRuleData?.length);
-                // reset((prev) => ({
-                //     ...prev,
-                //     [`${name}Values`]: temp,
-                // }));
                 setValue(`${name}Values[0].value`, filteredChannel?.campaignSegmentRule['1']);
                 setValue(`${name}Values[1].value`, filteredChannel?.campaignSegmentRule['2']);
                 setValue(`${name}Values[Total]`, filteredChannel?.responseScore);
             }
         }
-    }, [allChannel, constants, name]);
+    }, [safeAllChannel, name, head, setValue]);
 
     const addMore = () => {
         let val = getValues(`${name}Values`);
@@ -102,7 +94,7 @@ const CommunicaitionCard = ({ constants, name, head, allChannel, dropDownData })
 
     const handleOnBlur = () => {
         const totalValues = getValues(`${name}Values`)?.reduce((accumulator, currentValue) => {
-            return Number(accumulator) + Number(currentValue.value);
+            return Number(accumulator) + Number(currentValue?.value ?? 0);
         }, 0);
         setValue(`${name}Values[Total]`, totalValues);
     };
@@ -120,6 +112,9 @@ const CommunicaitionCard = ({ constants, name, head, allChannel, dropDownData })
         });
         return duplicates;
     };
+
+    const isHydratingRows = safeAllChannel.length > 0 && safeConstants.length > 0 && !fields?.length;
+    const isPendingContent = isLoading || isHydratingRows;
 
     return (
         <Col sm={6}>
@@ -143,7 +138,7 @@ const CommunicaitionCard = ({ constants, name, head, allChannel, dropDownData })
                                                 addMore();
                                             }}
                                             className={`${circle_plus_fill_medium} ${
-                                                allChannel?.length > 0 && fields?.length > 0 ? '' : 'click-off'
+                                                safeAllChannel.length > 0 && fields?.length > 0 ? '' : 'click-off'
                                             } icon-md color-primary-blue  ${
                                                 errors?.[`${name}Values`] && errors?.[`${name}Values`]?.length
                                                     ? 'click-off'
@@ -156,7 +151,7 @@ const CommunicaitionCard = ({ constants, name, head, allChannel, dropDownData })
                             </div>
                         </Col>
                     </Row>
-                    {allChannel?.length > 0 && fields?.length > 0 ? (
+                    {safeAllChannel.length > 0 && fields?.length > 0 ? (
                         <div className="pacrw-content-list">
                             {fields.map((ele, ind) => {
                                 return (
@@ -166,7 +161,7 @@ const CommunicaitionCard = ({ constants, name, head, allChannel, dropDownData })
                                                 <RSKendoDropDownList
                                                     control={control}
                                                     name={`${name}Values[${ind}]`}
-                                                    data={dropDownData}
+                                                    data={safeDropDownData}
                                                     rules={{
                                                         required: ENTER_VALID_DATA,
                                                         validate: (value) => {
@@ -222,7 +217,7 @@ const CommunicaitionCard = ({ constants, name, head, allChannel, dropDownData })
                             })}
                         </div>
                     ) : (
-                        <HorizontalSkeleton isError={true} />
+                        <HorizontalSkeleton isError={!isPendingContent} />
                     )}
                 </div>
             </div>

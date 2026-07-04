@@ -11,12 +11,7 @@ import { BRAND_ATTRIBUTE_NOT_SELECTED, CONFIRM_OPT_IN } from 'Constants/GlobalCo
 import { ARE_YOU_SURE_DELETE, BRAND_ID_NOT_EXISTS, CANCEL, CONFIRM, DELETE_USER_ROLE, DOUBLE_OPT_IN, LIST_ANALYSIS, MAP_DATA_ATTRIBUTES, NEW_AUDIENCE_LIST, OK, POTENTIAL_AUDIENCE, RESTART, REVIEW_COLUMN_MAPPING_BEFORE_CONFIRM, SAVE, TO_MAP_THE_DATA, WARNING } from 'Constants/GlobalConstant/Placeholders';
 import { alert_medium, alert_xlarge } from 'Constants/GlobalConstant/Glyphicons';
 import { useEffect, useMemo, useReducer, useRef, useState } from 'react';
-import _get from 'lodash/get';
-import _last from 'lodash/last';
-import _find from 'lodash/find';
-import _first from 'lodash/first';
-import _cloneDeep from 'lodash/cloneDeep';
-import _uniqBy from 'lodash/unionBy';
+import { get as _get,last as _last,find as _find,first as _first,cloneDeep as _cloneDeep,unionBy as _uniqBy } from 'Utils/modules/lodashReplacements';
 import { Row, Col, Container } from 'react-bootstrap';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';

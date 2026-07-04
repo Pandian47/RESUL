@@ -1,3 +1,4 @@
+import { getUserDetails } from 'Utils/modules/crypto';
 import { getDateWithDaynoFormat, getYYMMDD } from 'Utils/modules/dateTime';
 import { handleAdvanceSearchDataFormat } from 'Utils/modules/navigation';
 import { safeParseJSON } from 'Utils/modules/stringUtils';
@@ -72,6 +73,7 @@ const DynamicHeaderView = (props) => {
     const { permissions } = usePermission();
     const dispatch = useDispatch();
     const { addAccess } = permissions || {};
+    const { isAudience } = getUserDetails();
     const {
         setPagerPageConfig,
         setPageConfig,
@@ -651,10 +653,10 @@ const DynamicHeaderView = (props) => {
         setNameSuggestLoading(false);
     }, []);
 
-    const dynamicListEmpty =
-        !listLoading &&
-        !dynamicListView?.listData?.length &&
-        !dynamicListView?.list?.length;
+    const listHeaderDisabled =
+        listLoading || (isAudience === 0 && !dynamicListView?.list?.length);
+
+    const isDynamicListAddDisabled = !addAccess || listLoading;
 
     const persistAudienceDynamicFiltersKey = useMemo(
         () => buildAdvanceSearchPersistStorageKey('audience-dynamic', clientId, userId, departmentId),
@@ -669,6 +671,7 @@ const DynamicHeaderView = (props) => {
         <div className="flex-row justify-content-end top-sub-heading advanceSearchContainer">
             <RSAdvanceSearchNew
                 key={departmentId}
+                disabled={listHeaderDisabled}
                 initialActiveFilters={AUDIENCE_DEFAULT_INITIAL_ACTIVE_FILTERS}
                 persistActiveFilters
                 persistActiveFiltersStorageKey={persistAudienceDynamicFiltersKey}
@@ -726,14 +729,14 @@ const DynamicHeaderView = (props) => {
                 searchValueSync={searchValueSync}
                 minCharsForSearchSubmit={LIST_NAME_SUGGEST_MIN_CHARS}
                 dateRangeComponent={
-                    <span className={''}>
+                    <span className={listHeaderDisabled ? 'pe-none click-off' : ''}>
                         <RSDateRangePicker onDatePickerClosed={(dates) => handleDateChange(dates)} isTemplate />
                     </span>
                 }
                 createButtonComponent={
                     <span className="d-inline-flex align-items-center rs-asn-audience-actions">
                         <RSTooltip text={!listTypeView ? CARD_VIEW : GRID_VIEW} position="top" className="lh0 mr15">
-                            <div className={dynamicListEmpty ? 'pe-none click-off' : ''}>
+                            <div className={listHeaderDisabled ? 'pe-none click-off' : ''}>
                                 <i
                                     className={`${
                                         listTypeView ? circle_list_edge_large : circle_grid_fill_edge_large
@@ -745,14 +748,14 @@ const DynamicHeaderView = (props) => {
                         <RSTooltip text={CREATE_NEW_DYNAMIC_LIST} position="top" className="lh0">
                             <i
                                 id="rs_data_circle_plus_fill_edge"
-                                className={`${!addAccess ? 'click-off ' : ''}${
+                                className={`${isDynamicListAddDisabled ? 'click-off pe-none ' : ''}${
                                     circle_plus_fill_edge_large
                                 } icon-lg color-primary-blue icon-hover-shadow-primary`}
                                 onClick={() => {
-                                    if (addAccess)
-                                        navigate('/audience/create-dynamic-list', {
-                                            state: { mode: 'add' },
-                                        });
+                                    if (isDynamicListAddDisabled) return;
+                                    navigate('/audience/create-dynamic-list', {
+                                        state: { mode: 'add' },
+                                    });
                                 }}
                             />
                         </RSTooltip>

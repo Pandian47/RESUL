@@ -250,6 +250,36 @@ body.rs-body-scroll-lock {
     visibility: visible;
 }
 
+// Stacked OTP/confirmation flows hide the parent dialog via opacity-0 or visually-hidden
+// but Bootstrap still renders its backdrop — hide the sibling backdrop to avoid a blank overlay.
+.fade.rs-modal.opacity-0 + .modal-backdrop.show,
+.fade.rs-modal.visually-hidden + .modal-backdrop.show {
+    display: none !important;
+    pointer-events: none;
+    visibility: hidden;
+}
+
+// Session-timeout re-login: keep only the session dialog visible; hide stray backdrops too.
+body.Session-model-open {
+    .session-timeout-popup.modal.show {
+        display: block !important;
+
+        & + .modal-backdrop {
+            display: none !important;
+        }
+    }
+
+    .fade.rs-modal:not(.session-timeout-popup) {
+        display: none !important;
+
+        & + .modal-backdrop.show {
+            display: none !important;
+            pointer-events: none;
+            visibility: hidden;
+        }
+    }
+}
+
 // Stacked modals (e.g. upload inside add region): each new backdrop must sit above the
 // previous .modal.show (10002), otherwise the nested backdrop never dims the parent dialog.
 .modal-backdrop.show ~ .modal-backdrop.show {

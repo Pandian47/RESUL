@@ -14,14 +14,7 @@ import { FormProvider, useForm } from 'react-hook-form';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { Col, Row } from 'react-bootstrap';
-import _get from 'lodash/get';
-import _map from 'lodash/map';
-import _isEmpty from 'lodash/isEmpty';
-import _find from 'lodash/find';
-import _filter from 'lodash/filter';
-import _uniqBy from 'lodash/uniqBy'
-import _cloneDeep from 'lodash/cloneDeep';
-import _forEach from 'lodash/forEach';
+import { get as _get, map as _map, isEmpty as _isEmpty, find as _find, filter as _filter, uniqBy as _uniqBy, cloneDeep as _cloneDeep, forEach as _forEach } from 'Utils/modules/lodashReplacements';
 import RSKendoDropDownList from 'Components/FormFields/RSKendoDropdown';
 import RSDropdownFooterBtn from 'Components/DropdownFooterBtn';
 import { get_Rcs_Content_Template, get_Rcs_Sendername, get_Rcs_Template, getContactByUserId, save_Rcs_Campaign, getAudienceList, Get_RCS_Campaign } from 'Reducers/communication/createCommunication/Create/request';
@@ -49,7 +42,7 @@ import {
     splitABRefreshFields,
     refreshFields,
 } from './constant';
-import { availableTabs, communicationChannels, getNextEligibleTabIndex, getChannelNavigationValues, handleAutoRefreshClickOff, handlePersonalizationFetchApiCall, MESSAGING_TAB_CHANNEL_MAP, calculateDefaultSplittedCount, AudienceFieldRenderComponent, audienceTypeList, handleMDCQueryParamsUpdate, handleCheckCTGT, validateAudienceCount, mergeChannelAudiences, handleUpdateEditAudienceCount,handleTotalAudienceCount, handleCGTGModalCheck, editActionIdFromCommunicationResponse, getPastPlanDurationBlockedState, validatePastPlanDurationOnSubmit, PAST_PLAN_DURATION_CLICK_OFF_CLASS, getMdcChannelDetailIdFromLocation, getIsMDChannelDetailForMdcEdit, shouldHandleEditCallApi, isGenie } from '../../constant';
+import { availableTabs, communicationChannels, getNextEligibleTabIndex, getChannelNavigationValues, handleAutoRefreshClickOff, handlePersonalizationFetchApiCall, MESSAGING_TAB_CHANNEL_MAP, calculateDefaultSplittedCount, AudienceFieldRenderComponent, audienceTypeList, handleMDCQueryParamsUpdate, handleCheckCTGT, validateAudienceCount, mergeChannelAudiences, handleUpdateEditAudienceCount,handleTotalAudienceCount, handleCGTGModalCheck, editActionIdFromCommunicationResponse, getPastPlanDurationBlockedState, validatePastPlanDurationOnSubmit, PAST_PLAN_DURATION_CLICK_OFF_CLASS } from '../../constant';
 import RSTooltip from 'Components/RSTooltip';
 import RSTabbar from 'Components/RSTabber';
 import RSSwitch from 'Components/FormFields/RSSwitch/index';
@@ -74,6 +67,7 @@ import SplitAB from './Components/SplitAB/SplitAB';
 import SplitSlider from '../../Component/SplitSlider/SplitSlider';
 import SplitABScheduleModal from '../../Component/SplitABScheduleModal';
 import RequestApproval from 'Pages/AuthenticationModule/Components/RequestApproval/RequestApproval';
+// import { UpdateState } from 'Utils/modules/misc';
 export const RCSProvider = createContext({
     carouselTabs: [],
     mask: [],
@@ -655,18 +649,13 @@ const RCS = ({ channelId, mCampType }) => {
 
     useEffect(() => {
         if (!_isEmpty(location) && !isEditCallRef?.current) {
-            const isFromGenie = isGenie(location);
-            const channelDetailId = getMdcChannelDetailIdFromLocation(location);
-            const isMDChannelDetail = isFromGenie
-                ? getIsMDChannelDetailForMdcEdit(location, isMDCEditMode, channelDetailId)
-                : true;
-            const willFetchCampaign = handleEditCallApi() && isMDChannelDetail;
-            if (willFetchCampaign) {
+            const isEditMode = handleEditCallApi();
+            if (isEditMode) {
                 isEditCallRef.current = true;
             }
             getRcsDetails();
         }
-    }, [JSON.stringify(location), savedChannel, isMDCEditMode]);
+    }, [JSON.stringify(location)]);
     useEffect(() => {
         if (!isDirty && Object.keys(dirtyFields)?.length > 0) {
             dispatch(updateDirtyState(true));
@@ -675,15 +664,25 @@ const RCS = ({ channelId, mCampType }) => {
         }
     }, [JSON.stringify(dirtyFields)]);
 
-    const handleEditCallApi = () => shouldHandleEditCallApi(location, savedChannel);
+    const handleEditCallApi = () => {
+        const isMDC = _get(location, 'campaignType', 'S') === 'M';
+        if (savedChannel || isMDC) {
+            if (_get(location, 'campaignType', 'S') === 'S' || _get(location, 'campaignType', 'S') === 'T') {
+                return true;
+            } else {
+                if (_get(location, 'mode', 'create') === 'edit') {
+                    return true;
+                } else {
+                    return false;
+                }
+            }
+        } else {
+            return false;
+        }
+    };
 
     async function getRcsDetails() {
-        const isFromGenie = isGenie(location);
-        const channelDetailId = getMdcChannelDetailIdFromLocation(location);
-        const isMDChannelDetail = isFromGenie
-            ? getIsMDChannelDetailForMdcEdit(location, isMDCEditMode, channelDetailId)
-            : true;
-        const isEditMode = handleEditCallApi() && isMDChannelDetail;
+        const isEditMode = handleEditCallApi();
         if (isEditMode && isSavedChannel) {
             beginEditSkeleton();
         }

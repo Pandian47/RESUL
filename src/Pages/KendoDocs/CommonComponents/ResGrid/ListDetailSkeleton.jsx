@@ -61,6 +61,7 @@ export const getCommunicationDetailColCount = ({
     isSubsegment = false,
     hasAnyGrouping = false,
     hasSocialChannel = false,
+    showSentByChannel = false,
 }) => {
     let count = 3;
     if (campaignType === 'M') {
@@ -69,6 +70,7 @@ export const getCommunicationDetailColCount = ({
     }
     if (hasAnyGrouping) count += 1;
     if (hasSocialChannel) count += 1;
+    if (showSentByChannel || campaignType === 'S' || campaignType === 'M') count += 1;
     return count;
 };
 
@@ -99,10 +101,12 @@ const CommunicationDetailSkeletonRow = ({
     isSubsegment,
     hasAnyGrouping,
     hasSocialChannel,
+    showSentByChannel = false,
     rowIndex,
     animated = true,
 }) => {
     const isM = campaignType === 'M';
+    const showSentByChannelColumn = showSentByChannel || campaignType === 'S' || campaignType === 'M';
 
     return (
         <tr key={`detail-skel-${rowIndex}`} className={gridClass('detail-skeleton-row')} aria-hidden="true">
@@ -134,6 +138,11 @@ const CommunicationDetailSkeletonRow = ({
             {hasSocialChannel && (
                 <td className={gridClass('detail-skel-post-type')}>
                     <SkelLine width={72} height={16} animated={animated} />
+                </td>
+            )}
+            {showSentByChannelColumn && (
+                <td className={`text-end ${gridClass('detail-skel-sent-by-channel')}`}>
+                    <SkelLine width={56} height={15} animated={animated} />
                 </td>
             )}
             <td className={`text-end ${gridClass('detail-skel-action-cell')}`}>
@@ -221,6 +230,7 @@ export const ListDetailSkeletonRows = ({
     isSubsegment = false,
     hasAnyGrouping = false,
     hasSocialChannel = false,
+    showSentByChannel = false,
     hideTotalSent = false,
     hideReachColumn = false,
     hideReachDelivered = false,
@@ -247,6 +257,7 @@ export const ListDetailSkeletonRows = ({
                 isSubsegment={isSubsegment}
                 hasAnyGrouping={hasAnyGrouping}
                 hasSocialChannel={hasSocialChannel}
+                showSentByChannel={showSentByChannel}
                 rowIndex={rowIndex}
                 animated={animated}
             />
@@ -296,6 +307,7 @@ ListDetailSkeletonRows.propTypes = {
     isSubsegment: PropTypes.bool,
     hasAnyGrouping: PropTypes.bool,
     hasSocialChannel: PropTypes.bool,
+    showSentByChannel: PropTypes.bool,
     hideTotalSent: PropTypes.bool,
     hideReachColumn: PropTypes.bool,
     hideReachDelivered: PropTypes.bool,

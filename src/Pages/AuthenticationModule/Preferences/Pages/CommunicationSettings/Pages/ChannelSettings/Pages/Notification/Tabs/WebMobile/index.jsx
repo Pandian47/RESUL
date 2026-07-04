@@ -329,6 +329,7 @@ const WebMobile = () => {
               field: 'createdBy',
               title: CREATED_BY,
               filter: 'text',
+              width: 200,
               // cell: ({ dataItem }) =>
               //   <td>
               //     {dataItem?.createdBy?.length > 20 ?

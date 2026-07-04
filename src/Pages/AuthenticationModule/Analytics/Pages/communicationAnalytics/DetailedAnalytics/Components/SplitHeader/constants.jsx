@@ -1,4 +1,4 @@
-import { ch_dark_green, ch_dark_red, ch_facebook, ch_google_plus, ch_head_band_color, ch_heavy_dark_blue, ch_light_blue, ch_medium_red, ch_secondary_blue, ch_secondary_orange, ch_youtube } from 'Constants/GlobalConstant/Colors/colorsVariable';
+import { ch_dark_green, ch_dark_red, ch_facebook, ch_google_plus, ch_head_band_color, ch_heavy_dark_blue, ch_light_blue, ch_missed_call, ch_medium_red, ch_secondary_blue, ch_secondary_orange, ch_youtube } from 'Constants/GlobalConstant/Colors/colorsVariable';
 import { CLOSE, SANKEY_GRID } from 'Constants/GlobalConstant/Placeholders';
 import RSIcon from 'Components/RSIcon';
 import RSTooltip from 'Components/RSTooltip';
@@ -46,7 +46,7 @@ export const getBackgroundColor = {
     facebook: ch_facebook,
     facebookApp: ch_facebook,
     twitter: ch_light_blue,
-    pinterest: ch_medium_red,
+    pinterest: ch_missed_call,
     linkedIn: ch_heavy_dark_blue,
     googleanalytics: ch_google_plus,
     resulticksanalytics: ch_head_band_color,

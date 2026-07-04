@@ -263,6 +263,7 @@ const EmailFooterGrid = ({ handleCreate }) => {
                             field: 'footername',
                             title: FOOTER_LIST,
                             filter: 'text',
+                            width:'700'
                         },
                         {
                             field: 'action',

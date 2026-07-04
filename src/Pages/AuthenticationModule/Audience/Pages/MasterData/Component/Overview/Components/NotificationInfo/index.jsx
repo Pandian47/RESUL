@@ -61,7 +61,7 @@ const NotificationInfo = ({show=false, handleClose=()=>{}, chartData = {}, chart
             body={
                 <div className="master-recip-data-popup">
                     <Row>
-                        <Col md={6} className="">
+                        <Col md={6} className="d-flex justify-content-center align-items-center">
                             {chartType === 'MultiChart' ? (
                                 <RSHighchartsContainer key="bubble" options={bubbleChartOptions(data)} />
                             ) : (

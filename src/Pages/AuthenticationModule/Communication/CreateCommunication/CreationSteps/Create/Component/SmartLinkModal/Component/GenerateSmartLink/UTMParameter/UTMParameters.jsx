@@ -5,8 +5,7 @@ import { ENTER_TAG as ENTER_TAG_MSG, NO_SPECIAL_CHARS_ALLOWED, SELECT_TAG } from
 import { ADD_TAG, ENTER_TAG, ENTER_VALUE, PERSONALIZATION, REMOVE_TAG } from 'Constants/GlobalConstant/Placeholders';
 import { close_mini, editor_coupon_medium, restart_medium } from 'Constants/GlobalConstant/Glyphicons';
 import { Fragment, memo, useEffect, useState } from 'react';
-import _get from 'lodash/get';
-import _findIndex from 'lodash/findIndex';
+import { get as _get ,findIndex as _findIndex} from 'Utils/modules/lodashReplacements';
 import { useSelector } from 'react-redux';
 import { Col, Row } from 'react-bootstrap';
 import { useFieldArray, useFormContext, useWatch } from 'react-hook-form';
@@ -537,19 +536,20 @@ const UTMParameters = ({
                         })
                     }
                     confirm={(data) => {
+                        const { offerVal } = data;
                         const { fieldName: offerFieldName, index: offerIndex, fieldInsertName: offerFieldInsertName } = offerModal.data || {};
-                        const offerVal = `[${offerVal}]`;
+                        const formattedOfferVal = `[${offerVal}]`;
                         if (offerFieldName) {
-                            setValue(`${offerFieldName}.tagValue`, offerVal);
+                            setValue(`${offerFieldName}.tagValue`, formattedOfferVal);
                             setValue(`${offerFieldName}.isOffer`, true);
                         }
                         if (offerIndex !== undefined && offerFieldInsertName != null) {
                             const customValue = getValues(`${offerFieldInsertName}.parameters[${offerIndex}].customValue`) ?? '';
                             if (customValue !== '') {
-                                insertParameters(offerIndex, customValue, offerVal);
+                                insertParameters(offerIndex, customValue, formattedOfferVal);
                             }
                             if (offerVal !== '') {
-                                callback(offerVal);
+                                callback(formattedOfferVal);
                             }
                             updateParams();
                         }

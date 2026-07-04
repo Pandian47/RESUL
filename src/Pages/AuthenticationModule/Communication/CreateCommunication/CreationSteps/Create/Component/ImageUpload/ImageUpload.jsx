@@ -167,6 +167,7 @@ const ImageUpload = ({
     const [isUploaded, setIsUploaded] = useState(false);
     const [isPasted, setIsPasted] = useState(false);
     const [isFileInvalid, setIsFileInvalid] = useState(false);
+    const [isProcessing, setIsProcessing] = useState(false);
     /** When reopening the modal, show the current server/URL asset name without a File object. */
     const [rebindLabel, setRebindLabel] = useState(null);
     const prevUploadModalOpenRef = useRef(false);
@@ -334,7 +335,6 @@ const ImageUpload = ({
         clearErrors();
         setDisableUpload(false);
         setShowTooltip(false);
-        setIsDragging(false);
         setSelectedFile(null);
         setIsUploaded(false);
         setIsFileInvalid(false);
@@ -880,30 +880,35 @@ const ImageUpload = ({
             clearErrors(uploadImageName);
             setValue(inputUrlName, '');
             setIsUploaded(false);
+            setIsProcessing(true);
 
           
             const reader = new FileReader();
             reader.onload = async (event) => {
-                const base64String = event.target.result;
-                const base64Only = base64String?.split(';base64,')?.pop();
-                setIsUploading(false);
-                const res = await uploadHandler(base64Only, file.name, file.size, file);
-                if (res?.status) {
-                    setIsUploaded(true);
-                    setIsFileInvalid(false);
-                    setIsUploading(true);
-                    setTimeout(() => {
-                        setIsUploading(false);
-                    }, 300);
-                } else {
-                    setIsFileInvalid(true);
-                    setValue(uploadImageName, '');
-                    setValue(previewImageName, '');
-                    setError(uploadImageName, {
-                        type: 'custom',
-                        message: res?.message,
-                    });
+                try {
+                    const base64String = event.target.result;
+                    const base64Only = base64String?.split(';base64,')?.pop();
                     setIsUploading(false);
+                    const res = await uploadHandler(base64Only, file.name, file.size, file);
+                    if (res?.status) {
+                        setIsUploaded(true);
+                        setIsFileInvalid(false);
+                        setIsUploading(true);
+                        setTimeout(() => {
+                            setIsUploading(false);
+                        }, 300);
+                    } else {
+                        setIsFileInvalid(true);
+                        setValue(uploadImageName, '');
+                        setValue(previewImageName, '');
+                        setError(uploadImageName, {
+                            type: 'custom',
+                            message: res?.message,
+                        });
+                        setIsUploading(false);
+                    }
+                } finally {
+                    setIsProcessing(false);
                 }
             };
             reader.readAsDataURL(file);
@@ -1208,6 +1213,7 @@ const ImageUpload = ({
                                         selectedFile || (rebindLabel ? { name: rebindLabel } : null)
                                     }
                                     disabled={!!inputUrl || !!selectedFile || !!rebindLabel}
+                                    isProcessing={isProcessing}
                                     isFileInvalid={isFileInvalid}
                                     errorMessage={getFieldState(uploadImageName)?.message}
                                     iconClassName={`${builder_upload_large} icon-xl color-primary-blue`}
@@ -1387,41 +1393,46 @@ const ImageUpload = ({
                                             // This case shouldn't happen as upload happens automatically now
                                             // But keeping as fallback
                                             if (selectedFile && !isUploaded) {
+                                                setIsProcessing(true);
                                                 const reader = new FileReader();
                                                 reader.onload = async (event) => {
-                                                    const base64String = event.target.result;
-                                                    const base64Only = base64String?.split(';base64,')?.pop();
-                                                    setIsUploading(false);
-                                                    const uploadHandler =
-                                                        contentType === 'story' &&
-                                                        useSocialPostSpec &&
-                                                        handleVideoData &&
-                                                        isSocialStoryVideoFile(selectedFile)
-                                                            ? handleVideoData
-                                                            : handleImageData;
-                                                    const res = await uploadHandler(
-                                                        base64Only,
-                                                        selectedFile.name,
-                                                        selectedFile.size,
-                                                        selectedFile,
-                                                    );
-                                                    if (res?.status) {
-                                                        setValue(inputUrlName, '');
-                                                        setIsUploaded(true);
-                                                        handleClose();
-                                                        handleSave();
-                                                        setIsUploading(true);
-                                                        setTimeout(() => {
-                                                            setIsUploading(false);
-                                                        }, 300);
-                                                    } else {
-                                                        setValue(uploadImageName, '');
-                                                        setValue(previewImageName, '');
-                                                        setError(uploadImageName, {
-                                                            type: 'custom',
-                                                            message: res?.message,
-                                                        });
+                                                    try {
+                                                        const base64String = event.target.result;
+                                                        const base64Only = base64String?.split(';base64,')?.pop();
                                                         setIsUploading(false);
+                                                        const uploadHandler =
+                                                            contentType === 'story' &&
+                                                            useSocialPostSpec &&
+                                                            handleVideoData &&
+                                                            isSocialStoryVideoFile(selectedFile)
+                                                                ? handleVideoData
+                                                                : handleImageData;
+                                                        const res = await uploadHandler(
+                                                            base64Only,
+                                                            selectedFile.name,
+                                                            selectedFile.size,
+                                                            selectedFile,
+                                                        );
+                                                        if (res?.status) {
+                                                            setValue(inputUrlName, '');
+                                                            setIsUploaded(true);
+                                                            handleClose();
+                                                            handleSave();
+                                                            setIsUploading(true);
+                                                            setTimeout(() => {
+                                                                setIsUploading(false);
+                                                            }, 300);
+                                                        } else {
+                                                            setValue(uploadImageName, '');
+                                                            setValue(previewImageName, '');
+                                                            setError(uploadImageName, {
+                                                                type: 'custom',
+                                                                message: res?.message,
+                                                            });
+                                                            setIsUploading(false);
+                                                        }
+                                                    } finally {
+                                                        setIsProcessing(false);
                                                     }
                                                 };
                                                 reader.readAsDataURL(selectedFile);

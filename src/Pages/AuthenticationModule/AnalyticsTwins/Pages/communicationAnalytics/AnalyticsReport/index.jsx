@@ -6,9 +6,7 @@ import { ANALYTICS_CUSTOMER_CLICK, ANALYTICS_CUSTOMER_QR_SCAN, ANALYTICS_PROGRES
 import { circle_close_edge_medium, circle_close_fill_mini, circle_close_mini, circle_tick_medium, in_progress_large } from 'Constants/GlobalConstant/Glyphicons';
 import { createContext, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import _get from 'lodash/get';
-import _map from 'lodash/map';
-import _filter from 'lodash/filter';
+import { get as _get,map as _map,filter as _filter } from 'Utils/modules/lodashReplacements';
 import { Col, Container, Row } from 'react-bootstrap';
 
 import { useNavigate, useLocation } from 'react-router-dom';
@@ -1127,7 +1125,7 @@ const AnalyticsReport = () => {
                                         className={`position-relative mr10 p8 white border-tlr7 border-blr7 d-flex align-items-center ${circle_tick_medium} icon-md bg-primary-green `}
                                     ></i>
                                     <span className={`${isDownloadUI ? '' : ''} align-items-center d-flex lh-sm py10`}>
-                                        {summary?.campaignName} is marked as&nbsp;<b> Golden communication!</b>
+                                        {summary?.campaignName} is marked as&nbsp; Golden communication!
                                     </span>
                                     {/* <i
                                     className={`position-relative p5 ${circle_close_edge_medium} icon-md white bg-primary-red`}
@@ -1290,15 +1288,11 @@ const AnalyticsReport = () => {
                     !shouldShowPageSkeleton &&
                     createPortal(
                         <div
-                            className="analytics-report-pdf-skeleton-overlay analytics-report-skeleton-scope analytics-report-page-loading"
-                            style={ANALYTICS_REPORT_LOADING_HOLDER_STYLE}
+                            className="analytics-report-pdf-loader-overlay"
                             aria-busy="true"
                             aria-label="Preparing PDF download"
                         >
-                            <style>{skeletonShellSharedCriticalCss}</style>
-                            <style>{analyticsReportLiveSkeletonCriticalCss}</style>
-                            <style>{analyticsReportSkeletonCriticalCss}</style>
-                            <AnalyticsReportPageContentSkeleton wrapScope={false} />
+                            <RSLoader fallback />
                         </div>,
                         document.body,
                     )}

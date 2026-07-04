@@ -1,4 +1,5 @@
-import { VARIANT_PRESETS } from './config';
+import { isValidElement } from 'react';
+
 /** Legacy rs- / tab* class tokens mapped to res- prefixed ResTabber classes. */
 const CLASS_REPLACEMENTS = [
     ['rs-scrollTabList-container', 'res-scroll-tab-list-container'],
@@ -63,12 +64,51 @@ const CLASS_REPLACEMENTS = [
 
 const LEGACY_CLASS_MAP = new Map(CLASS_REPLACEMENTS);
 
+/** Tab list containers that use the Framer Motion sliding active indicator. */
+const SLIDING_INDICATOR_CONTAINER_CLASSES = new Set([
+    'rs-tabs',
+    'res-tabs',
+    'res-tabs-2',
+    'rs-chart-tab',
+    'res-chart-tab',
+]);
+
+/** Layouts that keep their own static active styling — no sliding indicator. */
+const SLIDING_INDICATOR_EXCLUDED_CLASSES = new Set([
+    'vertical-tabs',
+    'res-vertical-tabs',
+    'rsv-tabs-list',
+    'res-v-tabs-list',
+    'tabs-vertical',
+    'res-tabs-vertical',
+    'res-tab-horizontal',
+    'rs-tab-horizontal',
+    'res-content-tabs',
+    'rs-content-tabs',
+    'res-content-tabs-flat',
+    'rs-content-tabs-flat',
+    'res-content-tabs-2',
+    'rs-content-tabs-2',
+    'res-content-tabs-split',
+    'rs-content-tabs-split',
+]);
+
 const mapLegacyClassToken = (token) => {
     if (!token) return token;
     if (token.startsWith('res-') || token.startsWith('rs-')) {
         return LEGACY_CLASS_MAP.get(token) ?? token;
     }
     return LEGACY_CLASS_MAP.get(token) ?? token;
+};
+
+export const shouldEnableSlidingIndicator = (className = '', dynamicTab = '') => {
+    const tokens = `${className} ${dynamicTab}`.trim().split(/\s+/).filter(Boolean);
+
+    if (tokens.some((token) => SLIDING_INDICATOR_EXCLUDED_CLASSES.has(mapLegacyClassToken(token)))) {
+        return false;
+    }
+
+    return tokens.some((token) => SLIDING_INDICATOR_CONTAINER_CLASSES.has(mapLegacyClassToken(token)));
 };
 
 export const mapResTabberClasses = (classString = '') => {
@@ -84,34 +124,6 @@ export const mapResTabberClasses = (classString = '') => {
     // Safety net for any historical double-prefix output (res-res-tab-* → res-tab-*)
     return mapped.replace(/\bres-res-/g, 'res-').replace(/\s+/g, ' ').trim();
 };
-
-/**
- * Merge variant preset features with explicit features and props.
- */
-export const resolveTabberFeatures = (variant, features = {}, props = {}) => {
-    const preset = VARIANT_PRESETS[variant] || VARIANT_PRESETS.default;
-    return { ...preset, ...features, ...pickFeatureProps(props) };
-};
-
-const FEATURE_PROP_KEYS = [
-    'scrollable',
-    'headingLayout',
-    'addRemoveTabs',
-    'refreshControl',
-    'overflowDropdown',
-    'horizontalScroll',
-    'editableLabels',
-    'iconOnlyTabs',
-    'fullWidthBar',
-];
-
-const pickFeatureProps = (props) =>
-    FEATURE_PROP_KEYS.reduce((acc, key) => {
-        if (props[key] !== undefined) {
-            acc[key] = props[key];
-        }
-        return acc;
-    }, {});
 
 /**
  * Normalize legacy prop aliases to a consistent shape.
@@ -145,18 +157,32 @@ export const normalizeTabberProps = (props = {}) => {
     };
 };
 
-/**
- * Render active tab panel content safely.
- */
-export const renderTabContent = (tab, fallbackIndex) => {
-    if (!tab) return null;
-    if (typeof tab.component === 'function') {
-        return tab.component();
-    }
-    if (typeof fallbackIndex === 'function') {
-        return fallbackIndex();
-    }
-    return null;
-};
-
 export const TAB_LABEL_MAX_LENGTH = 25;
+
+/**
+ * Renders a tab panel from tabData entry. Guards against undefined components
+ * (common when constants.jsx imports a panel that imports the same constants).
+ */
+export const renderTabPanel = (tab) => {
+    if (!tab?.component || typeof tab.component !== 'function') {
+        return null;
+    }
+
+    const panel = tab.component();
+
+    if (panel == null || panel === false) {
+        return panel;
+    }
+
+    if (isValidElement(panel) && panel.type == null) {
+        if (import.meta.env.DEV) {
+            console.error(
+                '[ResTabber] Tab panel component is undefined — check circular imports in tab config:',
+                { id: tab.id, text: tab.text },
+            );
+        }
+        return null;
+    }
+
+    return panel;
+};

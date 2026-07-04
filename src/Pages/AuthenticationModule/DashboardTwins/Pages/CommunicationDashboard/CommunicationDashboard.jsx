@@ -25,6 +25,7 @@ import { useDispatch, useSelector } from 'react-redux';
 
 import { getSessionId } from 'Reducers/globalState/selector';
 import { globalStateSelector } from 'Utils/Selectors/app';
+// import { UpdateState } from 'Utils/modules/misc';
 //require('highcharts/highcharts-more.js')(Highcharts);
 
 const getLeadSourceValue = (item) =>
@@ -726,55 +727,3 @@ const CommunicationDashboard = () => {
 };
 
 export default CommunicationDashboard;
-
-const ChartComponent = ({
-    chartData,
-    title,
-    percentage,
-    description,
-    smallText,
-    dropDown,
-    areaspline,
-    dropDownOnSelect,
-}) => {
-    return (
-        <div
-            className={`portlet-container portlet-md ${percentage ? 'pfooter' : ''}  ${areaspline ? 'areaspline-x-axis-labels' : ''
-                }`}
-        >
-            <div className="portlet-header">
-                <h4>{title}</h4>
-                {dropDown && (
-                    <div className="float-end portlet-dropdown">
-                        <BootstrapDropdown
-                            data={dropDown}
-                            flatIcon
-                            defaultItem={<i className={`${menu_dot_medium} icon-md`} />}
-                            showUpdate={false}
-                            className="no_caret"
-                            alignRight
-                            onSelect={() => {
-                                dropDownOnSelect();
-                            }}
-                        />
-                    </div>
-                )}
-            </div>
-            <div className="portlet-body">
-                <div className="portlet-chart">{/* <NewCharts options={chartData} /> */}</div>
-                {smallText && <span className="portlet-info-text">{smallText}</span>}
-            </div>
-            {percentage && (
-                <div className="portlet-footer portlet-two-label">
-                    <ul>
-                        <li>
-                            <span>{percentage}</span>
-                            <small>%</small>
-                        </li>
-                        <li>{description}</li>
-                    </ul>
-                </div>
-            )}
-        </div>
-    );
-};

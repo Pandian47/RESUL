@@ -23,9 +23,7 @@ import useComponentWillUnmount from 'Hooks/useComponentWillUnMount';
 import RSSkeletonTable from 'Components/RSSkeleton/RSSkeletonTable';
 import usePermission from 'Hooks/usePersmission';
 import { useNavigate } from 'react-router-dom';
-import cloneDeep from 'lodash/cloneDeep';
-import debounce from 'lodash/debounce';
-import isEqual from 'lodash/isEqual';
+import { cloneDeep,debounce,isEqual } from 'Utils/modules/lodashReplacements';
 import { AUDIENCE_LIST_DEFAULT_SORT_BY_ID, AUDIENCE_LIST_LAST_30_DAYS_OFFSET } from '../../audienceModuleDefaults';
 
 export const DynamicListContext = createContext({
@@ -57,9 +55,9 @@ const DynamicList = () => {
         (state) => state?.dynamicListReducer ?? dynamicListInitialState,
     );
     const { failureApiErrors, accountAdmin, company_clientId } = useSelector(({ globalstate }) => globalstate);
-    let isAgencyAccountAdmin = isAgency && accountAdmin?.clientId === company_clientId?.clientId;
-    // console.log('dynamicListView: ', dynamicListView);
     const { departmentId, clientId, userId, departmentName } = useSelector((state) => getSessionId(state));
+    let isAgencyAccountAdmin = isAgency && accountAdmin?.clientId === company_clientId?.clientId;
+
     const [listTypeView, setListTypeView] = useState(true);
     const [isDateFilter, setisDateFilter] = useState(false);
     const isFirstRender = useRef(true);

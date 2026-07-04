@@ -9,9 +9,7 @@ import { truncateTitle } from 'Utils/modules/displayCore';
 import { ANALYTICS, ARE_YOU_SURE_DELETE, CANCEL, DELETE, DYNAMIC_LIST_ZERO, EDIT, ENTER_COMMENTS, OK, PROCEED, VIEW } from 'Constants/GlobalConstant/Placeholders';
 import { analytics_medium, comment_medium, delete_medium, eye_medium, listing_preview_medium, pencil_edit_medium, tick_medium, winner_mini } from 'Constants/GlobalConstant/Glyphicons';
 import { Fragment, cloneElement, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
-import _get from 'lodash/get';
-import _forEach from 'lodash/forEach';
-import _ from 'lodash';
+import { get as _get,forEach as _forEach ,lowerCase} from 'Utils/modules/lodashReplacements';
 import { useDispatch, useSelector, useStore } from 'react-redux';
 import { useForm } from 'react-hook-form';
 import RSTooltip from 'Components/RSTooltip';
@@ -324,7 +322,7 @@ const DetailedStatus = ({
     };
 
     useEffect(() => {
-        if (campaignType === 'E' || isLimitList) {
+        if (campaignType === 'E'|| campaignType === 'T' || isLimitList) {
             const pausePlayStatusId = _get(content, 'triggerPlayPauseStatus');
             const { defaultItem, options } = getPausePlayTrigger(limitliststatusId || pausePlayStatusId, {
                 isScheduled: statusId === 7,
@@ -360,7 +358,7 @@ const DetailedStatus = ({
 
     const runEditFlow = async () => {
         const communicationStatus = handleCommunicationStatus(communicationStatusId);
-        let tabValue = !!name ? _.lowerCase(name) : _.lowerCase(label);
+        let tabValue = !!name ?  lowerCase(name) :  lowerCase(label);
         let tabValueName = getNameType(tabValue);
         let verticalValues = Object.keys(availableTabs);
         const verticalIndex = verticalValues.indexOf(tabValueName);
@@ -798,7 +796,7 @@ const DetailedStatus = ({
                                     {isSplit && (statusId === 5 || statusId === 9) && (
                                         <img src={splitABIcon} alt="splitABIcon" className="mr5" />
                                     )}
-                                    {isSplit && campaignType !== 'E' && (statusId === 5 || statusId === 9) && (
+                                    {isSplit && (campaignType !== 'E' || campaignType !== 'T') && (statusId === 5 || statusId === 9) && (
                                         <span
                                             className="splitab-underline cp"
                                             onClick={() => {
@@ -809,10 +807,10 @@ const DetailedStatus = ({
                                         </span>
                                     )}
 
-                                    {/* Only show in channel types, not in analytics types, so it's hidden. */}
+                                    {/* Only show in channel types, not in analytics types, so it's hidden. */ console.log('campaignType',campaignType)}
 
                                     {((isLimitList && statusId !== 9) ||
-                                        (campaignType === 'E' &&
+                                        (campaignType === 'E'||campaignType === 'T' &&
                                             content?.channelId !== 6 &&
                                             content?.channelId !== 16 &&
                                             (statusId === 5 ||
@@ -925,11 +923,11 @@ const DetailedStatus = ({
                 {showPostTypeColumn && (
                     <td>{socialPostTypeLabel ? <p className="mb0">{socialPostTypeLabel}</p> : null}</td>
                 )}
-                {/* {showSentByChannel && (
+                {showSentByChannel && (
                     <td className="text-end">
                         {getSentByChannelDisplay(content?.channelId, content?.sentCount)}
                     </td>
-                )} */}
+                )}
                 <td>
                     <ul className="rs-communication-icon">
                         {statusId === 54 && (

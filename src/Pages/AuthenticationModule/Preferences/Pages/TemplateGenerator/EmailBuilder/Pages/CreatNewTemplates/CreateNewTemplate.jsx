@@ -82,61 +82,68 @@ const CreateNewTemplate = ({ data, communication = false, setPayload, handleCate
                         const isBlankTemplate = index === 3;
                         return (
                             <Col sm={3} key={item?.name || index}>
-                                <div className={`gallery-list p10 email-template-grid no-box-shadow full-overlay ${isAuthoring ? 'mb0' : ''}`}>
-                                    <div className={`px0 border-0 ${isBlankTemplate ? 'align-items-center d-flex h-100 justify-content-center' : ''}`}>
-                                        <div className="gl-img">
-                                            {' '}
+                                <div
+                                    className={`gallery-list p10 create-new-template-card email-template-grid no-box-shadow full-overlay ${
+                                        isAuthoring ? 'mb0 email-authoring-popup' : ''
+                                    }`}
+                                >
+                                    <div
+                                        className={`create-new-template-card__body ${
+                                            isBlankTemplate ? 'create-new-template-card__body--blank' : ''
+                                        }`}
+                                    >
+                                        <div className="create-new-template-card__preview gl-img">
                                             {!isBlankTemplate ? (
                                                 <img
                                                     src={item?.src}
+                                                    className="border-r10"
+                                                    alt=""
                                                     onClick={() => {
                                                         setTemplateData(templateJsonData);
                                                         setTemplateFlag({
                                                             show: true,
                                                             mode: 'create',
-                                                            templateIndex: index + 1
+                                                            templateIndex: index + 1,
                                                         });
                                                     }}
                                                 />
                                             ) : (
                                                 <div>
-                                                    <i className={`${circle_plus_large} icon-xl color-primary-blue cp`} onClick={() => {
-                                                        setTemplateData(templateJsonData);
-                                                        setTemplateFlag({
-                                                            show: true,
-                                                            mode: 'create',
-                                                            templateIndex: 0
-                                                        });
-                                                    }} />
-                                                    <p className='lh-sm'>
-                                                        Blank template
-                                                    </p>
-                                                </div>
-                                            )}
-                                        </div>
-                                        {!isBlankTemplate && (
-                                            <>
-                                                <div className="overlay"></div>
-                                                <div className="template-buttons-section">
-                                                    <a
-                                                        className={`button ${addAccess ? '' : 'click-off'}`}
+                                                    <i
+                                                        className={`${circle_plus_large} icon-xl color-primary-blue cp`}
                                                         onClick={() => {
-                                                            // navigate(`/preferences/template-gallery/email-builder?preDefinedTemplate=${item?.path}`, {
-                                                            //     state,
-                                                            // });
                                                             setTemplateData(templateJsonData);
                                                             setTemplateFlag({
                                                                 show: true,
                                                                 mode: 'create',
-                                                                templateIndex: index + 1
+                                                                templateIndex: 0,
+                                                            });
+                                                        }}
+                                                    />
+                                                    <p className="lh-sm">Blank template</p>
+                                                </div>
+                                            )}
+                                        </div>
+                                        {!isBlankTemplate && (
+                                            <div className="create-new-template-card__interaction">
+                                                <div className="overlay" />
+                                                <div className="template-buttons-section">
+                                                    <a
+                                                        className={`button ${addAccess ? '' : 'click-off'}`}
+                                                        onClick={() => {
+                                                            setTemplateData(templateJsonData);
+                                                            setTemplateFlag({
+                                                                show: true,
+                                                                mode: 'create',
+                                                                templateIndex: index + 1,
                                                             });
                                                         }}
                                                     >
                                                         Select
                                                     </a>
-                                                </div></>
+                                                </div>
+                                            </div>
                                         )}
-
                                     </div>
                                 </div>
                             </Col>

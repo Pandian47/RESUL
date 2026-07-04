@@ -2,7 +2,7 @@ import { ENTER_YOUTUBE_URL, SELECT_ANALYTICS_PLATFORM, SELECT_CHANNEL_NAME } fro
 import { CANCEL, IGNORE_CHANNEL, NEXT, OK, SAVE } from 'Constants/GlobalConstant/Placeholders';
 import { circle_plus_fill_edge_medium, question_mark_mini } from 'Constants/GlobalConstant/Glyphicons';
 import { useEffect, useState } from 'react';
-import _map from 'lodash/map';
+import { map as _map } from 'Utils/modules/lodashReplacements';
 import { Row, Col } from 'react-bootstrap';
 import { useForm } from 'react-hook-form';
 

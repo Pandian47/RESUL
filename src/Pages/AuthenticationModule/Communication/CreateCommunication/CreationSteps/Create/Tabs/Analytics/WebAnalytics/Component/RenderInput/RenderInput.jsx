@@ -18,11 +18,12 @@ import RSTooltip from 'Components/RSTooltip';
 import { get_formCSV_FormFields } from 'Reducers/preferences/FormGenerator/request';
 import { getGeneratedLink, getMobileAppId } from 'Reducers/communication/createCommunication/smartlink/selectors';
 import useQueryParams from 'Hooks/useQueryParams';
-import _get from 'lodash/get';
+import { get as _get } from 'Utils/modules/lodashReplacements';
 import RSAlert from 'Components/RSAlert';
 import { Timer } from 'Assets/Images';
 import { Container } from 'react-bootstrap';
-import { RSPrimaryButton } from 'Components/Buttons';
+import { RSPrimaryButton, RSSecondaryButton } from 'Components/Buttons';
+import RSModal from 'Components/RSModal';
 
 import content from 'Constants/GlobalConstant/Content/content.json';
 import {
@@ -67,13 +68,15 @@ const RenderInput = ({
 
     const { userId, clientId, departmentId } = useSelector((state) => getSessionId(state));
     const { savedChannelsId } = useSelector(({ communicationPlanReducer }) => communicationPlanReducer);
-    const savedChannel = savedChannelsId[isAppAnalytics ? 16  : 6]?.includes(isAppAnalytics ? 16  : 6) ? true : false;
+    const savedChannel = savedChannelsId[isAppAnalytics ? 16 : 6]?.includes(isAppAnalytics ? 16 : 6) ? true : false;
     const mobileAppId = useSelector((state) => getMobileAppId(state));
     const [customeventsData, setCustomEventsData] = useState([]);
     const [customValues, setCustomValues] = useState(['Enter manual value']);
     const [pagesList, setPagesList] = useState([]);
     const { currencyMasterList } = getmasterData();
     const [isShowAlert, setShowAlert] = useState(false);
+    const [showTrackingAgreement, setShowTrackingAgreement] = useState(false);
+    const [pendingUrlVal, setPendingUrlVal] = useState(null);
     const { fields, append, remove } = useFieldArray({ control, name: `${name}Pages` });
     const [pages, customEvents = [], manualType, action, formValues = [], customEventsData] = watch([
         `${name}Pages`,
@@ -132,8 +135,8 @@ const RenderInput = ({
 
         if (type === 'Custom events' && !!nameType) {
             getCustomEventsValue();
-        }else if(type === 'Forms' && (WebAnalytics?.webAnalyticsFormList?.length === 0 ||
-            WebAnalytics?.webAnalyticsFormList === undefined)){
+        } else if (type === 'Forms' && (WebAnalytics?.webAnalyticsFormList?.length === 0 ||
+            WebAnalytics?.webAnalyticsFormList === undefined)) {
             getFormList()
         }
     }, [type]);
@@ -149,13 +152,13 @@ const RenderInput = ({
 
     useEffect(() => {
         const smarlinkEntries = Object.entries(smartLink);
-      
+
         let temp = smarlinkEntries?.map((item, idx) => {
             return {
                 url: item?.[1],
             };
         });
-                // resetField(`${name}Pages`);
+        // resetField(`${name}Pages`);
         // setValue(`${name}Pages`, temp);
         setPagesList(temp);
         // debugger;
@@ -223,7 +226,19 @@ const RenderInput = ({
                 const param = searchParams.get('q');
                 let campaignId = _get(locationState, 'campaignId', 0);
                 let path = `/communication/create-communication?q=${param}`;
-                let urlStr = `${getUrl}/?_sdxId=${btoa(campaignId)}&path=${path}&type=${name}&webft=true`;
+
+                // let urlStr = `${getUrl}/?_sdxId=${btoa(campaignId)}&path=${path}&type=${name}&webft=true`;
+
+                const reqs = localStorage.getItem('accessToken') || '';
+                const formName = '';
+                const domain = window.location.host;
+                const redurl = `${domain}/communication/create-communication`;
+                const formId = 0;
+                const paramsToEncrypt = `cevent|${reqs}|${formId}|${departmentId}|${formName}|${redurl}`;
+                const encryptedParams = 'rfg' + btoa(paramsToEncrypt) + 'rd';
+                const cleanUrl = getUrl.replace(/\/$/, '');
+                let urlStr = `${cleanUrl}?_sdxFormId=${btoa(campaignId.toString())}&_sdxId=${btoa(campaignId)}&sdk_mode=${encryptedParams}&path=${encodeURIComponent(path)}&type=${name}&webft=true&bofadd=true`;
+
                 localStorage.setItem('fdomain', urlStr);
                 window.open(urlStr, '_blank')
             }
@@ -238,12 +253,12 @@ const RenderInput = ({
                             <Row>
                                 <>
                                     {fields?.map((item, idx) => {
-                                      
+
                                         return (
                                             <Fragment key={item?.id ?? `${name}-url-${idx}`}>
                                                 {idx === 0 ? (
                                                     <Col sm={{ offset: 1, span: 2 }}>
-                                                        <label className="control-label-left">{`${name === 'engagement' ? "Landing page" : "Thank you page "} ${URL}`}</label>
+                                                        <label className="control-label-left">{`${name === 'engagement' ? "Landing page" : "Thank you page"} ${URL}`}</label>
                                                     </Col>
                                                 ) : (
                                                     <Col sm={{ offset: 1, span: 2 }}>
@@ -297,28 +312,24 @@ const RenderInput = ({
                                                 </Col>
                                                 <Col sm={1} className="fg-icons d-flex pl0">
                                                     {idx === 0 ? (
-                                                        <div className="d-flex justify-content-center">
+                                                        <div className="d-flex justify-content-center pt10">
                                                             <RSTooltip
                                                                 text={EVENT_TRACKING}
-                                                                className={`${
-                                                                    !isAppAnalytics && webFieldTrackEventList && Object.keys(webFieldTrackEventList)?.length &&  webFieldTrackEventList[name]?.length
-                                                                        ? 'click-off'
-                                                                        : ''
-                                                                }`}
+                                                                className={`${!isAppAnalytics && webFieldTrackEventList && Object.keys(webFieldTrackEventList)?.length && webFieldTrackEventList[name]?.length
+                                                                    ? 'click-off'
+                                                                    : ''
+                                                                    }`}
                                                             >
                                                                 <i
-                                                                    className={`${
-                                                                        event_tracking_medium
-                                                                    } icon-md color-primary-blue ${
-                                                                        getValues(`${name}Pages.${idx}.url`) &&
+                                                                    className={`${event_tracking_medium
+                                                                        } icon-md color-primary-blue ${getValues(`${name}Pages.${idx}.url`) &&
                                                                         WEB_URL_REGEX.test(pages[0]?.url)
                                                                             ? ''
                                                                             : 'click-off'
-                                                                    } ${pages?.length > 1 ? 'click-off' : ''}`}
+                                                                        } ${pages?.length > 1 ? 'click-off' : ''}`}
                                                                     onClick={() => {
-                                                                        handleWebFieldTrackRedirect(
-                                                                            `${name}Pages.${idx}.url`,
-                                                                        );
+                                                                        setPendingUrlVal(`${name}Pages.${idx}.url`);
+                                                                        setShowTrackingAgreement(true);
                                                                     }}
                                                                 />
                                                             </RSTooltip>
@@ -336,7 +347,7 @@ const RenderInput = ({
                                                                     />
                                                                 </RSTooltip>
                                                             ) : null}
-                                                            {!isAppAnalytics && webFieldTrackEventList && webFieldTrackEventList[name]?.length && !savedChannel ?  (
+                                                            {!isAppAnalytics && webFieldTrackEventList && webFieldTrackEventList[name]?.length && !savedChannel ? (
                                                                 <RSTooltip text={RESET}>
                                                                     <i
                                                                         className={`${restart_medium} icon-md color-primary-blue`}
@@ -349,11 +360,9 @@ const RenderInput = ({
                                                             <RSTooltip text={ADD_URL}>
                                                                 <i
                                                                     id="rs_data_circle_plus_fill"
-                                                                    className={`${
-                                                                        circle_plus_fill_medium
-                                                                    } icon-md color-primary-blue ${
-                                                                        pages?.length > 4 ? 'click-off' : ''
-                                                                    }`}
+                                                                    className={`${circle_plus_fill_medium
+                                                                        } icon-md color-primary-blue ${pages?.length > 4 ? 'click-off' : ''
+                                                                        }`}
                                                                     onClick={() => addUrl(idx)}
                                                                 />
                                                             </RSTooltip>
@@ -367,11 +376,11 @@ const RenderInput = ({
                                                         </RSTooltip>
                                                     )}
                                                 </Col>
-                                               
+
                                                 <RSAlert
                                                     show={isShowAlert}
                                                     header={false}
-                                                    containerClass = 'py15'
+                                                    containerClass='py15'
                                                     body={
                                                         <>
                                                             <Container>
@@ -406,7 +415,7 @@ const RenderInput = ({
                                                         </>
                                                     }
                                                 />
-                                                
+
                                             </Fragment>
                                         );
                                     })}
@@ -414,6 +423,40 @@ const RenderInput = ({
                             </Row>
                         </div>
                     )}
+                    <RSModal
+                        show={showTrackingAgreement}
+                        handleClose={() => setShowTrackingAgreement(false)}
+                        header={'Custom event tracking'}
+                        size="lg"
+                        body={
+                            <p>
+                                By proceeding, you acknowledge that Custom event tracking is supported only with static IDs.
+                                Dynamic IDs are not supported and may result in unreliable event tracking.
+                                You are solely responsible for the accuracy and integrity of all captured data and events.
+                            </p>
+                        }
+                        footer={
+                            <>
+                                <RSSecondaryButton
+                                    type="button"
+                                    onClick={() => setShowTrackingAgreement(false)}
+                                >
+                                    Disagree
+                                </RSSecondaryButton>
+                                <RSPrimaryButton
+                                    type="button"
+                                    onClick={() => {
+                                        setShowTrackingAgreement(false);
+                                        if (pendingUrlVal) {
+                                            handleWebFieldTrackRedirect(pendingUrlVal);
+                                        }
+                                    }}
+                                >
+                                    I Agree
+                                </RSPrimaryButton>
+                            </>
+                        }
+                    />
                 </Fragment>
             );
         case 'Forms':
@@ -438,7 +481,7 @@ const RenderInput = ({
                                     dataItemKey={'formId'}
                                     data={WebAnalytics?.webAnalyticsFormList}
                                     handleChange={(e) => {
-                                                                                // getFormValues(e?.value);
+                                        // getFormValues(e?.value);
                                     }}
                                 />
                             </Col>
@@ -461,7 +504,7 @@ const RenderInput = ({
                                     data={['Submitted', 'Not submitted', 'Partially submitted']}
                                     handleChange={(e) => {
                                         setCustomValues([...customValues, e?.value]);
-                                                                            }}
+                                    }}
                                 />
                             </Col>
                         </Row>
@@ -491,7 +534,7 @@ const RenderInput = ({
                                     // required
                                     data={customEventsData}
                                     handleOnBlur={(e) => {
-                                        
+
                                         setCustomValues([...customValues, ...e?.value]);
                                     }}
                                 />

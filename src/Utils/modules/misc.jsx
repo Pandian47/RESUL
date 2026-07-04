@@ -1,14 +1,11 @@
-import _cloneDeep from 'lodash/cloneDeep';
-import _forEach from 'lodash/forEach';
-
 export function dispatchMultipleAction(action) {
     return (dispatch) => action.forEach((act) => dispatch(act));
 }
 export function UpdateState(setState, key, value) {
     if (Array.isArray(key) && Array.isArray(value)) {
         setState((prev) => {
-            var state = _cloneDeep(prev);
-            _forEach(key, (item, index) => {
+            var state = structuredClone(prev);
+            key.forEach((item, index) => {
                 state = {
                     ...state,
                     [item]: value[index],

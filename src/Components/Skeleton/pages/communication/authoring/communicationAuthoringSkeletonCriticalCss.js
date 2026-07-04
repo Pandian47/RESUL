@@ -563,10 +563,9 @@ export const communicationAuthoringSkeletonCriticalCss = `
     gap:5px;
 }
 .communication-authoring-skeleton-scope .authoring-form-skeleton__mail-sub-tab-item {
-    height:78px !important;
+    height:85px !important;
+    width: 113px;
     flex: 0 0 auto;
-    min-width: 96px;
-    height: 68px;
     display: flex;
     flex-direction: column;
     align-items: center;

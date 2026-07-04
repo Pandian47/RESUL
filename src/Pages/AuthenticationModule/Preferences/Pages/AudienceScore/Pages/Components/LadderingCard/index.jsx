@@ -10,9 +10,20 @@ import RSKendoDropDownList from 'Components/FormFields/RSKendoDropdown';
 
 import RSTooltip from 'Components/RSTooltip';
 import { HorizontalSkeleton } from 'Components/Skeleton/Skeleton';
+import { asAudienceScoreList } from '../constants';
 
 
-const LadderingCard = ({ constants, name, status, dropdownlist, ladderKeys }) => {
+const LadderingCardEmpty = () => (
+    <Col sm={6}>
+        <div className="box-design p10 mb30 no-box-shadow">
+            <HorizontalSkeleton isError={true} />
+        </div>
+    </Col>
+);
+
+const LadderingCardForm = ({ constants, name, status, dropdownlist, ladderKeys }) => {
+    const safeDropdownlist = asAudienceScoreList(dropdownlist);
+    const safeLadderKeys = asAudienceScoreList(ladderKeys);
     const [ladderCardData, setLadderCardData] = useState([]);
     const [addCardData, setAddCardData] = useState(true);
     const {
@@ -76,11 +87,17 @@ const LadderingCard = ({ constants, name, status, dropdownlist, ladderKeys }) =>
         setAddCardData(true);
     };
     const handleDuplicate = () => {
+        const arrayValues = audienceLadderWatch?.arrayValues;
+        if (!Array.isArray(arrayValues)) {
+            return [];
+        }
+
         const seenKeys = new Set();
         const duplicates = [];
 
-        audienceLadderWatch['arrayValues'].forEach((item) => {
-            const key = item.key.LadderingKeyName;
+        arrayValues.forEach((item) => {
+            const key = item?.key?.LadderingKeyName;
+            if (!key) return;
             if (seenKeys.has(key)) {
                 duplicates.push(item);
             } else {
@@ -134,7 +151,7 @@ const LadderingCard = ({ constants, name, status, dropdownlist, ladderKeys }) =>
                             </RSTooltip>
                         </Col>
                     </Row>
-                    {fields?.length && (
+                    {fields?.length > 1 && (
                         <div className="pacrw-content-list">
                             {fields?.map((ele, ind) => {
                                 return (
@@ -155,9 +172,9 @@ const LadderingCard = ({ constants, name, status, dropdownlist, ladderKeys }) =>
                                                     name={`${name}[${ele.key}].sentiment`}
                                                     textField={'SentimentKeyName'}
                                                     dataItemKey={'SentimentKeyId'}
-                                                    data={dropdownlist}
+                                                    data={safeDropdownlist}
                                                     required
-                                                    defaultValue={dropdownlist[0]}
+                                                    defaultValue={safeDropdownlist[0]}
                                                     // rules={{
                                                     //     required: ENTER_VALID_DATA,
                                                     // }}
@@ -236,11 +253,11 @@ const LadderingCard = ({ constants, name, status, dropdownlist, ladderKeys }) =>
                                                         name={`${name}.arrayValues[${index}].key`}
                                                         control={control}
                                                         required
-                                                        data={ladderKeys}
+                                                        data={safeLadderKeys}
                                                         textField={'LadderingKeyName'}
                                                         // dataItemKey={'LadderingKeyId'}
                                                         label={'Select'}
-                                                        defaultValue={ladderKeys[0]}
+                                                        defaultValue={safeLadderKeys[0]}
                                                         rules={{
                                                             required: 'Select',
                                                             validate: (value) => {
@@ -319,14 +336,19 @@ const LadderingCard = ({ constants, name, status, dropdownlist, ladderKeys }) =>
                             </div>
                         </>
                     ) : (
-                        <>
-                            <HorizontalSkeleton isError={true} />
-                        </>
+                        <HorizontalSkeleton isError={true} />
                     )}
                 </div>
             </div>
         </Col>
     );
+};
+
+const LadderingCard = (props) => {
+    if (!props?.name) {
+        return <LadderingCardEmpty />;
+    }
+    return <LadderingCardForm {...props} />;
 };
 
 export default LadderingCard;

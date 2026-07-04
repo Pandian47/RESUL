@@ -8,9 +8,7 @@ import { Col, Row } from 'react-bootstrap';
 import { useForm } from 'react-hook-form';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
-import _find from 'lodash/find';
-import _get from 'lodash/get';
-import _isEmpty from 'lodash/isEmpty';
+import { find as _find, get as _get, isEmpty as _isEmpty } from 'Utils/modules/lodashReplacements';
 import { RSPrimaryButton, RSSecondaryButton } from 'Components/Buttons';
 import RSMultiSelect from 'Components/FormFields/RSMultiSelect';
 import RSCheckbox from 'Components/FormFields/RSCheckbox';
@@ -136,7 +134,7 @@ const LocalizationSettings = ({ back, isAgencyValue = false, companies }) => {
                 _get(clientDetails, 'stateID', 0) ??
                 _get(clientDetails, 'stateId', 0) ??
                 0;
-                0;
+            0;
 
             if (!countryID) return;
 
@@ -202,7 +200,7 @@ const LocalizationSettings = ({ back, isAgencyValue = false, companies }) => {
                     ?.filter(Boolean)
                 : [];
         const currencyType = _find(currencyMasterList, ['currencyID', clientInfo?.currencyId]);
-        const dateFormat = _find(dateFormatList, ['dateFormatID', clientInfo?.dateFormatID]);
+        const dateFormat = _find(dateFormatList, ['dateFormatID', clientInfo?.dateFormatID]) || _find(dateFormatList, ['dateFormatID', 4]);
         const language = _find(languageMasterList, ['languageID', clientInfo?.languageId]);
         const hours = _find(timeFormatList, ['timeFormatID', clientInfo?.timeformatId]);
         const locationType = _find(currentTimeZones, ['timeZoneID', clientInfo?.timeZoneId]);
@@ -243,6 +241,7 @@ const LocalizationSettings = ({ back, isAgencyValue = false, companies }) => {
             communicationLink,
             defaultDaylight,
             productTags: getData('productCategories'),
+            subscriptionTag: getData('subscriptionCategory'),
         }));
     }, [localizationSettings, localizationApi.isSuccess, localizationApi.isError]);
 
@@ -262,6 +261,7 @@ const LocalizationSettings = ({ back, isAgencyValue = false, companies }) => {
             target: 1,
             UpdateLocalizations: handleLocationTagsData(data?.productTags),
             subCategory: getAllSubCategoryData(allSubProductTags, data?.productTags),
+            subscriptionCategory: handleSubscriptionTagsData(data?.subscriptionTag),
             multidimensionCampaign: [
                 {
                     channelPrioritizationId: data.prioritization === 'By propensity' ? 1 : 2,
@@ -330,6 +330,25 @@ const LocalizationSettings = ({ back, isAgencyValue = false, companies }) => {
         });
 
         return updateTags?.length ? updateTags : previousTags;
+    };
+
+    const handleSubscriptionTagsData = (tags) => {
+        if (!tags) return getData('subscriptionCategory') || [];
+        const previousTags = getData('subscriptionCategory') || [];
+        return tags.map((tag) => {
+            const matchedPreTag = previousTags?.find(
+                (preTag) => tag?.subscriberCategoryname?.trim()?.toLowerCase() === preTag?.subscriberCategoryname?.trim()?.toLowerCase()
+            );
+            return matchedPreTag
+                ? {
+                    subscriberCategoryId: matchedPreTag.subscriberCategoryId,
+                    subscriberCategoryname: matchedPreTag.subscriberCategoryname,
+                }
+                : {
+                    subscriberCategoryId: 0,
+                    subscriberCategoryname: tag?.subscriberCategoryname || '',
+                };
+        });
     };
 
     const getSubCategoryData = (tag, allTags) => {
@@ -911,6 +930,60 @@ const LocalizationSettings = ({ back, isAgencyValue = false, companies }) => {
                                                     textField={'title'}
                                                     dataItemKey={'titleId'}
                                                     label={MAX_WAVES}
+                                                />
+                                            </Col>
+                                        </Row>
+                                    </div>
+                                </Col>
+                                <Col sm={5} xs={6}>
+                                    <h4 className="mb15">{placeholder.JOB_SERVICE}</h4>
+                                    <div className="form-group">
+                                        <Row>
+                                            <Col sm={5} xs={6} className="text-left">
+                                                <label className="control-label-left font-xsm">{placeholder.SINGLE_DIMENSION}</label>
+                                            </Col>
+                                            <Col sm={7} xs={3}>
+                                                <RSInput
+                                                    type={'number'}
+                                                    id="rs_LocalizationSettings_singleDimension"
+                                                    disabled
+                                                    control={control}
+                                                    name={'singleDimension'}
+                                                    placeholder={placeholder.HOURS}
+                                                />
+                                            </Col>
+                                        </Row>
+                                    </div>
+                                    <div className="form-group">
+                                        <Row>
+                                            <Col sm={5} xs={6} className="text-left">
+                                                <label className="control-label-left font-xsm">{placeholder.MULTI_DIMENSION}</label>
+                                            </Col>
+                                            <Col sm={7} xs={3}>
+                                                <RSInput
+                                                    type={'number'}
+                                                    disabled
+                                                    control={control}
+                                                    id="rs_LocalizationSettings_multiDimension"
+                                                    name={'multiDimension'}
+                                                    placeholder={placeholder.HOURS}
+                                                />
+                                            </Col>
+                                        </Row>
+                                    </div>
+                                    <div className="form-group">
+                                        <Row>
+                                            <Col sm={5} xs={6} className="text-left">
+                                                <label className="control-label-left font-xsm">{placeholder.EVENT_TRIGGER}</label>
+                                            </Col>
+                                            <Col sm={7} xs={3}>
+                                                <RSInput
+                                                    type={'number'}
+                                                    disabled
+                                                    control={control}
+                                                    name={'eventTrigger'}
+                                                    id="rs_LocalizationSettings_eventTrigger"
+                                                    placeholder={placeholder.HOURS}
                                                 />
                                             </Col>
                                         </Row>

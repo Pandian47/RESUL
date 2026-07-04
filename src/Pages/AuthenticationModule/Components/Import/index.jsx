@@ -2,7 +2,7 @@ import { MAX_LENGTH150, URLPATTERN } from 'Constants/GlobalConstant/Regex';
 import { ADD_VIEW_IN_BROWSER, COMMUNICATION_URL, EMAIL_NOT_DISPLAYING, INBOX_FIRST_LINE_MESSAGE, INBOX_FIRST_LINE_PREVIEW, RES_75_CHARACTERS, VIEW_IN_BROWSER } from 'Constants/GlobalConstant/Placeholders';
 import { email_preview_medium, import_link_large, restart_medium, spam_assassin_medium, users_persona_large, zip_large } from 'Constants/GlobalConstant/Glyphicons';
 import { Fragment, useCallback, useEffect, useRef, useState } from 'react';
-import _get from 'lodash/get';
+import { get as _get } from 'Utils/modules/lodashReplacements';
 
 import { useDispatch, useSelector } from 'react-redux';
 import { Row, Col } from 'react-bootstrap';
@@ -14,6 +14,7 @@ import { RSPrimaryButton } from 'Components/Buttons';
 import { statusIdCheck, checkTrigger } from 'Utils/modules/campaignUtils';
 
 import { removeTags } from 'Utils/modules/stringUtils';
+import { UpdateState } from 'Utils/modules/misc';
 import { iframeStyles } from './constant';
 import { emailList } from 'Reducers/communication/createCommunication/Create/selectors';
 import {
@@ -45,6 +46,9 @@ const Import = ({ fieldName = '', isSplit = false, showBrowerText = false, isNot
     const dispatch = useDispatch();
     const uploadRef = useRef();
     const uploadAttemptCount = useRef(0);
+    const importUrlInFlightRef = useRef(false);
+    const zipUploadInFlightRef = useRef(false);
+    const spamScoreInFlightRef = useRef(false);
     const zipUploadLoader = useApiLoader();
     const spamScoreLoader = useApiLoader();
     const importUrlLoader = useApiLoader({ autoFetch: false });
@@ -320,12 +324,11 @@ const Import = ({ fieldName = '', isSplit = false, showBrowerText = false, isNot
         return () => clearTimeout(timeoutId);
     }, [inPageBanner, checkBannerDimensions]);
 
-    // Fix import flow bind issue and add dependency.
-    const edmContentVal = getValues(edmContentName);
-    const edmContentDimensionNameVal = getValues(edmContentDimensionName);
+    // Re-bind template preview when import tab type changes — not on dimension recalculation.
     useEffect(() => {
+        const edmContentVal = getValues(edmContentName);
         if (edmContentVal) {
-            handleFileInputChange(edmContentVal, '', edmContentDimensionNameVal);
+            handleFileInputChange(edmContentVal, '', getValues(edmContentDimensionName));
         }
         if (!edmContent) {
             if (importType === 'url') {
@@ -337,7 +340,7 @@ const Import = ({ fieldName = '', isSplit = false, showBrowerText = false, isNot
             }
         }
         importType === 'import' && setValue(importURLName, '');
-    }, [importType, edmContentDimensionNameVal]);
+    }, [importType]);
 
     const [isTrigger, setIsTrigger] = useState(false);
     useEffect(() => {
@@ -413,34 +416,61 @@ const Import = ({ fieldName = '', isSplit = false, showBrowerText = false, isNot
         handleClose: () => UpdateState(setState, 'SpamScoreModal', false),
         isSpam: true,
     };
-    const getSpamScore = (html) =>
-        spamScoreLoader.refetch({
-            fetcher: ({ payload } = {}) =>
-                dispatch(
-                    getCheckSpam({
-                        loading: false,
-                        payload,
-                    }),
-                ),
-            mode: 'create',
-            loaderConfig: AUTHORING_FIELD_LOADER_CONFIG,
-            params: {
-                payload: {
-                    userId,
-                    clientId,
-                    departmentId,
-                    campaignId: location?.campaignId,
-                    body: html,
-                    body1: spamScoreModalProps?.content, //Text editor content
-                    emailFooterRawcode: spamScoreModalProps?.emailFooter,
-                    preHeaderMessage: getValues(inboxLinePreviewName),
-                    subjectLine: getValues(subjectLineName),
-                    spamScore: spamScoreName,
-                    top3: top3Name,
-                    setValue,
-                },
-            },
-        });
+    const getSpamScore = useCallback(
+        (html) => {
+            if (!html || spamScoreInFlightRef.current || spamScoreLoader.isFetching) {
+                return Promise.resolve();
+            }
+
+            spamScoreInFlightRef.current = true;
+            return spamScoreLoader
+                .refetch({
+                    fetcher: ({ payload } = {}) =>
+                        dispatch(
+                            getCheckSpam({
+                                loading: false,
+                                payload,
+                            }),
+                        ),
+                    mode: 'create',
+                    loaderConfig: AUTHORING_FIELD_LOADER_CONFIG,
+                    params: {
+                        payload: {
+                            userId,
+                            clientId,
+                            departmentId,
+                            campaignId: location?.campaignId,
+                            body: html,
+                            body1: getValues(editorTextName),
+                            emailFooterRawcode: _get(getValues(sampleEmailFooterName), 'emailFooterRawcode', ''),
+                            preHeaderMessage: getValues(inboxLinePreviewName),
+                            subjectLine: getValues(subjectLineName),
+                            spamScore: spamScoreName,
+                            top3: top3Name,
+                            setValue,
+                        },
+                    },
+                })
+                .finally(() => {
+                    spamScoreInFlightRef.current = false;
+                });
+        },
+        [
+            clientId,
+            departmentId,
+            dispatch,
+            editorTextName,
+            inboxLinePreviewName,
+            location?.campaignId,
+            sampleEmailFooterName,
+            setValue,
+            spamScoreLoader,
+            spamScoreName,
+            subjectLineName,
+            top3Name,
+            userId,
+        ],
+    );
 
     // Helper function to calculate and set iframe height after content loads
     const updateIframeHeight = (iframe, attempt = 0) => {
@@ -553,10 +583,12 @@ const Import = ({ fieldName = '', isSplit = false, showBrowerText = false, isNot
                 edmelement.style.overflowX = 'hidden';
             }
 
-            // Update dimension value
+            // Update dimension value only when it changes — avoids form re-render loops.
             if (scrollHeight > 0 && scrollWidth > 0) {
                 const tempedmDimension = scrollHeight * scrollWidth;
-                setValue(edmContentDimensionName, tempedmDimension);
+                if (getValues(edmContentDimensionName) !== tempedmDimension) {
+                    setValue(edmContentDimensionName, tempedmDimension, { shouldDirty: false });
+                }
                 iframe.setAttribute('data-scrollWidth', scrollWidth);
                 iframe.setAttribute('data-scrollHeight', scrollHeight);
             }
@@ -933,13 +965,15 @@ const Import = ({ fieldName = '', isSplit = false, showBrowerText = false, isNot
                 // Setup the config
                 let config = { subtree: true, attributes: true, childList: true, characterData: true };
                 // Create a callback
-                let callback = function (mutationsList) {
+                let callback = function () {
                     let tmp = '';
                     document.querySelector('iframe').contentWindow.document.childNodes.forEach((item) => {
                         tmp += new XMLSerializer().serializeToString(item);
                     });
 
-                    setValue(edmContentName, tmp);
+                    if (tmp && tmp !== getValues(edmContentName)) {
+                        setValue(edmContentName, tmp, { shouldDirty: false });
+                    }
                 };
 
                 // Watch the iframe for changes
@@ -1047,26 +1081,14 @@ const Import = ({ fieldName = '', isSplit = false, showBrowerText = false, isNot
     const processImportUrl = useCallback(
         async (rawUrl) => {
             const trimmedUrl = (rawUrl || '').trim();
-            if (!trimmedUrl) return;
-            setValue(importURLName, trimmedUrl);
+            if (!trimmedUrl || importUrlInFlightRef.current || importUrlLoader.isFetching) return;
 
-            // If it's an Image URL context, validate extension first
-            if (isInPageBannerDeliveryType) {
-                const isValidExtension = validateImageExtension(trimmedUrl);
-                if (!isValidExtension) {
-                    setError(importURLName, {
-                        type: 'custom',
-                        message: 'Image URL only supports .png, .jpeg, .jpg, .gif extensions only',
-                    });
-                    return;
-                }
-            }
+            importUrlInFlightRef.current = true;
+            try {
+                setValue(importURLName, trimmedUrl);
 
-            // Check if URL is an image for all cases
-            const isImageUrl = await checkIfImageUrl(trimmedUrl);
-            if (isImageUrl) {
-                // Validate image extension (double check for non-Image URL contexts)
-                if (!isInPageBannerDeliveryType) {
+                // If it's an Image URL context, validate extension first
+                if (isInPageBannerDeliveryType) {
                     const isValidExtension = validateImageExtension(trimmedUrl);
                     if (!isValidExtension) {
                         setError(importURLName, {
@@ -1076,34 +1098,52 @@ const Import = ({ fieldName = '', isSplit = false, showBrowerText = false, isNot
                         return;
                     }
                 }
-                
-                const imageHtml = `<img src="${trimmedUrl}" alt="Content" style="max-width:100%;height:auto;" />`;
-                const [status, message] = handleFileInputChange(imageHtml, fieldName, 0);
-                if (status) {
-                    setValue(edmContentName, imageHtml);
-                    clearErrors(importURLName);
-                    setAmpValidations('');
-                    return;
-                } else {
+
+                // Check if URL is an image for all cases
+                const isImageUrl = await checkIfImageUrl(trimmedUrl);
+                if (isImageUrl) {
+                    // Validate image extension (double check for non-Image URL contexts)
+                    if (!isInPageBannerDeliveryType) {
+                        const isValidExtension = validateImageExtension(trimmedUrl);
+                        if (!isValidExtension) {
+                            setError(importURLName, {
+                                type: 'custom',
+                                message: 'Image URL only supports .png, .jpeg, .jpg, .gif extensions only',
+                            });
+                            return;
+                        }
+                    }
+
+                    const imageHtml = `<img src="${trimmedUrl}" alt="Content" style="max-width:100%;height:auto;" />`;
+                    const [status, message] = handleFileInputChange(imageHtml, fieldName, 0);
+                    if (status) {
+                        setValue(edmContentName, imageHtml);
+                        clearErrors(importURLName);
+                        setAmpValidations('');
+                        return;
+                    }
+
                     setError(importURLName, {
                         type: 'custom',
                         message,
                     });
                     return;
                 }
+
+                // If not an image, try to import as HTML content
+                // But if it's Image URL context, show error
+                if (isInPageBannerDeliveryType) {
+                    setError(importURLName, {
+                        type: 'custom',
+                        message: 'Valid image URL',
+                    });
+                    return;
+                }
+
+                await importCampaignFromUrl(trimmedUrl);
+            } finally {
+                importUrlInFlightRef.current = false;
             }
-            
-            // If not an image, try to import as HTML content
-            // But if it's Image URL context, show error
-            if (isInPageBannerDeliveryType) {
-                setError(importURLName, {
-                    type: 'custom',
-                    message: 'Valid image URL',
-                });
-                return;
-            }
-            
-            await importCampaignFromUrl(trimmedUrl);
         },
         [
             isInPageBannerDeliveryType,
@@ -1116,11 +1156,13 @@ const Import = ({ fieldName = '', isSplit = false, showBrowerText = false, isNot
             setError,
             setValue,
             edmContentName,
+            importUrlLoader.isFetching,
         ],
     );
 
     const handleImportUrlBlur = useCallback(
         async (e) => {
+            if (importUrlInFlightRef.current) return;
             const url = e?.target?.value;
             await processImportUrl(url);
         },
@@ -1231,6 +1273,7 @@ const Import = ({ fieldName = '', isSplit = false, showBrowerText = false, isNot
                                                 id="rs_Import_Go"
                                                 isLoading={importUrlLoader.isFetching}
                                                 blockBodyPointerEvents
+                                                onMouseDown={(e) => e.preventDefault()}
                                                 onClick={async () => {
                                                     if (!checkImportUrlError && !importUrlLoader.isFetching) {
                                                         await processImportUrl(importName);
@@ -1279,6 +1322,9 @@ const Import = ({ fieldName = '', isSplit = false, showBrowerText = false, isNot
                                                                         const reader = new FileReader();
                                                                         reader.readAsDataURL(files);
                                                                         reader.onload = async () => {
+                                                                            if (zipUploadInFlightRef.current) return;
+                                                                            zipUploadInFlightRef.current = true;
+                                                                            try {
                                                                             const fileByte =
                                                                                 reader.result.split(',')[1];
                                                                             const payload = {
@@ -1383,9 +1429,7 @@ const Import = ({ fieldName = '', isSplit = false, showBrowerText = false, isNot
                                                                                     if (edmStatus) {
                                                                                         setValue(edmContentName, html);
                                                                                         
-                                                                                        setTimeout(() => {
-                                                                                            getSpamScore(html);
-                                                                                        }, 10);
+                                                                                        getSpamScore(html);
                                                                                     } else {
                                                                                         setError(zipFileName, {
                                                                                             type: 'custom',
@@ -1402,6 +1446,9 @@ const Import = ({ fieldName = '', isSplit = false, showBrowerText = false, isNot
                                                                                         });
                                                                                     }
                                                                                 }
+                                                                            }
+                                                                            } finally {
+                                                                                zipUploadInFlightRef.current = false;
                                                                             }
                                                                         };
                                                                     } catch (err) {
@@ -1606,13 +1653,3 @@ const Import = ({ fieldName = '', isSplit = false, showBrowerText = false, isNot
 };
 
 export default Import;
-
-function findParagraphWithText(text) {
-    const paragraphs = document.querySelectorAll('p');
-    for (const paragraph of paragraphs) {
-        if (paragraph.textContent.includes(text)) {
-            return paragraph;
-        }
-    }
-    return null;
-}

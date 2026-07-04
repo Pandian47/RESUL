@@ -1,6 +1,5 @@
 import { Fragment } from 'react';
-import _get from 'lodash/get';
-import _capitalize from 'lodash/capitalize';
+import { get as _get,capitalize as _capitalize  } from 'Utils/modules/lodashReplacements';
 import { Container } from 'react-bootstrap';
 import { useNavigate, useLocation } from 'react-router-dom';
 

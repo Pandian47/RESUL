@@ -6,6 +6,7 @@ html {
     @include sizing($ff: $rs-font-regular, $fs: $font-xsm, $fw: normal, $lh: normal, $h: 100%);
     @include color($color: $secondary-black, $bg: $body-bg-color !important);
     @include space($margin: 0, $letterspace: $letterSpacing);
+    overflow-x: hidden;
     -moz-osx-font-smoothing: grayscale;
     -webkit-text-stroke: 0.0001em;
 
@@ -47,6 +48,15 @@ html {
 
 *:hover {
     scrollbar-color: $secondary-grey;
+}
+:focus {
+    outline: none !important;
+    box-shadow: none !important;
+}
+
+:focus-visible {
+    outline: none !important;
+    box-shadow: none !important;
 }
 
 ol,
@@ -906,6 +916,7 @@ div#otp .rs-input-wrapper {
     .validation-message {
         top: -20px;
         background: transparent;
+        padding-left: 0;
     }
 }
 
@@ -1887,7 +1898,7 @@ $otp-band-alert-height: 48px;
     &.is-expanded {
         grid-template-rows: 1fr;
         opacity: 1;
-        margin-bottom: 30px !important;
+        margin-bottom: 15px !important;
     }
 
     &__inner {
@@ -3169,7 +3180,7 @@ ul.rs-legend {
 
     &.rli-space-14 {
         li {
-            margin-left: 14px;
+            margin-left: 9px;
 
             &:first-child {
                 margin-left: 0;
@@ -7621,6 +7632,9 @@ div[disabled] {
             background-color: $primary-blue !important;
             color: $white;
             border-radius: var(--globalBorderRadius);
+            i {
+             color: $white;   
+            }
         }
 
         .k-button-group>.k-button:hover {
@@ -7704,12 +7718,91 @@ div[disabled] {
         .k-callout-s {
             display: none;
         }
+
+        .rs-editor-font-name-tool,
+        .rs-editor-font-size-tool {
+            flex: 0 0 auto;
+            margin-right: 5px;
+
+            .res-kendo-dd-menu-wrapper {
+                width: 100%;
+            }
+
+            .k-floating-label-container > .k-floating-label,
+            .k-floating-label-container > .k-label {
+                display: none !important;
+            }
+
+            .k-dropdownlist,
+            .k-picker {
+                width: 100% !important;
+                height: 30px !important;
+                margin-right: 0;
+                overflow: visible;
+                position: relative;
+
+                &::after {
+                    content: '';
+                    position: absolute;
+                    left: 0;
+                    bottom: 0;
+                    width: 100%;
+                    height: 1px;
+                    display: block !important;
+                    border-bottom: 1px solid $secondary-grey;
+                    z-index: 3;
+                    pointer-events: none;
+                }
+
+                &.k-focus,
+                &:focus-within {
+                    &::after {
+                        border-bottom-color: $secondary-blue;
+                    }
+                }
+            }
+
+            .k-floating-label-container {
+                overflow: visible;
+            }
+
+            .k-input-inner,
+            .k-input-value-text {
+                font-size: $font-xsm;
+                color: $secondary-grey;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                white-space: nowrap;
+            }
+        }
+
+        .rs-editor-font-name-tool {
+            width: 130px;
+            min-width: 130px;
+            max-width: 130px;
+        }
+
+        .rs-editor-font-size-tool {
+            width: 105px;
+            min-width: 105px;
+            max-width: 105px;
+        }
     }
 
     .text-editor {
         background-color: $tertiary-blue !important;
         top: -35px;
         z-index: 2222 !important;
+
+        .k-button-group [data-rs-icon-replaced] svg {
+            display: none !important;
+        }
+
+        .k-button-group [data-rs-icon-replaced] > .icon-md {
+            font-size: 16px;
+            line-height: 1;
+            color: $primary-black;
+        }
     }
 
     .rsfb-submit,
@@ -8496,7 +8589,8 @@ div[disabled] {
         }
 
         .rs-form-button.rsfb-submit {
-            padding: 0;
+            padding: 10px 24px;
+            color: $white;
         }
     }
 
@@ -13279,6 +13373,7 @@ ul.rs-image-crop-zoomControls {
 
         .carousel-item {
             height: 414px;
+            overflow: visible;
         }
     }
 }

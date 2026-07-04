@@ -507,20 +507,36 @@ footer.rs-page-footer-wrapper.login {
 }
 
 
+html:has(.login-bg-img) {
+    min-height: 100%;
+    background: url(#{$image}login-bg-scaled.svg) no-repeat center center fixed;
+    -webkit-background-size: cover;
+    -moz-background-size: cover;
+    -o-background-size: cover;
+    background-size: cover;
+}
+
 .rs-page-content-wrapper-container{
+    &.login-route-loading {
+        min-height: 100vh;
+        width: 100%;
+    }
     .rs-page-content-wrapper{
         height: 100%;
         width: 100%;
-        display: flex;
-        align-items: center;
         min-height: calc(100vh - 74px);
         &.login-bg-img{
+        display: flex;
+        align-items: center;
         background: url(#{$image}login-bg-scaled.svg) no-repeat center center fixed;
         -webkit-background-size: cover;
         -moz-background-size: cover;
         -o-background-size: cover;
         background-size: cover;
         }
+    }
+    &.login-route-loading .rs-page-content-wrapper.login-bg-img {
+        min-height: 100vh;
     }
 }
 .login-panel{

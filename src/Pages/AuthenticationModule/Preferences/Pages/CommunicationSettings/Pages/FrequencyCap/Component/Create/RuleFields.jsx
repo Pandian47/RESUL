@@ -3,7 +3,7 @@ import { useMemo } from 'react';
 import { Col, Row } from 'react-bootstrap';
 import { useFieldArray, useFormContext, useWatch } from 'react-hook-form';
 import { useSelector } from 'react-redux';
-import uniqBy from 'lodash/uniqBy';
+import { uniqBy } from 'Utils/modules/lodashReplacements';
 
 import { PRIORITY, INTERVAL } from '../../constants';
 

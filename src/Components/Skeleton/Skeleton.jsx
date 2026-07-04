@@ -73,6 +73,7 @@ import ListAqusitionSekelton from './Components/ListAqusitionSekelton'
 import AudienceListSkeleton from './Components/AudienceListSkeleton'
 import OfferPreviewSkeleton from './Components/OfferPreviewSkeleton'
 import ChannelPreviewSkeleton from './Components/ChannelPreviewSkeleton'
+import TemplatePreviewInnerSkeleton from './Components/TemplatePreviewInnerSkeleton'
 import RoiChartSkeleton from './Components/RoiChartSkeleton'
 import MapChartSkeleton from './Components/MapChartSkeleton'
 
@@ -143,6 +144,7 @@ export {
     AudienceListSkeleton,
     OfferPreviewSkeleton,
     ChannelPreviewSkeleton,
+    TemplatePreviewInnerSkeleton,
     RoiChartSkeleton,
     MapChartSkeleton,
     SyncHistoryPipeLineGraphSkeleton,

@@ -6,7 +6,7 @@ import { alert_medium, circle_plus_fill_edge_large, circle_plus_fill_medium } fr
 import { Fragment, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { Row } from 'react-bootstrap';
-import { cloneDeep, get as _get, isEqual } from 'lodash';
+import { cloneDeep, get as _get, isEqual } from 'Utils/modules/lodashReplacements';
 import { useDispatch, useSelector } from 'react-redux';
 import { getSearchDropdownDataCommunicationList } from 'Reducers/communication/listing/request';
 
@@ -59,7 +59,7 @@ const GALLERY_NAME_SUGGEST_MIN_CHARS = 3;
 const GALLERY_ADVANCE_SEARCH_OPTIONS = ['Communication name', 'Communication type', 'Delivery type'];
 
 /** Same scope labels as Communication List toolbar (My / All). */
-const GALLERY_SCOPE_DROPDOWN_DATA = ['All communications', 'My communications'];
+const GALLERY_SCOPE_DROPDOWN_DATA = ['All communications', 'My communications','Golden communications'];
 const GALLERY_TOP_CHANNEL_DROPDOWN_DATA = GALLERY_CHANNEL_FILTER_DATA;
 
 /** Chip-row omit keys (parity with `RSAdvanceSearchNew` when we pass `excludeActiveFilterTagKeys`). */

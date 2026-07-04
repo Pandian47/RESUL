@@ -1,7 +1,7 @@
 import { circle_plus_fill_edge_large } from 'Constants/GlobalConstant/Glyphicons';
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import _find from 'lodash/find';
+import { find as _find } from 'Utils/modules/lodashReplacements';
 
 import KendoGrid from 'Components/RSKendoGrid';
 

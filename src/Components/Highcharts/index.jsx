@@ -68,6 +68,8 @@ const buildChartOptions = (options) =>
                 enableMouseTracking: true,
                 turboThreshold: 1000,
             },
+            // Allow pie charts to keep their custom entrance animation
+            // (pieChartOptions sets plotOptions.pie.animation which takes precedence over plotOptions.series.animation)
         },
         boost: {
             enabled: true,
@@ -141,8 +143,17 @@ const RSHighchartsContainer = forwardRef(({
     const handleCommunicationSentClick = () => {
         navigate('/preferences/consumptions/csv-report');
     };
+    const hasData = useMemo(() => {
+        if (!options?.series || !Array.isArray(options.series) || options.series.length === 0) {
+            return false;
+        }
+        // Exclude the decorative 'shadow' series from the data availability validation
+        const dataSeries = options.series.filter(s => s?.name !== 'shadow');
+        return dataSeries.some(s => Array.isArray(s?.data) && s.data.length > 0);
+    }, [options]);
+
     const chartOptions = useMemo(() => buildChartOptions(options), [options]);
-    const isdataAvailable = chartOptions?.series?.some((seriesItem) => seriesItem?.data?.length > 0);
+    const isdataAvailable = chartOptions?.series?.some((seriesItem) => seriesItem?.name !== 'shadow' && seriesItem?.data?.length > 0);
     const [rerender, setRerender] = useState(false);
 
     const setChartRefs = useCallback(
@@ -210,20 +221,12 @@ const RSHighchartsContainer = forwardRef(({
     return (
         <div className={`${chartCore ? '' : 'portlet-chart'} ${pClassName}`} onMouseLeave={onMouseLeave}>
             <div style={{ width: width !== null && width, height: height }} className={className}>
-                {Array.isArray(options?.series) && options.series.length === 0 ? (
+                {!hasData ? (
                     <>
                         {Array(count || 1)
                             .fill(0)
                             .map((_, index) => {
-                                return <Fragment key={index}>{chartType(type, true, skeletonHeight, isDashboard)}</Fragment>;
-                            })}
-                    </>
-                ) : options?.series === undefined ? (
-                    <>
-                        {Array(count)
-                            .fill(0)
-                            .map((_, index) => {
-                                return <Fragment key={index}>{chartType(type, isError, skeletonHeight, isDashboard)}</Fragment>;
+                                return <Fragment key={index}>{chartType(type, isError || true, skeletonHeight, isDashboard)}</Fragment>;
                             })}
                     </>
                 ) : !HighchartsReact ? (

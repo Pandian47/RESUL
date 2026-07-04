@@ -18,6 +18,7 @@ const pieChartOptions = (args, position) => {
         credits: {
             enabled: false,
         },
+        // tooltip: { enabled: false },
         tooltip: args?.tooltip || {
             // followPointer: false
             enabled: true,
@@ -55,13 +56,89 @@ const pieChartOptions = (args, position) => {
                 animation: false,
                 dataLabels: {
                     enabled: args?.dataLabels?.enabled ?? true,
-                    //format: '<span class="font-sm">{point.percentage:.1f}</span><sub class="font-xs">%</sub>',
-                    distance: 25,
-                    // format: '<b>{point.name}</b>:<br>{point.percentage:.1f} %<br>value: {point.y}',
-                    // formatter: function () { return this.point.y + '%'; }
+                    distance: 30,
+                    padding: 0,
+                    y: -5,
+                    // Custom connector shape function: draws a diagonal from the slice to an elbow,
+                    // a perfectly straight horizontal line, and a solid filled dot (3 concentric circles).
+                    connectorShape: function (labelPosition, connectorPosition, options) {
+                        const touchingSliceAt = connectorPosition.touchingSliceAt;
+                        const labelX = labelPosition.x;
+                        const labelY = labelPosition.y;
+                        
+                        // In Highcharts:
+                        // - alignment 'left' means left-aligned text, which is on the RIGHT side of the chart.
+                        //   So the connector line should meet the label on the left (isRight = true).
+                        // - alignment 'right' means right-aligned text, which is on the LEFT side of the chart.
+                        //   So the connector line should meet the label on the right (isRight = false).
+                        const isRight = labelPosition.alignment === 'left';
+                        
+                        // Determine if label is on the right or left of the slice connection point
+                        // const isRight = labelX > touchingSliceAt.x;
+                        
+                        // Center of the dot: 10px offset from the label boundary
+                        const dotX = labelX + (isRight ? -5 : -5);
+                        
+                        // horizontal line offset (the horizontal tail length)
+                        const offset = isRight ? -16 : 20;
+                        let elbowX = labelX + offset;
+
+                        // Check for top/bottom crossover (zig-zag):
+                        // If the first segment and the second segment go in opposite directions,
+                        // we force elbowX to match touchingSliceAt.x. This results in a perfectly vertical line
+                        // going straight up/down, followed by a flat horizontal line, creating a clean L-shape.
+                        if (isRight && touchingSliceAt.x > elbowX) {
+                            elbowX = touchingSliceAt.x;
+                        } else if (!isRight && touchingSliceAt.x < elbowX) {
+                            elbowX = touchingSliceAt.x;
+                        }
+
+                        // Concentric circles centered at (dotX, labelY) to create a solid filled 6.5px dot
+                        return [
+                            'M', touchingSliceAt.x, touchingSliceAt.y,
+                            'L', elbowX, labelY,
+                            'L', dotX, labelY,
+                            
+                            // Circle 1 (r = 0.5)
+                            'M', dotX - 0.5, labelY,
+                            'A', 0.5, 0.5, 0, 1, 0, dotX + 0.5, labelY,
+                            'A', 0.5, 0.5, 0, 1, 0, dotX - 0.5, labelY,
+
+                            // Circle 2 (r = 1.5)
+                            'M', dotX - 1.5, labelY,
+                            'A', 1.5, 1.5, 0, 1, 0, dotX + 1.5, labelY,
+                            'A', 1.5, 1.5, 0, 1, 0, dotX - 1.5, labelY,
+
+                            // Circle 3 (r = 2.5)
+                            'M', dotX - 2.5, labelY,
+                            'A', 2.5, 2.5, 0, 1, 0, dotX + 2.5, labelY,
+                            'A', 2.5, 2.5, 0, 1, 0, dotX - 2.5, labelY
+                        ];
+                    },
+                    connectorWidth: 1.5,
+                    useHTML: true,
+                    style: {
+                        fontFamily: 'MuktaRegular',
+                        fontWeight: '400',
+                        fontSize:   '13px',
+                        color:      ch_primary_black,
+                        textOutline: 'none',
+                    },
                     formatter: function () {
-                        const formattedPercentage = formatPercentageDisplay(this.percentage);
-                        return `<span class="font-sm">${formattedPercentage}</span><sub class="font-xs">%</sub>`;
+                        const name           = this.point.name ?? '';
+                        const formattedValue = formatNumber(this.point.y ?? 0);
+                        const pct            = formatPercentageDisplay(this.percentage);
+                        const isPercentage   = String(this?.series?.name || '').toLowerCase().includes('percent');
+                        const valueSuffix    = isPercentage ? '%' : '';
+                        
+                        // Line 1 (bold name + value)
+                        // Line 2 (Rate X.XX%) in muted grey
+                        return (
+                            `${name}&nbsp;&nbsp;` +
+                            // `<span style="font-weight:400">${formattedValue}${valueSuffix}</span>` +
+                            `<br/>` +
+                            `<span style="color:#888888;font-weight:400">(${pct}<span style="font-size:11px">%</span>)</span>`
+                        );
                     },
                 },
             },
@@ -122,7 +199,6 @@ const pieChartOptions = (args, position) => {
                     }));
                 })(),
                 shadow: false,
-                dataLabels: { enabled: args?.dataLabels?.enabled ?? true },
             },
             {
                 name: 'shadow',

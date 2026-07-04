@@ -4,7 +4,7 @@ import { GeneratePasswordpseudorandom } from 'Utils/modules/passwordUtils';
 import { ATLEAST_ONE_APLHABET, MAX_LENGTH, NO_SPECIAL_CHARS } from 'Constants/GlobalConstant/Regex';
 import { ENTER_VALID_EMAIL, MINLENGTH, NO_SPECIAL_CHARS_ALLOWED, SPECIAL_CHATACTERS_NOT_ALlOWED } from 'Constants/GlobalConstant/ValidationMessage';
 import { useEffect, useRef, useState } from 'react';
-import _get from 'lodash/get';
+import { get as _get } from 'Utils/modules/lodashReplacements';
 import PropTypes from 'prop-types';
 import { useDispatch, useSelector } from 'react-redux';
 import { useFormContext } from 'react-hook-form';

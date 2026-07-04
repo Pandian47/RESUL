@@ -2,7 +2,7 @@ import { getUserCurrentFormat } from 'Utils/modules/dateTime';
 import { numberWithCommas } from 'Utils/modules/formatters';
 import { CLASSIFICATION_GROUP_TEXT, FILTER_GROUP_TEXT } from 'Constants/GlobalConstant/Placeholders';
 import { age_medium, user_question_mark_medium } from 'Constants/GlobalConstant/Glyphicons';
-import _split from 'lodash/split';
+import { split as _split } from 'Utils/modules/lodashReplacements';
 
 import FilterGroups from './Tab/FilterGroups/FilterGroups';
 export const DATACATALOGUE_TAB_CONFIG = [
@@ -30,24 +30,6 @@ export const LEGENDS = [
         text: 'Analysis data',
     },
 ];
-
-export const legendStyle = (legend, type) => {
-    if (type === 'sensitive') {
-        return {
-            backgroundColor: legend.color,
-            border: `1px solid ${legend.color.borderColor}`,
-        };
-    } else if (type === 'transaction') {
-        return {
-            backgroundColor: legend.color,
-            border: `1px solid ${legend.color.borderColor}`,
-        };
-    }
-    return {
-        backgroundColor: 'none',
-        border: `none`,
-    };
-};
 
 export const NEW_LEGENDS = {
     1: { className: 'dataInjested-CSS', color: '#f6f7f8', borderColor: '#d4d6de', text: 'Data ingested' },

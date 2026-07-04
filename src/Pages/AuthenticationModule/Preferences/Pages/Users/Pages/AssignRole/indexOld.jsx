@@ -1,9 +1,6 @@
 import { bar_filter_medium, bar_filter_mini, circle_minus_fill_medium, circle_plus_fill_edge_medium, circle_question_mark_medium, crown_fill_medium, filter_large } from 'Constants/GlobalConstant/Glyphicons';
 import { Fragment, useCallback, useEffect, useMemo, useState } from 'react';
-import _map from 'lodash/map';
-import _get from 'lodash/get';
-import _omit from 'lodash/omit';
-import _orderBy from 'lodash/orderBy';
+import { map as _map, get as _get, omit as _omit, orderBy as _orderBy } from 'Utils/modules/lodashReplacements';
 import { useDispatch, useSelector } from 'react-redux';
 import { Row, Col } from 'react-bootstrap';
 import { useLocation, useNavigate } from 'react-router-dom';

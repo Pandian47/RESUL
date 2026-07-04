@@ -1,11 +1,10 @@
 
 import { cloneElement, memo, useEffect, useRef, useState } from 'react';
-import _get from 'lodash/get';
+import { get as _get, get } from 'Utils/modules/lodashReplacements';
 import PropTypes from 'prop-types';
 import { _isObject } from 'Utils/modules/misc';
 
 import { DropDownList } from '@progress/kendo-react-dropdowns';
-import { get } from 'lodash';
 import { Controller } from 'react-hook-form';
 import NoDataAvailableRender from '../Component/NoDataAvailableRender';
 

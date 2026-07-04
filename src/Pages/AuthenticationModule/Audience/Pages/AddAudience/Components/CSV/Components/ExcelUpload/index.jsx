@@ -10,9 +10,6 @@ import { CONTAINS_INVALID_FILES, FILENAME_EXIST, FIRST_ROW_COLUMN_HEADER, HEADER
 import { ADD_FILE, CHOOSE_YOUR_FILE, COLUMN_HEADER_POPOVER, DELETE, FIRSTROW_COLUMN_HEADER, SELECTED_FILE } from 'Constants/GlobalConstant/Placeholders';
 import { alert_medium, circle_close_fill_medium, circle_info_medium, circle_plus_medium, circle_question_mark_mini, circle_tick_medium, csv_download_medium, delete_medium, equal_to_medium, popup_close_circle_fill_medium, popup_close_circle_medium } from 'Constants/GlobalConstant/Glyphicons';
 import { Fragment, useEffect, useState } from 'react';
-import _map from 'lodash/map';
-import _get from 'lodash/get';
-import _find from 'lodash/find';
 import { Col, Row } from 'react-bootstrap';
 import { useFieldArray, useFormContext } from 'react-hook-form';
 import { useDispatch, useSelector } from 'react-redux';
@@ -61,7 +58,7 @@ const ExcelUpload = ({ isValidListname, uploadType, fetchAudienceInsight }) => {
     const { csvFiles, path, headerColumns, responseHeaders, fileWiseListAnalysisData, excelFilesData } = useSelector(
         ({ addAudienceReducer }) => addAudienceReducer,
     );
-            const hasUploadError = !!_find(csvFiles, ['isValid', false]) || false;
+            const hasUploadError = !!csvFiles?.find((item) => item?.isValid === false) || false;
 
     const {
         control,
@@ -739,7 +736,7 @@ const ExcelUpload = ({ isValidListname, uploadType, fetchAudienceInsight }) => {
                 return;
             }
 
-            const fSize = _get(file, 'size') || 0;
+            const fSize = file?.size || 0;
             const encodedData = btoa(csvText);
             const payload = {
                 name: uniqueFileName,
@@ -1294,7 +1291,7 @@ const ExcelUpload = ({ isValidListname, uploadType, fetchAudienceInsight }) => {
                     <Row>
                         <Col>
                             <div className="p10 bg-secondary-red rounded invalidCsvWrapper">
-                                <div className="d-flex justify-content-between mb15">
+                                <div className="d-flex justify-content-between mb10">
                                     <div className="d-flex align-items-center">
                                         <i className={`${alert_medium} icon-md color-primary-red mr5`}></i>
                                         <h3 className="color-primary-red">Invalid files</h3>
@@ -1345,7 +1342,7 @@ const ExcelUpload = ({ isValidListname, uploadType, fetchAudienceInsight }) => {
                 {csvFiles?.length > 0 || uploadingSkeletonCount > 0 ? (
                     <div className="form-group mb0">
                         <Row>
-                            {_map(csvFiles, (list, listIndex) => {
+                            {csvFiles?.map((list, listIndex) => {
                                 return (
                                     <Col sm={4} key={list.fileName}>
                                         <div
@@ -1412,15 +1409,17 @@ const ExcelUpload = ({ isValidListname, uploadType, fetchAudienceInsight }) => {
                                                             });
                                                         }}
                                                     >
+                                                          <RSTooltip text={"List analysis"} className="lh0">
                                                         <i
                                                             className={`${circle_info_medium} icon-md color-primary-white`}
                                                         />
+                                                        </RSTooltip>
                                                     </div>
-                                                    <div className="lh0 rsfb-file-status__drag cursor-grab">
+                                                    {/* <div className="lh0 rsfb-file-status__drag cursor-grab">
                                                         <i
                                                             className={`${equal_to_medium} icon-md color-primary-white`}
                                                         />
-                                                    </div>
+                                                    </div> */}
                                                 </div>
                                             </div>
                                         </div>

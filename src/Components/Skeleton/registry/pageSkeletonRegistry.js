@@ -24,9 +24,6 @@ export const isAudienceRoute = (pathname = '') => {
     );
 };
 
-export const isAudienceAddAudienceRoute = (pathname = '') =>
-    getMainSkeletonVariant(pathname) === 'audienceAddAudience';
-
 /** Only /audience index — MDM / Target / Dynamic tabs skeleton. */
 export const isAudienceMainTabsRoute = (pathname = '') => {
     const normalized = (pathname || '').replace(/\/+$/, '') || '/audience';
@@ -35,9 +32,6 @@ export const isAudienceMainTabsRoute = (pathname = '') => {
 
 export const isAudienceTargetListCreationRoute = (pathname = '') =>
     getMainSkeletonVariant(pathname) === 'audienceTargetListCreation';
-
-export const isAudienceDynamicListCreationRoute = (pathname = '') =>
-    getMainSkeletonVariant(pathname) === 'audienceDynamicListCreation';
 
 export const isDashboardRoute = (pathname = '') => getMainSkeletonVariant(pathname) === 'dashboard';
 

@@ -3,7 +3,7 @@ import { ATTRIBUTE_TYPES, MULTIPLE_DROPDOWN_TYPES, NUMERIC_FILTER_TYPE, filterVa
 import { ENTER_ATTRIBUTE, ENTER_GREATER_VALUE, ENTER_LESSER_VALUE, ENTER_TIME, ENTER_VALID_DATE, SELECT_ATTRIBUTE, SELECT_DATE } from 'Constants/GlobalConstant/ValidationMessage';
 import { ATTRIBUTE_RULE, ATTRIBUTE_VALUE } from 'Constants/GlobalConstant/Placeholders';
 import { Fragment, useEffect, useState } from 'react';
-import _get from 'lodash/get';
+import { get as _get } from 'Utils/modules/lodashReplacements';
 import { Col } from 'react-bootstrap';
 import { useFormContext } from 'react-hook-form';
 

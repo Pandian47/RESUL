@@ -3,7 +3,7 @@ import { COMPLETED, GRID_VIEW, IN_PROGRESS, LIST_VIEW, SELECT_BU } from 'Constan
 import { circle_grid_fill_edge_large, circle_list_edge_large } from 'Constants/GlobalConstant/Glyphicons';
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { Container } from 'react-bootstrap';
-import { cloneDeep, get as _get, isEqual } from 'lodash';
+import { cloneDeep, get as _get, isEqual } from 'Utils/modules/lodashReplacements';
 
 import KendoGrid from 'Components/RSKendoGrid';
 import ResGrid from 'Pages/KendoDocs/CommonComponents/ResGrid';

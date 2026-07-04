@@ -2,7 +2,7 @@ import { COPIED_SUCCESSFULLY, COPY, PUBLISH_URL } from 'Constants/GlobalConstant
 import { copy_medium } from 'Constants/GlobalConstant/Glyphicons';
 import { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import _isEmpty from 'lodash/isEmpty'
+import { isEmpty as _isEmpty } from 'Utils/modules/lodashReplacements';
 import { getSessionId } from 'Reducers/globalState/selector';
 import { useForm } from 'react-hook-form';
 import RSTooltip from 'Components/RSTooltip';

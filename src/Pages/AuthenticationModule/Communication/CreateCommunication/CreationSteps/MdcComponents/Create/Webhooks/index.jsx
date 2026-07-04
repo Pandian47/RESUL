@@ -3,7 +3,7 @@ import { SELECTED_ATTRIBUTES } from 'Constants/GlobalConstant/ValidationMessage'
 import { ADD, ADD_ATTRIBUTES, ATTRIBUTES, CANCEL, DESCRIPTION, EDIT, I_AGREE_TO_TRANSFER, PROVIDER, WEBHOOK, WEBHOOK_DESCRIPTION } from 'Constants/GlobalConstant/Placeholders';
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import _get from 'lodash/get';
+import { get as _get } from 'Utils/modules/lodashReplacements';
 import { FormProvider, useForm } from 'react-hook-form';
 import { useDispatch, useSelector } from 'react-redux';
 import { Row, Col } from 'react-bootstrap';

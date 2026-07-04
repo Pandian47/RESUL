@@ -15,8 +15,11 @@ import { audienceScoreCompareCardTotalScoreValidation, audienceScoreCompareValid
 import { FREQUENCY_AMOUNT, FREQUENCY_TIME } from '../constants';
 import { HorizontalSkeleton } from 'Components/Skeleton/Skeleton';
 import RSTooltip from 'Components/RSTooltip';
+import { asAudienceScoreList } from '../constants';
 
 const CompareCard = ({ name, head, title, lessLabel, moreLabel, constants, periodkeys, allChannel }) => {
+    const safeAllChannel = asAudienceScoreList(allChannel);
+    const safePeriodkeys = asAudienceScoreList(periodkeys);
     const { audienceCardCollapse } = useSelector((state) => state.audienceScoreReducer);
     const dispatch = useDispatch();
 
@@ -33,9 +36,13 @@ const CompareCard = ({ name, head, title, lessLabel, moreLabel, constants, perio
     const lessValue = watch(`${name}[0].less`);
 
     const overAllScore = () => {
-        let total = getValues(name).reduce((a, b) => Number(a) + Number(b.score), 0);
+        const values = getValues(name);
+        if (!Array.isArray(values)) {
+            return 0;
+        }
+        let total = values.reduce((a, b) => Number(a) + Number(b?.score ?? 0), 0);
         const [less, more] = getValues([`${name}betweenData.lessScore`, `${name}betweenData.moreScore`]);
-        return total + Number(less) + Number(more) || 0;
+        return total + Number(less ?? 0) + Number(more ?? 0) || 0;
     };
 
     const addMore = (index) => {
@@ -63,7 +70,7 @@ const CompareCard = ({ name, head, title, lessLabel, moreLabel, constants, perio
         setValue(`${name}betweenData.lessScore`, campaignSegmentRule?.['Once']);
         setValue(`${name}betweenData.moreScore`, campaignSegmentRule?.['More than,5']);
         setValue(`${name}[0].score`, campaignSegmentRule?.['2,5']);
-        setValue(`${name}priority`, periodkeys?.length > 0 && periodkeys[0]);
+        setValue(`${name}priority`, safePeriodkeys.length > 0 ? safePeriodkeys[0] : undefined);
         setValue(`${name}betweenData.lessValue`, 1);
         setValue(`${name}betweenData.moreValue`, 5);
         if (campaignSegmentRule) {
@@ -73,39 +80,16 @@ const CompareCard = ({ name, head, title, lessLabel, moreLabel, constants, perio
             setValue(`${name}[0].less`, splitValue[0]);
             setValue(`${name}[0].more`, splitValue[1]);
         }
-    }, [constants, allChannel, name, periodkeys, setValue]);
-
-    // useEffect(() => {
-    //     if (constants) {
-    //         debugger;
-    //         const campaignSegmentRule = campaignSegmentRule;
-    //         setValue(`${name}priority`, periodkeys[0]);
-    //         //         setValue(`${name}betweenData.lessValue`, 1);
-    //         //         setValue(`${name}betweenData.moreValue`, 5);
-    //         if (campaignSegmentRule) {
-    //             setValue(`${name}betweenData.lessValue`, 1);
-    //                     setValue(`${name}betweenData.moreValue`, 5);
-    //             const onceValue = campaignSegmentRule['Once'];
-    //             const moreThanFiveValue = campaignSegmentRule['More than,5'];
-    //             const specificValue = campaignSegmentRule['2,5'];
-
-    //             if (onceValue && moreThanFiveValue && specificValue) {
-    //                 setValue(name + '[0].less', onceValue);
-    //                 setValue(name + '[0].more', moreThanFiveValue);
-    //                 setValue(name + '[0].score', specificValue);
-    //             }
-    //         }
-    //     }
-    // }, [constants, name]);
+    }, [constants, safeAllChannel, name, safePeriodkeys, setValue]);
 
     useEffect(() => {
-        if (allChannel?.length > 0 && head && name) {
-            const filteredChannel = allChannel.find(
+        if (safeAllChannel.length > 0 && head && name) {
+            const filteredChannel = safeAllChannel.find(
                 (item) => item?.campaignSegment?.toLowerCase() === head?.replace(/\s+/g, '')?.toLowerCase(),
             );
             setValue(`${name}Total`, filteredChannel?.responseScore);
         }
-    }, [allChannel, head, name]);
+    }, [safeAllChannel, head, name, setValue]);
 
     useEffect(() => {
         setIsAddMoreEnable(Number(moreValue) + Number(lessValue));
@@ -148,13 +132,13 @@ const CompareCard = ({ name, head, title, lessLabel, moreLabel, constants, perio
                             <RSKendoDropDownList
                                 control={control}
                                 name={`${name}priority`}
-                                data={name === 'purchaseWorth' ? FREQUENCY_AMOUNT : periodkeys ?? FREQUENCY_TIME}
+                                data={name === 'purchaseWorth' ? FREQUENCY_AMOUNT : safePeriodkeys.length ? safePeriodkeys : FREQUENCY_TIME}
                                 // label="Priority"
                                 defaultValue={
                                     name === 'purchaseWorth'
                                         ? FREQUENCY_AMOUNT[0]
-                                        : periodkeys
-                                        ? periodkeys[0]
+                                        : safePeriodkeys.length
+                                        ? safePeriodkeys[0]
                                         : FREQUENCY_TIME[0]
                                 }
                             />

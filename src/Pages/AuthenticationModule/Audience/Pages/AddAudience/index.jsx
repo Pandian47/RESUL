@@ -2,8 +2,7 @@ import { FORM_INITIAL_STATE, MANDATORY_FIELDS as MANDATORY_FIELD_KEYS, generateF
 import { ATLEAST_ONE_ROW, COLUMN_COUNT_MISMATCH, FILENAME_EXIST, HEADERS_MAXLENGTH, HEADERS_MINLENGTH, MANDATORY_FIELDS, SELECT_IMPORT_PREFERENCE, SELECT_SOURCE } from 'Constants/GlobalConstant/ValidationMessage';
 import { ADD_AUDIENCE_BY, ARE_YOU_SURE_WANT_TO_RESET, CANCEL, CONNECT, DOWNLOAD_SAMPLE, ENSURE_THE_FIRST_ROW_OF_YOUR_FILE, ENSURE_THE_FIRST_ROW_OF_YOUR_FILE_CSV, IMPORT_PREFERENCES, IMPORT_PREFERENCE_LABEL, IMPORT_PRESERVE_PREFERENCE_LABEL, NOTE, RESET, SOURCE, UPLOAD } from 'Constants/GlobalConstant/Placeholders';
 import { Suspense, lazy, useCallback, useEffect, useMemo, useState } from 'react';
-import _get from 'lodash/get';
-import _find from 'lodash/find';
+import { get as _get, find as _find, every } from 'Utils/modules/lodashReplacements';
 import { Container, Col, Row } from 'react-bootstrap';
 import { useSelector, useDispatch } from 'react-redux';
 import { FormProvider, useForm } from 'react-hook-form';
@@ -35,7 +34,6 @@ import { resetCsvFiles } from 'Reducers/audience/addAudience/reducer';
 import { getSessionId } from 'Reducers/globalState/selector';
 import RSTooltip from 'Components/RSTooltip';
 import RSPPophover from 'Components/RSPPophover';
-import { every } from 'lodash';
 import { encodeUrl, encodeUrlLegacy } from 'Utils/modules/crypto';
 import { getEnvironment } from 'Utils/modules/environment';
 import { getWarningPopupMessage } from 'Utils/modules/warningPopup';
@@ -80,15 +78,15 @@ const AddAudienceDropdownSkeleton = () => (
 const AddAudience = () => {
     const dispatch = useDispatch();
     const navigate = useNavigate();
-    const navigateToAudienceMdm = useCallback(() => {
+    const navigateToAudienceTab = useCallback((tabIndex = 0) => {
         const url = '/audience';
-        const index = 0;
-        const state1 = { index };
+        const state1 = { index: tabIndex };
         const encryptState = encodeUrl(state1);
         navigate(`${url}?q=${encryptState}`, {
-            state: { index },
+            state: { index: tabIndex },
         });
     }, [navigate]);
+
     const location = useLocation();
     const importSourceAPI = useApiLoader({ autoFetch: false });
     const audienceSubmitAPI = useApiLoader({ autoFetch: false });
@@ -98,6 +96,12 @@ const AddAudience = () => {
     const pathName = location?.pathname?.split('/')?.pop();
     // const { state } = useLocation();
     const state = useQueryParams('/audience');
+
+    const resolveAudienceBackTabIndex = useCallback(() => {
+        if (state?.from === 'targetList') return 1;
+        const parsedIndex = Number(state?.index);
+        return Number.isFinite(parsedIndex) ? parsedIndex : 0;
+    }, [state?.from, state?.index]);
     // console.log('state: ', state);
     const { permissionList, permissions } = usePermission();
     const { addAccess: addAccessRDSFTP } = _find(permissionList, { featureId: 48 });
@@ -634,7 +638,7 @@ const AddAudience = () => {
                 // });
             } else {
                 setValue(`isConnected`, 'Connected Sucessfully');
-                navigateToAudienceMdm();
+                navigateToAudienceTab(resolveAudienceBackTabIndex());
                 // navigate(`/audience`, {
                 //     state: { index: 0 },
                 // });
@@ -881,18 +885,7 @@ const AddAudience = () => {
                         isAgencyDisabled
                         backPath={state?.isDataExchange ? '/preferences/data-exchange' : '/audience'}
                         backAction={() => {
-                            if (state?.from === 'targetList') {
-                                let url = '/audience';
-                                const state = { index: 1 };
-                                const encryptState = encodeUrl(state);
-                                navigate(`${url}?q=${encryptState}`, {
-                                    state: {
-                                        index: 1,
-                                    },
-                                });
-                                return;
-                            }
-                            navigateToAudienceMdm();
+                            navigateToAudienceTab(resolveAudienceBackTabIndex());
                         }}
                         />
                     </Suspense>

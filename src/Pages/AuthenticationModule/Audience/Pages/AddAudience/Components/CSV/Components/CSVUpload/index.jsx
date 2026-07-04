@@ -10,9 +10,6 @@ import { CONTAINS_INVALID_FILES, FILENAME_EXIST, FIRST_ROW_COLUMN_HEADER, HEADER
 import { ACCEPTS_ONLY_CSV, ADD_FILE, ARE_YOU_SURE_WANT_TO_RESET, CHOOSE_YOUR_FILE, COLUMN_HEADER_POPOVER, DELETE, DOWNLOAD_SAMPLE, FIRSTROW_COLUMN_HEADER, RESET, SELECT_CSV_FILES } from 'Constants/GlobalConstant/Placeholders';
 import { alert_medium, circle_close_fill_medium, circle_info_medium, circle_plus_medium, circle_question_mark_mini, circle_tick_medium, csv_download_medium, delete_medium, popup_close_circle_fill_medium, popup_close_circle_medium } from 'Constants/GlobalConstant/Glyphicons';
 import { Fragment, useEffect, useState } from 'react';
-import _map from 'lodash/map';
-import _get from 'lodash/get';
-import _find from 'lodash/find';
 import { Col, Row } from 'react-bootstrap';
 import { useFormContext } from 'react-hook-form';
 import { useDispatch, useSelector } from 'react-redux';
@@ -65,7 +62,7 @@ const CSVUpload = ({ isValidListname, fetchAudienceInsight }) => {
             ({ addAudienceReducer }) => addAudienceReducer,
       );
 
-    const hasUploadError = !!_find(csvFiles, ['isValid', false]) || false;
+    const hasUploadError = !!csvFiles?.find((item) => item?.isValid === false) || false;
 
     const {
         control,
@@ -455,10 +452,10 @@ const CSVUpload = ({ isValidListname, fetchAudienceInsight }) => {
                 return;
             }
 
-            const fSize = _get(file, 'size') || 0;
+            const fSize = file?.size || 0;
             const encodedData = btoa(csvText);
             const payload = {
-                name: _get(file, 'name'),
+                name: file?.name,
                 size: fSize,
                 encodedData,
                 departmentId,
@@ -470,7 +467,7 @@ const CSVUpload = ({ isValidListname, fetchAudienceInsight }) => {
 
                   if (type === 5) {
                         const fileNamePayload = {
-                              filenameDescription: _get(file, 'name'),
+                              filenameDescription: file?.name,
                               listType: type,
                               departmentId,
                               clientId,
@@ -910,7 +907,7 @@ const CSVUpload = ({ isValidListname, fetchAudienceInsight }) => {
                 {csvFiles?.length > 0 || uploadingSkeletonCount > 0 ? (
                     <div className="form-group mb0">
                         <Row>
-                            {_map(csvFiles, (list, listIndex) => {
+                            {csvFiles?.map((list, listIndex) => {
                                 return (
                                     <Col sm={4} key={list.fileName}>
                                         <div
@@ -979,9 +976,10 @@ const CSVUpload = ({ isValidListname, fetchAudienceInsight }) => {
                                                         });
                                                     }}
                                                 >
+                                                     <RSTooltip text={"List analysis"} className="lh0">
                                                     <i
                                                         className={`${circle_info_medium} icon-md color-primary-white`}
-                                                    />
+                                                    /></RSTooltip>
                                                 </div>
                                             </div>
                                         </div>

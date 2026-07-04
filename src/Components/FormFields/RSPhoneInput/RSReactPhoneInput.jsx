@@ -3,7 +3,7 @@ import ReactPhoneInput from 'react-phone-input-2';
 import PropTypes from 'prop-types';
 import { useSelector } from 'react-redux';
 import { Controller } from 'react-hook-form';
-import { get } from 'lodash';
+import { get } from 'Utils/modules/lodashReplacements';
 
 import { phoneDialCode } from './constant';
 // import { setMyProfileData } from 'Reducers/preferences/myProfile/reducer';

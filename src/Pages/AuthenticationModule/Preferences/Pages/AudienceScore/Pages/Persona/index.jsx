@@ -18,6 +18,10 @@ import { GetPersona, getPersonaGrade, savePersonaGrade } from 'Reducers/preferen
 import usePermission from 'Hooks/usePersmission';
 import { update_target_list } from 'Reducers/audience/targetListCreation/reducer';
 import { useForm, FormProvider } from 'react-hook-form';
+import {
+    asAudienceScoreObject,
+    getAudienceScoreListFromResponse,
+} from '../Components/constants';
 const Persona = () => {
     const navigate = useNavigate();
     const dispatch = useDispatch();
@@ -55,20 +59,13 @@ const Persona = () => {
                 return { personaRes, gradeRes };
             },
             onSuccess: ({ personaRes, gradeRes }) => {
-                if (gradeRes?.status) {
-                    setPersonaGrade(gradeRes?.data?.[0] ?? []);
-                } else {
-                    setPersonaGrade([]);
-                }
-                if (personaRes?.status) {
-                    setPersonaLists(personaRes.data ?? []);
-                } else {
-                    setPersonaLists([]);
-                }
+                const gradeData = gradeRes?.status ? gradeRes?.data?.[0] : null;
+                setPersonaGrade(asAudienceScoreObject(gradeData));
+                setPersonaLists(getAudienceScoreListFromResponse(personaRes));
             },
             onError: () => {
                 setPersonaLists([]);
-                setPersonaGrade([]);
+                setPersonaGrade({});
             },
         });
     }, [clientId, departmentId, userId, dispatch, pageLoadApi.refetch]);
@@ -82,11 +79,11 @@ const Persona = () => {
     }, [bootstrapPersona, dispatch]);
 
     const handlePersonaSave = async (result, from) => {
-        if (isSubmitting) return;
+        if (isSubmitting || !result) return;
 
         const tempPayload = Object.entries(result).map((e) => ({
-            personaId: e[0].split('_')[1],
-            personaGradeId: personaGrade[e[1]],
+            personaId: e[0]?.split('_')?.[1],
+            personaGradeId: personaGrade?.[e[1]],
         }));
 
         const payload = {

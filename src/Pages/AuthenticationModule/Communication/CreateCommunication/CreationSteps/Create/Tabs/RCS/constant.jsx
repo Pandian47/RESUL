@@ -3,8 +3,6 @@ import { circle_plus_edge_medium } from 'Constants/GlobalConstant/Glyphicons';
 import Carousel from './Components/Carousel/Carousel';
 import TextContent from './Components/TextContent/TextContent';
 import SplitAB from './Components/SplitAB/SplitAB';
-import _get from 'lodash/get';
-import _map from 'lodash/map';
 
 import { formatDateScheculer, handleAllChannelPayload, handleAllChannelTimeZonePayload, handleMDCExtraPayload, resolveLocalBlastDateTime } from '../../constant';
 
@@ -286,11 +284,6 @@ export const extractPlaceholders = (text) => {
 
     return results;
 };
-function numberToLetter(n) {
-    if (n < 1 || n > 26) return null;
-    return String.fromCharCode(96 + n);
-}
-
 export const buildPayload = (formState, type, location) => {
     try {
     let {
@@ -352,12 +345,7 @@ export const buildPayload = (formState, type, location) => {
 
     const { timeZoneId = 0 } = getUserDetails();
     let { dialCode, testPhoneNumber: mobile } = approvalList;
-    schedule =
-        levelNumber > 1
-            ? new Date(formState.schedule)
-            : campaignType === 'M' && dataSource === 'DL'
-            ? new Date()
-            : schedule;
+    schedule = resolveMdcSchedule(formState, location, levelNumber, campaignType, dataSource, schedule);
 
     const getInteractiveData = (formState, location) => {
         let interactives = formState?.actions;
@@ -378,9 +366,9 @@ export const buildPayload = (formState, type, location) => {
             };
         });
     };
-    const isWorkflowEnabled = _get(approvalList, 'requestApproval', false);
+    const isWorkflowEnabled = approvalList?.requestApproval ?? false;
     const approvarList = isWorkflowEnabled
-        ? _map(ensureArray(_get(approvalList, 'name', [])), ({ approverName, isCustom, mandatory } = {}) => ({
+        ? ensureArray(approvalList?.name ?? []).map(({ approverName, isCustom, mandatory } = {}) => ({
                 approvarId: isCustom ? 0 : approverName?.userId ?? 0,
                 approvarName: isCustom ? approverName : approverName?.email ?? '',
                 flag: mandatory || false,
@@ -448,14 +436,14 @@ export const buildPayload = (formState, type, location) => {
     const buildContent = (formState, location, isSplit = false, splitTabsList = []) => {
         if (isSplit && splitTabsList?.length) {
             // Build content for each split tab
-            return _map(ensureArray(splitTabsList), (tabs, index) => {
+            return ensureArray(splitTabsList).map((tabs, index) => {
                 const splitData = restState?.[tabs] || {};
                 const templateType = splitData?.templateName?.templateType;
-                
+
                 if (templateType === 3) {
                     // Handle carousel in split AB
                     const splitCarouselTabs = carouselTabs?.[tabs] || [];
-                    
+
                     return {
                         templateType: templateType || 0,
                         rcsChannelDetailId: content?.[index]?.rcsChannelDetailId || 0,
@@ -484,7 +472,7 @@ export const buildPayload = (formState, type, location) => {
                         rcsMediaURLType: getFileExtension(splitData?.previewImage) || getFileExtension(splitData?.uploadImageName),
                         isDaylightSavings: splitData?.daylightSavings || false,
                         isCarousel: true,
-                        carousel: _map(splitCarouselTabs, (carouselTab, carouselIndex) => {
+                        carousel: splitCarouselTabs.map((carouselTab, carouselIndex) => {
                             const carouselData = restState?.[carouselTab?.splitName]?.[carouselTab?.carouselName];
                             return {
                                 cardDesctiption: carouselData?.editorText || '',
@@ -539,7 +527,7 @@ export const buildPayload = (formState, type, location) => {
         if (templateType === 3) {
             // Handle carousel for non-split
             const nonSplitCarouselTabs = carouselTabs?.['carousel'] || [];
-            
+
             return [{
                 templateType: templateType || 0,
                 rcsChannelDetailId: rcsChannelDetailId,
@@ -563,7 +551,7 @@ export const buildPayload = (formState, type, location) => {
                 rcsMediaURLType: getFileExtension(formState?.previewImage) || getFileExtension(formState?.uploadImageName),
                 isDaylightSavings: daylightSavings || false,
                 isCarousel: true,
-                carousel: _map(nonSplitCarouselTabs, (carouselTab, carouselIndex) => {
+                carousel: nonSplitCarouselTabs.map((carouselTab, carouselIndex) => {
                     const carouselData = restState?.[carouselTab?.carouselName];
                     return {
                         cardDesctiption: carouselData?.editorText || '',
@@ -617,8 +605,8 @@ export const buildPayload = (formState, type, location) => {
             ];
         }
     };
-    const autoSchedule = _get(splitscehdule, 'autoSchedule', false);
-    
+    const autoSchedule = splitscehdule?.autoSchedule ?? false;
+
     return {
         departmentId,
         clientId,
@@ -626,7 +614,7 @@ export const buildPayload = (formState, type, location) => {
         copy: false,
         createdBy: userId,
         userId,
-        segmentationListId: _map(ensureArray(audience), 'segmentationListId'),
+        segmentationListId: ensureArray(audience).map((item) => item?.segmentationListId),
         dataSource: campaignType === 'T' ? 'DL' : dataSource,
         rcsCampaign: {
             campaignId,
@@ -648,13 +636,13 @@ export const buildPayload = (formState, type, location) => {
             channelDetailType,
             channelId,
             flowChannel,
-            senderId: _get(senderName, 'clientRCSSenderId', 0) || 0,
+            senderId: (senderName?.clientRCSSenderId ?? 0) || 0,
             testRCSMobileNo:
                 isSendTestRCS === 4
                     ? `${formState?.userKeyPersonInfo?.[0]?.phoneNo || ''}|${formState?.passportID || ''}`
                     : approvalList?.testPhoneNumber
-                    ? approvalList?.testPhoneNumber?.slice(approvalList?.dialCode?.length + 1)
-                    : '',
+                        ? approvalList?.testPhoneNumber?.slice(approvalList?.dialCode?.length + 1)
+                        : '',
             countryCodeMobile:
                 approvalList?.dialCode?.length && approvalList?.dialCode.includes('+')
                     ? approvalList?.dialCode.split('+')[1]
@@ -664,30 +652,30 @@ export const buildPayload = (formState, type, location) => {
             isSplit: splitTest || false,
             rcsSplit: {
                 rcsChannelId: rcsSplit?.rcsChannelId || 0,
-                splitPercentage: sanitizeChannelCount(_get(splitABCount, 'percentage', 0)),
-                splitAudience: Math.floor(sanitizeChannelCount(_get(splitABCount, 'count', 0))),
+                splitPercentage: sanitizeChannelCount(splitABCount?.percentage ?? 0),
+                splitAudience: Math.floor(sanitizeChannelCount(splitABCount?.count ?? 0)),
                 totalAudience: totalAudience || 0,
-                splitWidth: sanitizeChannelCount(_get(splitABCount, 'width', 0)),
+                splitWidth: sanitizeChannelCount(splitABCount?.width ?? 0),
             },
             rcsAutoSchedule: {
                 splitScheduleId: rcsAutoSchedule?.splitScheduleId || 0,
                 autoSchedule,
                 performedBy: 2,
-                startIn: _get(splitscehdule, 'duration') || 0,
-                periodRange: autoSchedule ? _get(splitscehdule, 'time.id', 1) : 0,
+                startIn: splitscehdule?.duration || 0,
+                periodRange: autoSchedule ? (splitscehdule?.time?.id ?? 1) : 0,
             },
-            content: splitTest 
+            content: splitTest
                 ? buildContent(formState, location, true, splitTabs)
                 : buildContent(formState, location, false),
             requestForApproval: {
                 isWorkflowEnabled,
                 approvarList,
                 noOfApprovers: approvalList?.name?.length ?? 0,
-                approvalFrom: _get(approvalList, 'approvalFrom', 'ALL'),
-                isFollowHierarchy: _get(approvalList, 'followHierarchy', false),
+                approvalFrom: approvalList?.approvalFrom ?? 'ALL',
+                isFollowHierarchy: approvalList?.followHierarchy ?? false,
                 approverCount:
-                    _get(approvalList, 'approvalFrom', 'ALL') === 'Any'
-                        ? _get(approvalList, 'approvalCount', 0)
+                    (approvalList?.approvalFrom ?? 'ALL') === 'Any'
+                        ? approvalList?.approvalCount ?? 0
                         : approvalList?.name?.length,
             },
             ...handleMDCExtraPayload(location),

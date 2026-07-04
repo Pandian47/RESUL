@@ -4,7 +4,7 @@ import { getWarningPopupMessage } from 'Utils/modules/warningPopup';
 import { AVAILABLE_ATTRIBUTES } from 'Constants/GlobalConstant/Placeholders';
 import { alert_medium, circle_csv_download_edge_medium, circle_list_edge_large, circle_plus_fill_edge_large, collapse_medium, expand_mini, user_star_mini } from 'Constants/GlobalConstant/Glyphicons';
 import { Fragment, useEffect, useRef, useState } from 'react';
-import _get from 'lodash/get';
+import { get as _get } from 'Utils/modules/lodashReplacements';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { Container, Row } from 'react-bootstrap';
 import { useDispatch, useSelector } from 'react-redux';
@@ -29,8 +29,6 @@ import { update_all_loading, reset_data_catalogue } from 'Reducers/preferences/d
 import RSSkeletonTable from 'Components/RSSkeleton/RSSkeletonTable';
 import { getSessionId } from 'Reducers/globalState/selector';
 import WarningPopup from 'Pages/AuthenticationModule/Components/WarningPopup/WarningPopup';
-
-import { SkeletonTable } from 'Components/Skeleton/Skeleton';
 import { BRAND_ID, GRID_VIEW } from 'Constants/GlobalConstant/Placeholders';
 import TruncatedCell from 'Components/RSKendoGrid/TruncateCell';
 
@@ -67,7 +65,7 @@ const DataCatalogue = () => {
     const brandDisplayName = getBrandNameUIPrintable(departmentId) || 'Setup your brand ID';
 
     const renderBrandNameLabel = () => (
-            <TruncatedCell value = {brandDisplayName} noTable = {true} />
+        <TruncatedCell value={brandDisplayName} noTable={true} />
     );
 
     // useEffect(()=>{
@@ -187,25 +185,25 @@ const DataCatalogue = () => {
                                 <div className={`position-relative ${isExpand ? 'expandViewContainer' : ''}`}>
                                     <Fragment>
                                         {!StickyExpandInfo && (
-                                        <Row>
-                                            <div
-                                                className={
-                                                    isExpand
-                                                        ? 'col-sm-12 data_catalogue_tab'
-                                                        : 'col-sm-9 offset-sm-3 data_catalogue_tab'
-                                                }
-                                            >
-                                                <RSTabbarFluid
-                                                    defaultClass={`col-md-6 `}
-                                                    dynamicTab={`mb0 mini rst-left-space`}
-                                                    activeClass={`active`}
-                                                    tabData={DATACATALOGUE_TAB_CONFIG}
-                                                    className={`rs-tabs row  ${isExpand ? 'click-off' : ''}`}
-                                                    componentClassname={`col-sm-12`}
-                                                    defaultTab={state?.tab || 0}
-                                                />
-                                            </div>
-                                        </Row>
+                                            <Row>
+                                                <div
+                                                    className={
+                                                        isExpand
+                                                            ? 'col-sm-12 data_catalogue_tab'
+                                                            : 'col-sm-9 offset-sm-3 data_catalogue_tab'
+                                                    }
+                                                >
+                                                    <RSTabbarFluid
+                                                        defaultClass={`col-md-6 `}
+                                                        dynamicTab={`mb0 mini rst-left-space`}
+                                                        activeClass={`active`}
+                                                        tabData={DATACATALOGUE_TAB_CONFIG}
+                                                        className={`rs-tabs row  ${isExpand ? 'click-off' : ''}`}
+                                                        componentClassname={`col-sm-12`}
+                                                        defaultTab={state?.tab || 0}
+                                                    />
+                                                </div>
+                                            </Row>
                                         )}
                                         <Container className={`${StickyExpandInfo ? 'stickyexpandViewContainer ' : ''} px0`}>
                                             <div className={`col-sm-3 sticky`} ref={scrollRef}>
@@ -217,8 +215,8 @@ const DataCatalogue = () => {
                                                                 <span className={`${getBrandNameUIPrintable(departmentId) ? "bg-tertiary-blue" : ""} border-r7 d-flex px8 py6 mr8`}>
                                                                     <i
                                                                         className={`cursor-default ${getBrandNameUIPrintable(departmentId)
-                                                                                ? user_star_mini
-                                                                                : alert_medium
+                                                                            ? user_star_mini
+                                                                            : alert_medium
                                                                             } ${getBrandNameUIPrintable(departmentId) ? 'color-primary-grey' : 'color-primary-red'} icon-md `}
                                                                     ></i></span>
                                                                 <span className='mr8'>{BRAND_ID} :</span>  {` `}
@@ -306,8 +304,8 @@ const DataCatalogue = () => {
                                                         <span className={`${getBrandNameUIPrintable(departmentId) ? "bg-tertiary-blue px8" : ""} border-r7 d-flex  py6 mr8`}>
                                                             <i
                                                                 className={`cursor-default ${getBrandNameUIPrintable(departmentId)
-                                                                        ? user_star_mini
-                                                                        : alert_medium
+                                                                    ? user_star_mini
+                                                                    : alert_medium
                                                                     } ${getBrandNameUIPrintable(departmentId) ? 'color-primary-grey' : 'color-primary-red'} icon-md `}
                                                             ></i></span>
                                                         <span className='mr8'>{BRAND_ID} :</span>  {` `}
@@ -316,51 +314,51 @@ const DataCatalogue = () => {
                                                 }
                                                 <div className={`tag-list-block box-design  ${StickyExpandInfo ? 'mt60' : 'mt25'}`}>
                                                     <div className='left-grid-inside-scrollbar pr27'>
-                                                    {searchAttributeResult?.length ? (
-                                                        <ul>
-                                                            {searchAttributeResult.map((attr) => {
-                                                                // let getLegendDetails = _get(NEW_LEGENDS, attr?.type);
-                                                                let getLegendDetails = _get(NEW_LEGENDS, attr?.dataTypeId);
-                                                                let sensitive = attr?.dataClassificationId
-                                                                    .split(',')
-                                                                    .includes('5');
-                                                                return (
-                                                                    <li
-                                                                        key={attr.dataAttributeId}
-                                                                        className={
-                                                                            sensitive
-                                                                                ? `${getLegendDetails?.className} sensitiveData-CSS`
-                                                                                : `${getLegendDetails?.className}`
-                                                                        }
-                                                                        onClick={() => {
-                                                                            if (updateAccess) {
-                                                                                handleEditAttribute(attr.dataAttributeId);
-
-                                                                                // setEditData(attr);
-                                                                                setShowModal(true);
+                                                        {searchAttributeResult?.length ? (
+                                                            <ul>
+                                                                {searchAttributeResult.map((attr) => {
+                                                                    // let getLegendDetails = _get(NEW_LEGENDS, attr?.type);
+                                                                    let getLegendDetails = _get(NEW_LEGENDS, attr?.dataTypeId);
+                                                                    let sensitive = attr?.dataClassificationId
+                                                                        .split(',')
+                                                                        .includes('5');
+                                                                    return (
+                                                                        <li
+                                                                            key={attr.dataAttributeId}
+                                                                            className={
+                                                                                sensitive
+                                                                                    ? `${getLegendDetails?.className} sensitiveData-CSS`
+                                                                                    : `${getLegendDetails?.className}`
                                                                             }
-                                                                        }}
-                                                                    >
-                                                                        <TruncateCell value={attr.uIPrintableName} noTable={true} />
-                                                                        {attr?.isBrandId === 1 && (
-                                                                            <i className={`${user_star_mini} icon-sm position-relative top-2 left5`} />
-                                                                        )}
-                                                                    </li>
-                                                                );
-                                                            })}
-                                                        </ul>
-                                                    ) : loading.attributes ? (
-                                                        <RSSkeletonTable type="tag" isCustombox />
-                                                    ) : (
-                                                        //<NoDataAvailableRender />
-                                                        <RSSkeletonTable
-                                                            text={true}
-                                                            message="No data available"
-                                                            type="tag"
-                                                            count={5}
-                                                            isCustombox
-                                                        />
-                                                    )}
+                                                                            onClick={() => {
+                                                                                if (updateAccess) {
+                                                                                    handleEditAttribute(attr.dataAttributeId);
+
+                                                                                    // setEditData(attr);
+                                                                                    setShowModal(true);
+                                                                                }
+                                                                            }}
+                                                                        >
+                                                                            <TruncateCell value={attr.uIPrintableName} noTable={true} />
+                                                                            {attr?.isBrandId === 1 && (
+                                                                                <i className={`${user_star_mini} icon-sm position-relative top-2 left5`} />
+                                                                            )}
+                                                                        </li>
+                                                                    );
+                                                                })}
+                                                            </ul>
+                                                        ) : loading.attributes ? (
+                                                            <RSSkeletonTable type="tag" isCustombox />
+                                                        ) : (
+                                                            //<NoDataAvailableRender />
+                                                            <RSSkeletonTable
+                                                                text={true}
+                                                                message="No data available"
+                                                                type="tag"
+                                                                count={5}
+                                                                isCustombox
+                                                            />
+                                                        )}
                                                     </div>
                                                     <>
                                                         <RSTooltip
@@ -405,9 +403,13 @@ const DataCatalogue = () => {
                 ) : (
                     <>
                         <Container>
-                            <div className="mt30 box-design">
-                                <SkeletonTable isError={true} />
-                            </div>
+                            <RSSkeletonTable
+                                text={true}
+                                message="No data available"
+                                type="tag"
+                                count={5}
+                                isCustombox
+                            />
                         </Container>
                     </>
                 )}
@@ -426,17 +428,22 @@ const DataCatalogue = () => {
                 <WarningPopup
                     show={warningModal?.show}
                     showCancel={true}
-                    handleClose={(type) =>
+                    handleClose={(type) => {
                         setWarningModal({
                             type: type,
                             show: false,
-                        })
-                    }
+                        });
+                        if (type === 0) {
+                            setTimeout(() => {
+                                setShowModal(true);
+                            }, 450);
+                        }
+                    }}
                     text={'Would you like to proceed with existing attributes?'}
                 />
                 {/* } */}
                 <NewAttributeModal
-                    show={showModal || warningModal?.type === 0}
+                    show={showModal}
                     handleClose={(status) => {
                         setShowModal(status);
                         setWarningModal({

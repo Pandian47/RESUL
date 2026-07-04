@@ -5,20 +5,6 @@ export const SELECT_KYC = [
     'Invest smartly, save money Form',
 ];
 
-export const getBase_64 = (file, succes, failure) => {
-    let reader = new FileReader();
-    reader.readAsDataURL(file);
-    reader.onload = () => {
-        if (reader.result) {
-            const result = reader.result.replace(/^data:image\/[a-z]+;base64,/, '');
-            succes(result);
-        } else {
-            failure('Problem with converting file to base64');
-        }
-    };
-    reader.onerror = (error) => {
-    };
-};
 export function isBase64(str) {
     try {
         const decodedString = atob(str);
@@ -28,6 +14,38 @@ export function isBase64(str) {
         return false;
     }
 }
+
+export const DEFAULT_QR_PREVIEW_FORM_STATE = {
+    layout: 'form-theme-default',
+    profilingToggle: false,
+    Submit: { buttonText: 'Submit', buttonColor: '#28a745' },
+    CancelView: { isCancel: false, buttonText: 'Cancel' },
+    previewData: { enableCaptchaCheckbox: false },
+};
+
+export const buildQrPreviewContentFromFormResponse = (formDataItem) => {
+    const htmlcodeclient = formDataItem?.htmlcodeclient;
+    if (!htmlcodeclient) return null;
+
+    let parsedFormData;
+    try {
+        parsedFormData = JSON.parse(htmlcodeclient);
+    } catch {
+        return null;
+    }
+
+    return {
+        backgroundColor: parsedFormData?.selectedColor || '#ffffff',
+        dropAbleData: parsedFormData?.dropValue || [],
+        previewTempData: parsedFormData?.previewData || [],
+        formState: {
+            ...DEFAULT_QR_PREVIEW_FORM_STATE,
+            ...parsedFormData?.formState,
+            layout: parsedFormData?.formState?.layout || DEFAULT_QR_PREVIEW_FORM_STATE.layout,
+        },
+        isCaptchaEnabled: formDataItem?.isCaptchaenabled || false,
+    };
+};
 export const QR_INITIAL_DATA = {
     defaultValues: {
         audience_reach: '',

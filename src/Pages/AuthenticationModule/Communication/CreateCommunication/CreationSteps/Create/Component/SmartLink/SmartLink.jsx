@@ -1,6 +1,6 @@
 import { getChannelId } from 'Utils/modules/communicationChannels';
 import { circle_plus_fill_medium, editor_smart_link_medium } from 'Constants/GlobalConstant/Glyphicons';
-import _get from 'lodash/get';
+import { get as _get } from 'Utils/modules/lodashReplacements';
 import { useDispatch, useSelector } from 'react-redux';
 import { MAX_SMART_LINKS, SMARTLINK_BOOTSTRAP_DROPDOWN_DEFAULT_ID } from 'Constants/GlobalConstant/InputLimit';
 
@@ -18,7 +18,7 @@ import useApiLoader from 'Hooks/useApiLoader';
 import { AUTHORING_FIELD_LOADER_CONFIG } from 'Components/Skeleton/pages/communication/authoring';
 
 const SmartLink = (props) => {
-    const { view } = props;
+    const { view, alignRight: alignRightProp = false } = props;
     // console.log('props: ', props);
     const { watch } = useFormContext();
     const dispatch = useDispatch();
@@ -55,6 +55,7 @@ const SmartLink = (props) => {
 
     return (
         <RSBootstrapdown
+            alignRight={alignRightProp}
             data={smartLinks}
             flatIcon
             defaultItem={{

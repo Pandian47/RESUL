@@ -10,7 +10,7 @@ import { ACHIEVED_VS_GOAL, ACTUAL_VS_EXPECTED_ROI, BUDGET, CANCEL, CHANNEL_COST,
 import { arrow_up_bold_medium, circle_close_fill_medium, circle_close_medium, circle_info_medium, retarget_list_medium } from 'Constants/GlobalConstant/Glyphicons';
 import { Fragment, useState } from 'react';
 import { Carousel, Col, Row } from 'react-bootstrap';
-import _get from 'lodash/get';
+import { get as _get } from 'Utils/modules/lodashReplacements';
 import { useForm } from 'react-hook-form';
 
 import RSHighchartsContainer from 'Components/Highcharts';
@@ -128,7 +128,7 @@ const PerformanceAndInsights = ({ date, isDownloadUI  }) => {
                                                         <div className="p-snap-list">
                                                             <h4>{PRIMARY_GOAL}</h4>
                                                             {_get(goalPerformace, 'goalStatus')?.length > 0 && (
-                                                                <p className="lh-1 primary-goal-type mb0">{getGoalStatusLabel(_get(goalPerformace, 'goalStatus'))}</p>
+                                                                <span className="lh-1 font-bold font-sm primary-goal-type my5">{getGoalStatusLabel(_get(goalPerformace, 'goalStatus'))}</span>
                                                             )}
                                                             <div className="p-count">
                                                                 <h1>

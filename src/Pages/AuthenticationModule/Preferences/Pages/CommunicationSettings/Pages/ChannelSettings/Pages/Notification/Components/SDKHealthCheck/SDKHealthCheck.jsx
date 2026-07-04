@@ -73,22 +73,6 @@ const keyToClassNames = {
   brandFormStatus: { android: 'android-app-config', ios: 'ios-nce' },
 };
 
-const RSHealthCheckSkeleton = () => (
-
-  <div className="sdk-grid">
-    {Array.from({ length: 12 }).map((_, idx) => (
-      <div className="sdk-card skeleton" key={idx}>
-        <div className="sdk-card-header">
-          <div className="skeleton-title shimmer" />
-          <div className="skeleton-status shimmer" />
-        </div>
-        <div className="skeleton-meta shimmer" />
-      </div>
-    ))}
-  </div>
-
-);
-
 const SDKHealthCheck = ({ show, close, data, isModal = true, domainUrl = '', appId, type = 'mobile' }) => {
   const dispatch = useDispatch();
   const { clientId, userId, departmentId } = useSelector((state) => getSessionId(state));

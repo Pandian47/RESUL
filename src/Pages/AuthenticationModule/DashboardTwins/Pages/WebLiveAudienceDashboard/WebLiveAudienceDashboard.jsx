@@ -13,7 +13,7 @@ import { useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 
 import Icon from 'Components/Icon/Icon';
-import _find from 'lodash/find';
+import { find as _find, isEmpty } from 'Utils/modules/lodashReplacements';
 import RSHighchartsContainer from 'Components/Highcharts';
 import RSChartTabbar from 'Components/RSChartTabber';
 import RSKendoDropDownList from 'Components/FormFields/RSKendoDropdown';
@@ -28,7 +28,6 @@ import activeImg from 'Assets/Images/active.svg';
 import RSTooltip from 'Components/RSTooltip';
 import { useDispatch, useSelector } from 'react-redux';
 import { getSessionId } from 'Reducers/globalState/selector';
-import { isEmpty } from 'lodash';
 import { getAudienceCountMobile, getLiveCountDashboard, getWebAppDasdhboard, getPathAnalyser, getPathAnalyserDDL } from 'Reducers/dashboard/mobileLiveDashboard/request';
 import { getWebDomains } from 'Reducers/audience/dynamicList/request';
 import { update_isWebAppId, update_isWebAppData, update_isWebDomainListReady } from 'Reducers/globalState/reducer';

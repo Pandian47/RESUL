@@ -9,7 +9,7 @@ const SegmentationRecalculate = ({ show, handleClose, recalculateLater, getBQAud
         <Fragment>
             <div>
                 <RSModal
-                  header={'Calculate potential audience'}
+                    header={'Calculate potential audience'}
                     show={show}
                     size="lg"
                     // isBorder={false}
@@ -17,23 +17,23 @@ const SegmentationRecalculate = ({ show, handleClose, recalculateLater, getBQAud
                         <div>
                             <Row className="text-center">
                                 <i className={`${circle_time_large} icon-xxl`}></i>
-                                <p className="font-smd mt15">
+                                <p className="font-smd mt10">
                                     Your segment has not been calculated yet.
-                                    <br />
-                                    Calculate now or calculate later and close?
+                                </p>
+                                <p className="font-smd" >                                    Calculate now or calculate later and close?
                                 </p>
                             </Row>
                         </div>
                     }
                     footer={
-                        <div className="d-flex justify-content-end m0 pt20">
+                        <>
                             <RSSecondaryButton onClick={() => handleClose(false)}>Cancel</RSSecondaryButton>
                             {!partnerData && (
                                 <RSSecondaryButton
                                     onClick={() => recalculateLater(true)}
                                     className="color-primary-blue"
                                 >
-                                   {CALCULATE_LATER}
+                                    {CALCULATE_LATER}
                                 </RSSecondaryButton>
                             )}
                             <RSPrimaryButton
@@ -42,11 +42,11 @@ const SegmentationRecalculate = ({ show, handleClose, recalculateLater, getBQAud
                                     getBQAudienceCount(true);
                                 }}
                             >
-                               
-                              
-                               {CALCULATE_NOW}
+
+
+                                {CALCULATE_NOW}
                             </RSPrimaryButton>
-                        </div>
+                        </>
                     }
                     handleClose={() => handleClose(false)}
                 />

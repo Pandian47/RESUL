@@ -124,10 +124,22 @@ export const markNotificationAsReadById =
             }),
         );
 
+let unreadCountInFlight = null;
+
 export const updateNotificationCountStatus =
     ({ payload }) =>
     async (dispatch) => {
-        return dispatch(
+        const signature = JSON.stringify({
+            clientId: payload?.clientId ?? '',
+            userId: payload?.userId ?? '',
+            departmentId: payload?.departmentId ?? '',
+        });
+
+        if (unreadCountInFlight?.signature === signature) {
+            return unreadCountInFlight.promise;
+        }
+
+        const requestPromise = dispatch(
             request.post({
                 url: GET_UNREAD_COUNT,
                 payload,
@@ -163,5 +175,12 @@ export const updateNotificationCountStatus =
                 fail: (err) => {},
             }),
         );
+
+        unreadCountInFlight = { signature, promise: requestPromise };
+        return requestPromise.finally(() => {
+            if (unreadCountInFlight?.promise === requestPromise) {
+                unreadCountInFlight = null;
+            }
+        });
     };
 

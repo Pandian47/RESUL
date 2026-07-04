@@ -67,23 +67,6 @@ export const FORM_INITIAL_STATE = {
     mode: 'onTouched',
 };
 
-const findAttributeFieldNumber = (fieldType) => {
-    switch (fieldType) {
-        case 'D':
-            return 1;
-        case 'AN':
-            return 2;
-        case 'NR':
-            return 3;
-        case 'NR':
-            return 4;
-        case 'AN':
-            return 8;
-        default:
-            return 8;
-    }
-};
-
 const handleAttributeFromTo = (value, fieldType) => {
     if (fieldType === 3 || fieldType === 4 || fieldType === 8) {
         const splitValues = (value?.split(',') || []).map((v) => (v || '').trim());

@@ -60,6 +60,10 @@ export function whenHostStylesheetsApplied(callback, timeoutMs = 800) {
             }
             if (sameOrigin && !link.sheet) return false;
         }
+        const viteStyles = document.querySelectorAll('style[data-vite-dev-id]');
+        for (const style of viteStyles) {
+            if (!style.textContent?.trim()) return false;
+        }
         return true;
     };
     const tick = () => {

@@ -105,33 +105,6 @@ const validateAudienceFTP = (FTP, setValue, navigate) => {
     }, 2000);
 };
 
-export const getImportPreferenceVisible = (getValues) => {
-    const { audienceBy, listType } = getValues();
-    const updateListType = listType?.toLowerCase()?.replaceAll(' ', '');
-    const audience = audienceBy?.type || false;
-    const visibileLists = ['Manual entry', 'CSV'];
-    if (!audience) return false;
-    let isValid = true;
-    if (!visibileLists.includes(audience)) return false;
-    if (audience === 'CSV') {
-        if (!updateListType) isValid = false;
-        else if (updateListType === 'targetlist') {
-            isValid = true;
-        } else {
-            isValid = false;
-        }
-        // else if (updateListType === 'ad-hoclist') {
-        //     isValid = false;
-        // } else if (updateListType === 'matchinputlist') {
-        //     isValid = false;
-        // } else if (updateListType === 'suppressioninputlist') {
-        //     isValid = false;
-        // } else if (updateListType === 'seedlist') {
-        //     isValid = false;
-        // }
-    }
-    return isValid;
-};
 const FORM_INITIAL_STATE = {
     defaultValues: {
         isColumnHeader: true,

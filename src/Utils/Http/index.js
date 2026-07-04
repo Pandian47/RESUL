@@ -27,6 +27,34 @@ export function isRequestAborted(error) {
     return message === 'canceled' || message.includes('aborted');
 }
 
+export const SESSION_BLOCKED_ERROR_CODE = 'ERR_SESSION_BLOCKED';
+
+/** True when POST was skipped because the session-timeout modal is open. */
+export function isSessionBlockedError(error) {
+    if (!error) return false;
+    return String(error?.code || '').toUpperCase() === SESSION_BLOCKED_ERROR_CODE;
+}
+
+function createSessionBlockedError() {
+    const err = new Error('Session re-authentication required');
+    err.code = SESSION_BLOCKED_ERROR_CODE;
+    return err;
+}
+
+function parseSessionModalFlag(rawValue) {
+    if (rawValue == null || rawValue === '') return false;
+    try {
+        return Boolean(JSON.parse(rawValue));
+    } catch {
+        return rawValue === 'true';
+    }
+}
+
+function isSessionModalBlockingRequests() {
+    if (!localStorage.getItem('accessToken')) return false;
+    return parseSessionModalFlag(localStorage.getItem('sessionModal'));
+}
+
 /** Pick the first AbortSignal from payload/meta objects (useApiLoader passes via meta.signal). */
 export function pickRequestSignal(...sources) {
     for (let i = 0; i < sources.length; i += 1) {
@@ -108,19 +136,26 @@ export default class HTTPRequestHandler {
 
     /** Refresh header unread / alert count when the user leaves a page (route or query change, or layout unmount). */
     static dispatchUnreadCountRefreshOnPageLeave(dispatch) {
-        const store = getStoreInstance();
-        const { globalstate } = store?.getState() ?? {};
-        if (!globalstate?.isAuth) return;
+        if (HTTPRequestHandler._unreadCountLeaveTimer) {
+            clearTimeout(HTTPRequestHandler._unreadCountLeaveTimer);
+        }
 
-        const { departmentId, clientId, userId } = getSessionId(store?.getState());
+        HTTPRequestHandler._unreadCountLeaveTimer = setTimeout(() => {
+            HTTPRequestHandler._unreadCountLeaveTimer = null;
+            const store = getStoreInstance();
+            const { globalstate } = store?.getState() ?? {};
+            if (!globalstate?.isAuth) return;
 
-        import('../../Reducers/notifications/request').then(({ updateNotificationCountStatus }) => {
-            dispatch(
-                updateNotificationCountStatus({
-                    payload: { departmentId, clientId, userId },
-                }),
-            );
-        });
+            const { departmentId, clientId, userId } = getSessionId(store?.getState());
+
+            import('../../Reducers/notifications/request').then(({ updateNotificationCountStatus }) => {
+                dispatch(
+                    updateNotificationCountStatus({
+                        payload: { departmentId, clientId, userId },
+                    }),
+                );
+            });
+        }, 300);
     }
 
     static get =
@@ -177,6 +212,8 @@ export default class HTTPRequestHandler {
                 
                 if (response?.status === 401) {
                     dispatch(updateSessionModal(true));
+                    localStorage.setItem('sessionModal', 'true');
+                    fail(err);
                     return false;
                 }
                 fail(err);
@@ -220,17 +257,10 @@ export default class HTTPRequestHandler {
                 config: axiosConfig,
             } = resolveRequestSignal({ signal, config, payload });
             const hasAuthToken = !!localStorage.getItem('accessToken');
-            if (hasAuthToken) {
-            const sessionModalInLocalStorage = localStorage.getItem('sessionModal');
-                let sessionModalFromStorage = false;
-                try {
-                    sessionModalFromStorage = sessionModalInLocalStorage
-                        ? JSON.parse(sessionModalInLocalStorage)
-                        : false;
-                } catch {
-                    sessionModalFromStorage = sessionModalInLocalStorage === 'true';
-                }
-                if (sessionModalFromStorage) return;
+            if (hasAuthToken && isSessionModalBlockingRequests()) {
+                const sessionBlockedError = createSessionBlockedError();
+                fail(sessionBlockedError);
+                return false;
             }
             const configration = {
                 ...axiosConfig,
@@ -343,7 +373,8 @@ export default class HTTPRequestHandler {
                 
                 if (response?.status === 401) {
                     dispatch(updateSessionModal(true));
-                    localStorage.setItem('sessionModal', true);
+                    localStorage.setItem('sessionModal', 'true');
+                    fail(err);
                     return false;
                 }
                 fail(err);

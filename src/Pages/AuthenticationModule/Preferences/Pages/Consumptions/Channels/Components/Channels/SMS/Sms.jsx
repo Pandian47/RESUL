@@ -1,12 +1,12 @@
 import { encodeUrl } from 'Utils/modules/crypto';
-import { getUserCurrentFormat, getYYMMDD } from 'Utils/modules/dateTime';
+import { getUserCurrentFormat, getYYMM, getYYMMDD } from 'Utils/modules/dateTime';
 import { truncateTitle } from 'Utils/modules/displayCore';
 import { downloadCSVcommasFile } from 'Utils/modules/download';
 import { numberWithCommas } from 'Utils/modules/formatters';
 import { HorizontalSkeleton } from 'Components/Skeleton/Skeleton';
 import { csv_download_large, trophy_medium } from 'Constants/GlobalConstant/Glyphicons';
 import { Fragment, cloneElement, useCallback, useEffect, useMemo, useState } from 'react';
-import _map from 'lodash/map';
+import { map as _map } from 'Utils/modules/lodashReplacements';
 import KendoGrid from 'Components/RSKendoGrid';
 
 import RSTooltip from 'Components/RSTooltip';
@@ -22,6 +22,7 @@ import useQueryParams from 'Hooks/useQueryParams';
 import ConsumptionChannelHeader from '../../ConsumptionChannelHeader/ConsumptionChannelHeader';
 import { numericParentSumCell, commonConsumptionColumns } from '../../../../constant';
 import TruncatedCell from 'Components/RSKendoGrid/TruncateCell';
+import {getFirstDayOfMonth, getCurrentDateOfMonth} from 'Utils/modules/dateTime.jsx'
 
 const ConsumptionSms = () => {
     const dispatch = useDispatch();
@@ -994,8 +995,8 @@ const ConsumptionSms = () => {
                 />
             )} */}
             <p className="fs12 pt20">
-                <b>Message Units:</b> Up to 160 English characters = 1 message unit (limits may vary for regional languages)<br />
-                <b>Note:</b> Usage counts rely on telecom partner reporting and may take 24-48 hours to fully reconcile.
+                <span className='font-bold'>Message Units:</span> Up to 160 English characters = 1 message unit (limits may vary for regional languages)<br />
+                <span className='font-bold'>Note:</span> Usage counts rely on telecom partner reporting and may take 24-48 hours to fully reconcile.
             </p>
         </Fragment>
     );

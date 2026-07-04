@@ -2,6 +2,7 @@ import { memo } from 'react';
 import Icon from 'Components/Icon/Icon';
 import RSTooltip from 'Components/RSTooltip';
 import { useTabState } from '../hooks';
+import { renderTabPanel } from '../utils';
 import TabContentTransition from './TabContentTransition';
 
 const PortletVariant = ({
@@ -52,7 +53,7 @@ const PortletVariant = ({
             </div>
             <div className="portlet-body">
                 <TabContentTransition selectedIdx={selectedIdx}>
-                    {tabconfig[selectedIdx]?.component?.()}
+                    {renderTabPanel(tabconfig[selectedIdx])}
                 </TabContentTransition>
             </div>
         </div>

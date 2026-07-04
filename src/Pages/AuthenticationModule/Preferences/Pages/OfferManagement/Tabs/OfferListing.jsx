@@ -394,7 +394,7 @@ const OfferListing = (permissions) => {
     return (
         <>
             {isLoading ? (
-                <OfferListingTabSkeleton />
+                <OfferListingTabSkeleton flushToolbar />
             ) : (
             <div className="page-content">
             {isEmptyOfferList ? (

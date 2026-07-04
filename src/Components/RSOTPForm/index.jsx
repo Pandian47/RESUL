@@ -46,16 +46,6 @@ const OtpInputCellsSkeleton = ({ prefix = '', includePrefixSlot = false }) => (
 
 const OtpInputSkeleton = OtpInputCellsSkeleton;
 
-const OtpPrefixSkeleton = () => (
-    <CommonSkeleton
-        box
-        stopAnimation
-        width={60}
-        height={27}
-        className="rs-otp-skeleton-cell"
-    />
-);
-
 const OtpTimerSkeleton = () => (
     <CommonSkeleton
         box

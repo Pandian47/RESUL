@@ -1,6 +1,6 @@
 import { menu_dot_medium } from 'Constants/GlobalConstant/Glyphicons';
 import { Fragment, useEffect, useState } from 'react';
-import _findIndex from 'lodash/findIndex';
+import { findIndex as _findIndex } from 'Utils/modules/lodashReplacements';
 import { useForm } from 'react-hook-form';
 
 import RSCheckbox from 'Components/FormFields/RSCheckbox';

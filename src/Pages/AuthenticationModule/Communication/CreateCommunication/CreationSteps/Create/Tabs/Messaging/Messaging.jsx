@@ -13,13 +13,7 @@ import { ENTER_LANGUAGE, EXCEPTION_OCCURRED, SELECT_SENDER_ID } from 'Constants/
 import { ADD_SENDER_ID, ADJUST_SPLIT_SIZE, ARE_YOU_SURE_WANT_TO_RESET, AUDIENCE, AUDIENCE_CHANGE_CONFIRMATION, AUDIENCE_COUNT_ZERO_ENABLE_AUTO_REFRESH, AUTO_REFRESH, AUTO_REFRESH_POP_HOVER_TEXT, AUTO_SCHEDULE_SPLITS, CANCEL, CHECK_START_DATE_AND_END_DATE, COMMUNICATION_SCHEDULED, CONFIRMATION, IGNORE_CHANNEL, LABLE_SPLIT_AB, LANGUAGE, MESSAGING_LANGUAGE, MINIMUM_DIFFERENCE_SPLITS, MOBILE_NUMBER, NEXT, OK, RESET, SAVE, SCHEDULE, SELECT_SCHEDULE_TIME, SENDER, SENDER_ID, SPLIT_AB_TOOLTIP_TEXT, SPLIT_AB_TURNOFF, WARNING } from 'Constants/GlobalConstant/Placeholders';
 import { adjust_split_medium, circle_minus_fill_medium, circle_plus_edge_medium, circle_plus_medium, circle_question_mark_medium, circle_question_mark_mini, timer_medium } from 'Constants/GlobalConstant/Glyphicons';
 import { Fragment, useEffect, useMemo, useRef, useState } from 'react';
-import _map from 'lodash/map';
-import _get from 'lodash/get';
-import _find from 'lodash/find';
-import _filter from 'lodash/filter';
-import _cloneDeep from 'lodash/cloneDeep';
-import _uniqBy from 'lodash/uniqBy'
-import _forEach from 'lodash/forEach';
+import { map as _map,forEach as _forEach,  get as _get,find as _find,filter as _filter,cloneDeep as _cloneDeep,uniqBy as _uniqBy} from 'Utils/modules/lodashReplacements';
 import { Col, Row } from 'react-bootstrap';
 import { useDispatch, useSelector } from 'react-redux';
 import { useForm, FormProvider } from 'react-hook-form';
@@ -64,7 +58,7 @@ import { SCHEDULE_START_TIME_MENU } from '../Email/constant';
 
 import { ensureArray, ensureObject } from 'Pages/AuthenticationModule/Audience/audienceDefaults';
 import { RSPrimaryButton, RSSecondaryButton } from 'Components/Buttons';
-import { SPLIT_AB_NAME, availableTabs, communicationChannels, getNextEligibleTabIndex, MESSAGING_TAB_CHANNEL_MAP, handleAutoRefreshClickOff, handlePersonalizationFetchApiCall, calculateDefaultSplittedCount, AudienceFieldRenderComponent, audienceTypeList, handleMDCQueryParamsUpdate, handleCheckCTGT, validateAudienceCount, mergeChannelAudiences, handleUpdateEditAudienceCount,handleTotalAudienceCount, handleCGTGModalCheck, editActionIdFromCommunicationResponse, getPastPlanDurationBlockedState, validatePastPlanDurationOnSubmit, PAST_PLAN_DURATION_CLICK_OFF_CLASS, getMdcChannelDetailIdFromLocation, getIsMDChannelDetailForMdcEdit, shouldHandleEditCallApi, isGenie } from '../../constant';
+import { SPLIT_AB_NAME, availableTabs, communicationChannels, getNextEligibleTabIndex, MESSAGING_TAB_CHANNEL_MAP, handleAutoRefreshClickOff, handlePersonalizationFetchApiCall, calculateDefaultSplittedCount, AudienceFieldRenderComponent, audienceTypeList, handleMDCQueryParamsUpdate, handleCheckCTGT, validateAudienceCount, mergeChannelAudiences, handleUpdateEditAudienceCount,handleTotalAudienceCount, handleCGTGModalCheck, editActionIdFromCommunicationResponse, getPastPlanDurationBlockedState, validatePastPlanDurationOnSubmit, PAST_PLAN_DURATION_CLICK_OFF_CLASS } from '../../constant';
 import { COUNTRY_MASK } from '../VMS/constant';
 import {
     updateDirtyState,
@@ -400,7 +394,22 @@ const Messaging = ({ type = 'SMS', mCampType, channelId }) => {
         };
     }, []);
 
-    const handleEditCallApi = () => shouldHandleEditCallApi(location, savedChannel);
+    const handleEditCallApi = () => {
+        const isMDC = _get(location, 'campaignType', 'S') === 'M'
+        if (savedChannel || isMDC) {
+            if (_get(location, 'campaignType', 'S') === 'S' || _get(location, 'campaignType', 'S') === 'T') {
+                return true;
+            } else {
+                if (_get(location, 'mode', 'create') === 'edit') {
+                    return true;
+                } else {
+                    return false;
+                }
+            }
+        } else {
+            return false;
+        }
+    };
 
     /**
      * Get timezone-adjusted start and end dates for schedule validation
@@ -480,7 +489,6 @@ const Messaging = ({ type = 'SMS', mCampType, channelId }) => {
                 departmentId,
                 campaignId: _get(location, 'campaignId', 0),
             };
-            const isFromGenie = isGenie(location);
             const editPayload = {
                 ...payload,
                 levelNumber,
@@ -508,13 +516,8 @@ const Messaging = ({ type = 'SMS', mCampType, channelId }) => {
                 isMDChannelDetail
             ) {
                 shouldCallEditApi = handleEditCallApi();
-                if (isFromGenie) {
-                    if (shouldCallEditApi) {
-                        isAlreadyEditCallRef.current = true;
-                    }
-                } else {
-                    isAlreadyEditCallRef.current = true;
-                }
+               
+                isAlreadyEditCallRef.current = true;
                 if (isSavedChannel && shouldCallEditApi) {
                     beginEditSkeleton();
                 }
@@ -528,33 +531,33 @@ const Messaging = ({ type = 'SMS', mCampType, channelId }) => {
                             params: { payload },
                         }),
 
-                        location?.campaignType === 'S' &&
-                            audienceList?.length === 0 &&
+                    location?.campaignType === 'S' &&
+                        audienceList?.length === 0 &&
                             audienceLoader.refetch({
                                 fetcher: ({ payload: audPayload, isFilter = false } = {}) =>
                                     dispatch(getAudienceList({ payload: audPayload, isFilter, loading: false })),
                                 mode: savedChannel ? 'edit' : 'create',
                                 loaderConfig: editFieldLoaderConfig,
                                 params: {
-                                    payload: {
-                                        ...payload,
-                                        searchText: '',
-                                        segmentIds: [],
-                                        channelType: 'S',
+                                payload: {
+                                    ...payload,
+                                    searchText: '',
+                                    segmentIds: [],
+                                    channelType: 'S',
                                     },
                                 },
                             }),
 
                         shouldCallEditApi &&
-                            dispatch(
-                                getMessagingCampaignById({
-                                    payload: editPayload,
-                                    type,
-                                    campaignType: _get(location, 'campaignType', 'S'),
+                        dispatch(
+                            getMessagingCampaignById({
+                                payload: editPayload,
+                                type,
+                                campaignType: _get(location, 'campaignType', 'S'),
                                     isEnableLoader: false,
-                                }),
-                            ),
-                    ]);
+                            }),
+                        ),
+                ]);
                     const [{ data: smsSenderList } = {}, { data: audienceData } = {}, { status, data } = {}] =
                         editApiResult || [];
                 if (status && !!Object.keys(ensureObject(data))?.length) {
@@ -603,7 +606,7 @@ const Messaging = ({ type = 'SMS', mCampType, channelId }) => {
                     [ensureArray(audienceData ?? audienceList), ensureArray(filterAudienceResponse?.data)].forEach(
                         (item) => {
                             const updateAudienceData = _map(ensureArray(item), mapAudienceWithChannelLabels);
-                            tempAudienceData.push(updateAudienceData);
+                        tempAudienceData.push(updateAudienceData);
                         },
                     );
 
@@ -629,8 +632,8 @@ const Messaging = ({ type = 'SMS', mCampType, channelId }) => {
                         temp.senderId = sender;
                         temp.isAutoRefereshenabled = isAutoRefereshenabled;
                        templateList = await fetchSMSTemplateList(sender?.senderId);
-                        const findTemplate = _find(templateList, (item) => String(item.dltTemplateID) === String(content?.[0]?.templateId));
-                        temp.templateId = findTemplate || content?.[0]?.templateId;
+                        const findTemplate = _find(templateList, (item) => String(item.dltTemplateID) === String(data?.content?.[0]?.templateId));
+                        temp.templateId = findTemplate || data?.content?.[0]?.templateId;
                         temp.isCustomTemplateId = findTemplate ? false : true
                         // const language = await fetchSMSTemplateLanguge();
                         // if (language.status) languageList = language.data;
@@ -816,8 +819,8 @@ const Messaging = ({ type = 'SMS', mCampType, channelId }) => {
                             },
                             location,
                         );
-                    } else {
-                        setIsEditMessaging(true);
+                } else {
+                    setIsEditMessaging(true);
                     }
                 } catch {
                     dispatch(updateSmsList({ data: {}, field: 'campaignDetails' }));
@@ -837,8 +840,6 @@ const Messaging = ({ type = 'SMS', mCampType, channelId }) => {
         // smsSettings?.length,
         // senderName?.length,
         isAlreadyEditCallRef,
-        isMDCEditMode,
-        savedChannel,
     ]);
     // console.log('Messaging ::::: ', watch());
     const resetState = (resetCampaign = false) => {
@@ -1467,11 +1468,11 @@ const Messaging = ({ type = 'SMS', mCampType, channelId }) => {
             }
             if (status && getTestType() > 1) {
                 setValue('savedChannelResponseDetailId', {
-                    smsChannelDetailId: SMSChannelDetailID ?? 0,
-                    waChannelDetailId: waChannelDetailId ?? 0,
+                    smsChannelDetailId: data?.SMSChannelDetailID ?? 0,
+                    waChannelDetailId: data?.waChannelDetailId ?? 0,
                 });
                 // setValue('schedule', '');
-                const channelDetailIdObj = { smsChannelDetailId: SMSChannelDetailID };
+                const channelDetailIdObj = { smsChannelDetailId: data?.SMSChannelDetailID };
                 await dispatch(
                     getMessagingCampaignById({
                         payload: {
@@ -1630,6 +1631,23 @@ const Messaging = ({ type = 'SMS', mCampType, channelId }) => {
             }),
         );
         return response;
+    };
+
+    const resetTemplateOnSenderChange = () => {
+        const clearTemplateFields = (prefix = '') => {
+            const field = (key) => (prefix ? `${prefix}.${key}` : key);
+            setValue(field('templateId'), '');
+            setValue(field('editorText'), '');
+            setValue(field('isCustomTemplateId'), false);
+            clearErrors(field('templateId'));
+            clearErrors(field('editorText'));
+        };
+
+        clearTemplateFields();
+
+        if (splitTest) {
+            ensureArray(splitTabConfig?.splitTabs).forEach((tab) => clearTemplateFields(tab));
+        }
     };
 
     const fetchSMSTemplateList = async (senderId) => {
@@ -2015,30 +2033,30 @@ const Messaging = ({ type = 'SMS', mCampType, channelId }) => {
                                                 }}
                                                 handleChange={({ value }) => {
                                                     const selectedSenderId = _get(value, 'senderId', '');
+                                                    resetTemplateOnSenderChange();
                                                     fetchSMSTemplateList(selectedSenderId);
-                                                    setValue('templateId', '');
-                                                    if (splitTest) {
-                                                        ensureArray(splitTabConfig?.splitTabs).forEach((tab) => {
-                                                            setValue(`${tab}.templateId`, '');
-                                                        });
-                                                    }
                                                 }}
                                                 required
                                                 disabled={!!senderName}
                                                 footer={
                                                     <RSDropdownFooterBtn
                                                         title={ADD_SENDER_ID}
-                                                        handleClick={() =>
-                                                            navigate('/preferences/communication-settings', {
-                                                                state: createCommunicationSettingsNavState('messaging', {
+                                                        handleClick={() => {
+                                                            let navState = createCommunicationSettingsNavState('messaging', {
                                                                     mode: 'add',
                                                                     subfrom: 'MP',
                                                                     messagingTabId: MESSAGING_TAB_ID.SMS,
                                                                     backAction: window.location.search,
                                                                     tabValueName: 'messaging',
                                                                     tabValue: 'sms',
-                                                                }, location, getValues),
-                                                            })
+                                                                    addType: 'addSenderId'
+                                                                }, location, getValues)
+                                                              const encryptState = encodeUrl(navState); 
+                                                                navigate(`/preferences/communication-settings?q=${encryptState}`, {
+                                                                    state: {},
+                                                                });
+                                                        }
+                                                            
                                                         }
                                                     />
                                                 }

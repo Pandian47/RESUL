@@ -1,11 +1,12 @@
-import { encodeUrl, getUserDetails } from 'Utils/modules/crypto';
+import { decodeLargeState, encodeUrl, getUserDetails } from 'Utils/modules/crypto';
 import { getYYMMDD } from 'Utils/modules/dateTime';
+import {removeQueryParams} from 'Utils/modules/urlQuery';
 import { getmasterData } from 'Utils/modules/masterData';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { PushBuilder } from 'resul-push-builder';
-import _find from 'lodash/find';
+import { find as _find } from 'Utils/modules/lodashReplacements';
 
 import { formListApi, publishFormbyID } from 'Reducers/preferences/FormGenerator/request';
 import { getSessionId } from 'Reducers/globalState/selector';
@@ -81,7 +82,11 @@ const ensureCallbacks = (config, fallbackCallbacks) => {
 };
 
 const PushAIBuilder = () => {
-    const sdxChannel = new BroadcastChannel('sdx-channel');
+    const sdxChannelRef = useRef(null);
+    if (!sdxChannelRef.current) {
+        sdxChannelRef.current = new BroadcastChannel('sdx-channel');
+    }
+    const sdxChannel = sdxChannelRef.current;
     const dispatch = useDispatch();
     const navigate = useNavigate();
     const location = useLocation();

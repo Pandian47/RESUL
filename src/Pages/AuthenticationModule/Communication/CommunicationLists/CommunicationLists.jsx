@@ -9,7 +9,7 @@ import { getSessionId } from 'Reducers/globalState/selector';
 import { useSelector } from 'react-redux';
 import { tabData, tabDataTwins } from './constants';
 import useQueryParams from 'Hooks/useQueryParams';
-import _get from 'lodash/get';
+import { get as _get } from 'Utils/modules/lodashReplacements';
 const CommunicationListGallery = () => {
     const navigate = useNavigate();
     const { pathname, state } = useLocation();
@@ -48,7 +48,7 @@ const CommunicationListGallery = () => {
                     <Container fluid>
                         <div className="page-content">
                             <RSTabbarFluid
-                                defaultClass={`col-md-4`}
+                                defaultClass={`col-md-4 col-sm-4`}
                                 dynamicTab={`mb0 mini rst-left-space`}
                                 activeClass={`active`}
                                 tabData={config_Tab}

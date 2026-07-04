@@ -99,20 +99,6 @@ export const hasActiveFilters = (filter) => {
 };
 
 // ---------------------------------------------------------------------------
-// Number formatting
-// ---------------------------------------------------------------------------
-
-/**
- * Format a number with locale-aware comma separators.
- * @param {number|string} num
- * @returns {string}
- */
-export const addCommaSeparator = (num) => {
-    const numVal = Number(num) || 0;
-    return numVal.toLocaleString();
-};
-
-// ---------------------------------------------------------------------------
 // Data flattening (from RSKendoGridNew)
 // ---------------------------------------------------------------------------
 

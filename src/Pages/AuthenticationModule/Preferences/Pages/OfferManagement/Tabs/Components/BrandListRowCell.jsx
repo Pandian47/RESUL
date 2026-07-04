@@ -4,7 +4,6 @@ import { getmasterData } from 'Utils/modules/masterData';
 import { ARE_YOU_SURE_DELETE, DELETE, EDIT, LOCATION, OK } from 'Constants/GlobalConstant/Placeholders';
 import { delete_medium, pencil_edit_medium } from 'Constants/GlobalConstant/Glyphicons';
 import { useEffect, useState } from 'react';
-import _get from 'lodash/get';
 import { useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 
@@ -27,7 +26,7 @@ const BrandListRowCell = (props) => {
     let { dataItem, onRefresh, onExpandChange } = props;
     const dispatch = useDispatch();
     const navigate = useNavigate();
-    const status = _get(dataItem, 'status', 0);
+    const status = dataItem?.status ?? 0;
     const className = status === 0 ? 'status-draft' : 'status-completed';
     const statusText = status === 0 ? 'Inactive' : 'Active';
     const [showDeleteModal, setShowDeleteModal] = useState(false);

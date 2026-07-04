@@ -1,5 +1,7 @@
 export const RESPAGER_SIZES_POPUP_CLASS = 'respager-sizes-popup';
 export const RESPAGER_NO_BOX_SHADOW_CLASS = 'respager--no-box-shadow';
+/** Above `.modal.show` (10002) so page-size list is visible inside modals */
+export const RESPAGER_SIZES_POPUP_Z_INDEX = 10010;
 
 /** Page-size list opens below by default; ResPager repositions above + fixed when viewport space is tight */
 export const RESPAGER_SIZE_DROPDOWN_POPUP_SETTINGS = {

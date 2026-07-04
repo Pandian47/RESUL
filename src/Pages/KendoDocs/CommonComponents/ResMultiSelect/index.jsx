@@ -1,9 +1,8 @@
 import { numberWithCommas } from 'Utils/modules/formatters';
 import { Children, cloneElement, isValidElement, memo, useCallback, useEffect, useId, useMemo, useRef, useState } from 'react';
 import './resMultiSelect.scss';
-import _get from 'lodash/get';
+import { get as _get, get } from 'Utils/modules/lodashReplacements';
 import PropTypes from 'prop-types';
-import { get } from 'lodash';
 import { flushSync } from 'react-dom';
 import ResNoDataAvailable from '../ResNoDataAvailable';
 import RSCheckbox from 'Components/FormFields/RSCheckbox';
@@ -121,6 +120,154 @@ const RES_MS_DOM = {
     chipRemoveIcon:
         '.k-chip-remove-action .k-svg-i-x-circle, .k-chip-remove-action .k-i-x-circle, .k-chip-remove-action .k-icon',
     clearButton: '.k-clear-value',
+};
+
+const CHIP_REMOVE_TOOLTIP_TEXT = 'Remove';
+const CHIP_REMOVE_TOOLTIP_ATTR = 'data-tooltip-added';
+const CHIP_REMOVE_ACTION_SELECTOR = '.k-chip-remove-action';
+const CHIP_REMOVE_ICON_SELECTOR =
+    '.k-svg-i-x-circle, .k-i-x-circle, .k-icon, .k-svg-icon, .icon-rs-circle-minus-fill-mini';
+const CHIP_REMOVE_TOOLTIP_GAP = 4;
+const CHIP_REMOVE_ICON_SIZE = 15;
+
+const createChipRemoveTooltipState = () => ({
+    tooltipEl: null,
+    removeActionEl: null,
+    repositionHandler: null,
+});
+
+const resolveChipRemoveHost = (icon) => icon?.closest(CHIP_REMOVE_ACTION_SELECTOR) || icon;
+
+const getChipRemoveAnchorRect = (removeAction) => {
+    if (!removeAction) return null;
+
+    const icon = removeAction.querySelector(CHIP_REMOVE_ICON_SELECTOR);
+    const iconRect = icon?.getBoundingClientRect();
+    if (iconRect && (iconRect.width > 0 || iconRect.height > 0)) {
+        return iconRect;
+    }
+
+    const actionRect = removeAction.getBoundingClientRect();
+    const top = actionRect.top + (actionRect.height - CHIP_REMOVE_ICON_SIZE) / 2;
+    const left = actionRect.right - CHIP_REMOVE_ICON_SIZE;
+
+    return {
+        top,
+        left,
+        width: CHIP_REMOVE_ICON_SIZE,
+        height: CHIP_REMOVE_ICON_SIZE,
+        right: left + CHIP_REMOVE_ICON_SIZE,
+        bottom: top + CHIP_REMOVE_ICON_SIZE,
+    };
+};
+
+const detachChipRemoveTooltipListeners = (state) => {
+    if (!state.repositionHandler) return;
+
+    window.removeEventListener('scroll', state.repositionHandler, true);
+    window.removeEventListener('resize', state.repositionHandler);
+    state.repositionHandler = null;
+};
+
+const positionChipRemoveTooltip = (tooltip, removeAction) => {
+    if (!tooltip || !removeAction || !document.contains(removeAction)) return;
+
+    const rect = getChipRemoveAnchorRect(removeAction);
+    if (!rect?.width && !rect?.height) return;
+
+    const anchorCenterX = rect.left + rect.width / 2;
+
+    tooltip.style.position = 'fixed';
+    tooltip.style.inset = 'auto';
+    tooltip.style.bottom = 'auto';
+    tooltip.style.right = 'auto';
+    tooltip.style.margin = '0';
+    tooltip.style.transform = 'none';
+    tooltip.style.zIndex = '10003';
+    tooltip.style.pointerEvents = 'none';
+
+    const tooltipRect = tooltip.getBoundingClientRect();
+    const viewportPadding = 8;
+    let left = anchorCenterX - tooltipRect.width / 2;
+    const maxLeft = window.innerWidth - tooltipRect.width - viewportPadding;
+    left = Math.min(Math.max(viewportPadding, left), maxLeft);
+    const top = Math.max(viewportPadding, rect.top - tooltipRect.height - CHIP_REMOVE_TOOLTIP_GAP);
+
+    tooltip.style.left = `${left}px`;
+    tooltip.style.top = `${top}px`;
+
+    const arrow = tooltip.querySelector('.tooltip-arrow');
+    if (arrow) {
+        arrow.style.left = `${anchorCenterX - left}px`;
+    }
+};
+
+const hideChipRemoveTooltip = (state) => {
+    detachChipRemoveTooltipListeners(state);
+    state.tooltipEl?.classList.remove('show');
+    state.tooltipEl?.remove();
+    state.removeActionEl = null;
+};
+
+const showChipRemoveTooltip = (state, removeAction) => {
+    if (!removeAction || !document.contains(removeAction)) return;
+
+    if (!state.tooltipEl) {
+        state.tooltipEl = document.createElement('div');
+        state.tooltipEl.setAttribute('role', 'tooltip');
+        state.tooltipEl.className =
+            'tooltip bs-tooltip-top fade toolTipOverlayZindexCSS rs-tag-remove-tooltip rs-multiselect-remove-tooltip';
+        state.tooltipEl.innerHTML =
+            `<div class="tooltip-inner">${CHIP_REMOVE_TOOLTIP_TEXT}</div>` +
+            '<div class="tooltip-arrow"></div>';
+    }
+
+    state.removeActionEl = removeAction;
+    document.body.appendChild(state.tooltipEl);
+    state.tooltipEl.classList.add('show');
+    positionChipRemoveTooltip(state.tooltipEl, removeAction);
+
+    if (!state.repositionHandler) {
+        state.repositionHandler = () => {
+            if (state.removeActionEl && state.tooltipEl?.isConnected) {
+                positionChipRemoveTooltip(state.tooltipEl, state.removeActionEl);
+            }
+        };
+        window.addEventListener('scroll', state.repositionHandler, true);
+        window.addEventListener('resize', state.repositionHandler);
+    }
+
+    requestAnimationFrame(() => {
+        if (state.removeActionEl === removeAction && state.tooltipEl?.isConnected) {
+            positionChipRemoveTooltip(state.tooltipEl, removeAction);
+        }
+    });
+};
+
+const attachChipRemoveTooltip = (state, removeAction) => {
+    if (!removeAction || removeAction.hasAttribute(CHIP_REMOVE_TOOLTIP_ATTR)) return;
+
+    const showTooltip = () => showChipRemoveTooltip(state, removeAction);
+    const hideTooltip = () => {
+        if (state.removeActionEl === removeAction) {
+            hideChipRemoveTooltip(state);
+        }
+    };
+
+    removeAction.addEventListener('mouseenter', showTooltip);
+    removeAction.addEventListener('mouseleave', hideTooltip);
+    removeAction.addEventListener('focus', showTooltip);
+    removeAction.addEventListener('blur', hideTooltip);
+    removeAction.addEventListener('mousedown', hideTooltip);
+    removeAction.addEventListener('click', hideTooltip);
+    removeAction.setAttribute(CHIP_REMOVE_TOOLTIP_ATTR, 'true');
+    removeAction.setAttribute('aria-label', CHIP_REMOVE_TOOLTIP_TEXT);
+};
+
+const cleanupStaleChipRemoveTooltips = (state, wrapper) => {
+    if (state.removeActionEl && (!wrapper || !wrapper.contains(state.removeActionEl))) {
+        hideChipRemoveTooltip(state);
+    }
 };
 
 const ResMultiSelect = ({
@@ -369,6 +516,7 @@ const ResMultiSelect = ({
     const fieldRef = useRef(null);
     const hadFocusRef = useRef(false);
     const currentPopupRef = useRef(null);
+    const chipRemoveTooltipStateRef = useRef(createChipRemoveTooltipState());
     const [dropdownPosition, setDropdownPosition] = useState(DROPDOWN_POSITION.BELOW);
 
     const [dropdownItems, setDropdownItems] = useState({
@@ -453,13 +601,18 @@ const ResMultiSelect = ({
             }
         });
 
+        cleanupStaleChipRemoveTooltips(chipRemoveTooltipStateRef.current, wrapper);
+
         wrapper.querySelectorAll(RES_MS_DOM.chipRemoveIcon).forEach((icon) => {
             if (!icon.classList.contains('icon-rs-circle-minus-fill-mini')) {
                 icon.classList.add('icon-rs-circle-minus-fill-mini');
             }
-            if (icon.getAttribute('title') !== 'Remove') {
-                icon.setAttribute('title', 'Remove');
-                icon.setAttribute('rel', 'tooltip');
+            icon.removeAttribute('title');
+            icon.removeAttribute('rel');
+            const removeAction = resolveChipRemoveHost(icon);
+            removeAction?.removeAttribute('title');
+            if (removeAction) {
+                attachChipRemoveTooltip(chipRemoveTooltipStateRef.current, removeAction);
             }
         });
 
@@ -488,6 +641,7 @@ const ResMultiSelect = ({
         return () => {
             cancelAnimationFrame(rafId);
             observer.disconnect();
+            hideChipRemoveTooltip(chipRemoveTooltipStateRef.current);
         };
     }, [decorateChipChrome]);
 

@@ -9,7 +9,6 @@ import RSInput from 'Components/FormFields/RSInput';
 import { Fragment, useEffect, useMemo, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
 import { Col, Row } from 'react-bootstrap';
-import _get from 'lodash/get';
 import useQueryParams from 'Hooks/useQueryParams';
 
 import {
@@ -26,6 +25,9 @@ import {
     getReferenceGoalBenchmark,
     goalTypeToTargetCode,
     shouldShowGoalBenchmarkHint,
+    buildRoiDetailsFetchKey,
+    fetchRoiDetailsDeduped,
+    clearRoiDetailsCache,
 } from './constant';
 import { useForm } from 'react-hook-form';
 import { RSPrimaryButton, RSSecondaryButton } from 'Components/Buttons';
@@ -39,7 +41,7 @@ import { resetCreateCommunication } from 'Reducers/communication/createCommunica
 import { getSessionId } from 'Reducers/globalState/selector';
 
 import RSPPophover from 'Components/RSPPophover';
-import useApiLoader from 'Hooks/useApiLoader';
+import useApiLoader, { LOADER_TYPE } from 'Hooks/useApiLoader';
 import {
     ExecuteROICalculationSkeleton,
 } from 'Components/Skeleton/pages/communication/execute';
@@ -86,14 +88,16 @@ const ROIContent = ({ setRoiContent }) => {
     ]);
     const watchedChannels = watch('channels');
     const { roiContent } = useSelector(({ communicationExecuteReducer }) => communicationExecuteReducer);
-    const skipRoiDerivedSyncRef = useRef(false);
+    const roiFetchKeyRef = useRef(null);
     const primaryTargetCodeRef = useRef('');
+    const skipRoiDerivedSyncRef = useRef(false);
     const preserveApiExpectedRoiRef = useRef({
         reach: false,
         engagement: false,
         conversion: false,
     });
     const [isROIFail, setIsROIFail] = useState(false);
+    const [activeSubmitAction, setActiveSubmitAction] = useState(null);
 
     const primaryTargetCode =
         primaryTargetCodeRef.current || goalTypeToTargetCode(goalType) || 'R';
@@ -119,6 +123,13 @@ const ROIContent = ({ setRoiContent }) => {
         referenceGoalBenchmark.raw,
     );
     const roiDataLoader = useApiLoader({ autoFetch: false });
+    const roiSaveLoader = useApiLoader({ autoFetch: false });
+
+    useEffect(() => {
+        if (!roiSaveLoader.isLoading) {
+            setActiveSubmitAction(null);
+        }
+    }, [roiSaveLoader.isLoading]);
     const reachRevenueRules = useMemo(
         () =>
             buildRevenuePerAudienceRules({
@@ -147,25 +158,27 @@ const ROIContent = ({ setRoiContent }) => {
         [goalType],
     );
     useEffect(() => {
-        const campaignId = _get(location, 'campaignId', 0);
-        if (!campaignId || campaignId <= 0) {
+        const campaignId = location?.campaignId ?? 0;
+        if (!campaignId || campaignId <= 0 || !userId || !clientId || !departmentId) {
             roiDataLoader.reset();
+            roiFetchKeyRef.current = null;
             return;
         }
 
+        const fetchKey = buildRoiDetailsFetchKey({ campaignId, userId, clientId, departmentId });
+        if (roiFetchKeyRef.current === fetchKey) {
+            return;
+        }
+        roiFetchKeyRef.current = fetchKey;
+
         roiDataLoader.refetch({
             fetcher: async () => {
-                const payload = {
-                    campaignId,
-                    userId,
-                    clientId,
-                    departmentId,
-                };
-                const roiDetailsResult = await Promise.resolve(
-                    dispatch(getROIContentData({ payload, loading: false })),
-                ).then(
-                    (value) => ({ status: 'fulfilled', value }),
-                    (reason) => ({ status: 'rejected', reason }),
+                const payload = { campaignId, userId, clientId, departmentId };
+                const roiDetailsResult = await fetchRoiDetailsDeduped(fetchKey, () =>
+                    Promise.resolve(dispatch(getROIContentData({ payload, loading: false }))).then(
+                        (value) => ({ status: 'fulfilled', value }),
+                        (reason) => ({ status: 'rejected', reason }),
+                    ),
                 );
 
                 if (roiDetailsResult.status === 'fulfilled') {
@@ -181,6 +194,7 @@ const ROIContent = ({ setRoiContent }) => {
                 }
                 return roiDetailsResult;
             },
+            loaderConfig: { create: LOADER_TYPE.NONE },
         });
     }, [location?.campaignId, userId, clientId, departmentId]);
 
@@ -328,11 +342,12 @@ const ROIContent = ({ setRoiContent }) => {
     }, [variableCostPopoverRows]);
 
     const submitROI = async (data) => {
+        setActiveSubmitAction((prev) => prev || 'next');
         if (!statusIdCheck(location?.statusId)) {
             setRoiContent(false);
             return;
         }
-        const common = { userId, clientId, departmentId, campaignId: _get(location, 'campaignId', 0) };
+        const common = { userId, clientId, departmentId, campaignId: location?.campaignId ?? 0 };
         const payload = bildPayload(
             data,
             getGoalPercentageByTargetCode(goalTypeToTargetCode(data?.goalType) || primaryTargetCodeRef.current, {
@@ -342,9 +357,23 @@ const ROIContent = ({ setRoiContent }) => {
             }),
             common,
         );
-        const response = await dispatch(saveCampaignRoi({ payload }));
+        const response = await roiSaveLoader.refetch({
+            fetcher: ({ payload: savePayload } = {}) =>
+                dispatch(saveCampaignRoi({ payload: savePayload, loading: false })),
+            mode: 'create',
+            loaderConfig: { create: LOADER_TYPE.FIELD },
+            params: { payload },
+        });
         const ok = response?.status === true || response?.status === 'True';
         if (ok) {
+            clearRoiDetailsCache(
+                buildRoiDetailsFetchKey({
+                    campaignId: location?.campaignId ?? 0,
+                    userId,
+                    clientId,
+                    departmentId,
+                }),
+            );
             setRoiContent(false);
         }
     };
@@ -378,6 +407,8 @@ const ROIContent = ({ setRoiContent }) => {
                             ? 'pe-none click-off'
                             : !statusIdCheck(location?.statusId)
                                 ? 'pe-none click-off'
+                                : roiSaveLoader.isLoading
+                                    ? 'pe-none click-off'
                                 : ''
                         }`}
                 >
@@ -636,7 +667,7 @@ const ROIContent = ({ setRoiContent }) => {
                     </Row>
                 </div>
             </div>
-            <div className="buttons-holder">
+            <div className={`buttons-holder ${roiSaveLoader.isLoading ? 'pe-none click-off' : ''}`}>
                 <RSSecondaryButton
                     onClick={() => {
                         dispatch(resetCreateCommunication());
@@ -645,6 +676,7 @@ const ROIContent = ({ setRoiContent }) => {
                         });
                     }}
                     id="rs_ROIContent_Cancel"
+                    disabled={roiSaveLoader.isLoading}
                 >
                     {CANCEL}
                 </RSSecondaryButton>
@@ -652,10 +684,17 @@ const ROIContent = ({ setRoiContent }) => {
                     type="submit"
                     className={'color-primary-blue'}
                     id="rs_ROIContent_save"
+                    onClick={() => setActiveSubmitAction('save')}
+                    isLoading={roiSaveLoader.isLoading && activeSubmitAction === 'save'}
                 >
                     {SAVE}
                 </RSSecondaryButton>
-                <RSPrimaryButton type={'submit'} id="rs_ROIContent_Next">
+                <RSPrimaryButton
+                    type="submit"
+                    id="rs_ROIContent_Next"
+                    onClick={() => setActiveSubmitAction('next')}
+                    isLoading={roiSaveLoader.isLoading && activeSubmitAction === 'next'}
+                >
                     {NEXT}
                 </RSPrimaryButton>
             </div>

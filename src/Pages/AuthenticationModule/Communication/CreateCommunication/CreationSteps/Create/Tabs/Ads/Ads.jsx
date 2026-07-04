@@ -6,8 +6,7 @@ import { SELECT_AD_TYPE, SELECT_POST_ON } from 'Constants/GlobalConstant/Validat
 import { AD_TYPE, CANCEL, COPY, COPY_AND_PASTE, COPYIED, IGNORE_CHANNEL, NEXT, OK, POST_NAME, SAVE, YOUR_SMART_LINK_IS } from 'Constants/GlobalConstant/Placeholders';
 import { copy_large } from 'Constants/GlobalConstant/Glyphicons';
 import { Fragment, useEffect, useState } from 'react';
-import _isEmpty from 'lodash/isEmpty';
-import _cloneDeep from 'lodash/cloneDeep';
+import { isEmpty as _isEmpty ,cloneDeep as _cloneDeep } from 'Utils/modules/lodashReplacements';
 import { Col, Row } from 'react-bootstrap';
 import { useDispatch, useSelector } from 'react-redux';
 import { FormProvider, useFieldArray, useForm, useWatch } from 'react-hook-form';
@@ -344,7 +343,7 @@ const Ads = ({ type, isMutiField }) => {
         if (status) {
             let tmpUrlList;
             if (type === 'google') {
-                tmpUrlList = googleAdSmartURL;
+                tmpUrlList = data?.googleAdSmartURL;
             } else {
                 tmpUrlList = urlName + smartCode + blastSC;
             }
@@ -383,7 +382,7 @@ const Ads = ({ type, isMutiField }) => {
         if (status) {
             let tmpUrlList;
             if (type === 'google') {
-                tmpUrlList = googleAdSmartURL;
+                tmpUrlList = data?.googleAdSmartURL;
             } else {
                 const { urlName, smartCode, blastSC } = data;
                 tmpUrlList = urlName + smartCode + blastSC;
@@ -524,7 +523,7 @@ const Ads = ({ type, isMutiField }) => {
                         />
                     )}
                     <div
-                        className={`form-group mt20 ${
+                        className={`${
                             checkTrigger(locationAds?.campaignType, locationAds?.endDate)
                                 ? 'pe-none click-off'
                                 : !isCommunicationEditable
@@ -532,7 +531,8 @@ const Ads = ({ type, isMutiField }) => {
                                 : ''
                         }`}
                     >
-                        <Row>
+                        <div className='form-group mt20'>
+                            <Row>
                             <Col sm={{ offset: 1, span: 2 }}>
                                 <label className="control-label-left">{AD_TYPE}</label>
                             </Col>
@@ -562,6 +562,7 @@ const Ads = ({ type, isMutiField }) => {
                                 />
                             </Col>
                         </Row>
+                        </div>
 
                         {(adType?.postMediaAdTypeId === 4 ||
                             adType?.postMediaAdTypeId === 9 ||
@@ -595,7 +596,7 @@ const Ads = ({ type, isMutiField }) => {
                         )}
                     </div>
                     <div
-                        className={`form-group mt20 ${
+                        className={`mt20 ${
                             checkTrigger(locationAds?.campaignType, locationAds?.endDate)
                                 ? 'pe-none click-off'
                                 : !isCommunicationEditable
@@ -625,16 +626,17 @@ const Ads = ({ type, isMutiField }) => {
                         )}
                     </div>
                     {adsName?.[0]?.name?.length > 0 && (
-                        <Row>
+                        <div className='mb20'>
+                            <Row>
                             <Col sm={{ span: 9, offset: 1 }}>
-                                <div className="rs-smartlink-box pe-auto">
+                                <div className="rs-smartlink-box pe-auto no-box-shadow bg-tertiary-blue">
                                     <div>
                                         <h2 className="text-center">{YOUR_SMART_LINK_IS}</h2>
                                         <p className="text-center">{COPY_AND_PASTE}</p>
                                     </div>
                                     {adsName?.map((ads, idx) => (
                                         <Fragment key={ads.name + idx}>
-                                            {ads.name && ads?.url && !adsName?.[idx] && (
+                                            {ads.name && ads?.url && !errors?.adsName?.[idx] && (
                                                 <div className="rssb-block  ">
                                                     <Row className="align-items-center">
                                                         <Col sm={3}>
@@ -657,9 +659,9 @@ const Ads = ({ type, isMutiField }) => {
                                                                 <span>{ads?.url}</span>
                                                             )}
                                                         </Col>
-                                                        {ads?.url && !adsName?.[idx] && (
+                                                        {ads?.url && !errors?.adsName?.[idx] && (
                                                             <Col sm={2}>
-                                                                <div className="positio-relative">
+                                                                <div className="position-relative">
                                                                     {copyUrl === idx ? (
                                                                         <span className="position-relative">
                                                                             <small className="copied-text ml5">
@@ -698,6 +700,7 @@ const Ads = ({ type, isMutiField }) => {
                                 </div>
                             </Col>
                         </Row>
+                            </div>
                     )}
                 </div>
                 <div className="buttons-holder">

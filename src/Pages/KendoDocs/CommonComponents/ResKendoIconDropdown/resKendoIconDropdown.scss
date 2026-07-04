@@ -269,6 +269,7 @@
     position: relative;
     overflow: visible;
     padding: 0;
+    border-radius: var(--globalBorderRadius, 5px) !important;
     @include res-icon-dd-box-design;
 
     ul.k-menu-group {
@@ -276,6 +277,8 @@
         border: none;
         box-shadow: none;
         background: $white;
+        border-radius: var(--globalBorderRadius, 5px);
+        overflow: hidden;
         @include res-icon-dd-scrollbar;
 
         .k-item.k-focus .k-link {
@@ -313,13 +316,23 @@
                 &.k-hover,
                 &.k-active,
                 &.k-focus {
-                    background-color: $quaternary-grey !important;
-                    color: $secondary-black !important;
+                    background-color: $secondary-blue !important;
+                    color: $white !important;
 
                     label,
                     .lbl,
                     .lbl span {
-                        color: $secondary-black !important;
+                        color: $white !important;
+                    }
+
+                    .checkbox-wrapper label .lbl::before {
+                        border-color: $white;
+                        background-color: transparent;
+                    }
+
+                    .checkbox-wrapper label input.checkbox:checked + .lbl::before {
+                        border-color: $white;
+                        background-color: $white;
                     }
                 }
 

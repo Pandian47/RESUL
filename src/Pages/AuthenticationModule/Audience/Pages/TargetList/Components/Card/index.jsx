@@ -10,7 +10,7 @@ import { AD_HOC_LIST_TITLE, ARCHIVE, ARE_YOU_SURE_ARCHIVE, AVERAGE, CALCULATING,
 import { approved_medium, circle_info_medium, circle_pencil_medium, circle_time_large, close_mini, delete_medium, duplicate_medium, eye_medium, menu_dot_medium, pencil_edit_medium, pending_medium, reject_medium, save_mini, share_tick_medium } from 'Constants/GlobalConstant/Glyphicons';
 import { useContext, useEffect, useMemo, useReducer, useRef, useState } from 'react';
 import moment from 'moment';
-import _get from 'lodash/get';
+import { get as _get } from 'Utils/modules/lodashReplacements';
 import { Col } from 'react-bootstrap';
 import { useForm } from 'react-hook-form';
 import { useNavigate } from 'react-router-dom';

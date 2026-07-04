@@ -1,16 +1,18 @@
 import { getWarningPopupMessage } from 'Utils/modules/warningPopup';
 import { ADD, EMAIL_FOOTER } from 'Constants/GlobalConstant/Placeholders';
 import { circle_plus_fill_edge_large } from 'Constants/GlobalConstant/Glyphicons';
-import { createContext, useEffect, useState } from 'react';
+import { createContext, lazy, Suspense, useEffect, useState } from 'react';
 import RSTooltip from 'Components/RSTooltip';
+import RSLoader from 'Components/Loader';
 import usePermission from 'Hooks/usePersmission';
 import EmailFooterGrid from './Component/EmailFooterGrid/EmailFooterGrid';
 import useQueryParams from 'Hooks/useQueryParams';
 
 import { useDispatch, useSelector } from 'react-redux';
-import FooterBuilder from './FooterBuilder';
 import { useNavigate } from 'react-router-dom';
 import FooterModal from './FooterBuilder/Component/FooterModal';
+
+const FooterBuilder = lazy(() => import('./FooterBuilder'));
 export const EmailFooterProvider = createContext();
 
 const EmailFooter = () => {
@@ -136,9 +138,9 @@ const EmailFooter = () => {
                     //     setFailedApi={setFailedApi}
                     // />
 
-                    <>
+                    <Suspense fallback={<RSLoader fallback />}>
                         <FooterBuilder />
-                    </>
+                    </Suspense>
                 )}
                 {getWarningPopupMessage(failureApiErrors, dispatch, handleErrClose)}
                 <FooterModal

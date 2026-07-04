@@ -23,6 +23,7 @@ const RSSkeletonTable = ({
     containerClassName='',
     isAlertIcon = true,
     animation,
+    stopAnimation: stopAnimationProp,
     noBoxShadow = true,
     fillHeight = false,
 }) => {
@@ -46,7 +47,8 @@ const RSSkeletonTable = ({
         removeTitleFromSkeleton();
     }, [count]);
 
-    const stopAnimation = text && !!message && !loading;
+    const showNoDataMessage = text && !!message && !loading;
+    const stopAnimation = showNoDataMessage || stopAnimationProp;
 
     return (
         <div className={`no-data-container  ${!fillHeight && !isTargetInfo ? 'h-100' : ''} flex--center flex-column ${isCustombox ? '' : 'box-design'} ${noBoxShadow ? 'no-box-shadow' : ''} ${fillHeight ? 'rs-skeleton-table--fill-height' : ''} ${containerClassName}`}>

@@ -2,8 +2,7 @@ import { memo, useEffect, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
 
 import { Controller } from 'react-hook-form';
-import _get from 'lodash/get';
-import { debounce } from 'lodash';
+import { get as _get,debounce } from 'Utils/modules/lodashReplacements';
 import { stripEmojis } from 'Utils/modules/stringUtils';
 import RSConfirmationModal from 'Components/ConfirmationModal';
 

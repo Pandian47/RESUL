@@ -5,14 +5,13 @@ import { numberWithCommas } from 'Utils/modules/formatters';
 import CommunicationListRowCell from './Components/CommunicationListRowCell';
 import CommunicationListDetail from './Components/CommunicationListDetail';
 
-import _get from 'lodash/get';
-import uniqBy from 'lodash/uniqBy';
+import { get as _get,uniqBy   } from 'Utils/modules/lodashReplacements';
 import { isEntireMultiSelectChosen } from 'Components/AdvanceSearchNew';
 import { LAST30DAYS_DATEFILTER } from 'Constants/GlobalConstant/Regex';
 import { updateQREnableTab, updateTab } from 'Reducers/communication/createCommunication/Create/reducer';
 
-/** QR (3), Web analytics (6), App analytics (16), Paid media (10), Direct mail (33) — not eligible for Sent by channel. */
-export const SENT_BY_CHANNEL_NOT_ELIGIBLE_CHANNEL_IDS = [3, 6, 16, 10, 33,7];
+/** Web (6), App (16), Offline conversion (1001), Sentiment (4, 5), Video (15), Webinar (13) — not eligible for Sent by channel. */
+export const SENT_BY_CHANNEL_NOT_ELIGIBLE_CHANNEL_IDS = [6, 16, 1001, 4, 5, 15, 13];
 
 export const getSentByChannelDisplay = (channelId, sentCount) => {
     if (SENT_BY_CHANNEL_NOT_ELIGIBLE_CHANNEL_IDS.includes(Number(channelId))) {
@@ -256,6 +255,7 @@ export const buildPayload = (payload = {}, dup, options = {}) => {
         sortBy,
         timezoneId: timezoneIdFromPayload,
         timezoneid: timezoneidFromPayload,
+        isGoldenCampaign,
     } = payload;
     const timezoneResolved =
         timezoneidFromPayload ?? timezoneIdFromPayload ?? defaultCommunicationListTimeZoneId();
@@ -278,6 +278,7 @@ export const buildPayload = (payload = {}, dup, options = {}) => {
         productCategoryId: productCategoryId ?? '',
         sortBy: normalizeListingSortBy(sortBy),
         timezoneid: timezoneResolved,
+        isGoldenCampaign: Boolean(isGoldenCampaign),
     };
     if (productType !== undefined) {
         base.productType = productType == null || productType === 0 ? '' : String(productType);
@@ -769,6 +770,7 @@ export const buildClearPayload = ({
     statusId: '',
     productCategoryId: '',
     timezoneid: defaultCommunicationListTimeZoneId(),
+    isGoldenCampaign: false,
 });
 
 export const buildAdvanceFilterConfig = (

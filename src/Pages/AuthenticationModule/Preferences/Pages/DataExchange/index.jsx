@@ -1,6 +1,6 @@
 import { decryptWithAES } from 'Utils/modules/crypto';
 import { useEffect } from 'react';
-import _isEmpty from 'lodash/isEmpty';
+import { isEmpty as _isEmpty } from 'Utils/modules/lodashReplacements';
 import { Container } from 'react-bootstrap';
 import RSPageHeader from 'Components/RSPageHeader';
 import RSTabbarFluid from 'Components/RSTabberFluid';
@@ -52,7 +52,7 @@ const DataExchange = () => {
                 <Container fluid>
                     <div className="page-content pc-data-exchange">
                         <RSTabbarFluid
-                            defaultClass={`col-md-4`}
+                            defaultClass={`col-md-4 col-sm-4`}
                             dynamicTab={`mb0 mini rst-left-space`}
                             activeClass={`active`}
                             className="rs-tabs row"

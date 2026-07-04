@@ -1,5 +1,5 @@
 import { Fragment, useContext } from 'react';
-import _map from 'lodash/map';
+import { map as _map } from 'Utils/modules/lodashReplacements';
 import { Row, Col } from 'react-bootstrap';
 import { useFieldArray, useFormContext, useWatch } from 'react-hook-form';
 

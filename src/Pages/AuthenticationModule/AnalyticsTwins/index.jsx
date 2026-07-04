@@ -8,7 +8,7 @@ import { useSelector } from 'react-redux';
 import { getSessionId } from 'Reducers/globalState/selector';
 import { ANALYTICS_TAB_CONFIG } from './constants';
 
-import _get from 'lodash/get';
+import { get as _get } from 'Utils/modules/lodashReplacements';
 import useQueryParams from 'Hooks/useQueryParams';
 
 const Analytics = () => {

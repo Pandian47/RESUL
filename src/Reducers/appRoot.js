@@ -55,9 +55,6 @@ import analyticsListingTwinsReducer from './analyticsTwins/communicationAnalytic
 import analyticsReportTwinsReducer from './analyticsTwins/analyticsSummary/reducer';
 import analyticsDetailsTwins from './analyticsTwins/details/reducer';
 import consumptionTwinsReducer from './preferences/consumptionsTwins/reducer';
-import analyticsListingSSRReducer from './analyticsSSR/communicationAnalytics/reducer';
-import analyticsReportSSRReducer from './analyticsSSR/analyticsSummary/reducer';
-import analyticsDetailsSSR from './analyticsSSR/details/reducer';
 
 const globalStatePersistorConfig = {
     key: 'global',
@@ -90,10 +87,7 @@ export default function createAppReducer() {
         analyticsReportReducer,
         analyticsListingTwinsReducer,
         analyticsReportTwinsReducer,
-        analyticsDetailsTwins,
-        analyticsListingSSRReducer,
-        analyticsReportSSRReducer,
-        analyticsDetailsSSR,
+        analyticsDetailsTwins, 
         consumptionTwinsReducer,
         audienceScoreReducer,
         auditLogReducer,

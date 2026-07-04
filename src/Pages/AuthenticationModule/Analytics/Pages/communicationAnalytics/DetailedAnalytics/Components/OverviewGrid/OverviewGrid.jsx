@@ -62,7 +62,7 @@ const OverviewGrid = ({
                                 : getUserCurrentFormat(date)?.dateTimeFormat || ''}
                             )
                         </small>
-                    )}                    <span className={`${downloadUI ? 'mt-3' : 'position-relative top5'}`}>
+                    )}                    <span className={`${downloadUI ? 'mt-3' : ''}`}>
                         <RSTooltip text={PREVIEW} className="lh0">
                             {isPreview && (
                                 <i

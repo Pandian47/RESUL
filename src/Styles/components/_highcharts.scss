@@ -50,7 +50,8 @@ path.highcharts-axis-line {
     // stroke: $quaternary-blue;
 }
 // Area spline x-axis label nudge — prevent first/last date labels clipping at plot edges
-.areaspline-chart,
+.areaspline-chart:not(.areaspline-datetime-labels) g.highcharts-axis-labels.highcharts-xaxis-labels text,
+.areaspline-chart-del:not(.areaspline-datetime-labels),
 .areachart-default-render {
     g.highcharts-axis-labels.highcharts-xaxis-labels text {
         &:last-child {
@@ -191,4 +192,47 @@ body:has(.portlet-container.portlet-expanded) {
 
 .varpieChartIcon .icon-rs-social-twitter-medium {
     color: $primary-black !important;
+}
+
+.areachart-default-render,
+.columnchart-default-render {
+    .highcharts-reset-zoom,
+    .custom-reset-zoom-btn {
+        z-index: 25 !important;
+        cursor: pointer;
+
+        > rect {
+            fill: transparent !important;
+            stroke: $quaternary-blue !important;
+            stroke-width: 1px !important;
+        }
+
+        text {
+            fill: $primary-black !important;
+            font-size: 11px !important;
+        }
+    }
+}
+
+.chart-zoom-mount {
+    position: relative !important;
+
+    .custom-reset-zoom-dom-btn {
+        position: absolute;
+        top: -25px;
+        right: 8px;
+        z-index: 30;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 22px;
+        padding: 2px 8px;
+        border: 1px solid $quaternary-blue;
+        border-radius: 3px;
+        background: transparent;
+        color: $primary-black;
+        font-family: $rs-font-regular;
+        font-size: 11px;
+        cursor: pointer;
+    }
 }

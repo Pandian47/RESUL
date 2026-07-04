@@ -1,8 +1,9 @@
-import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState, lazy, Suspense } from 'react';
 
 import { useLocation, useNavigate } from 'react-router-dom';
 import { shallowEqual, useDispatch, useSelector } from 'react-redux';
 import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 import { ToastifyNotificationIcon } from 'Utils/ToastifyNotificationIcon';
 import MainPageSkeleton from 'Components/Skeleton/Components/MainPageSkeleton';
 import RSFooter from 'Components/RSFooter';
@@ -26,7 +27,6 @@ import {
     encodeUrl,
     getUserDetails,
     cleanupOldQueryStates,
-    isGenieEnabledForSelectedDepartment,
 } from './Utils/modules/crypto';
 import {
     handleCSSLoad,
@@ -38,20 +38,36 @@ import {
     isAppShellStylesLoaded,
     isLoginHandoffActive,
     POST_LOGIN_SHELL_READY_EVENT,
+    SESSION_RECOVERED_EVENT,
     prefetchRouteModule,
 } from './Utils/modules/postLoginShell';
+import { resetModalShellAfterSessionRecovery } from 'Hooks/useBodyPointerLock';
 import { getEnvironment } from './Utils/modules/environment';
 import { mountFullAppReducer, isFullReducerMounted } from 'Store/mountFullAppReducer';
-import {
-    genielogowhite,
-    genieTextWhite,
-    genieLogoWhiteWithoutStar,
-    useResulGenieAppLastActiveSpaceQuerySync,
-    useResulGenieShellStylesIsolation,
-    RESUL_GENIE_ACCESS_STRICT_MODE,
-} from 'resul-genie-ui';
-import RSLoader from 'Components/Loader';
+import RSLoader, { LoginRouteLoading } from 'Components/Loader';
 import { isPublicAuthPath } from './Routes/appRouteConfig';
+import { navigateToLoginAfterSessionClear } from 'Reducers/login/existingUser/request';
+import '@progress/kendo-theme-default/dist/all.css';
+
+const resolveInitialAppStylesLoaded = () => {
+    if (typeof window !== 'undefined' && isPublicAuthPath(window.location.pathname)) {
+        return true;
+    }
+    return isAppShellStylesLoaded();
+};
+
+const GenieHostFeatures = lazy(() => import('Components/GenieHost/GenieHostFeatures'));
+
+function isMasterDataCacheMissing() {
+    const raw = localStorage.getItem('masterData');
+    if (raw == null || raw === '' || raw === 'null') return true;
+    try {
+        const parsed = JSON.parse(raw);
+        return parsed == null || typeof parsed !== 'object' || Array.isArray(parsed) || Object.keys(parsed).length === 0;
+    } catch {
+        return true;
+    }
+}
 
 function App() {
     const dispatch = useDispatch();
@@ -60,36 +76,20 @@ function App() {
     const isLoginPage = pathname === '/';
     const isPublicAuthRoute = isPublicAuthPath(pathname);
     const {
-        departmentListRedux,
-        selectedDepartmentId,
-        departmentChangePending,
         showSessionModal,
         isAuth,
         accountAdminClientId,
     } = useSelector(
         (state) => ({
-            departmentListRedux: state.globalstate?.departmentList,
-            selectedDepartmentId: state.globalstate?.departmentId?.departmentId,
-            departmentChangePending: state.globalstate?.departmentChangePending,
             showSessionModal: state.globalstate?.showSessionModal,
             isAuth: state.globalstate?.isAuth,
             accountAdminClientId: state.globalstate?.accountAdmin?.clientId,
         }),
         shallowEqual,
     );
-    const departmentListForGenie = useMemo(
-        () => (Array.isArray(departmentListRedux) ? departmentListRedux : []),
-        [departmentListRedux],
-    );
-    const genieEnabledForAccount =
-        !RESUL_GENIE_ACCESS_STRICT_MODE ||
-        isGenieEnabledForSelectedDepartment(departmentListForGenie, selectedDepartmentId);
-    const showGenie = genieEnabledForAccount && !departmentChangePending;
-    const isGenieUIRoute = pathname.startsWith('/genie');
     const isGenieShellRoute = pathname === '/genie' || pathname.startsWith('/genie/');
     const isGenieStylesIsolationActive = isGenieShellRoute && !showSessionModal;
-    useResulGenieShellStylesIsolation(isGenieStylesIsolationActive);
-    const [isAppStylesLoaded, setIsAppStylesLoaded] = useState(() => isAppShellStylesLoaded());
+    const [isAppStylesLoaded, setIsAppStylesLoaded] = useState(resolveInitialAppStylesLoaded);
     const wasGenieIsolatedRef = useRef(isGenieStylesIsolationActive);
 
     // Leaving the Genie shell (exit Genie, or redirect to the platform from communication /
@@ -111,23 +111,14 @@ function App() {
     const [fullReducerReady, setFullReducerReady] = useState(() => isFullReducerMounted());
     // Never hide login routes while the full reducer is still mounting (e.g. stale token on `/`).
     const isAppShellReady = isLoginPage || !needsFullReducer || fullReducerReady || isFullReducerMounted();
-    const showAppLoaderFallback = !isLoginPage && (!isAppStylesLoaded || !isAppShellReady);
+    const showAppLoaderFallback =
+        !isLoginPage &&
+        (!isAppStylesLoaded || !isAppShellReady || (!isPublicAuthRoute && !hasToken));
+    const canAccessProtectedShell = isPublicAuthRoute || hasToken;
+    const canRenderRoutes =
+        isAppStylesLoaded && (isLoginPage || isAppShellReady) && canAccessProtectedShell;
 
-    const [online, offline] = useState(() => {
-        if (navigator.onLine) {
-            return true;
-        } else {
-            return false;
-        }
-    });
-    const [isGenieLogoHover, setIsGenieLogoHover] = useState(false);
-    const handleOpenGenie = () => {
-        if (!genieEnabledForAccount) return;
-        const currentUrl = `${window.location.pathname}${window.location.search}${window.location.hash}`;
-        sessionStorage.setItem('genie-return-url', currentUrl || '/dashboard');
-        navigate('/genie');
-        setIsGenieLogoHover(false);
-    };
+    const [online, offline] = useState(() => navigator.onLine);
     useEffect(() => {
         window.ononline = () => {
             offline(true);
@@ -233,8 +224,6 @@ function App() {
         }
     }, [search]);
 
-    useResulGenieAppLastActiveSpaceQuerySync(search, pathname, navigate);
-
     useEffect(() => {
         if (process.env.NODE_ENV !== 'production') return () => {};
         const onContextMenu = (e) => {
@@ -248,19 +237,60 @@ function App() {
         return () => document.removeEventListener('contextmenu', onContextMenu);
     }, []);
     useEffect(() => {
-        const isMasterData = localStorage.getItem('masterData');
-        if (isMasterData === 'null' || isMasterData === undefined || isMasterData === null)
-            dispatch(getMasterData(false));
-
-        // Clean up old query states from sessionStorage on app load
         cleanupOldQueryStates();
     }, []);
+
+    useLayoutEffect(() => {
+        if (isPublicAuthRoute) return;
+        if (localStorage.getItem('accessToken')) return;
+        navigateToLoginAfterSessionClear(dispatch, navigate);
+    }, [dispatch, navigate, isPublicAuthRoute]);
+
+    useEffect(() => {
+        if (isPublicAuthRoute) return;
+
+        const validateClientSession = () => {
+            if (document.visibilityState === 'hidden') return;
+            if (localStorage.getItem('accessToken')) return;
+            navigateToLoginAfterSessionClear(dispatch, navigate);
+        };
+
+        window.addEventListener('focus', validateClientSession);
+        document.addEventListener('visibilitychange', validateClientSession);
+        return () => {
+            window.removeEventListener('focus', validateClientSession);
+            document.removeEventListener('visibilitychange', validateClientSession);
+        };
+    }, [dispatch, navigate, isPublicAuthRoute]);
+
+    useEffect(() => {
+        if (isPublicAuthRoute || !hasToken) return;
+        if (!isMasterDataCacheMissing()) return;
+        dispatch(getMasterData(false));
+    }, [dispatch, isPublicAuthRoute, hasToken, pathname]);
+
+    useEffect(() => {
+        if (isPublicAuthRoute || !hasToken) return;
+
+        const refetchMasterDataIfMissing = () => {
+            if (document.visibilityState === 'hidden') return;
+            if (!isMasterDataCacheMissing()) return;
+            dispatch(getMasterData(false));
+        };
+
+        window.addEventListener('focus', refetchMasterDataIfMissing);
+        document.addEventListener('visibilitychange', refetchMasterDataIfMissing);
+        return () => {
+            window.removeEventListener('focus', refetchMasterDataIfMissing);
+            document.removeEventListener('visibilitychange', refetchMasterDataIfMissing);
+        };
+    }, [dispatch, isPublicAuthRoute, hasToken]);
     useLayoutEffect(() => {
         if (isLoginPage || isPublicAuthRoute) return;
         void prefetchRouteModule(pathname);
     }, [pathname, isLoginPage, isPublicAuthRoute]);
 
-    useEffect(() => {
+    useLayoutEffect(() => {
         if (!shouldLoadStyles || isPublicAuthRoute) {
             setIsAppStylesLoaded(true);
             return;
@@ -275,6 +305,7 @@ function App() {
             return;
         }
 
+        setIsAppStylesLoaded(false);
         if (!isPublicAuthRoute && !isLoginPage) void prefetchRouteModule(pathname);
 
         let cancelled = false;
@@ -299,9 +330,24 @@ function App() {
     }, [shouldLoadStyles, isGenieShellRoute, isPublicAuthRoute, showSessionModal, isGenieStylesIsolationActive, pathname, isLoginPage]);
 
     useEffect(() => {
-        const onShellReady = () => setIsAppStylesLoaded(true);
+        const onShellReady = () => {
+            if (isAppShellStylesLoaded()) setIsAppStylesLoaded(true);
+        };
         window.addEventListener(POST_LOGIN_SHELL_READY_EVENT, onShellReady);
         return () => window.removeEventListener(POST_LOGIN_SHELL_READY_EVENT, onShellReady);
+    }, []);
+
+    useEffect(() => {
+        if (showSessionModal) return;
+        requestAnimationFrame(resetModalShellAfterSessionRecovery);
+    }, [showSessionModal]);
+
+    useEffect(() => {
+        const onSessionRecovered = () => {
+            requestAnimationFrame(resetModalShellAfterSessionRecovery);
+        };
+        window.addEventListener(SESSION_RECOVERED_EVENT, onSessionRecovered);
+        return () => window.removeEventListener(SESSION_RECOVERED_EVENT, onSessionRecovered);
     }, []);
 
     useEffect(() => {
@@ -354,7 +400,7 @@ function App() {
                 }
 
                 if (!cancelled) {
-                    handleCSSLoad('/aiemailbuildercss.css?v2.0.4');
+                    handleCSSLoad('/aiemailbuildercss.css?v2.0.5');
                 }
             };
 
@@ -435,7 +481,11 @@ function App() {
             <RSLoader />
             <ToasterContainer />
             <div>
-                <section className={isLoginPage ? 'rs-page-content-wrapper-container' : ''}>
+                <section
+                    className={
+                        isLoginPage ? 'rs-page-content-wrapper-container login-route-loading' : ''
+                    }
+                >
                     {showAppLoaderFallback && !isPublicAuthRoute && (
                         <div
                             className="app-boot-skeleton-overlay"
@@ -445,7 +495,8 @@ function App() {
                             <MainPageSkeleton withAppShell />
                         </div>
                     )}
-                    {isAppStylesLoaded && (isLoginPage || isAppShellReady) && (
+                    {isLoginPage && !canRenderRoutes && <LoginRouteLoading />}
+                    {canRenderRoutes && (
                         <>
                             {(!isPublicAuthRoute || pathname !== '/') && (
                                 <RSHeader isNoAuth={isPublicAuthRoute} />
@@ -454,31 +505,15 @@ function App() {
                         </>
                     )}
                     <div className={showSessionModal ? 'genie-timeout' : ''}>
-                        {showGenie && !isPublicAuthRoute && !isGenieUIRoute && isAppStylesLoaded && (
-                            <div
-                                className="floating-logo"
-                                onClick={handleOpenGenie}
-                                onMouseEnter={() => setIsGenieLogoHover(true)}
-                                onMouseLeave={() => setIsGenieLogoHover(false)}
-                                role="button"
-                                tabIndex={0}
-                                onKeyDown={(e) => {
-                                    if (e.key === 'Enter' || e.key === ' ') {
-                                        e.preventDefault();
-                                        handleOpenGenie();
-                                    }
-                                }}
-                                aria-label="Open Genie"
-                            >
-                                <div className="floating-logo__inner">
-                                    <img
-                                        src={isGenieLogoHover ? genielogowhite : genieLogoWhiteWithoutStar}
-                                        alt=""
-                                        className="floating-logo__image"
-                                    />
-                                    <img src={genieTextWhite} alt="" className="floating-logo__text" />
-                                </div>
-                            </div>
+                        {!isPublicAuthRoute && (
+                            <Suspense fallback={null}>
+                                <GenieHostFeatures
+                                    isGenieStylesIsolationActive={isGenieStylesIsolationActive}
+                                    search={search}
+                                    pathname={pathname}
+                                    isAppStylesLoaded={isAppStylesLoaded}
+                                />
+                            </Suspense>
                         )}
                     </div>
                 </section>

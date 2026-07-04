@@ -227,7 +227,9 @@ const ResTemplateCard = ({
                             {resolvedHeaderMeta && (
                                 <div className="res-template-card__header-meta">{resolvedHeaderMeta}</div>
                             )}
-                            {moreIcon}
+                            {moreIcon && (
+                                <div className="res-template-card__header-actions">{moreIcon}</div>
+                            )}
                         </div>
                     )}
                     {(titleNode || title) && (

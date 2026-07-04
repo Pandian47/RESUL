@@ -1,5 +1,5 @@
 import { checkbox_mini, list_bar_medium } from 'Constants/GlobalConstant/Glyphicons';
-import { memo, useEffect, useState } from 'react';
+import { memo, useCallback, useEffect, useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { Dropdown } from 'react-bootstrap';
@@ -29,6 +29,7 @@ import useQueryParams from 'Hooks/useQueryParams';
 
 const Notifications = () => {
     const { departmentId, clientId, userId } = useSelector((state) => getSessionId(state));
+    const unreadFetchInFlightRef = useRef(false);
     const { createdDate } = getUserDetails();
     const { renewalData } = useSelector(({ globalstate }) => globalstate);
     const utcTimeData = useSelector(getUtcTimeData);
@@ -49,7 +50,10 @@ const Notifications = () => {
         status: false,
         message: '',
     });
-    const getNotifications = async () => {
+    const getNotifications = useCallback(async () => {
+        if (!clientId || !userId || !departmentId || unreadFetchInFlightRef.current) return;
+
+        unreadFetchInFlightRef.current = true;
         setNotificationsData(prev => ({
             ...prev,
             isLoading: true,
@@ -76,43 +80,26 @@ const Notifications = () => {
             clientId,
             userId,
         };
-        const countStatus = await dispatch(updateNotificationCountStatus({ payload }));
-        // if (res?.status) {
-        //     let tempCount = res?.totalRows;
-        //     if (tempCount >= 1000 && tempCount <= 100000) {
-        //         tempCount = Math.round(tempCount / 1000) + 'k';
-        //     } else if (tempCount >= 100000 && tempCount <= 10000000) {
-        //         tempCount = Math.round(tempCount / 100000) + 'l';
-        //     }
-        //     // else tempCount = tempCount;
-        //     setNotificationsData((prev) => ({
-        //         ...prev,
-        //         notifications: [...res?.data],
-        //         totalCount: tempCount,
-        //         //unreadCount: res?.unreadcount,
-        //     }));
-        // } else {
-        //     setNotificationsData((prev) => ({
-        //         ...prev,
-        //         notifications: [],
-        //         totalCount: 0,
-        //     }));
-        // }
-        if (countStatus?.status) {
-            setNotificationsData(prev => ({
-                ...prev,
-                unreadCount: parseInt(countStatus?.data, 10),
-                isLoading: false
-            }));
-        } else {
-            setNotificationsData(prev => ({
-                ...prev,
-                unreadCount: 0,
-                isLoading: false,
-                isFailure: true,
-            }));
+        try {
+            const countStatus = await dispatch(updateNotificationCountStatus({ payload }));
+            if (countStatus?.status) {
+                setNotificationsData(prev => ({
+                    ...prev,
+                    unreadCount: parseInt(countStatus?.data, 10),
+                    isLoading: false
+                }));
+            } else {
+                setNotificationsData(prev => ({
+                    ...prev,
+                    unreadCount: 0,
+                    isLoading: false,
+                    isFailure: true,
+                }));
+            }
+        } finally {
+            unreadFetchInFlightRef.current = false;
         }
-    };
+    }, [clientId, departmentId, dispatch, userId]);
 
     const handleDropdownToggle = (isOpen) => {
         if (isOpen) {
@@ -191,7 +178,7 @@ const Notifications = () => {
             cancelDeferred(unreadHandle);
             cancelDeferred(utcHandle);
         };
-    }, [departmentId, clientId, userId, dispatch]);
+    }, [departmentId, clientId, userId, dispatch, getNotifications]);
 
     const handleAllRead = async () => {
         setNotificationsData(prev => ({ 
@@ -325,29 +312,31 @@ const Notifications = () => {
                             </>
                         )}
                     </div>
-                    <Dropdown.Item className="notification-footer mt0">
-                        <RSTertiaryButton 
-                            onClick={() => handleAllRead()} 
-                            className="mr15"
-                            disabled={notificationsData?.isLoading}
-                            disabledClass={`${disableNavIcons ? 'pe-none click-off' :''}`}
-                        >
-                            Mark all as read
-                        </RSTertiaryButton>
-                        <RSQuaternaryButton
-                            disabledClass={`${disableNavIcons ? 'pe-none click-off' : ''}`}
-                            onClick={() => {
-                                let finalState = {
-                                    ...locationState,
-                                    ...handleCustomNavigationDetails(locationState),
-                                };
-                                const encryptState = encodeUrl(finalState);
-                                navigate(`${'preferences/notifications'}?q=${encryptState}`, finalState);
-                            }}
-                        >
-                            View all
-                        </RSQuaternaryButton>
-                    </Dropdown.Item>
+                    {!notificationsData.isLoading && notificationsData?.notifications?.length > 0 && (
+                        <Dropdown.Item className="notification-footer mt0">
+                            <RSTertiaryButton 
+                                onClick={() => handleAllRead()} 
+                                className="mr15"
+                                disabled={notificationsData?.isLoading}
+                                disabledClass={`${disableNavIcons ? 'pe-none click-off' :''}`}
+                            >
+                                Mark all as read
+                            </RSTertiaryButton>
+                            <RSQuaternaryButton
+                                disabledClass={`${disableNavIcons ? 'pe-none click-off' : ''}`}
+                                onClick={() => {
+                                    let finalState = {
+                                        ...locationState,
+                                        ...handleCustomNavigationDetails(locationState),
+                                    };
+                                    const encryptState = encodeUrl(finalState);
+                                    navigate(`${'preferences/notifications'}?q=${encryptState}`, finalState);
+                                }}
+                            >
+                                View all
+                            </RSQuaternaryButton>
+                        </Dropdown.Item>
+                    )}
                 </Dropdown.Menu>
             </Dropdown>
             {/* {notifications.totalUnreadCount > 0 && <span className="label">{notifications?.totalUnreadCount}</span>} */}

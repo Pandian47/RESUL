@@ -298,10 +298,10 @@ const InsertLinks = (props) => {
         const state = view.state;
         const { tr, schema, selection } = state;
         const markTypeLink = schema.marks.link;
-        const linkTypeValue = linkType;
-        const urlValue = url;
-        const openInValue = openIn;
-        const selectedTextValue = selectedText;
+        const linkTypeValue = data?.linkType ?? linkType;
+        const urlValue = data?.url ?? '';
+        const openInValue = data?.openIn ?? OPEN_IN_OPTIONS[0];
+        const selectedTextValue = data?.selectedText || selectedText;
 
         if (linkTypeValue?.id === 'FTF' || linkTypeValue?.id === 'UNSUB') {
             // For FTF and UNSUB, insert the name instead of value
@@ -361,7 +361,7 @@ const InsertLinks = (props) => {
 
             let linkUrl = urlValue.trim();
             const linkText = selectedTextValue.trim() || linkUrl;
-            const titleValue = title?.trim() || '';
+            const titleValue = data?.title?.trim() || '';
 
             // Add prefix for EMAIL, TELEPHONE, and SMS only (not for URL or CUSTOM_LINK)
             if (linkTypeValue?.id === 'EMAIL') {

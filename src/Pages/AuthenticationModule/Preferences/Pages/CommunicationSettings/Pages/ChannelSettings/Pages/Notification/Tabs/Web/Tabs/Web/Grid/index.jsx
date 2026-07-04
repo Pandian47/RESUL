@@ -22,6 +22,7 @@ import {
     downloadIntegrationFiles,
     updateWebPushDefault,
 } from 'Reducers/preferences/CommunicationSettings/request';
+import { updateCommunicationSettings } from 'Reducers/preferences/CommunicationSettings/reducer';
 
 import { BootstrapDropdown } from 'Components/RSBootstrapDropDown';
 import { circle_plus_fill_edge_large, pencil_edit_medium, goal_achieved_medium, crown_medium, circle_arrow_down_medium, circle_plus_fill_edge_medium, industry_healthcare_medium } from 'Constants/GlobalConstant/Glyphicons';
@@ -76,7 +77,9 @@ const PushWebGrid = () => {
             mode: 'create',
             onSuccess: (res) => {
                 const { status, data } = res || {};
-                setGridData(status ? data : []);
+                const listData = status ? data : [];
+                setGridData(listData);
+                dispatch(updateCommunicationSettings({ field: 'webDomainCount', payload: listData.length }));
             },
         });
     }, [clientId, userId, departmentId, dispatch, listApi.refetch]);

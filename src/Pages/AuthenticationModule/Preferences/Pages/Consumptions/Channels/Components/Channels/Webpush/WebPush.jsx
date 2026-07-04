@@ -1,5 +1,5 @@
 import { encodeUrl } from 'Utils/modules/crypto';
-import { getDateWithDaynoFormat, getUserCurrentFormat, getYYMMDD } from 'Utils/modules/dateTime';
+import { getDateWithDaynoFormat, getUserCurrentFormat, getYYMM, getYYMMDD } from 'Utils/modules/dateTime';
 import { truncateTitle } from 'Utils/modules/displayCore';
 import { downloadCSVcommasFile } from 'Utils/modules/download';
 import { numberWithCommas } from 'Utils/modules/formatters';
@@ -12,7 +12,7 @@ import KendoGrid from 'Components/RSKendoGrid';
 import RSTooltip from 'Components/RSTooltip';
 import { LAST30DAYS_DATEFILTER } from 'Constants/GlobalConstant/Regex';
 
-import _map from 'lodash/map';
+import { map as _map } from 'Utils/modules/lodashReplacements';
 import { getSessionId } from 'Reducers/globalState/selector';
 import {
     getConsumptionChannelDetails,
@@ -23,6 +23,7 @@ import { updateAnalyticsDetail } from 'Reducers/analytics/communicationAnalytics
 import { useNavigate } from 'react-router-dom';
 import ConsumptionChannelHeader from '../../ConsumptionChannelHeader/ConsumptionChannelHeader';
 import { numericParentSumCell, commonConsumptionColumns } from '../../../../constant';
+import {getFirstDayOfMonth, getCurrentDateOfMonth} from 'Utils/modules/dateTime.jsx'
 
 const processCustomFields = (item) => {
     const customData = {};

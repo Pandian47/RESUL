@@ -7,7 +7,7 @@ import { RSButton } from 'Components/Buttons';
 import RSKendoDropdown from 'Components/FormFields/RSKendoDropdown';
 import { MONTH_LIST, getCurrentMonthDate, getMonthDate } from './constants';
 import { useSelector } from 'react-redux';
-import _find from 'lodash/find';
+import { find as _find } from 'Utils/modules/lodashReplacements';
 import moment from 'moment/moment';
 import useOnlyDepChangeEffect from 'Hooks/useOnlyDepChangeEffect';
 

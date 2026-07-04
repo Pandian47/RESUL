@@ -1,6 +1,5 @@
 import { brandCompanystatus } from 'Constants/GlobalConstant';
-import _get from 'lodash/get';
-import _map from 'lodash/map';
+import { get as _get, map as _map } from 'Utils/modules/lodashReplacements';
 
 export const INITIAL_STATE = {
     mode: 'onTouched',
@@ -59,7 +58,7 @@ export const buildPayload = ({
         isHybrid: isHybrid,
         // businessTypeId: licenseTypeId === '3' ? 0 : 0,
         businessTypeId: 0,
-        dateFormatId: _get(dateFormat, 'dateFormatID', 0),
+        dateFormatId: _get(dateFormat, 'dateFormatID', 4),
         timeFormatId: _get(timeFormat, 'timeFormatID', 0),
         timeZoneId: _get(timezone, 'timeZoneID', 0),
         clientBranchTypeId: 1,

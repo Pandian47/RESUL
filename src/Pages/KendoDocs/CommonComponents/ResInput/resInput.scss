@@ -17,6 +17,16 @@ $input-meter-completed: #379904;
     }
 }
 
+@keyframes res-login-email-loader-spin {
+    0% {
+        transform: rotate(0deg);
+    }
+
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
 .#{$res-input-wrapper} {
     position: relative;
     width: 100%;
@@ -100,6 +110,242 @@ $input-meter-completed: #379904;
                 position: relative;
                 bottom: 0;
                 animation: res-input-spin 0.9s linear infinite;
+            }
+
+            .res-login-email-status-icon {
+                position: relative;
+                width: 24px;
+                height: 24px;
+                color: $primary-grey;
+                overflow: hidden;
+
+                &__svg {
+                    width: 24px;
+                    height: 24px;
+                    display: block;
+                    overflow: visible;
+                }
+
+                &__email-line,
+                &__loader,
+                &__x {
+                    fill: none;
+                    stroke-linecap: round;
+                    stroke-linejoin: round;
+                    transition:
+                        opacity 0.2s ease,
+                        stroke-dashoffset 0.32s ease,
+                        transform 0.32s ease;
+                    transform-origin: 12px 12px;
+                }
+
+                &__tick {
+                    transition:
+                        opacity 0.2s ease,
+                        clip-path 0.38s ease,
+                        transform 0.32s ease;
+                    transform-origin: 12px 12px;
+                }
+
+                &__email-line {
+                    stroke: currentColor;
+                    stroke-width: 1.45;
+                    opacity: 1;
+                }
+
+                &__email-box {
+                    stroke-dasharray: 58;
+                    stroke-dashoffset: 0;
+                }
+
+                &__email-flap {
+                    stroke-dasharray: 22;
+                    stroke-dashoffset: 0;
+                    transition-delay: 0.04s;
+                }
+
+                &__email-fold {
+                    stroke-dasharray: 18;
+                    stroke-dashoffset: 0;
+                    transition-delay: 0.08s;
+                }
+
+                &__loader {
+                    stroke: #8d8d8d;
+                    stroke-width: 2.15;
+                    stroke-dasharray: 16 34;
+                    stroke-dashoffset: 38;
+                    opacity: 0;
+                    transform: rotate(-90deg) scale(0.86);
+                }
+
+                &__tick {
+                    fill: #3d8123;
+                    clip-path: inset(0 100% 0 0);
+                    opacity: 0;
+                    transform: scale(0.96);
+                }
+
+                &__x {
+                    stroke: #c43a35;
+                    stroke-width: 1.9;
+                    stroke-dasharray: 16;
+                    stroke-dashoffset: 16;
+                    opacity: 0;
+                }
+
+                &--email {
+                    .res-login-email-status-icon__email-line {
+                        opacity: 1;
+                        stroke-dashoffset: 0;
+                    }
+                }
+
+                &--loading {
+                    .res-login-email-status-icon__email-line {
+                        opacity: 0;
+                    }
+
+                    .res-login-email-status-icon__email-box {
+                        stroke-dashoffset: 58;
+                    }
+
+                    .res-login-email-status-icon__email-flap {
+                        stroke-dashoffset: 22;
+                    }
+
+                    .res-login-email-status-icon__email-fold {
+                        stroke-dashoffset: 18;
+                    }
+
+                    .res-login-email-status-icon__loader {
+                        opacity: 1;
+                        stroke-dashoffset: 0;
+                        animation: res-login-email-loader-spin 0.8s linear infinite;
+                        transform: rotate(270deg) scale(0.92);
+                    }
+                }
+
+                &--valid {
+                    .res-login-email-status-icon__email-line {
+                        opacity: 0;
+                    }
+
+                    .res-login-email-status-icon__email-box {
+                        stroke-dashoffset: 58;
+                    }
+
+                    .res-login-email-status-icon__email-flap {
+                        stroke-dashoffset: 22;
+                    }
+
+                    .res-login-email-status-icon__email-fold {
+                        stroke-dashoffset: 18;
+                    }
+
+                    .res-login-email-status-icon__loader {
+                        stroke-dashoffset: 38;
+                        transform: rotate(360deg) scale(0.8);
+                    }
+
+                    .res-login-email-status-icon__tick {
+                        opacity: 1;
+                        clip-path: inset(0 0 0 0);
+                        transform: scale(1);
+                        transition-delay: 0.08s;
+                    }
+                }
+
+                &--invalid {
+                    .res-login-email-status-icon__email-line {
+                        opacity: 0;
+                    }
+
+                    .res-login-email-status-icon__email-box {
+                        stroke-dashoffset: 58;
+                    }
+
+                    .res-login-email-status-icon__email-flap {
+                        stroke-dashoffset: 22;
+                    }
+
+                    .res-login-email-status-icon__email-fold {
+                        stroke-dashoffset: 18;
+                    }
+
+                    .res-login-email-status-icon__loader {
+                        stroke-dashoffset: 38;
+                        transform: rotate(360deg) scale(0.8);
+                    }
+
+                    .res-login-email-status-icon__x {
+                        opacity: 1;
+                        stroke-dashoffset: 0;
+                    }
+
+                    .res-login-email-status-icon__x-second {
+                        transition-delay: 0.08s;
+                    }
+                }
+            }
+
+            .res-password-visibility-trigger {
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                width: 24px;
+                height: 24px;
+                padding: 0;
+                border: 0;
+                background: transparent;
+                color: $primary-grey;
+                line-height: 0;
+            }
+
+            .res-password-visibility-icon {
+                display: inline-flex;
+                width: 24px;
+                height: 24px;
+                color: inherit;
+
+                &__svg {
+                    width: 24px;
+                    height: 24px;
+                    display: block;
+                    overflow: visible;
+                }
+
+                &__eye {
+                    fill: currentColor;
+                }
+
+                &__slash {
+                    fill: none;
+                    stroke: currentColor;
+                    stroke-width: 1.45;
+                    stroke-linecap: round;
+                    stroke-linejoin: round;
+                    stroke-dasharray: 21;
+                    stroke-dashoffset: 21;
+                    opacity: 0;
+                    transition:
+                        opacity 0.12s ease,
+                        stroke-dashoffset 0.28s ease;
+                }
+
+                &--hidden {
+                    .res-password-visibility-icon__slash {
+                        opacity: 1;
+                        stroke-dashoffset: 0;
+                    }
+                }
+
+                &--visible {
+                    .res-password-visibility-icon__slash {
+                        opacity: 0;
+                        stroke-dashoffset: 21;
+                    }
+                }
             }
         }
 

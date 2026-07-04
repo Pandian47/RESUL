@@ -9,7 +9,7 @@ import {
     support_chat_medium,
 } from 'Constants/GlobalConstant/Glyphicons';
 import { Fragment, forwardRef, useCallback, useEffect, useMemo, useState } from 'react';
-import _get from 'lodash/get';
+import { get as _get } from 'Utils/modules/lodashReplacements';
 import { useDispatch, useSelector } from 'react-redux';
 import { useLocation, NavLink, useNavigate, Outlet } from 'react-router-dom';
 

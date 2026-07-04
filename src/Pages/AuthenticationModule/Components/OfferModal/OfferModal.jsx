@@ -3,7 +3,7 @@ import { circle_question_mark_medium, restart_medium } from 'Constants/GlobalCon
 import { useCallback, useEffect, useState } from 'react';
 import { Row, Col } from 'react-bootstrap';
 import { useForm, useWatch } from 'react-hook-form';
-import _get from 'lodash/get';
+import { get as _get } from 'Utils/modules/lodashReplacements';
 
 import RSModal from 'Components/RSModal';
 import RSKendoDropDownList from 'Components/FormFields/RSKendoDropdown';
@@ -114,12 +114,8 @@ const OfferModal = ({ show, handleClose, confirm, split = '', audienceCount = 0,
 
     const handleChange = async (event) => {
         setValue('offer.offerList', {});
-        const {
-            target: {
-                name,
-                value: { offerTypeId },
-            },
-        } = event;
+        const { value } = event;
+        const offerTypeId = value?.offerTypeId;
         setValue('offerCodeCount', '');
         const payload = {
             departmentId,
@@ -145,11 +141,8 @@ const OfferModal = ({ show, handleClose, confirm, split = '', audienceCount = 0,
     };
     const handleOfferCount = async (event) => {
         if (watchingFields?.offerCodeType !== 'Common') {
-            const {
-                target: {
-                    value: { offerId },
-                },
-            } = event;
+            const { value } = event;
+            const offerId = value?.offerId;
             setValue('offerCodeCount', '');
             const payload = {
                 offerId,
@@ -157,7 +150,8 @@ const OfferModal = ({ show, handleClose, confirm, split = '', audienceCount = 0,
             };
             const { status, data, message } =
                 (await offerCodeCountLoader.refetch({
-                    fetcher: () => dispatch(offerCodeCountApi(payload, { loading: false })),
+                    fetcher: ({ payload: countPayload } = {}) =>
+                        dispatch(offerCodeCountApi(countPayload, { loading: false })),
                     mode: 'create',
                     loaderConfig: AUTHORING_FIELD_LOADER_CONFIG,
                     params: { payload },

@@ -79,13 +79,13 @@ const InvoicePay = ({ licenseTypeID, clientId, userId, clientName, handleCancel=
             // if (AuthCodeRef.current) {
             //     AuthCodeRef.current.blur();
             // }
-            setTimeout(() => {
+            const timer = setTimeout(() => {
                 const inputEl = document.querySelector('.rs-input-wrapper-required input');
                 if (inputEl) {
                     inputEl.blur();
                 }
             }, 0);
-
+            return () => clearTimeout(timer);
         }
     }, [otpMessage]);
 

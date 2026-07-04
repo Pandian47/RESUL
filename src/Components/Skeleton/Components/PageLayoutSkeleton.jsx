@@ -196,35 +196,6 @@ const PageHeadingBlock = ({ variant, inline, activeTabIndex }) => {
     );
 };
 
-function DefaultPageContentSkeleton({ inline }) {
-    if (inline) {
-        return (
-            <div className="pls-content">
-                <div className="pls-box">
-                    <Shimmer style={{ height: 20, width: '35%', marginBottom: 12 }} />
-                    <Shimmer style={{ height: 14, width: '100%', marginBottom: 8 }} />
-                    <Shimmer style={{ height: 14, width: '92%', marginBottom: 8 }} />
-                    <Shimmer style={{ height: 160, width: '100%' }} />
-                </div>
-            </div>
-        );
-    }
-
-    return (
-        <Container fluid className="page-content pt21">
-            <Row>
-                <div className="col-12">
-                    <div className="box-design mb20 p20">
-                        <Shimmer style={{ height: 20, width: '35%', marginBottom: 12 }} />
-                        <Shimmer style={{ height: 14, width: '100%', marginBottom: 8 }} />
-                        <Shimmer style={{ height: 200, width: '100%' }} />
-                    </div>
-                </div>
-            </Row>
-        </Container>
-    );
-}
-
 const renderBodyContent = (variant, inline, activeTabIndex) => {
     if (variant === 'audienceTargetListCreation') {
         return <AudienceTargetListCreationSuspenseFallback />;

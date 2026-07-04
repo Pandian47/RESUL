@@ -173,7 +173,7 @@ const Login = () => {
                   }}
                 >
                 <div ref={contentRef} className='tabs-content d-flex' style={{ position: 'relative' }}>
-                  <AnimatePresence mode="popLayout">
+                  <AnimatePresence mode="wait">
                     <motion.div
                       key={getActiveViewKey()}
                       initial={{ opacity: 0 }}

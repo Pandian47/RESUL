@@ -4,7 +4,7 @@ import { ADD_CUSTOM_ALERT_SOUND, ENTER_NEW_ALERT_SOUND, ENTER_TITLE_TEXT, EXCEED
 import { ALERT_SOUND, ENTER_VALUE, EXPIRY, EXPIRY_POPHOVER_TEXT, HASHTAG, HASHTAG_15_CHARACTERS, HASHTAG_COMMS_SEPARATOR, IMPRESSIONS, INTERACTIVITY, MAKE_ALERT, PRIORITY, SUPPORT_TEAM, Short_DESCRIPTION, TITLE_TEXT } from 'Constants/GlobalConstant/Placeholders';
 import { circle_question_mark_medium, circle_question_mark_mini, close_mini, save_mini } from 'Constants/GlobalConstant/Glyphicons';
 import { Fragment, useEffect, useState } from 'react';
-import _get from 'lodash/get';
+import { get as _get } from 'Utils/modules/lodashReplacements';
 import PropTypes from 'prop-types';
 import { Row, Col } from 'react-bootstrap';
 import { useFormContext } from 'react-hook-form';

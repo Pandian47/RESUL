@@ -1,6 +1,6 @@
 import { getChannelId } from 'Utils/modules/communicationChannels';
 import { useEffect, useState } from 'react';
-import _map from 'lodash/map';
+import { map as _map } from 'Utils/modules/lodashReplacements';
 import { useDispatch, useSelector } from 'react-redux';
 
 import RSTabbar from 'Components/RSTabber';

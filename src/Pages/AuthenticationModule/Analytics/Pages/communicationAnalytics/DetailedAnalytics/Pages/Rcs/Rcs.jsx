@@ -224,7 +224,7 @@ const DetailAnalyticsRcs = ({ type, isDownloadUI }) => {
         if (!fromSplitHeader) setFilterDetails({});
     }, [fromSplitHeader]);
     const getCommunicationStatus = (data) => {
-        const sortedData = sort((a, b) => b.doubleValue - a.doubleValue);
+        const sortedData = data?.sort((a, b) => b.doubleValue - a.doubleValue);
         return sortedData;
     };
     // useEffect(() => {

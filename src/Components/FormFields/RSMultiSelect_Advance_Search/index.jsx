@@ -2,10 +2,11 @@ import { NO_RESULTS_FOUND } from 'Constants/GlobalConstant/ValidationMessage';
 import { circle_zoom_fill_edge_medium } from 'Constants/GlobalConstant/Glyphicons';
 import { memo, useCallback, useEffect, useId, useMemo, useState } from 'react';
 import PropTypes from 'prop-types';
-import _get from 'lodash/get';
+import { get as _get } from 'Utils/modules/lodashReplacements';
 import { useForm } from 'react-hook-form';
 import { DropdownButton, Dropdown } from 'react-bootstrap';
 import RSCheckbox from 'Components/FormFields/RSCheckbox';
+import { RS_BOOTSTRAP_DROPDOWN_POPPER_CONFIG } from 'Components/FormFields/RSBootstrapdown';
 import './RSMultiSelect_Advance_Search.scss';
 
 const TOGGLE_TITLE_MAX_LEN = 56;
@@ -79,7 +80,6 @@ const RSMultiSelectNew = ({
     const [selectedItems, setSelectedItems] = useState(value);
     const [menuOpen, setMenuOpen] = useState(false);
     const [searchDraft, setSearchDraft] = useState('');
-    console.log('searchDraft', searchDraft);
 
     const idPrefix = useId().replace(/:/g, '');
     const selectAllName = `ms_${idPrefix}_all`;
@@ -268,11 +268,13 @@ const RSMultiSelectNew = ({
                 show={menuOpen}
                 onToggle={handleMenuToggle}
                 autoClose="outside"
+                renderMenuOnMount
+                popperConfig={RS_BOOTSTRAP_DROPDOWN_POPPER_CONFIG}
                 {...(omitStaticLabelInToggle ? { 'aria-label': label } : {})}
             >
                 {showListFilter && (
                     <div className="k-list-filter">
-                        <span className="k-searchbox k-input k-input-md k-rounded-md k-input-solid border-bottom pb5 position-relative d-block">
+                        <span className="k-searchbox rs-ms-searchbox position-relative d-block">
                             <span
                                 className={`k-input-icon position-absolute top2 right0 icon-md color-secondary-grey ${circle_zoom_fill_edge_medium}`}
                                 aria-hidden

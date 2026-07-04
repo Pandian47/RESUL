@@ -214,7 +214,7 @@ export const overallData = {
         },
         {
             type: 'title2',
-            value: 'Audience List',
+            value: 'Segment List',
         },
         {
             type: 'component',

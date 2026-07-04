@@ -26,6 +26,8 @@ const initialState = {
     savedSmartLinkPayload: {},
     isAppEventTrack: false,
     isSmartLinkDetailLoading: false,
+    isSmartLinkDetailFetched: false,
+    fetchedCampaignId: 0,
 };
 
 export default initialState;

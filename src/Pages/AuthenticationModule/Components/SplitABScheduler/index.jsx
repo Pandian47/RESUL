@@ -7,7 +7,7 @@ import { SELECT_SCHEDULE_DATE_AND_TIME } from 'Constants/GlobalConstant/Validati
 import { LABLE_SPLIT_AB } from 'Constants/GlobalConstant/Placeholders';
 import { analytics_medium, winner_mini } from 'Constants/GlobalConstant/Glyphicons';
 import { Fragment, useEffect, useMemo, useState } from 'react';
-import _get from 'lodash/get';
+import { get as _get } from 'Utils/modules/lodashReplacements';
 import PropTypes from 'prop-types';
 import { Row, Col, Carousel } from 'react-bootstrap';
 import { useForm, FormProvider } from 'react-hook-form';

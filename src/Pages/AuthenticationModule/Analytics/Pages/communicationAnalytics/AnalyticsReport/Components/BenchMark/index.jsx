@@ -6,12 +6,10 @@ import { columnChartOptions } from 'Constants/Charts';
 import { arrow_down_medium, arrow_up_medium, goals_benchmark_large, user_goals_benchmark_large } from 'Constants/GlobalConstant/Glyphicons';
 import { useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { Col, Row } from 'react-bootstrap';
-import _map from 'lodash/map';
 
 import { BootstrapDropdown } from 'Components/RSBootstrapDropDown';
 import RSHighchartsContainer from 'Components/Highcharts';
 import RSCard from 'Components/RSCard/RSCard';
-import _get from 'lodash/get';
 
 import { ANALYSIS_PERFORMANCE_DATA, INDUSTRY_BENCHMARK, MY_BENCHMARKS, PAID_ADS_ANALYSIS_PERFORMANCE_DATA, getBenchmarkModeLabel, getMyBenchmarkTypeLabel, getIndustryBenchmarkTypeLabel } from '../../constants';
 import { getBenchmarkList, getSummaryList } from 'Reducers/analytics/analyticsSummary/selector';
@@ -44,9 +42,9 @@ const BenchMark = ({ benchRef, campaignName, date, isDownloadUI }) => {
         benchmark: 1,
         benchmarkStatus: true,
     });
-    const totalReachPercentage = _get(summary, 'channelReachInfo.reachPercentage')
-    const totalEngagementPercentage = _get(summary, 'channelEngagementInfo.engagementPercentage')
-    const totalConversionPercentage = _get(summary, 'channelConversionInfo.conversionPercentage')
+    const totalReachPercentage = summary?.channelReachInfo?.reachPercentage
+    const totalEngagementPercentage = summary?.channelEngagementInfo?.engagementPercentage
+    const totalConversionPercentage = summary?.channelConversionInfo?.conversionPercentage
 
     const getGoalPercentageByMode = (mode) => {
         switch (mode) {
@@ -89,7 +87,7 @@ const BenchMark = ({ benchRef, campaignName, date, isDownloadUI }) => {
     }, [state, summary, isPaidMediaOnlyCampaign]);
 
     useEffect(() => {
-        if (payload.campaignId && Object.keys(summary)?.length > 0 && !refAPIStatus?.current?.preventOtherApiCall &&  _get(summary, 'channelReachInfo.reachPercentage') !== undefined && !benchmarkApiCalled.current && !summary?.isFromSnapshot) {
+        if (payload.campaignId && Object.keys(summary)?.length > 0 && !refAPIStatus?.current?.preventOtherApiCall &&  summary?.channelReachInfo?.reachPercentage !== undefined && !benchmarkApiCalled.current && !summary?.isFromSnapshot) {
             benchmarkApiCalled.current = true;
             dispatch(getBenchmark(
                 {
@@ -131,7 +129,7 @@ const BenchMark = ({ benchRef, campaignName, date, isDownloadUI }) => {
             legend: {
                 enabled: false,
             },
-            series: _map(chartSeries, (bench) => ({
+            series: (chartSeries || []).map((bench) => ({
                 name: bench.name,
                 data: bench.data?.map((val) => +val),
                 color: bench.color,

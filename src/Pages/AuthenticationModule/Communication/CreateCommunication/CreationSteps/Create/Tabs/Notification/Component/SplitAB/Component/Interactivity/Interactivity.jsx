@@ -3,7 +3,7 @@ import { ENTER_BUTTON_NAME, ENTER_VALID_LINK, SELECT_LINK, SELECT_URL_TYPE } fro
 import { ADD, BACKGROUND_COLOR, BUTTON_NAME, BUTTON_TYPE, ENTER_VALID_BUTTON, FONT_COLOR, FREQUENCY_VALUE, PROPER_FREQUENCY_VALUE, REMOVE, SELECT_FREQUENCY, SELECT_FREQUENCY_TIME } from 'Constants/GlobalConstant/Placeholders';
 import { close_large, colorpicker_bg_medium, colorpicker_text_medium, settings_medium } from 'Constants/GlobalConstant/Glyphicons';
 import { Fragment, useCallback, useMemo, useState } from 'react';
-import _map from 'lodash/map';
+import { map as _map } from 'Utils/modules/lodashReplacements';
 import { Row, Col } from 'react-bootstrap';
 import { useFieldArray, useFormContext, useWatch } from 'react-hook-form';
 

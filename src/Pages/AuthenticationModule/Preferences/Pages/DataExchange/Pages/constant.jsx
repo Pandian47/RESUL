@@ -26,55 +26,6 @@ const mobileAnalytics = [
 const tagManagement = [
 ];
 
-const groupConnectorData = (connectors) => {
-    const groupedData = {};
-    connectors?.forEach((connector) => {
-        const group = connector?.sourceGroupName;
-        if (!groupedData[group]) {
-            groupedData[group] = [];
-        }
-        groupedData[group].push(connector);
-    });
-    return groupedData;
-};
-
-export const getDatas = (connectorList, currentTab) => {
-    const finalGroupData = connectorList?.length ? groupConnectorData(connectorList) : {};
-    
-    let updateData = {};
-    const isCurrentTabAll = currentTab === 'ALL' ? true : false;
-
-    if (!isCurrentTabAll) {
-        const checkData = Object.entries(finalGroupData)?.find(([key, value]) => {
-            if (currentTab === key) {
-                return {
-                    [key]: value,
-                };
-            }
-        });
-
-        updateData = {
-            [checkData[0]]: checkData[1],
-        };
-    }
-
-    let check =  {
-        'ALL' : [],
-        ...finalGroupData
-    }
-
-    const allData = Object.entries(check)?.map(([key, value], ind) => ({
-        id: key.toLowerCase(),
-        text: key,
-        iconLeft: '',
-        component: () => {
-            return <DataSubComponent type={key} id={ind + 1} subTab={isCurrentTabAll ? finalGroupData : updateData} />;
-        },
-    }));
-
-    return [...allData];
-};
-
 const types = {
     'All' :{
         'Analytics': ['Web analytics','Mobile analytics','Tag management','Pixel retargeting','Video analytics'],

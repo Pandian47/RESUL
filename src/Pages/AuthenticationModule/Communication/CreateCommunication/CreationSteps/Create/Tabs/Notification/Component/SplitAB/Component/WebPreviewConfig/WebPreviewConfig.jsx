@@ -3,7 +3,7 @@ import { ENTER_EXPIRY_TIME, ENTER_TITLE_TEXT, EXCEED_EXPIRY_TIME, SELECT_EXPIRY_
 import { BACKGROUND_COLOR, BACKGROUND_OVERLAY, ENTER_VALUE, EXPIRES_IN, EXPIRY, HASHTAG, HASHTAG_15_CHARACTERS, HASHTAG_COMMS_SEPARATOR, IMPRESSIONS, INTERACTIVITY, MAKE_ALERT, PRIORITY, Short_DESCRIPTION, TITLE_TEXT } from 'Constants/GlobalConstant/Placeholders';
 import { colorpicker_bg_medium } from 'Constants/GlobalConstant/Glyphicons';
 import PropTypes from 'prop-types';
-import _get from 'lodash/get';
+import { get as _get } from 'Utils/modules/lodashReplacements';
 import { Row, Col } from 'react-bootstrap';
 import { useFormContext } from 'react-hook-form';
 
@@ -241,7 +241,10 @@ const WebPreviewConfig = ({ fieldName = '', isSplit = false, variant = 'splitAB'
                                 control={control}
                                 name={bgOverlayName}
                                 handleChange={(e) => {
-                                    if (!e) resetField(isSplit ? `${fieldName}.bgOverlayColor` : 'bgOverlayColor');
+                                    if (!e) {
+                                        resetField(bgOverlayColorName);
+                                        setValue(bgOverlayColorName, '');
+                                    }
                                 }}
                             />
                         </Col>
@@ -485,7 +488,7 @@ const WebPreviewConfig = ({ fieldName = '', isSplit = false, variant = 'splitAB'
 
             {showMiddleBlock && (
                 <>
-                    {deliveryType?.id !== 1 && !isSplit && renderBackgroundOverlayBlock({ labelCol, valueCol })}
+                    {deliveryType?.id !== 1 && renderBackgroundOverlayBlock({ labelCol, valueCol })}
                     {renderInteractivityBlock({
                         labelCol,
                         valueCol,

@@ -2,8 +2,7 @@ import { CANCEL, CHANNEL_TYPE, COMMUNICATION_TYPE, EMAIL, INTREST_TYPE, PRODUCTT
 import { Fragment, useEffect, useState } from 'react';
 import { useFormContext } from 'react-hook-form';
 import { Col, Row } from 'react-bootstrap';
-import _isEmpty from 'lodash/isEmpty';
-import _map from 'lodash/map';
+import { isEmpty as _isEmpty, map as _map } from 'Utils/modules/lodashReplacements';
 
 import RSModal from 'Components/RSModal';
 import { RSPrimaryButton, RSSecondaryButton } from 'Components/Buttons';

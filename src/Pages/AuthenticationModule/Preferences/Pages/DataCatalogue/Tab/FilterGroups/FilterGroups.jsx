@@ -1,8 +1,7 @@
 import { COLLAPSE, EDIT, EXPAND } from 'Constants/GlobalConstant/Placeholders';
 import { channel_action_medium, circle_info_mini, circle_plus_fill_edge_medium, collapse_mini, communication_target_medium, expand_mini, lock_medium, offline_conversion_medium, pencil_edit_mini, tag_offer_medium, user_form_medium, user_gdpr_medium, user_overview_medium, user_profile_completeness_medium, user_question_mark_medium, user_star_mini } from 'Constants/GlobalConstant/Glyphicons';
 import { Fragment, useCallback, useContext, useEffect, useState } from 'react';
-import _get from 'lodash/get';
-import _split from 'lodash/split';
+import { get as _get, split as _split } from 'Utils/modules/lodashReplacements';
 import { Col, Row } from 'react-bootstrap';
 import { useSelector } from 'react-redux';
 

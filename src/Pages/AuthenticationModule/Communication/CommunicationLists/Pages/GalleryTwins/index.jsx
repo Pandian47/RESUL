@@ -6,7 +6,7 @@ import { ADD_FIRST_COMMUNICATION_1, ADD_FIRST_COMMUNICATION_2, ALERT, COMPLETED,
 import { alert_medium, circle_plus_fill_edge_large, circle_plus_fill_medium } from 'Constants/GlobalConstant/Glyphicons';
 import { Fragment, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { Row } from 'react-bootstrap';
-import { cloneDeep, get as _get, isEqual } from 'lodash';
+import { cloneDeep, get as _get, isEqual } from 'Utils/modules/lodashReplacements';
 import { useDispatch, useSelector } from 'react-redux';
 import { getSearchDropdownDataCommunicationList } from 'Reducers/communication/listing/request';
 

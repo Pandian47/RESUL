@@ -1,13 +1,12 @@
 
-import { getUserDetails } from 'Utils/modules/crypto';
-import _get from 'lodash/get';
-import _map from 'lodash/map';
+
+import { get as _get, map as _map } from 'Utils/modules/lodashReplacements';
 
 import Audio from './Component/Audio/index';
 import TextToSpeech from './Component/TextToSpeech';
 
-
-import { handleAllChannelPayload, handleAllChannelTimeZonePayload, handleMDCExtraPayload, resolveLocalBlastDateTime } from '../../constant';
+import { getUserDetails, isValidDate } from 'Utils/index';
+import { formatDateScheculer, handleAllChannelPayload, handleAllChannelTimeZonePayload, handleMDCExtraPayload, resolveLocalBlastDateTime, resolveMdcSchedule } from '../../constant';
 import { ensureArray, ensureObject, sumAudienceCountByField } from 'Pages/AuthenticationModule/Communication/CreateCommunication/communicationDefaults';
 export const FORM_INITIAL_STATE = {
     defaultValues: {
@@ -46,7 +45,7 @@ export const getTestType = (type) => {
 
 export const buildPayload = (formState, type, location) => {
     try {
-            let {
+    let {
         audience,
         schedule,
         timezone,
@@ -91,12 +90,7 @@ export const buildPayload = (formState, type, location) => {
     const { timeZoneId = 0 } = getUserDetails();
     let isSendTestVMS = getTestType(type);
 
-    schedule =
-        campaignType === 'M' && levelNumber > 1
-            ? new Date(formState.schedule)
-            : (campaignType === 'M' && levelNumber === 1 && dataSource === 'DL')
-            ? new Date()
-            : schedule;
+    schedule = resolveMdcSchedule(formState, location, levelNumber, campaignType, dataSource, schedule);
 
     return {
         departmentId,

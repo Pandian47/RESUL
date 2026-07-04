@@ -1,13 +1,11 @@
 import { Fragment, useEffect, useState } from 'react';
-import _get from 'lodash/get';
+import { get as _get } from 'Utils/modules/lodashReplacements';
 import { useForm } from 'react-hook-form';
 import { useDispatch } from 'react-redux';
 
 import RSTabbarFluid from 'Components/RSTabberFluid';
 
-import DedupeModal from 'Pages/AuthenticationModule/Components/DedupeModal';
 import { leftAttWealth, rightAttWealth, rightAtt_crm } from 'Pages/AuthenticationModule/Preferences/Pages/DataExchange/data';
-import { COLUMN_DATA_DEDUPE } from './constants';
 import { useNavigate } from 'react-router-dom';
 // import AttributeListBox from './AttributeListBox';
 // import Preview from './Preview';
@@ -36,7 +34,6 @@ const TableAttributes = ({
     // const [connection, setConnections] = useState(null);
     const [tableDetail, setTableDetail] = useState(null);
     const [recency, setRecency] = useState(1);
-    const [dedupeFlag, setDedupeFlag] = useState(false);
     const [tableName, setTableName] = useState(0);
     const [tableNameFlag, setTableNameFlag] = useState(false);
     const [primaryKey, setprimaryKey] = useState([]);
@@ -66,7 +63,7 @@ const TableAttributes = ({
             {tabs?.length !== 0 && (
                 <div className="customTabDesign">
                     <RSTabbarFluid
-                        defaultClass={`col-md-4`}
+                        defaultClass={`col-md-4 col-sm-4`}
                         dynamicTab={`mb0 mini rst-left-space`}
                         activeClass={`active`}
                         className="rs-tabs row"
@@ -90,13 +87,7 @@ const TableAttributes = ({
                 <form className="card-header"></form>
             </div>
 
-            <DedupeModal
-                show={dedupeFlag}
-                handleClose={(status) => {
-                    setDedupeFlag(status);
-                }}
-                columnData={COLUMN_DATA_DEDUPE}
-            />
+{/* DedupeModal removed — component no longer exists */}
         </Fragment>
     );
 };

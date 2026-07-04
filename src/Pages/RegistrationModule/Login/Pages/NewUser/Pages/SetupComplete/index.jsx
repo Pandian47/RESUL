@@ -7,7 +7,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
 import AccountThumbsUp from 'Assets/Images/account-thumbsup.svg';
 import AccountThumbsDown from 'Assets/Images/account-thumbsdown.svg';
-import { clearClientSessionForLoginRedirect } from 'Reducers/login/existingUser/request';
+import { navigateToLoginAfterSessionClear } from 'Reducers/login/existingUser/request';
 
 const SetUpComplete = () => {
     const navigate = useNavigate();
@@ -18,8 +18,7 @@ const SetUpComplete = () => {
         const [countdown, setCountdown] = useState(15);
 
     const navigateToLogin = useCallback(() => {
-        clearClientSessionForLoginRedirect(dispatch);
-        navigate('/');
+        navigateToLoginAfterSessionClear(dispatch, navigate);
     }, [dispatch, navigate]);
 
     useEffect(() => {

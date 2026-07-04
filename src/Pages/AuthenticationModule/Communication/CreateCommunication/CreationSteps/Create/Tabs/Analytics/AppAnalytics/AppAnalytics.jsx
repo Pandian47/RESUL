@@ -4,12 +4,11 @@ import { getChannelId } from 'Utils/modules/communicationChannels';
 import { encodeUrl } from 'Utils/modules/crypto';
 import { formatName } from 'Utils/modules/formatters';
 import { SELECT_ANALYTICS_PLATFORM } from 'Constants/GlobalConstant/ValidationMessage';
-import { ANALYTIC_PLATFORM, CANCEL, CONVERSION, ENGAGEMENT, GOAL, IGNORE_CHANNEL, NEXT, OK, SAVE } from 'Constants/GlobalConstant/Placeholders';
-import { useEffect, useRef, useState } from 'react';
+import { ANALYTIC_PLATFORM, CANCEL, CONVERSION, CREATE_SMART_LINK, ENGAGEMENT, GOAL, IGNORE_CHANNEL, MOBILE_SMARTLINK_MANDATORY, NEXT, OK, SAVE } from 'Constants/GlobalConstant/Placeholders';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Row, Col } from 'react-bootstrap';
 import { useForm, FormProvider } from 'react-hook-form';
-import _map from 'lodash/map';
-import _get from 'lodash/get';
+import { map as _map,get as _get } from 'Utils/modules/lodashReplacements';
 import useQueryParams from 'Hooks/useQueryParams';
 import RSTabber from 'Components/RSTabber';
 import { RSPrimaryButton, RSSecondaryButton } from 'Components/Buttons';
@@ -23,9 +22,10 @@ import { availableTabs, getPreCampaignStatus } from '../../../constant';
 import { getSessionId } from 'Reducers/globalState/selector';
 import {
     getGeneratedLink,
+    getMobileSmartLinkOverlayMessage,
+    getResolvedMobileAppId,
     smartlinkEdit,
     screenListSelector,
-    getMobileAppId,
 } from 'Reducers/communication/createCommunication/smartlink/selectors';
 import { getSmartUrl } from 'Reducers/communication/createCommunication/smartlink/request';
 import SmartLinkEnable from '../../../Component/SmartLinkEnable/SmartLinkEnable';
@@ -79,6 +79,10 @@ const AppAnalytics = () => {
     const state = useQueryParams('/communication');
     const isEngagement = state?.primaryGoal === 'Engagement' || state?.secondaryGoal === 'Engagement';
     const isConverison = state?.primaryGoal === 'Conversion' || state?.secondaryGoal === 'Conversion';
+    const [statusIDCheck, setstatusIDCheck] = useState(state?.statusId || null);
+    const isAppAnalyticsClickOff =
+        checkTrigger(state?.campaignType, state?.endDate) ||
+        !statusIdCheck(statusIDCheck || state?.statusId);
     const screenListTemp = useSelector((state) => screenListSelector(state));
     const { userId, clientId, departmentId, departmentName, isAgency } = useSelector((state) => getSessionId(state));
     const { smartLink1, smartLink2 } = useSelector((state) => getGeneratedLink(state));
@@ -88,8 +92,21 @@ const AppAnalytics = () => {
     const { customFields, mobileApps , eventTrackData } = useSelector(({ smartLinkReducer }) => smartLinkReducer);
     const { personalization } = useSelector(({ createCommunicationReducer }) => createCommunicationReducer); 
     const smartLink = useSelector((state) => getGeneratedLink(state));
-    const mobileAppId = useSelector((state) => getMobileAppId(state));
+    const resolvedMobileAppId = useSelector((state) => getResolvedMobileAppId(state));
     const [isSmartLink, setIsSmartLink] = useState(false);
+
+    const smartLinkOverlayMessage = useMemo(
+        () =>
+            getMobileSmartLinkOverlayMessage({
+                smartLink1,
+                smartLink,
+                editFlow: edit,
+                noSmartLinkMessage: CREATE_SMART_LINK,
+                mobileNotSetupMessage: MOBILE_SMARTLINK_MANDATORY,
+            }),
+        [smartLink1, smartLink, edit],
+    );
+
     const [appAnalytics, setAppAnalytics] = useState({
         mobileAppDomains: [],
         appAnalyticsContent: [],
@@ -115,6 +132,7 @@ const AppAnalytics = () => {
         subChannelId: 16,
         shouldLoadEdit: checkSave,
     });
+    const savedChannel = isSavedChannel;
     const { runSave, isSaveLoading, isNextLoading, isSendLoading, isSubmitting } = useAuthoringChannelSaveLoader();
     const appLoaderConfig = checkSave ? AUTHORING_EDIT_API_LOADER_CONFIG : AUTHORING_FIELD_LOADER_CONFIG;
     const isAlreadyCalled = useRef(false);
@@ -177,13 +195,13 @@ const AppAnalytics = () => {
     }, [JSON.stringify(dirtyFields)]);
     useEffect(() => {
         if (checkSave) {
-            if (!mobileAppId || !smartLink1 || !Object.values(smartLink)[0]) setIsSmartLink(true);
+            if (!resolvedMobileAppId || !smartLink1 || !Object.values(smartLink)[0]) setIsSmartLink(true);
             else setIsSmartLink(false);
         } else {
-            if (!mobileAppId || !smartLink1 || !Object.values(smartLink)[0]) setIsSmartLink(true);
+            if (!resolvedMobileAppId || !smartLink1 || !Object.values(smartLink)[0]) setIsSmartLink(true);
             else setIsSmartLink(false);
         }
-    }, [smartLink1, smartLink, mobileAppId, showSmartLink]);
+    }, [smartLink1, smartLink, resolvedMobileAppId, showSmartLink]);
 
     let appGoalListTemp =
         state?.secondaryGoal === 'Engagement' || state?.secondaryGoal === 'Conversion'
@@ -297,6 +315,7 @@ const AppAnalytics = () => {
 
     // console.log('Edit  ::::::::::::::::::::::::::::: ', edit);
     async function getMADomainList(loaderConfig = AUTHORING_FIELD_LOADER_CONFIG) {
+        if (!savedChannel && isAppAnalyticsClickOff) return;
         const payload = { clientId, departmentId, userId, analyticsType: 'MA' };
         const res = await analyticsListLoader.refetch({
             fetcher: async () => dispatch(getMobileAnalyticsList({ payload, loading: false })),
@@ -590,7 +609,9 @@ const AppAnalytics = () => {
     useEffect(() => {
         let cancelled = false;
         async function initAppAnalytics() {
-            await getMADomainList(appLoaderConfig);
+            if (!savedChannel && !isAppAnalyticsClickOff) {
+                await getMADomainList(appLoaderConfig);
+            }
             if (cancelled) {
                 return;
             }
@@ -602,7 +623,7 @@ const AppAnalytics = () => {
         return () => {
             cancelled = true;
         };
-    }, []);
+    }, [savedChannel, isAppAnalyticsClickOff]);
 
     useEffect(() => {
         if (isEngagement) {
@@ -873,12 +894,13 @@ const AppAnalytics = () => {
             >
                 <div className={`box-design bd-top-border ${checkTrigger(state?.campaignType, state?.endDate)
                         ? 'pe-none click-off'
-                        : !statusIdCheck(state?.statusId)
+                        : !statusIdCheck(statusIDCheck || state?.statusId)
                             ? 'pe-none click-off'
                             : ''
                     }`}>
                     {isSmartLink && (
                         <SmartLinkEnable
+                            message={smartLinkOverlayMessage}
                             secondaryButton={false}
                             onSave={() => setIsSmartLink(false)}
                             onReject={() => {

@@ -1,8 +1,6 @@
 import { addHoursToDate } from 'Utils/modules/dateTime';
 import { addDaysToDate } from 'Utils/modules/dateTime';
-import _cloneDeep from 'lodash/cloneDeep';
-import _mapKeys from 'lodash/mapKeys';
-import _camelCase from 'lodash/camelCase';
+import { cloneDeep as _cloneDeep, mapKeys as _mapKeys, camelCase as _camelCase } from 'Utils/modules/lodashReplacements';
 import { mapDeep, eachDeep } from 'deepdash-es/standalone';
 
 import MdcTemplate from '../../MdcTemplate';

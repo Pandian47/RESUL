@@ -12,7 +12,6 @@ import { Col, Row } from 'react-bootstrap';
 import { FormProvider, useForm } from 'react-hook-form';
 import { uploadList } from '../../constants';
 import RSFileUpload from 'Components/FormFields/RSFileUpload';
-import _map from 'lodash/map';
 import DownloadCSV from 'Pages/AuthenticationModule/Components/DownloadCSV/DownloadCSV';
 const hideColor = '#e9e9eb';
 
@@ -39,7 +38,7 @@ const CommunicationImpact = (props) => {
             legend: {
                 enabled: true,
             },
-            series: _map(chartSeries, (bench) => ({
+            series: (chartSeries || []).map((bench) => ({
                 name: bench.name,
                 data: bench.data?.map((val) => +val),
                 color: bench.color,

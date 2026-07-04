@@ -1,5 +1,4 @@
 import { cloneElement } from 'react';
-import { UpdateState } from 'Utils/modules/misc';
 import { circle_plus_fill_medium } from 'Constants/GlobalConstant/Glyphicons';
 export const renderItem = (li, callback) => {
     const isExpectedItem = li.props.children[0]?.props?.children === 'Custom tag/parameter';
@@ -50,31 +49,11 @@ export const renderItemAppSubScreen = (li, callback) => {
         </span>,
     );
 };
-const copyTextToClipboard = async (text) => {
-    if ('clipboard' in navigator) {
-        return await navigator.clipboard.writeText(text);
-    }
-};
 export const disableUTMParameters = ({ currentLink, webLink }) => {
     return (currentLink?.mobilePlatform?.toLowerCase()?.includes('android') && webLink?.isAndroid) ||
         (currentLink?.mobilePlatform?.toLowerCase().startsWith('ip') && webLink?.isIOS)
         ? 'click-off'
         : '';
-};
-
-export const handleCopyClick = (copyText, copyTextIndex, state, setState) => {
-    copyTextToClipboard(copyText)
-        .then(() => {
-            let temp = { ...state };
-            temp.smartLinks[copyTextIndex].isCopied = true;
-            UpdateState(setState, 'smartLinks', temp.smartLinks);
-            setTimeout(() => {
-                temp.smartLinks[copyTextIndex].isCopied = false;
-                UpdateState(setState, 'smartLinks', temp.smartLinks);
-            }, 1500);
-        })
-        .catch((err) => {
-        });
 };
 
 export const TABS_NAME = [

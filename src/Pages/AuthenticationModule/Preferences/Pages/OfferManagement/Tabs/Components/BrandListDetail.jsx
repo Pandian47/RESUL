@@ -4,8 +4,7 @@ import { getmasterData } from 'Utils/modules/masterData';
 import { ARE_YOU_SURE_DELETE, DELETE, EDIT, OK } from 'Constants/GlobalConstant/Placeholders';
 import { delete_medium, pencil_edit_medium } from 'Constants/GlobalConstant/Glyphicons';
 import { Fragment, useEffect, useState } from 'react';
-import _get from 'lodash/get';
-import _map from 'lodash/map';
+import { get as _get, map as _map } from 'Utils/modules/lodashReplacements';
 import { useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 

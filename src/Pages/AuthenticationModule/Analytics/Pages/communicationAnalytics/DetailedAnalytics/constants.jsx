@@ -7,12 +7,24 @@ const BingLogo = GoogleLogo;
 const YahooLogo = GoogleLogo;
 import { mFulltimeSubt_01, mFulltimeSubt_02, mFulltimeSubt_03, mFulltimeSubt_04 } from 'Constants/Utils/dates';
 import { chartSizing, seriesNameField } from 'Constants/Charts/commonFunction';
-import { ch_clockchart1, ch_clockchart2, ch_primary_green, ch_secondary_green } from 'Constants/GlobalConstant/Colors/colorsVariable';
-import { arrow_up_mini, channel_action_mini, communication_target_mini, link_large, messaging_mini, social_post_large, thumbs_up_mini } from 'Constants/GlobalConstant/Glyphicons';
+import {
+    ch_clockchart1,
+    ch_clockchart2,
+    ch_primary_green,
+    ch_secondary_green,
+} from 'Constants/GlobalConstant/Colors/colorsVariable';
+import {
+    arrow_up_mini,
+    channel_action_mini,
+    communication_target_mini,
+    link_large,
+    messaging_mini,
+    social_post_large,
+    thumbs_up_mini,
+} from 'Constants/GlobalConstant/Glyphicons';
 // @refresh reset
 import { Suspense, lazy } from 'react';
-import moment from 'moment';
-import {  getHeatMapContentDetails } from 'Reducers/analytics/details/request';
+import { getHeatMapContentDetails } from 'Reducers/analytics/details/request';
 import { Get_Preview_By_Channel } from 'Reducers/communication/listing/request';
 
 import { parseAnalyticsJson, parseAnalyticsJsonArray } from 'Pages/AuthenticationModule/Analytics/analyticsDefaults';
@@ -33,9 +45,9 @@ const MobileNotification = lazy(() => import('./Pages/MobileNotification/MobileN
 const DetailAnalyticsRcs = lazy(() => import('./Pages/Rcs/Rcs'));
 const AppAnalytics = lazy(() => import('./Pages/AppAnalytics/AppAnalytics/AppAnalytics'));
 
-const detailAnalyticsTabComponent = (LazyComponent, props) => () => (
+const detailAnalyticsTabComponent = (LazyComponent, { key, ...props } = {}) => () => (
     <Suspense fallback={<DetailAnalyticsTabContentLoadingBlock />}>
-        <LazyComponent {...props} />
+        <LazyComponent key={key} {...props} />
     </Suspense>
 );
 
@@ -44,9 +56,6 @@ const progressbarData = [
     { name: 'Boost post', value: 10, cls: 'rejected' },
 ];
 
-const getDateWithDay = (value) => {
-    return moment().subtract(value, 'days').format('MMM DD');
-};
 export const getItemSubchannelId = (item) => Number(item?.subchannelId ?? item?.subChannelId ?? 0);
 
 export const resolveChannelInfoIndex = ({
@@ -404,20 +413,6 @@ export const ORM_TAB_CONFIG = [
     },
 ];
 
-const daysCount = (props) => {
-    let i = 0;
-    for (i; i < 30; i++) {
-        // getDateWithDay(i) + ','
-        // let test = i.split(' ')
-        // let test2 = test[0]
-        // console.log(`getDateWithDay(${i}),`);
-    }
-    return Array(props)
-        .fill(props)
-        .map((_, index) => getDateWithDay(index))
-        .reverse();
-};
-
 //Common details methods
 export const areachangeToBase64 = (data, size) => {
     if (!data || data === '' || data === undefined || typeof data !== 'string') {
@@ -572,7 +567,7 @@ export const TOP_LINK_ACTIVITY = [
     {
         field: 'rowNo',
         title: 'S.No',
-        className: 'text-end',
+        //className: 'text-end',
         width: 30,
     },
     {
@@ -667,18 +662,22 @@ export const getContentTargetGridData = (contentTarget) => {
             if (!entry || typeof entry !== 'object') {
                 return;
             }
-            Object.keys(entry).forEach((targetAttributeName) => {
-                const metrics = entry[targetAttributeName];
+            Object.keys(entry).forEach((targetName) => {
+                const metrics = entry[targetName];
                 if (!metrics || typeof metrics !== 'object') {
                     return;
                 }
+                const reach = getContentTargetMetricValue(metrics, 'is_Open');
+                const engagement = getContentTargetMetricValue(metrics, 'is_Click');
                 rows.push({
                     targetGroup,
                     targetAttributeName,
+                    targetName: targetAttributeName,
                     audience: getContentTargetMetricValue(metrics, 'is_Blast'),
-                    is_Open: getContentTargetMetricValue(metrics, 'is_Open'),
-                    is_Click: getContentTargetMetricValue(metrics, 'is_Click'),
+                    is_Open: reach,
+                    is_Click: engagement,
                     is_TotalConv: getContentTargetMetricValue(metrics, 'is_TotalConv'),
+                    contentTargetCtr: getContentTargetCtrValue(metrics),
                 });
             });
         });
@@ -693,19 +692,34 @@ const formatContentTargetMetric = (value) => {
     return safe > 0 ? numberWithCommas(safe) : '0';
 };
 
+const getContentTargetCtrValue = (metrics) => {
+    const reach = Number(getContentTargetMetricValue(metrics, 'is_Open'));
+    const engagement = Number(getContentTargetMetricValue(metrics, 'is_Click'));
+    if (!Number.isFinite(reach) || reach <= 0) {
+        return 0;
+    }
+    if (!Number.isFinite(engagement) || engagement < 0) {
+        return 0;
+    }
+    const pct = (engagement / reach) * 100;
+    return Math.round(pct * 100) / 100;
+};
+
 /** CTR numeric part only; `%` is rendered with `fs11` in the column cell. Engagement/Reach = is_Click/is_Open. */
 const getContentTargetCtrNumberStr = (dataItem) => {
+    const ctrValue = Number(dataItem?.contentTargetCtr);
+    if (Number.isFinite(ctrValue)) {
+        return String(numberWithCommas(ctrValue));
+    }
     const reach = Number(dataItem?.is_Open);
     const engagement = Number(dataItem?.is_Click);
     if (!Number.isFinite(reach) || reach <= 0) {
         return '0';
     }
-    if (!Number.isFinite(engagement) || engagement < 0) {
-        return '0';
+    if (!Number.isFinite(engagementNum) || engagementNum < 0) {
+        return 0;
     }
-    const pct = (engagement / reach) * 100;
-    const rounded = Math.round(pct * 100) / 100;
-    return String(numberWithCommas(rounded));
+    return Math.round((engagementNum / reachNum) * 100 * 100) / 100;
 };
 
 export const CONTENT_TARGET_GRID_COLUMN_DATA = [
@@ -735,7 +749,7 @@ export const CONTENT_TARGET_GRID_COLUMN_DATA = [
         width: 200,
         cell: ({ dataItem }) => (
             <td style={{ minWidth: 0 }}>
-                <TruncatedCell noTable value={String(dataItem?.targetAttributeName ?? '')} />
+                <TruncatedCell noTable value={String(dataItem?.targetName ?? '')} />
             </td>
         ),
     },
@@ -764,7 +778,7 @@ export const CONTENT_TARGET_GRID_COLUMN_DATA = [
         cell: ({ dataItem }) => (
             <td className="text-right">
                 <span className="k-text-truncate d-inline-block">
-                    {getContentTargetCtrNumberStr(dataItem)}
+                    {numberWithCommas(dataItem?.contentTargetCtr ?? 0)}
                     <span className="fs11">%</span>
                 </span>
             </td>
@@ -1943,7 +1957,12 @@ export const getPreviewData = async (dispatch, setState, payload, data, channelD
         setState((pre) => ({ ...pre, isClickMapModal: true, isPreviewLoading: true, previewData: '' }));
         const response = await dispatch(getHeatMapContentDetails(payload));
         if (response?.status) {
-            setState((pre) => ({ ...pre, isClickMapModal: true, isPreviewLoading: false, previewData: response?.data }));
+            setState((pre) => ({
+                ...pre,
+                isClickMapModal: true,
+                isPreviewLoading: false,
+                previewData: response?.data,
+            }));
         } else {
             setState((pre) => ({ ...pre, isClickMapModal: true, isPreviewLoading: false, previewData: '' }));
         }
@@ -2071,12 +2090,12 @@ export const getHoursWiseChartData = (chartData, size = 'footer') => {
                     item.count == max
                         ? ch_primary_green
                         : item.count == secondMax
-                        ? ch_secondary_green
-                        : item.count == thirdMax
-                        ? ch_clockchart1
-                        : item.count == fourthMax
-                        ? ch_clockchart2
-                        : '#e8e8ea',
+                          ? ch_secondary_green
+                          : item.count == thirdMax
+                            ? ch_clockchart1
+                            : item.count == fourthMax
+                              ? ch_clockchart2
+                              : '#e8e8ea',
                 outerRadius: '105%',
                 thickness: '5%',
             })),

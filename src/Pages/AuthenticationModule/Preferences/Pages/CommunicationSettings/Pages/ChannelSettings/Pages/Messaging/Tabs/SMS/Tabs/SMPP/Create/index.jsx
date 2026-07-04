@@ -2,11 +2,15 @@ import { selectIcon } from 'Utils/modules/display';
 import { MIN_LENGTH } from 'Constants/GlobalConstant/Regex';
 import { ENTER_FRIENDLY_NAME, ENTER_KEYWORD, MINLENGTH, SELECT_COUNTRY, SELECT_PROVIDER } from 'Constants/GlobalConstant/ValidationMessage';
 import { ADD, CANCEL, COUNTRY, FRIENDLY_NAME, PROMOTIONAL, REMOVE, SAVE, SENDER_ID, TRANSACTIONAL, UPDATE } from 'Constants/GlobalConstant/Placeholders';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useContext, useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useForm, FormProvider, useFieldArray, useWatch } from 'react-hook-form';
 import { Row, Col } from 'react-bootstrap';
 import { useDispatch, useSelector } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
+import { updateQueryParams } from 'Utils/modules/urlQuery';
+import { validateIsCustomNavigate } from 'Utils/modules/navigation';
+import { SMPPProvider } from '../Context';
 import { RenderVendors } from './constant';
 import RSTooltip from 'Components/RSTooltip';
 import RSKendoDropDownList from 'Components/FormFields/RSKendoDropdown';
@@ -24,6 +28,7 @@ import { updateCommunicationSettings } from 'Reducers/preferences/CommunicationS
 import useApiLoader from 'Hooks/useApiLoader';
 import { FIELD_BOTH_LOADER_CONFIG as fieldLoaderConfig } from 'Hooks/loaderTypes';
 import { CommunicationSettingsEditSkeletonGate } from 'Components/Skeleton/Components/PreferencesSubPageRouteSkeleton';
+import useQueryParams from 'Hooks/useQueryParams';
 
 
 const SMPP_CREATE_FORM_ID = 'rs_SMPPCreate_Form';
@@ -39,10 +44,21 @@ const DEFAULT_SENDER_DETAIL = {
     isDelete: false,
 };
 
+const ADD_SENDER_COMM_QUERY_KEYS_TO_CLEAR = {
+    backNavigationDetails: null,
+    backAction: null,
+    addType: null,
+};
+
 // ─── Component ─────────────────────────────────────────────────────────────
 const SMPPCreate = ({ type, handleCancel, config, setFailedApi }) => {
     // ─── Redux & Session ───────────────────────────────────────────────────
     const dispatch = useDispatch();
+    const navigate = useNavigate();
+    const queryState = useQueryParams('/preferences/communication-settings');
+
+    const { addSenderFromComm } = useContext(SMPPProvider) || {};
+    const isNavigatingBackToCommRef = useRef(false);
     const { departmentId, clientId, userId } = useSelector((state) => getSessionId(state));
     const { settingsProviders } = useSelector(({ communicationSettingsReducer }) => communicationSettingsReducer);
     const { permissions } = usePermission();
@@ -405,6 +421,22 @@ const SMPPCreate = ({ type, handleCancel, config, setFailedApi }) => {
         };
     };
 
+    const handleReturn = (extraReturnState = {}) => {
+        if (addSenderFromComm) {
+            isNavigatingBackToCommRef.current = true;
+            const resolvedNavigationState = {
+                ...(queryState || {}),
+                ...extraReturnState,
+            };
+            validateIsCustomNavigate(queryState, resolvedNavigationState, navigate, () => {
+                handleCancel(true)
+            });
+            return;
+        }
+
+        handleCancel(true);
+    };
+
     const handleFormSubmit = async (formState) => {
         if (saveApi.isFetching) return;
         const payload = { clientId, departmentId, userId, ...buildPayload(formState) };
@@ -414,7 +446,7 @@ const SMPPCreate = ({ type, handleCancel, config, setFailedApi }) => {
             mode: 'create',
         });
         const { status } = res || {};
-        if (status) handleCancel(true);
+        if (status) handleReturn();
         else trigger();
     };
 
@@ -463,6 +495,9 @@ const SMPPCreate = ({ type, handleCancel, config, setFailedApi }) => {
 
         return () => {
             setActionsPortalTarget(null);
+            if (addSenderFromComm && !isNavigatingBackToCommRef.current) {
+                updateQueryParams(ADD_SENDER_COMM_QUERY_KEYS_TO_CLEAR);
+            }
         };
     }, []);
 
@@ -752,7 +787,7 @@ const SMPPCreate = ({ type, handleCancel, config, setFailedApi }) => {
                 blockInteraction={isSaveLoading}
                 onClick={() => {
                     if (isSaveLoading) return;
-                    handleCancel(true);
+                    handleReturn();
                 }}
                 id="rs_SMPPCreate_Cancel"
             >

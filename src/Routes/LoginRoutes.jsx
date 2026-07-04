@@ -1,5 +1,5 @@
 import { Suspense } from 'react';
-import { Routes, Route } from 'react-router-dom';
+import { Routes, Route, useLocation } from 'react-router-dom';
 
 import { PublicLayout } from 'Hoc/NonProtectedRoute';
 import { PublicPages } from './pageModuleRegistry';
@@ -8,8 +8,15 @@ import RouteSuspenseFallback from './RouteSuspenseFallback';
 import { PUBLIC_APP_ROUTE_TREE, renderRouteNodes } from './appRouteConfig';
 
 const LoginRoutes = () => {
+    const state = useLocation();
+    const pathname =  state?.pathname || '';
+   const isLoginPage = pathname === '/';
+    const sectionClassName = isLoginPage
+        ? 'rs-page-content-wrapper login-bg-img'
+        : 'rs-page-content-wrapper';
+
     return (
-        <section className="rs-page-content-wrapper login-bg-img">
+        <section className={sectionClassName}>
             <Suspense fallback={<RouteSuspenseFallback />}>
                 <Routes>
                     <Route element={<PublicLayout />}>

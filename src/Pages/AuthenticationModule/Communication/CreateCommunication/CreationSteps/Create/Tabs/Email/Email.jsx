@@ -5,6 +5,7 @@ import { convertUserTimezoneToTarget, getYYMMDD } from 'Utils/modules/dateTime';
 import { checkScheduleDate } from 'Utils/modules/display';
 import { mapAudienceWithChannelLabels } from 'Utils/modules/formatters';
 import { getmasterData } from 'Utils/modules/masterData';
+import { createCommunicationSettingsNavState, MAIL_TAB_ID, shouldRefetchAudienceListOnReturn } from 'Utils/modules/navigation';
 import { EMAIL_RULES } from 'Constants/GlobalConstant/Rules';
 import { ADJUST_SPLIT_SIZE, AUDIENCE, AUDIENCE_CHANGE_CONFIRMATION, AUDIENCE_COUNT_ZERO_ENABLE_AUTO_REFRESH, AUTO_REFRESH, AUTO_REFRESH_POP_HOVER_TEXT, AUTO_SCHEDULE_SPLITS, CANCEL, CHECK_START_DATE_AND_END_DATE, COMMUNICATION_SCHEDULED, EMAIL_FOOTER_WARNING_MSG, IGNORE_CHANNEL, LABLE_SPLIT_AB, LIVE_PREVIEW_SENT, MINIMUM_DIFFERENCE_SPLITS, NEXT, OK, REPLY_EMAIL, SAVE, SCHEDULE, SELECT_DOMAIN_NAME, SELECT_TEMPLATE, SENDER_EMAIL_ADDRESS, SENDER_NAME, SENDER_REPLY_EMAIL, SPLIT_AB_TOOLTIP_TEXT, SPLIT_AB_TURNOFF, TEST_PREVIEW_SENT, WARNING } from 'Constants/GlobalConstant/Placeholders';
 import { encodeUrl, getUserDetails } from 'Utils/modules/crypto';
@@ -13,16 +14,18 @@ import { buildPayload, formInitialState, getCommunicationPerformanceId, INITIAL_
 import { ENTER_EDITOR_TEXT, ENTER_SENDER_NAME, ENTER_SENDEREMAILADDRESS, ENTER_SUBJECT_LINE, EXCEPTION_OCCURRED, SELECT_A_SCHEDULE_TIME, SELECT_CONTENT_TYPE, SELECT_DOMAIN_NAME as SELECT_DOMAIN_NAME_MSG, SELECT_IMPORT_URL, SELECT_ZIPFILE_URL, SUBJECTLINE_SHOULD_NOT_BE_SAME } from 'Constants/GlobalConstant/ValidationMessage';
 import { adjust_split_medium, circle_minus_fill_medium, circle_plus_edge_medium, circle_plus_fill_edge_medium, circle_plus_fill_medium, circle_plus_medium, circle_question_mark_medium, circle_question_mark_mini, close_mini, refresh_medium, timer_medium, user_question_mark_medium } from 'Constants/GlobalConstant/Glyphicons';
 import { Fragment, useCallback, useEffect, useMemo, useReducer, useRef, useState } from 'react';
-import _get from 'lodash/get';
-import _map from 'lodash/map';
-import _find from 'lodash/find';
-import _isEmpty from 'lodash/isEmpty';
-import _filter from 'lodash/filter';
-import _forEach from 'lodash/forEach';
-import _cloneDeep from 'lodash/cloneDeep';
-import _uniqBy from 'lodash/uniqBy'
+import {
+    get as _get,
+    map as _map,
+    find as _find,
+    isEmpty as _isEmpty,
+    filter as _filter,
+    forEach as _forEach,
+    cloneDeep as _cloneDeep,
+    uniqBy as _uniqBy,
+} from 'Utils/modules/lodashReplacements';
 import { Col, Row } from 'react-bootstrap';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useDispatch, useSelector, useStore } from 'react-redux';
 import { FormProvider, useForm } from 'react-hook-form';
 
@@ -50,7 +53,7 @@ import AuthoringChannelEditSkeletonGate, {
     useAuthoringChannelSaveLoader,
 } from 'Components/Skeleton/pages/communication/authoring';
 
-import { SPLIT_AB_NAME, availableTabs, communicationChannels, handleAutoRefreshClickOff, handlePersonalization, handlePersonalizationFetchApiCall, calculateDefaultSplittedCount, AudienceFieldRenderComponent, audienceTypeList, handleMDCQueryParamsUpdate, handleCheckCTGT, getNextEligibleTabIndex, EMAIL_TAB_CHANNEL_MAP, validateAudienceCount, mergeChannelAudiences, getPastPlanDurationBlockedState, validatePastPlanDurationOnSubmit, PAST_PLAN_DURATION_CLICK_OFF_CLASS, shouldLoadMdcEditCampaignFromGenie, isGenie } from '../../constant';
+import { SPLIT_AB_NAME, availableTabs, communicationChannels, handleAutoRefreshClickOff, handlePersonalization, handlePersonalizationFetchApiCall, calculateDefaultSplittedCount, AudienceFieldRenderComponent, audienceTypeList, handleMDCQueryParamsUpdate, handleCheckCTGT, getNextEligibleTabIndex, EMAIL_TAB_CHANNEL_MAP, validateAudienceCount, mergeChannelAudiences, getPastPlanDurationBlockedState, validatePastPlanDurationOnSubmit, PAST_PLAN_DURATION_CLICK_OFF_CLASS } from '../../constant';
 import { RSPrimaryButton, RSSecondaryButton } from 'Components/Buttons';
 import {
     updateDirtyState,
@@ -86,7 +89,6 @@ import { updateSmartLinkShow } from 'Reducers/communication/createCommunication/
 import { showTabsSmartlink } from 'Reducers/communication/createCommunication/smartlink/reducer';
 import { getUserListCampaign, getUtcTimeNow } from 'Reducers/globalState/request';
 import { getUtcTimeData } from 'Reducers/globalState/selector';
-import { isEmpty } from 'lodash';
 import { updateTotalAudienceCount } from 'Reducers/communication/createCommunication/Create/reducer';
 import { updateChannelAudiences } from 'Reducers/communication/createCommunication/plan/reducer';
 import { getSplitIndex } from './Component/Template/constant';
@@ -97,9 +99,11 @@ const Email = ({ type, mCampType }) => {
     const dispatch = useDispatch();
     const store = useStore();
     const navigate = useNavigate();
+    const routerLocation = useLocation();
     const location = useQueryParams('/communication/create-communication');
     const tabberRef = useRef();
     const audienceRef = useRef();
+    const audienceReturnRefreshRef = useRef(false);
     const formTypeRef = useRef(null);
     const rfaAutoNavTimeoutRef = useRef(null);
     const rfaManuallyClosedRef = useRef(false);
@@ -257,6 +261,35 @@ const Email = ({ type, mCampType }) => {
     const audienceLoader = useApiLoader();
     const domainNameLoader = useApiLoader();
     const personalizationLoader = useApiLoader();
+    const campaignId = _get(location, 'campaignId', 0);
+    const isSingleCampaign = _get(location, 'campaignType', '') === 'S';
+    const shouldRefetchAudienceAfterSave = useMemo(
+        () => shouldRefetchAudienceListOnReturn(routerLocation.state),
+        [routerLocation.state?.refreshAudienceList],
+    );
+    const audienceListFetchIntent = useMemo(() => {
+        if (!isSingleCampaign || !campaignId) {
+            return null;
+        }
+        if (shouldRefetchAudienceAfterSave) {
+            return 'refresh';
+        }
+        if (!audienceList?.length) {
+            return 'initial';
+        }
+        return null;
+    }, [isSingleCampaign, campaignId, audienceList?.length, shouldRefetchAudienceAfterSave]);
+    const audienceListFetchKeyRef = useRef(null);
+    const clearAudienceReturnRefreshFlag = useCallback(() => {
+        if (!routerLocation.state?.refreshAudienceList) return;
+
+        const nextState = { ...routerLocation.state };
+        delete nextState.refreshAudienceList;
+        navigate(
+            { pathname: routerLocation.pathname, search: routerLocation.search },
+            { replace: true, state: nextState },
+        );
+    }, [navigate, routerLocation.pathname, routerLocation.search, routerLocation.state]);
     const { runSave, beginSubmit, endSubmit, isSaveLoading, isNextLoading, isSendLoading, isSubmitting } =
         useAuthoringChannelSaveLoader();
     // const isSplitABEnable = calucateAudienceCount >= 100 && !Object.hasOwn(errors, 'audience');
@@ -313,7 +346,6 @@ const Email = ({ type, mCampType }) => {
         scheduleTimezone?.gmtOffset,
         utcTimeData?.utcTime,
     ]);
-    console.log('isPastPlanDurationBlocked: ', isPastPlanDurationBlocked);
     const getUsersList = async () => {
         const usersRes = await dispatch(getUserListCampaign({ payload: { clientId, userId, loggedinusertype: 0 },loading: false }));
         let userList = usersRes?.status ? usersRes?.data : [];
@@ -404,8 +436,35 @@ const Email = ({ type, mCampType }) => {
     }, [location]);
 
     useEffect(() => {
-        if (_get(location, 'campaignType', '') === 'S' && audienceList?.length === 0) {
-            audienceLoader.refetch({
+        audienceListFetchKeyRef.current = null;
+    }, [campaignId]);
+
+    useEffect(() => {
+        if (!audienceListFetchIntent) {
+            if (!shouldRefetchAudienceAfterSave) {
+                audienceReturnRefreshRef.current = false;
+            }
+            return;
+        }
+
+        const fetchKey = `${campaignId}:${audienceListFetchIntent}`;
+        if (audienceListFetchKeyRef.current === fetchKey) {
+            return;
+        }
+
+        if (audienceListFetchIntent === 'refresh' && audienceReturnRefreshRef.current) {
+            return;
+        }
+
+        audienceListFetchKeyRef.current = fetchKey;
+        if (audienceListFetchIntent === 'refresh') {
+            audienceReturnRefreshRef.current = true;
+        }
+
+        let isCancelled = false;
+
+        audienceLoader
+            .refetch({
                 fetcher: ({ payload, isFilter = false } = {}) =>
                     dispatch(getAudienceList({ payload, isFilter, loading: false })),
                 mode: savedChannel ? 'edit' : 'create',
@@ -414,7 +473,7 @@ const Email = ({ type, mCampType }) => {
                     payload: {
                         clientId,
                         userId,
-                        campaignId: campaign.campaignId,
+                        campaignId,
                         departmentId,
                         searchText: '',
                         segmentIds: [],
@@ -422,8 +481,34 @@ const Email = ({ type, mCampType }) => {
                     },
                     isFilter: false,
                 },
+            })
+            .finally(() => {
+                if (isCancelled) return;
+
+                if (audienceListFetchIntent === 'refresh') {
+                    audienceReturnRefreshRef.current = false;
+                    audienceListFetchKeyRef.current = null;
+                    clearAudienceReturnRefreshFlag();
+                }
             });
-        }
+
+        return () => {
+            isCancelled = true;
+        };
+    }, [
+        audienceListFetchIntent,
+        audienceLoader,
+        campaignId,
+        clearAudienceReturnRefreshFlag,
+        clientId,
+        departmentId,
+        dispatch,
+        savedChannel,
+        shouldRefetchAudienceAfterSave,
+        userId,
+    ]);
+
+    useEffect(() => {
         if (
             _get(location, 'campaignType', '') === 'S' ||
             _get(location, 'campaignType', '') === 'T' ||
@@ -445,14 +530,7 @@ const Email = ({ type, mCampType }) => {
             // );
 
             if (_get(location, 'campaignType', '') === 'M') {
-                const isFromGenie = isGenie(location);
-                const shouldLoadEditData = isFromGenie
-                    ? shouldLoadMdcEditCampaignFromGenie({ location, isMDCEditMode, savedChannel })
-                    : isMDCEditMode === 'edit';
-                if (shouldLoadEditData && (!isFromGenie || !isAlreadyEditCallRef.current)) {
-                    if (isFromGenie) {
-                        isAlreadyEditCallRef.current = true;
-                    }
+                if (isMDCEditMode === 'edit') {
                     getEmailCommunicationByIdData();
                 }
             } else if (savedChannel) {
@@ -622,7 +700,7 @@ const Email = ({ type, mCampType }) => {
 
         const fetchEditEmail = async () => {
             const shouldProcess =
-                Object.keys(campaignDetails)?.length > 1 && !isEmpty(location);
+                Object.keys(campaignDetails)?.length > 1 && !_isEmpty(location);
             if (!shouldProcess) {
                 return;
             }
@@ -637,7 +715,7 @@ const Email = ({ type, mCampType }) => {
             const isTemplateFlow = (__rawTemplateId > 0 && __rawChannelId === 1) || (__rawTemplateId > 0 && __rawTemplateChannelId === 1);
             if (
                 Object.keys(campaignDetails)?.length > 1 &&
-                !isEmpty(location)
+                !_isEmpty(location)
                 // (_get(location, 'campaignType', '') === 'M' || audienceList?.length)
             ) {
                 // console.log(campaignDetails, 'campaignDetails');
@@ -2146,7 +2224,7 @@ const Email = ({ type, mCampType }) => {
                 dispatch(updateChannelAudiences(mergeChannelAudiences('Email', selectedAudience, channelAudiences)));
             }
             if (status && getTestType() !== 0) {
-                setValue('savedChannelResponseDetailId', edmChannelId ?? 0);
+                setValue('savedChannelResponseDetailId', data?.edmChannelId ?? 0);
                 await dispatch(
                     getEmailCommunicationById({
                         payload: {
@@ -2156,7 +2234,7 @@ const Email = ({ type, mCampType }) => {
                             levelNumber,
                             actionId,
                             campaignId: formState?.campaignId, //location?.campaignId,
-                            edmChannelId: edmChannelId,
+                            edmChannelId: data?.edmChannelId,
                         },
                         ...(getTestType() === 2 && {
                             testCampaignPayload: {
@@ -2638,7 +2716,7 @@ const Email = ({ type, mCampType }) => {
                                                     className="no_caret"
                                                     onSelect={(data) => {
                                                         // Get sender name from RSInput
-                                                        const personalizedSenderName = personalizationKey; // Concatenate sender name and personalized value
+                                                        const personalizedSenderName = data?.personalizationKey; // Concatenate sender name and personalized value
                                                         setValue('senderName', personalizedSenderName);
                                                         clearErrors('senderName');
                                                         dispatchState({
@@ -2647,6 +2725,7 @@ const Email = ({ type, mCampType }) => {
                                                             field: 'selectedSendername',
                                                         });
                                                     }}
+                                                    showUpdate={false}
                                                     showSearch
                                                 />
                                                 {/* <RSTooltip text={'Refresh'} className="lh0 " position="top">

@@ -10,7 +10,7 @@ import InsertOffer from '../../../../Component/InsertOffer';
 import RSTextarea from 'Components/FormFields/RSTextarea';
 import { useFormContext } from 'react-hook-form';
 import { useDispatch, useSelector } from 'react-redux';
-import _get from 'lodash/get';
+import { get as _get } from 'Utils/modules/lodashReplacements';
 import { getRcsList } from 'Reducers/communication/createCommunication/Create/selectors';
 import { uploadMessagingImage } from 'Reducers/communication/createCommunication/Create/request';
 import { RSMobilePreview, PREVIEW_SOURCE } from 'Components/Previews';
@@ -267,7 +267,7 @@ const RCSTextEditor = ({ fieldName, isSplitTab, isEnableImgUpload = true, index 
                     <Col sm={{ offset: 1, span: 6 }}>
                         <div className="rs-textarea-component-wrapper preview-mobile-editor position-relative ">
                             <div className="rstcw-top-icons">
-                                <ul className={`float-left ${isToolbarActive ? '' : 'click-off'}`}>
+                                <ul className={`float-left ${isToolbarActive ? '' : 'click-off pe-none'}`}>
                                     <li className={`${!isCustomParmIncluded(watchEditorText) ? 'click-off' : ''}`}>
                                         <RSTooltip text={PERSONALIZATION} className="lh0">
                                             <RSBootstrapdown

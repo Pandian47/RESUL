@@ -1,4 +1,4 @@
-import { CHECK_OFFERNAME_EXIST, COUPON_CODE_GENERATION, COUPON_CODE_GENERATION_CSV, CREATE_OFFER, DELETED_OFFER, DELETE_BRAND_OFFER, DELETE_OFFER_NEW, DELETE_STORE_OFFER, DUPLICATE_BRAND, DUPLICATE_OFFER, DUPLICATE_OFFER_NEW, DUPLICATE_STORE, FETCH_OFFER, FETCH_OFFER_BRAND, FETCH_OFFER_CATEGORY, FETCH_OFFER_STORE, FETCH_OFFER_SUBCATEGORY, FETCH_OFFER_TYPES, GET_DATABEST_OFFER, GET_OFFER_ANALYTICS, GET_OFFER_BYID, GET_OFFER_GRID_NEW, GET_OFFER_LIST, GET_OFFER_NAMELIST, GET_OFFER_TYPE, OFFER_CATEGORY_SAVE, OFFER_CODE_COUNT, PUBLISH_OFFER, RENDER_PUBLISHED_OFFER, SAVE_BEST_OFFER, SAVE_BRAND_OFFER, SAVE_OFFER, SAVE_OFFERCODEFILE, SAVE_STORE_OFFER } from 'Constants/EndPoints';
+import { CHECK_OFFERNAME_EXIST, COUPON_CODE_GENERATION, COUPON_CODE_GENERATION_CSV, CREATE_OFFER, DELETE_BRAND_OFFER, DELETE_OFFER_NEW, DELETE_STORE_OFFER, DUPLICATE_BRAND, DUPLICATE_OFFER_NEW, DUPLICATE_STORE, FETCH_OFFER, FETCH_OFFER_BRAND, FETCH_OFFER_CATEGORY, FETCH_OFFER_STORE, FETCH_OFFER_SUBCATEGORY, GET_OFFER_ANALYTICS, GET_OFFER_BYID, GET_OFFER_GRID_NEW, GET_OFFER_NAMELIST, GET_OFFER_TYPE, OFFER_CATEGORY_SAVE, OFFER_CODE_COUNT, PUBLISH_OFFER, RENDER_PUBLISHED_OFFER, SAVE_BEST_OFFER, SAVE_BRAND_OFFER, SAVE_OFFER, SAVE_OFFERCODEFILE, SAVE_STORE_OFFER } from 'Constants/EndPoints';
 import request from 'Utils/Http';
 
 export const checkOfferNameExists =
@@ -32,19 +32,6 @@ export const getOfferType =
             }),
         );
     };
-export const offerListApi = (payload) => async (dispatch) => {
-    return dispatch(
-        request.post({
-            url: GET_OFFER_LIST,
-            payload,
-            loading: true,
-            isToast: false,
-            ok: ({ data }) => {
-                            },
-            fail: (err) => {},
-        }),
-    );
-};
 export const offerListApiNew = (payload) => async (dispatch) => {
     return dispatch(
         request.post({
@@ -167,38 +154,12 @@ export const saveOffer = (payload) => async (dispatch) => {
         }),
     );
 };
-export const duplicateOffer = (payload) => async (dispatch) => {
-    return dispatch(
-        request.post({
-            url: DUPLICATE_OFFER,
-            payload,
-            loading: true,
-            isToast: false,
-            ok: ({ data }) => {
-                            },
-            fail: (err) => {},
-        }),
-    );
-};
 export const duplicateOfferNew = (payload, loading = false) => async (dispatch) => {
     return dispatch(
         request.post({
             url: DUPLICATE_OFFER_NEW,
             payload,
             loading,
-            isToast: false,
-            ok: ({ data }) => {
-                            },
-            fail: (err) => {},
-        }),
-    );
-};
-export const deleteOffer = (payload) => async (dispatch) => {
-    return dispatch(
-        request.post({
-            url: DELETED_OFFER,
-            payload,
-            loading: true,
             isToast: false,
             ok: ({ data }) => {
                             },
@@ -266,19 +227,6 @@ export const getOfferNameList = (payload, { loading = true } = {}) => async (dis
             url: GET_OFFER_NAMELIST,
             payload,
             loading,
-            isToast: false,
-            ok: ({ data }) => {
-                            },
-            fail: (err) => {},
-        }),
-    );
-};
-export const getBestOfferAPi = (payload) => async (dispatch) => {
-    return dispatch(
-        request.post({
-            url: GET_DATABEST_OFFER,
-            payload,
-            loading: true,
             isToast: false,
             ok: ({ data }) => {
                             },
@@ -365,20 +313,6 @@ export const fetchOfferSubCategory = (payload) => async (dispatch) => {
         }),
     );
 };
-export const fetchOfferTypes = (payload) => async (dispatch) => {
-    return dispatch(
-        request.post({
-            url: FETCH_OFFER_TYPES,
-            payload,
-            loading: true,
-            isToast: false,
-            ok: ({ data }) => {
-                            },
-            fail: (err) => {},
-        }),
-    );
-};
-
 export const createOffer = (payload, loading = false) => async (dispatch) => {
     return dispatch(
         request.post({

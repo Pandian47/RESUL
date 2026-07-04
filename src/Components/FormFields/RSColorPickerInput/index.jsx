@@ -1,7 +1,7 @@
 import { colorpicker_bg_medium } from 'Constants/GlobalConstant/Glyphicons';
 import { memo, useState } from 'react';
 import { Controller } from 'react-hook-form';
-import get from 'lodash/get';
+import { get } from 'Utils/modules/lodashReplacements';
 import PropTypes from 'prop-types';
 import RSColorPicker from 'Components/ColorPicker';
 const RSColorPickerInput = ({

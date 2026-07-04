@@ -1,10 +1,8 @@
+import { cloneDeep as _cloneDeep, filter as _filter, get as _get, isEmpty as _isEmpty, map as _map } from 'Utils/modules/lodashReplacements';
 import { statusIdCheck } from 'Utils/modules/campaignUtils';
-import { Fragment, useEffect, useMemo, useRef, useState } from 'react';
-import _get from 'lodash/get';
-import _map from 'lodash/map';
-import _isEmpty from 'lodash/isEmpty';
-import _cloneDeep from 'lodash/cloneDeep';
-import { useDispatch, useSelector } from 'react-redux';
+import { Fragment, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useDispatch, useSelector, useStore } from 'react-redux';
+import { useLocation } from 'react-router-dom';
 import { FormProvider, useForm } from 'react-hook-form';
 
 import { circle_minus_fill_medium, circle_plus_medium } from 'Constants/GlobalConstant/Glyphicons';
@@ -16,24 +14,33 @@ import SmartLinkProvider from './context';
 import GenerateSmartLink from './Component/GenerateSmartLink';
 import useComponentWillUnmount from 'Hooks/useComponentWillUnMount';
 
-import { FORM_INITIAL_STATE, buildSmartLinkPayload } from './constant';
+import { FORM_INITIAL_STATE, isSmartLinkViewOnly } from './constant';
 import { RSPrimaryButton, RSSecondaryButton } from 'Components/Buttons';
 import { getSessionId } from 'Reducers/globalState/selector';
-import { getMobileApps, getSmartUrl, saveSmartLink } from 'Reducers/communication/createCommunication/smartlink/request';
+import { getMobileApps, getSmartUrl } from 'Reducers/communication/createCommunication/smartlink/request';
 import {
     getGeneratedFlag,
     getGeneratedLink,
+    getMobileAppIdFromEditFlow,
+    getSmartLinkFriendlyName,
+    isSmartLinkCacheValid,
     smartlinkEdit,
 } from 'Reducers/communication/createCommunication/smartlink/selectors';
 import { updateSmartLinkModalState, updateSmartLinkAutoAdd } from 'Reducers/communication/createCommunication/Create/reducer';
-import { deleteGeneratedSmartLink, showTabsSmartlink } from 'Reducers/communication/createCommunication/smartlink/reducer';
+import {
+    deleteGeneratedSmartLink,
+    showTabsSmartlink,
+    updateEditFlow,
+    updateMobileAppId,
+    updateSmartLinkFriendlyName,
+} from 'Reducers/communication/createCommunication/smartlink/reducer';
 import useQueryParams from 'Hooks/useQueryParams';
 
 
 import RSTabSlide from 'Components/RSTabSlide'
 import { getPersonalizationFields } from 'Reducers/communication/createCommunication/Create/request';
 import useApiLoader from 'Hooks/useApiLoader';
-import { AUTHORING_FIELD_LOADER_CONFIG, AUTHORING_SAVE_LOADER_CONFIG } from 'Components/Skeleton/pages/communication/authoring';
+import { AUTHORING_FIELD_LOADER_CONFIG } from 'Components/Skeleton/pages/communication/authoring';
 import SmartLinkModalSkeleton from 'Components/Skeleton/Components/SmartLinkModalSkeleton';
 // import { DUPLICATE_VALUE } from 'Constants/GlobalConstant/ValidationMessage';
 
@@ -41,9 +48,20 @@ import SmartLinkModalSkeleton from 'Components/Skeleton/Components/SmartLinkModa
 const EDITABLE_STATUS_IDS = [7, 54, 6];
 const excludedChannelIds = [6, 16];
 
+const getSmartLinkTabMeta = (index) => ({
+    id: `smartLink${index + 1}`,
+    text: '',
+    text2: `Smart Link ${index + 1}`,
+    friendlyName: '',
+    ...(index !== MAX_SMART_LINKS - 1 ? { add: circle_plus_medium } : {}),
+});
+
 const SmartLink = ({ handleClose, show, statusId, openWithAddNewTab = false }) => {
     const dispatch = useDispatch();
+    const store = useStore();
+    const { pathname } = useLocation();
     const state = useQueryParams('/communication');
+    const isViewOnly = isSmartLinkViewOnly(pathname);
     const { savedChannelStatusId, exisingLinks } = useSelector(({ communicationPlanReducer }) => communicationPlanReducer);
     const campaignId = _get(state, 'campaignId', 0);
     const campaignType = _get(state, 'campaignType', 'S');
@@ -105,10 +123,13 @@ const SmartLink = ({ handleClose, show, statusId, openWithAddNewTab = false }) =
     });
     const edit = useSelector((state) => smartlinkEdit(state));
     const generateFlag = useSelector((state) => getGeneratedFlag(state));
+    const { isSmartLinkDetailFetched, fetchedCampaignId } = useSelector(isSmartLinkCacheValid);
+    const isCacheValidForCampaign =
+        isSmartLinkDetailFetched && Number(fetchedCampaignId) === Number(campaignId);
     const { isSmartLinkCreated } = useSelector(({ createCommunicationReducer }) => createCommunicationReducer);
     const { parentClientId, ...payload } = useSelector((state) => getSessionId(state));
-    const { eventTrackData } = useSelector(({ smartLinkReducer }) => smartLinkReducer);
     const smartLink = useSelector((state) => getGeneratedLink(state));
+    const smartLinkFriendlyNames = useSelector((state) => getSmartLinkFriendlyName(state));
     const { customFields, mobileApps, screenList, subScreenList } = useSelector(
         ({ smartLinkReducer }) => smartLinkReducer,
     );
@@ -122,23 +143,13 @@ const SmartLink = ({ handleClose, show, statusId, openWithAddNewTab = false }) =
     });
 
     const { handleSubmit, reset, resetField, setValue, watch, clearErrors } = methods;
-    const [count, saveFlag] = watch(['count', 'saveFlag']);
-
+    const [count, saveFlag, formGenerateFlag] = watch(['count', 'saveFlag', 'generateFlag']);
+    const isSaveReady = Boolean(formGenerateFlag || saveFlag );
 
     const SMARTLINK_NAME = {};
 
     for (let i = 0; i < MAX_SMART_LINKS; i++) {
-        SMARTLINK_NAME[i] = {
-            id: `smartLink${i + 1}`,
-            text: '',
-            text2: `Smart Link ${i + 1}`,
-            friendlyName: '',
-        };
-
-        // Add the icon to all except the first and last items
-        if (i !== MAX_SMART_LINKS - 1) {
-            SMARTLINK_NAME[i].add = circle_plus_medium;
-        }
+        SMARTLINK_NAME[i] = getSmartLinkTabMeta(i);
     }
     useEffect(() => {
         // reset(_cloneDeep(FORM_INITIAL_STATE.defaultValues));
@@ -165,15 +176,19 @@ const SmartLink = ({ handleClose, show, statusId, openWithAddNewTab = false }) =
 
     const pendingAutoAddRef = useRef(false);
 
-    // console.log('Smart link :::::: ', smartLink);
-    useEffect(() => {
-        if (!_isEmpty(edit)) {
-            reset((formState) => ({ ...formState, ...edit, generateFlag }));
+    const buildTabsFromEdit = useCallback(
+        (editData, { applyPendingAutoAdd = false } = {}) => {
             const tempTabState = [];
-            Object.entries(edit)?.forEach((link, index, total) => {
-                const { id, text2 } = SMARTLINK_NAME[index];
-                const friendlyName = link?.[1]?.[0]?.smartlinkFriendlyname || ''
-                setValue(`${id}_friendlyName`, friendlyName)
+            Object.entries(editData)?.forEach((entry, index, total) => {
+                const [tabId, linkArray] = entry;
+                const { id, text2 } = getSmartLinkTabMeta(index);
+                const storeFriendly =
+                    typeof smartLinkFriendlyNames?.[tabId] === 'object'
+                        ? String(smartLinkFriendlyNames[tabId]?.label ?? '').trim()
+                        : '';
+                const friendlyName =
+                    String(linkArray?.[0]?.smartlinkFriendlyname ?? '').trim() || storeFriendly;
+                setValue(`${id}_friendlyName`, friendlyName);
                 tempTabState.push({
                     id,
                     text2,
@@ -192,77 +207,185 @@ const SmartLink = ({ handleClose, show, statusId, openWithAddNewTab = false }) =
                     ),
                     ...(total?.length < MAX_SMART_LINKS &&
                         total?.length - 1 === index && {
-                        isAdd: !canAddnewSmartLink,
-                        add: circle_plus_medium,
-                    }),
+                            isAdd: !canAddnewSmartLink,
+                            add: circle_plus_medium,
+                        }),
                     ...(index !== 0 &&
                         index === total?.length - 1 && {
-                        remove: circle_minus_fill_medium,
-                        isRemove: !canEditExistingSmartLink,
-                    }),
+                            remove: circle_minus_fill_medium,
+                            isRemove: !canEditExistingSmartLink,
+                        }),
                 });
             });
 
-            if (pendingAutoAddRef.current && tempTabState.length < MAX_SMART_LINKS) {
+            if (
+                applyPendingAutoAdd &&
+                pendingAutoAddRef.current &&
+                tempTabState.length < MAX_SMART_LINKS &&
+                !isViewOnly
+            ) {
                 pendingAutoAddRef.current = false;
                 const newIdx = tempTabState.length;
-                const newSmartlink = SMARTLINK_NAME[newIdx];
-                if (newSmartlink) {
-                    // Strip add/remove icons from the last existing tab
-                    delete tempTabState[tempTabState.length - 1].add;
-                    delete tempTabState[tempTabState.length - 1].remove;
-                    tempTabState.push({
-                        ...newSmartlink,
-                        friendlyName: '',
-                        component: () => (
-                            <GenerateSmartLink
-                                fieldName={newSmartlink.id}
-                                key={newSmartlink.id}
-                                tab={[]}
-                                isEdit={false}
-                                canEditExistingSmartLink={canEditExistingSmartLink}
-                                canAddnewSmartLink={canAddnewSmartLink}
-                            />
-                        ),
-                        remove: circle_minus_fill_medium,
-                        isAdd: true,
-                    });
-                    setValue('count', tempTabState.length);
-                    setValue('saveFlag', false);
-                    setTabState({
-                        tabList: _map(tempTabState, 'id'),
-                        currentTab: tempTabState.length - 1,
-                    });
-                }
+                const newSmartlink = getSmartLinkTabMeta(newIdx);
+                delete tempTabState[tempTabState.length - 1].add;
+                delete tempTabState[tempTabState.length - 1].remove;
+                tempTabState.push({
+                    ...newSmartlink,
+                    friendlyName: '',
+                    component: () => (
+                        <GenerateSmartLink
+                            fieldName={newSmartlink.id}
+                            key={newSmartlink.id}
+                            tab={[]}
+                            isEdit={false}
+                            canEditExistingSmartLink={canEditExistingSmartLink}
+                            canAddnewSmartLink={canAddnewSmartLink}
+                        />
+                    ),
+                    remove: circle_minus_fill_medium,
+                    isAdd: true,
+                });
+                setValue('count', tempTabState.length);
+                setValue('saveFlag', false);
+                setTabState({
+                    tabList: _map(tempTabState, 'id'),
+                    currentTab: tempTabState.length - 1,
+                });
             }
 
+            return tempTabState;
+        },
+        [tab, statusId, canEditExistingSmartLink, canAddnewSmartLink, setValue, smartLinkFriendlyNames, isViewOnly],
+    );
+
+    const syncFormToReducer = useCallback(
+        (formState) => {
+            const tabList = _filter(tabState.tabList, (name) => {
+                const isLinkValid = _get(formState[name]?.[0], 'domain', '');
+                return isLinkValid;
+            });
+            const editPayload = {};
+            const friendlyNameMap = {};
+
+            tabList.forEach((tabId, index) => {
+                if (!formState[tabId]) return;
+
+                const trimmedFriendly = String(formState[`${tabId}_friendlyName`] ?? '').trim();
+                const linkData = _cloneDeep(formState[tabId]);
+                if (linkData[0]) {
+                    linkData[0] = {
+                        ...linkData[0],
+                        smartlinkFriendlyname: trimmedFriendly,
+                    };
+                }
+                editPayload[tabId] = linkData;
+
+                const url = smartLink[tabId] || smartLinkFriendlyNames[tabId]?.url || '';
+                if (url) {
+                    friendlyNameMap[tabId] = {
+                        url,
+                        goalNo: index + 1,
+                        ...(trimmedFriendly ? { label: trimmedFriendly } : {}),
+                    };
+                }
+            });
+
+            if (!_isEmpty(editPayload)) {
+                const { generatedLink: latestLinks, generateFlag: latestGenerateFlag } =
+                    store.getState().smartLinkReducer;
+                dispatch(
+                    updateEditFlow({
+                        edit: editPayload,
+                        generatedLink: latestLinks,
+                        generateFlag: formState.generateFlag ?? latestGenerateFlag,
+                    }),
+                );
+                const resolvedMobileAppId = getMobileAppIdFromEditFlow(editPayload);
+                dispatch(updateMobileAppId(resolvedMobileAppId || ''));
+            }
+
+            if (!_isEmpty(friendlyNameMap)) {
+                dispatch(updateSmartLinkFriendlyName(friendlyNameMap));
+            }
+
+            setTab((prev) =>
+                prev.map((tabItem) => {
+                    if (!(tabItem.id in editPayload)) return tabItem;
+                    const trimmed = String(formState[`${tabItem.id}_friendlyName`] ?? '').trim();
+                    return { ...tabItem, text: trimmed, friendlyName: trimmed };
+                }),
+            );
+        },
+        [tabState.tabList, smartLink, smartLinkFriendlyNames, store, dispatch],
+    );
+
+    const hydrateModalFromEdit = useCallback(
+        (editData, currentGenerateFlag, { applyPendingAutoAdd = false } = {}) => {
+            if (_isEmpty(editData)) return false;
+
+            const friendlyFields = {};
+            Object.entries(editData).forEach(([tabId, linkArray]) => {
+                const storeFriendly =
+                    typeof smartLinkFriendlyNames?.[tabId] === 'object'
+                        ? String(smartLinkFriendlyNames[tabId]?.label ?? '').trim()
+                        : '';
+                const friendlyName =
+                    String(linkArray?.[0]?.smartlinkFriendlyname ?? '').trim() || storeFriendly;
+                if (friendlyName) {
+                    friendlyFields[`${tabId}_friendlyName`] = friendlyName;
+                }
+            });
+
+            reset(
+                {
+                    ..._cloneDeep(FORM_INITIAL_STATE.defaultValues),
+                    ...editData,
+                    ...friendlyFields,
+                    generateFlag: currentGenerateFlag,
+                },
+                { keepDefaultValues: false },
+            );
+            const tempTabState = buildTabsFromEdit(editData, { applyPendingAutoAdd });
             setTab(tempTabState);
+            return true;
+        },
+        [buildTabsFromEdit, reset, smartLinkFriendlyNames],
+    );
+
+    useEffect(() => {
+        if (!_isEmpty(edit)) {
+            hydrateModalFromEdit(edit, generateFlag, { applyPendingAutoAdd: true });
         }
     }, [edit]);
 
     useEffect(() => {
-        if (show && openWithAddNewTab) {
+        if (show && openWithAddNewTab && !isViewOnly) {
             pendingAutoAddRef.current = true;
             dispatch(updateSmartLinkAutoAdd(false));
         }
         if (!show) {
             pendingAutoAddRef.current = false;
         }
-    }, [show, openWithAddNewTab]);
+    }, [show, openWithAddNewTab, isViewOnly]);
 
     const mobileAppsLoader = useApiLoader();
     const smartLinkDetailLoader = useApiLoader({ autoFetch: false });
-    const smartLinkSaveApi = useApiLoader({ autoFetch: false });
     const generateSmartLinkLoader = useApiLoader({ autoFetch: false });
     const isSmartLinkDetailFetching = smartLinkDetailLoader.isFetching;
-    const isSavingSmartLink = smartLinkSaveApi.isFetching;
     const isGeneratingSmartLink = generateSmartLinkLoader.isFetching;
-    const isModalLocked = isSmartLinkDetailFetching || isSavingSmartLink || isGeneratingSmartLink;
+    const isModalLocked = isSmartLinkDetailFetching || isGeneratingSmartLink;
 
     useEffect(() => {
-        async function fetchSmartLink() {
-            if (!!smartLink1) {
-                const { status, message } =
+        async function onModalOpen() {
+            const canHydrateFromCache =
+                isCacheValidForCampaign && (!_isEmpty(edit) || !smartLink1);
+
+            if (canHydrateFromCache) {
+                if (!_isEmpty(edit)) {
+                    hydrateModalFromEdit(edit, generateFlag, { applyPendingAutoAdd: true });
+                }
+            } else {
+                const { status } =
                     (await smartLinkDetailLoader.refetch({
                         fetcher: () =>
                             dispatch(
@@ -284,6 +407,7 @@ const SmartLink = ({ handleClose, show, statusId, openWithAddNewTab = false }) =
                     }
                 }
             }
+
             if (!personalization.length) {
                 dispatch(getPersonalizationFields({ payload, loading: false }));
             }
@@ -299,43 +423,21 @@ const SmartLink = ({ handleClose, show, statusId, openWithAddNewTab = false }) =
             }
         }
         if (show) {
-            fetchSmartLink();
+            onModalOpen();
         } else {
             mobileAppsLoader.reset();
             smartLinkDetailLoader.reset();
-            smartLinkSaveApi.reset();
             generateSmartLinkLoader.reset();
         }
     }, [show]);
 
-    const onFormSubmit = async (formState) => {
-        if (isSavingSmartLink) return;
-        formState = {
-            ...formState,
-            ...payload,
-            campaignId,
-            tabs: tabState.tabList,
-            allTabs: tab,
-        };
-        let isEventTrack = Object.values(eventTrackData)[0]?.length || Object.values(eventTrackData)[1]?.length;
-        const formPayload = buildSmartLinkPayload(formState, isEventTrack);
-        const res = await smartLinkSaveApi.refetch({
-            fetcher: ({ payload: savePayload } = {}) =>
-                dispatch(saveSmartLink({ payload: savePayload, loading: false })),
-            mode: 'create',
-            loaderConfig: AUTHORING_SAVE_LOADER_CONFIG,
-            params: { payload: formPayload },
-        });
-        if (res?.status) {
-            dispatch(updateSmartLinkModalState(false));
-            setValue('saveFlag', false);
-            setValue('generateFlag', false);
-        }
-    };
+    const isSaveDisabled = isModalLocked || !isSaveReady || isViewOnly;
 
-    const onSubmit = async (formState) => {
-        if (isModalLocked) return;
-        await onFormSubmit(formState);
+    const onSubmit = (formState) => {
+        if (isModalLocked || isViewOnly) return;
+        syncFormToReducer(formState);
+        dispatch(updateSmartLinkModalState(false));
+        setValue('saveFlag', false);
     };
     const updateTabChange = (temp) => {
         setTab(temp);
@@ -346,6 +448,7 @@ const SmartLink = ({ handleClose, show, statusId, openWithAddNewTab = false }) =
     };
 
     const onAddTab = (index) => {
+        if (isViewOnly) return;
         if (smartLink[`smartLink${index}`] == '') return;
         const getSmartlink = SMARTLINK_NAME[index];
         const temp = [...tab];
@@ -374,6 +477,7 @@ const SmartLink = ({ handleClose, show, statusId, openWithAddNewTab = false }) =
     };
 
     const onRemoveTab = () => {
+        if (isViewOnly) return;
         const temp = [...tab];
         if (temp?.length === 1) return;
         const removedItem = temp.pop();
@@ -411,9 +515,20 @@ const SmartLink = ({ handleClose, show, statusId, openWithAddNewTab = false }) =
             currentTabIndex: tabState.currentTab,
             isMobileAppsLoading: mobileAppsLoader.isLoading,
             generateSmartLinkLoader,
+            onSyncFormToReducer: syncFormToReducer,
+            isSmartLinkViewOnly: isViewOnly,
         }),
-        [tabState.tabList, tab, tabState.currentTab, mobileAppsLoader.isLoading, generateSmartLinkLoader],
+        [tabState.tabList, tab, tabState.currentTab, mobileAppsLoader.isLoading, generateSmartLinkLoader, syncFormToReducer, isViewOnly],
     );
+
+    const displayTabs = useMemo(() => {
+        if (!isViewOnly) return tab;
+        return tab.map((tabItem) => ({
+            ...tabItem,
+            isAdd: tabItem.add ? true : tabItem.isAdd,
+            isRemove: tabItem.remove ? true : tabItem.isRemove,
+        }));
+    }, [tab, isViewOnly]);
 
     // Tab labels are controlled by the "smart link name" input inside each tab.
 
@@ -422,9 +537,13 @@ const SmartLink = ({ handleClose, show, statusId, openWithAddNewTab = false }) =
             ...pre,
             currentTab: 0,
         }));
-        reset(() => ({
-            ...FORM_INITIAL_STATE.defaultValues,
-        }));
+        if (!_isEmpty(edit)) {
+            hydrateModalFromEdit(edit, generateFlag);
+        } else {
+            reset(() => ({
+                ...FORM_INITIAL_STATE.defaultValues,
+            }));
+        }
         clearErrors();
     };
 
@@ -455,7 +574,7 @@ const SmartLink = ({ handleClose, show, statusId, openWithAddNewTab = false }) =
                                 dynamicTab={`res-content-tabs-split model_smartlink`}
                                 activeClass={`active`}
                                     flatTabs
-                                tabData={tab}
+                                tabData={displayTabs}
                                 isRemoveConfirmation
                                 defaultTab={tabState.currentTab}
                                 callBack={(_, index, isForceUpdate) => {
@@ -489,10 +608,7 @@ const SmartLink = ({ handleClose, show, statusId, openWithAddNewTab = false }) =
                         <RSPrimaryButton
                             id="rs_SmartLink_save"
                             onClick={handleSubmit(onSubmit)}
-                            isLoading={isSavingSmartLink}
-                            disabledClass={
-                                isModalLocked || !saveFlag ? 'pe-none click-off' : ''
-                            }
+                            disabledClass={isSaveDisabled ? 'pe-none click-off' : ''}
                             blockBodyPointerEvents
                         // className={!(smartLink1 || smartLink2) ? 'click-off' : ''}
                         >

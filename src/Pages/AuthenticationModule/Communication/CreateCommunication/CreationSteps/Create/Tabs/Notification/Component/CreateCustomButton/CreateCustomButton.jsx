@@ -5,7 +5,7 @@ import { Fragment, useEffect } from 'react';
 import { Col, Row, Container } from 'react-bootstrap';
 import { useFormContext } from 'react-hook-form';
 import { useDispatch, useSelector } from 'react-redux';
-import _get from 'lodash/get';
+import { get as _get } from 'Utils/modules/lodashReplacements';
 
 import RSModal from 'Components/RSModal';
 import RSInput from 'Components/FormFields/RSInput';

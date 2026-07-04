@@ -9,9 +9,8 @@ import { DUPLICATE_VALUE, ENTER_CONVERSION_URL, ENTER_VALID_CONVERSION_URL, SELE
 import { ANALYTIC_PLATFORM, CANCEL, CONVERSION, DOMAIN, ENGAGEMENT, GOAL, IGNORE_WEB_ANALYTICS, NEXT, OK, SAVE } from 'Constants/GlobalConstant/Placeholders';
 import { circle_plus_fill_medium, circle_question_mark_mini } from 'Constants/GlobalConstant/Glyphicons';
 import { Fragment, createContext, useEffect, useState } from 'react';
-import _get from 'lodash/get';
+import { get as _get ,map as _map} from 'Utils/modules/lodashReplacements';
 
-import _map from 'lodash/map';
 import { useDispatch, useSelector } from 'react-redux';
 import { Row, Col } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
@@ -188,6 +187,10 @@ const WebAnalytics = () => {
     const isConverison = state?.primaryGoal === 'Conversion' || state?.secondaryGoal === 'Conversion';
     const webFieldTrackEvent = localStorage.getItem('__webFieldTrackEventData');
     const parseWebFieldTrackEvent = webFieldTrackEvent ? JSON.parse(webFieldTrackEvent) : {};
+    const [statusIDCheck, setstatusIDCheck] = useState(state?.statusId || null);
+    const isWebAnalyticsClickOff =
+        checkTrigger(state?.campaignType, state?.endDate) ||
+        !statusIdCheck(statusIDCheck || state?.statusId);
 
     useEffect(() => {
         if (!isDirty && Object.keys(dirtyFields)?.length > 0) {
@@ -217,6 +220,7 @@ const WebAnalytics = () => {
         }
     }, [state]);
     const getWADomainList = async (loaderConfig = AUTHORING_FIELD_LOADER_CONFIG) => {
+        if (!savedChannel && isWebAnalyticsClickOff) return [];
         const cachedList = WebAnalytics?.webAnalyticsList;
         if (!Array.isArray(cachedList) || cachedList.length === 0) {
             const payload = { clientId, departmentId, userId, analyticsType: 'WA' };
@@ -233,11 +237,9 @@ const WebAnalytics = () => {
     };
 
     useEffect(() => {
-        if (!savedChannel) {
+        if (!savedChannel && !isWebAnalyticsClickOff) {
             getWADomainList();
         }
-        // fetchConversionCategory();
-        // debugger;
 
         if (
             !isEdit &&
@@ -250,7 +252,7 @@ const WebAnalytics = () => {
             };
             setValue('domain', domain);
         }
-    }, []);
+    }, [savedChannel, isWebAnalyticsClickOff]);
     // useEffect(() => {
     //     fetchConversionCategory();
     // }, [state]);
@@ -280,7 +282,6 @@ const WebAnalytics = () => {
             return temp;
         }
     };
-    const [statusIDCheck, setstatusIDCheck] = useState(state?.statusId || null);
     useEffect(() => {
         async function getWAContent() {
             const payload = { clientId, departmentId, userId, campaignId: state?.campaignId };

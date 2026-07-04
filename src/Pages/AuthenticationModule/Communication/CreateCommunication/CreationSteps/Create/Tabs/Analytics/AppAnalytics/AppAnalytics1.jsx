@@ -5,8 +5,7 @@ import { ANALYTIC_PLATFORM, CANCEL, IGNORE_CHANNEL, NEXT, OK, SAVE } from 'Const
 import { useEffect, useState } from 'react';
 import { Row, Col } from 'react-bootstrap';
 import { useForm, FormProvider } from 'react-hook-form';
-import _map from 'lodash/map';
-import _get from 'lodash/get';
+import { map as _map,get as _get  } from 'Utils/modules/lodashReplacements';
 import useQueryParams from 'Hooks/useQueryParams';
 import RSTabber from 'Components/RSTabber';
 import { RSPrimaryButton, RSSecondaryButton } from 'Components/Buttons';

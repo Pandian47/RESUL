@@ -134,7 +134,7 @@ export const RSCaptchaGenerator = ({
                     />
                 </Col>
             )}
-            <Col md={5} className= {`${isFormsPreviewCaptcha ? 'mr27' : ''}`}>
+            <Col md={5} className= {`pl0 ${isFormsPreviewCaptcha ? 'mr27' : ''}`}>
                 {isRunEnv  || isFormsPreviewCaptcha ?
                     <div className="captcha-box d-flex align-items-center gap-2">
                         <canvas
@@ -165,7 +165,7 @@ export const RSCaptchaGenerator = ({
                             </div>
                         )}
                     </div>
-                    : <div className="captcha-box align-items-center d-flex justify-content-center">
+                    : <div className="captcha-box align-items-center d-flex justify-content-center gap10">
                         <div id="image" className="bg-tertiary-grey text-center unselectable w-100">
                             {captcha}
                         </div>

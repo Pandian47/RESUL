@@ -11,10 +11,9 @@ import { endCommunicationSettingsRouteSkeletonBootstrap } from 'Components/Skele
 const ChannelSettings = () => {
     const dispatch = useDispatch();
     const { state } = useLocation();
-    const location = useQueryParams('/communication');
     const queryState = useQueryParams('/preferences/communication-settings');
     const [tabState, setTabState] = useState(() =>
-        resolveVerticalTabState({ ...queryState, ...location, ...state }),
+        resolveVerticalTabState({ ...queryState, ...state }),
     );
 
     useLayoutEffect(() => {
@@ -22,8 +21,8 @@ const ChannelSettings = () => {
     }, []);
 
     useEffect(() => {
-        setTabState(resolveVerticalTabState({ ...queryState, ...location, ...state }));
-    }, [location, queryState, state]);
+        setTabState(resolveVerticalTabState({ ...queryState, ...state }));
+    }, [queryState, state]);
     return (
         <div className="mt30">
             <div className="rs-vertical-tabs-wrapper">

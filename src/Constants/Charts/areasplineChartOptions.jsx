@@ -4,6 +4,235 @@ import { chartFormatNumber } from 'Utils/modules/formatters';
 import { ch_legendtextSize, ch_primary_black, ch_primary_orange, ch_secondary_green } from 'Constants/GlobalConstant/Colors/colorsVariable';
 import { numberWithCommas } from 'Utils/modules/formatters';
 import moment from 'moment';
+import {
+    attachMouseWheelXZoom,
+    detachMouseWheelXZoom,
+    getChartXAxisZoomOptions,
+    mergeChartZoomEvents,
+} from './chartXAxisZoom';
+
+const MIN_DATE_TIME_LABEL_WIDTH = 155;
+const MIN_X_AXIS_LABELS = 2;
+const MAX_X_AXIS_LABELS = 12;
+const X_AXIS_LABEL_GAP = 24;
+const X_AXIS_RIGHT_SPACING = 16;
+const X_AXIS_LABEL_MARGIN_RIGHT = 40;
+const Y_AXIS_SAMPLE_TARGET = 500;
+const MARKER_VISIBLE_MAX_POINTS = 50;
+const MARKER_DENSITY_THRESHOLD = 3;
+const COMPACT_LINE_MIN_POINTS = 500;
+
+/** Markers on by default for small sets; density-based when zoomable large datasets. */
+const resolveSeriesMarkerConfig = ({
+    showMarkers,
+    enableXAxisZoom,
+    pointCount,
+    seriesColor,
+}) => {
+    const base = {
+        symbol: 'circle',
+        radius: 4,
+        lineWidth: 0,
+    };
+
+    if (enableXAxisZoom && pointCount > MARKER_VISIBLE_MAX_POINTS) {
+        return {
+            ...base,
+            enabled: null,
+            enabledThreshold: MARKER_DENSITY_THRESHOLD,
+            fillColor: seriesColor,
+            lineColor: seriesColor,
+        };
+    }
+
+    return {
+        ...base,
+        enabled: showMarkers,
+        fillColor: seriesColor ?? 'white',
+        lineColor: seriesColor ?? null,
+    };
+};
+
+/** Scale chart behaviour from point count n — no fixed upper cap (1k, 10k, 1L+). */
+const getChartScaleProfile = (pointCount, { formatdatelable, categoryCount, xAxisType }) => {
+    const useDatetimeAxis =
+        formatdatelable &&
+        categoryCount > 1 &&
+        xAxisType === 'datetime';
+
+    return {
+        pointCount,
+        useDatetimeAxis,
+        useDynamicIntervalLabels: formatdatelable && categoryCount > 1 && !useDatetimeAxis,
+        showMarkers: pointCount <= MARKER_VISIBLE_MAX_POINTS,
+        lineWidth: pointCount > COMPACT_LINE_MIN_POINTS ? 1 : 1.5,
+        fillOpacity: pointCount > COMPACT_LINE_MIN_POINTS ? 0.35 : 0.4,
+        turboThreshold: 0,
+        boostThreshold: 0,
+        disableBoost: pointCount > 1,
+        yAxisSampleStep: Math.max(1, Math.floor(pointCount / Y_AXIS_SAMPLE_TARGET)),
+        legendSampleStep: Math.max(1, Math.floor(pointCount / Y_AXIS_SAMPLE_TARGET)),
+    };
+};
+
+const parseCategoryTimestamp = (dateStr, detectDateFormat) => {
+    if (!dateStr || typeof dateStr !== 'string') return null;
+    const dateFormat = detectDateFormat(dateStr);
+    if (!dateFormat) return null;
+    const date = moment(dateStr, dateFormat);
+    return date.isValid() ? date.valueOf() : null;
+};
+
+const getYAxisBounds = (series, sampleStep) => {
+    if (!series?.length) return { hasNegativeValues: false, minValue: null, maxValue: null };
+
+    let hasNegative = false;
+    let min = Infinity;
+    let max = -Infinity;
+    const step = Math.max(1, sampleStep);
+
+    series.forEach((item) => {
+        const dataArray = item?.data ?? item?.datas ?? [];
+        for (let i = 0; i < dataArray.length; i += step) {
+            const value = dataArray[i];
+            const numValue = typeof value === 'object' && value !== null ? value.y : value;
+            if (typeof numValue === 'number' && !isNaN(numValue)) {
+                if (numValue < 0) hasNegative = true;
+                if (numValue < min) min = numValue;
+                if (numValue > max) max = numValue;
+            }
+        }
+    });
+
+    return {
+        hasNegativeValues: hasNegative,
+        minValue: min === Infinity ? null : min,
+        maxValue: max === -Infinity ? null : max,
+    };
+};
+
+const toSeriesYValue = (dataItem) => {
+    if (typeof dataItem === 'object' && dataItem !== null && 'y' in dataItem) {
+        return dataItem.y;
+    }
+    if (typeof dataItem === 'number') {
+        return dataItem;
+    }
+    return dataItem ?? 0;
+};
+
+const getMaxLabelsForAxisWidth = (axisWidth = 0) => {
+    const safeWidth = axisWidth > 0 ? axisWidth : 720;
+    const slotWidth = MIN_DATE_TIME_LABEL_WIDTH + X_AXIS_LABEL_GAP;
+    const labelCount = Math.floor((safeWidth + X_AXIS_LABEL_GAP) / slotWidth);
+    return Math.max(
+        MIN_X_AXIS_LABELS,
+        Math.min(MAX_X_AXIS_LABELS, labelCount),
+    );
+};
+
+/** Pick up to maxCount evenly spaced items — works for timestamps and category indices. */
+const getEvenlySpacedItems = (items, maxCount) => {
+    if (!items?.length) return [];
+    if (items.length === 1) return [items[0]];
+    const labelCount = Math.min(maxCount, items.length);
+    if (labelCount <= 1) return [items[0]];
+    const result = [];
+    for (let i = 0; i < labelCount; i++) {
+        result.push(items[Math.round((i * (items.length - 1)) / (labelCount - 1))]);
+    }
+    return [...new Set(result)];
+};
+
+/** Drop the right-edge tick when it matches the axis max — avoids clipped last date label. */
+const omitLastEdgeTick = (ticks, lastValue) => {
+    if (!ticks?.length || ticks.length <= 1 || lastValue == null) return ticks ?? [];
+    if (ticks[ticks.length - 1] === lastValue) {
+        return ticks.slice(0, -1);
+    }
+    return ticks;
+};
+
+/** Datetime ticks: sample real timestamps when available, else interpolate axis range. */
+const getDatetimeAxisTicks = ({ timestamps, min, max, axisWidth }) => {
+    const maxLabels = getMaxLabelsForAxisWidth(axisWidth);
+    const validTimestamps = [...new Set(
+        (timestamps ?? []).filter((t) => t != null && !Number.isNaN(t)),
+    )].sort((a, b) => a - b);
+
+    if (validTimestamps.length >= 2) {
+        const lastTs = validTimestamps[validTimestamps.length - 1];
+        return omitLastEdgeTick(getEvenlySpacedItems(validTimestamps, maxLabels), lastTs);
+    }
+
+    if (min === max) return [min];
+    const ticks = getEvenlySpacedItems(
+        Array.from({ length: maxLabels }, (_, i) => min + (i * (max - min)) / (maxLabels - 1)),
+        maxLabels,
+    );
+    return omitLastEdgeTick(ticks, max);
+};
+
+const isEdgeAxisLabel = (ctx) => {
+    if (ctx.isFirst) {
+        return { isEdgeMin: true, isEdgeMax: false };
+    }
+    if (ctx.isLast) {
+        return { isEdgeMin: false, isEdgeMax: true };
+    }
+
+    const tickPositions = ctx.axis?.tickPositions;
+    const axisType = ctx.axis?.options?.type;
+    const pos = ctx.pos;
+    const value = ctx.value;
+
+    if (tickPositions?.length) {
+        const firstTick = tickPositions[0];
+        const lastTick = tickPositions[tickPositions.length - 1];
+        if (axisType === 'category' && pos != null) {
+            return {
+                isEdgeMin: pos === firstTick,
+                isEdgeMax: pos === lastTick,
+            };
+        }
+        if (value != null) {
+            return {
+                isEdgeMin: value === firstTick,
+                isEdgeMax: value === lastTick,
+            };
+        }
+    }
+
+    const { min, max } = ctx.axis ?? {};
+    const isEdgeMin =
+        typeof value === 'number' && typeof min === 'number' && value <= min;
+    const isEdgeMax =
+        typeof value === 'number' && typeof max === 'number' && value >= max;
+    return { isEdgeMin, isEdgeMax };
+};
+
+/** Evenly spaced category indices — count adapts to available axis width. */
+const getAxisLabelIndices = (categoryCount, maxLabels = MAX_X_AXIS_LABELS) => {
+    if (!categoryCount || categoryCount <= 0) return [];
+    const indices = Array.from({ length: categoryCount }, (_, i) => i);
+    const ticks = getEvenlySpacedItems(indices, maxLabels);
+    return omitLastEdgeTick(ticks, categoryCount - 1);
+};
+
+const getCategoryLabelStep = (categoryCount) => {
+    if (!categoryCount || categoryCount <= 1) return 0;
+    if (categoryCount <= 7) return 1;
+    if (categoryCount <= 14) return 2;
+    return Math.max(1, Math.ceil(categoryCount / MAX_X_AXIS_LABELS));
+};
+
+const getDataPointCount = (series = [], categories = []) => {
+    const seriesMax = series.reduce(
+        (max, item) => Math.max(max, (item?.data ?? item?.datas ?? []).length),
+        0,
+    );
+    return Math.max(categories?.length ?? 0, seriesMax);
+};
 
 const areasplineChartOptions = ({ formatdateListactivity = false, formatdatelable = false, ...args }, tooltip) => {
     const hasCategoryAxis = !!args?.categories?.length;
@@ -19,43 +248,13 @@ const areasplineChartOptions = ({ formatdateListactivity = false, formatdatelabl
     let legendType = 'normal'; // 'normal' or ''
     let arr = [];
 
-    let dynamicDate;
-    if (args?.categories?.length > 1000) {
-        dynamicDate = 15;
-    } else if (args?.categories?.length > 500) {
-        dynamicDate = 12;
-    } else if (args?.categories?.length > 200) {
-        dynamicDate = 8;
-    } else if (args?.categories?.length > 100) {
-        dynamicDate = 5;
-    } else if (args?.categories?.length > 50) {
-        dynamicDate = 3;
-    } else if (args?.categories?.length > 40) {
-        dynamicDate = 2;
-    } else if (args?.categories?.length > 28) {
-        dynamicDate = 3;
-    } else if (args?.categories?.length > 14) {
-        dynamicDate = 3;
-    } else if (args?.categories?.length > 7) {
-        dynamicDate = 2;
-    } else {
-        dynamicDate = 0;
-    }
-
-    const seenDates = new Set();
-    // const formatDatess = (dateStr) => {
-    // const date = moment(dateStr, 'ddd, DD MMM, YYYY hh:mm A');
-    // const dateKey = date.format('YYYY-MM-DD');
-
-    // if (!seenDates?.has(dateKey)) {
-    //     seenDates?.add(dateKey);
-    //     return date.format('DD MMM');
-    // } else {
-    //     return date.format('HH:mm');
-    // }
-    // };
-
-    // const seenDates = new Set();
+    const categoryCount = args?.categories?.length ?? 0;
+    const pointCount = getDataPointCount(args?.series, args?.categories);
+    const scale = getChartScaleProfile(pointCount, {
+        formatdatelable,
+        categoryCount,
+        xAxisType: args?.xAxis?.type,
+    });
 
     const detectDateFormat = (dateStr) => {
         const { configuredFormat, timeFormat } = getDateFormat();
@@ -64,20 +263,28 @@ const areasplineChartOptions = ({ formatdateListactivity = false, formatdatelabl
 
         if (/^\d{4}-\d{2}-\d{2}/.test(dateStr)) return `YYYY-MM-DD ${timePattern}`;
         if (/^[A-Za-z]{3,}-\d{2}-\d{4}/.test(dateStr)) return `MMM-DD-YYYY ${timePattern}`;
+        if (/^[A-Za-z]{3}\s\d{2},\s\d{4},\s\d{2}:\d{2}/.test(dateStr)) return `MMM DD, YYYY, HH:mm`;
         if (/^\d{2}-\d{2}-\d{4}/.test(dateStr)) {
             return `${configuredFormat} ${timePattern}`;
         }
         return null;
     };
 
+    const useDatetimeAxis = scale.useDatetimeAxis;
+    const categoryTimestamps = useDatetimeAxis
+        ? args.categories.map((cat) => parseCategoryTimestamp(cat, detectDateFormat))
+        : [];
+    const dynamicDate = getCategoryLabelStep(categoryCount);
+    const labelStep = dynamicDate || 1;
+    const showMarkers = scale.showMarkers;
+    const useDynamicIntervalLabels = scale.useDynamicIntervalLabels;
 
-    const formatDatess = (dateStr) => {
+    const formatAxisDateLabel = (dateStr) => {
         if (!dateStr || typeof dateStr !== 'string') {
             return dateStr || '';
         }
 
         try {
-            const { configuredFormat, timeFormat } = getDateFormat();
             const dateFormat = detectDateFormat(dateStr);
             if (!dateFormat) return dateStr;
 
@@ -86,83 +293,69 @@ const areasplineChartOptions = ({ formatdateListactivity = false, formatdatelabl
                 return dateStr;
             }
 
-            const dateKey = date.format('YYYY-MM-DD');
-
-            if (!seenDates.has(dateKey)) {
-                seenDates.add(dateKey);
-                const formatted = getUserCurrentFormat(date.toDate());
-                return formatted?.dateFormat || formatted?.dayMonth || date.format('DD MMM');
-            }
-
-            return date.format(timeFormat);
+            const formatted = getUserCurrentFormat(date.toDate());
+            return formatted?.dateTimeFormat || date.format('MMM DD, YYYY, HH:mm');
         } catch (error) {
             return dateStr;
         }
     };
 
-
-
-    // const formatDate = (dateStr) => {
-    //     if (!dateStr) return '';
-    //     return getUserDateTimeFormat(dateStr, 'formatDate');
-    // };
-
+    const formatTimestampLabel = (timestamp) => {
+        if (timestamp == null || Number.isNaN(timestamp)) return '';
+        const formatted = getUserCurrentFormat(new Date(timestamp));
+        return formatted?.dateTimeFormat || moment(timestamp).format('MMM DD, YYYY, HH:mm');
+    };
 
     if (args?.categories && args?.categories?.length > 0 && formatdateListactivity) {
-        // args.categories = args?.categories.map((dateStr) => getUserDateTimeFormat(dateStr, 'formatDate'));
         args.categories = args?.categories.map((dateStr) => getUserCurrentFormat(dateStr)?.dateFormat);
-        // args.categories = args?.categories.map((dateStr) => formatDates(dateStr));
     }
 
-    // Check if data contains negative values and calculate dynamic min/max
-    const { hasNegativeValues, minValue, maxValue } = (() => {
-        if (!args?.series) return { hasNegativeValues: false, minValue: null, maxValue: null };
+    const showDateTimeLabels = formatdatelable && categoryCount > 0;
 
-        let hasNegative = false;
-        let min = Infinity;
-        let max = -Infinity;
+    const { hasNegativeValues, minValue, maxValue } = getYAxisBounds(
+        args?.series,
+        scale.yAxisSampleStep,
+    );
 
-        args.series.forEach((item) => {
-            const dataArray = item?.data ?? item?.datas ?? [];
-            dataArray.forEach((value) => {
-                const numValue = typeof value === 'object' && value !== null ? value.y : value;
-                if (typeof numValue === 'number' && !isNaN(numValue)) {
-                    if (numValue < 0) hasNegative = true;
-                    if (numValue < min) min = numValue;
-                    if (numValue > max) max = numValue;
-                }
-            });
-        });
-
-        return {
-            hasNegativeValues: hasNegative,
-            minValue: min === Infinity ? null : min,
-            maxValue: max === -Infinity ? null : max
-        };
-    })();
+    const enableXAxisZoom = args?.enableXAxisZoom === true;
+    const plotMarkerConfig = resolveSeriesMarkerConfig({
+        showMarkers,
+        enableXAxisZoom,
+        pointCount,
+    });
 
     return {
         chart: {
             type: args?.type ?? 'areaspline',
+            spacingTop: args?.chart?.spacingTop ?? 25,
             height: args?.height ?? chartSizing['area'],
-            className: `areachart-default-render chart-line-animate ${args?.categories?.length === 1 || args?.series?.length === 1 ? '' : 'areaspline-chart-del'
+            className: `areachart-default-render chart-line-animate${showDateTimeLabels ? ' areaspline-datetime-labels' : ''} ${args?.categories?.length === 1 || args?.series?.length === 1 ? '' : 'areaspline-chart'
                 }`,
             reflow: true,
-            ...(isFormattedDateAxis && hasCategoryAxis ? { spacingRight: 24 } : {}),
-            // Only enable zoom for datetime axes, disable for category axes to prevent getTime errors
-            zoomType: args?.xAxis?.type === 'datetime' ? 'x' : null,
-            events: {
-                redraw: function () {
-                    seenDates.clear();
+            ...(showDateTimeLabels
+                ? {
+                      marginRight: args?.chart?.marginRight ?? X_AXIS_LABEL_MARGIN_RIGHT,
+                      spacingLeft: args?.chart?.spacingLeft ?? 4,
+                      spacingRight: args?.chart?.spacingRight ?? X_AXIS_RIGHT_SPACING,
+                      ...(args?.chart?.marginLeft !== undefined ? { marginLeft: args.chart.marginLeft } : {}),
+                  }
+                : {}),
+            ...(enableXAxisZoom
+                ? getChartXAxisZoomOptions()
+                : {
+                      zoomType: useDatetimeAxis || args?.xAxis?.type === 'datetime' ? 'x' : null,
+                  }),
+            events: mergeChartZoomEvents(
+                {
+                    load: function () {
+                        if (this.xAxis?.[0]?.options?.type !== 'datetime') {
+                            this.xAxis[0].options.dateTimeLabelFormats = false;
+                        }
+                    },
                 },
-                load: function () {
-                    // Ensure xAxis is properly configured after load
-                    if (this.xAxis && this.xAxis[0] && this.xAxis[0].options.type !== 'datetime') {
-                        // Prevent any datetime calculations on category axes
-                        this.xAxis[0].options.dateTimeLabelFormats = false;
-                    }
-                }
-            }
+                enableXAxisZoom ? function onChartLoad() { attachMouseWheelXZoom(this); } : undefined,
+                enableXAxisZoom ? function onChartDestroy() { detachMouseWheelXZoom(this); } : undefined,
+            ),
         },
         title: {
             text: '',
@@ -170,65 +363,97 @@ const areasplineChartOptions = ({ formatdateListactivity = false, formatdatelabl
         credits: {
             enabled: false,
         },
+        ...(scale.disableBoost ? { boost: { enabled: false } } : {}),
         plotOptions: {
             line: {
-                stacking: args?.stacking ?? 'normal', // "normal", "overlap", "percent", "stream"
-                fillOpacity: 0.4,
-                lineWidth: 1.5,
+                stacking: args?.stacking ?? 'normal',
+                fillOpacity: scale.fillOpacity,
+                lineWidth: scale.lineWidth,
                 states: {
                     hover: {
-                        lineWidth: 1.5,
+                        lineWidth: scale.lineWidth,
                     },
                 },
-                marker: {
-                    // enabled: false,
-                    symbol: 'circle',
-                    lineWidth: 0,
-                    fillColor: 'white',
-                    lineColor: null,
-                },
+                marker: plotMarkerConfig,
             },
             areaspline: {
-                stacking: 'normal', // "normal", "overlap", "percent", "stream"
-                fillOpacity: 0.4,
-                lineWidth: 1.5,
+                stacking: 'normal',
+                fillOpacity: scale.fillOpacity,
+                lineWidth: scale.lineWidth,
+                turboThreshold: scale.turboThreshold,
+                boostThreshold: scale.boostThreshold,
                 states: {
                     hover: {
-                        lineWidth: 1.5,
+                        lineWidth: scale.lineWidth,
                     },
                 },
-                marker: {
-                    // enabled: false,
-                    symbol: 'circle',
-                    lineWidth: 0,
-                    fillColor: 'white',
-                    lineColor: null,
-                },
+                marker: plotMarkerConfig,
             },
             series: {
-                // START WITH Y LINE
-                // pointPlacement: (args?.categories?.length === 1 || args?.series?.length === 1) ? 0 : 'on', // "on", "between", number
                 cursor: args?.plotOptions?.series?.cursor ?? 'default',
                 events: args?.plotOptions?.series?.events ?? {},
+                turboThreshold: scale.turboThreshold,
+                boostThreshold: scale.boostThreshold,
+                ...(useDatetimeAxis ? { findNearestPointBy: 'x' } : {}),
+                marker: plotMarkerConfig,
             },
         },
         xAxis: {
-            type: args?.xAxis?.type || (args?.categories?.length > 0 ? 'category' : 'linear'),
+            type: useDatetimeAxis ? 'datetime' : args?.xAxis?.type || (args?.categories?.length > 0 ? 'category' : 'linear'),
+            minRange: enableXAxisZoom && (!args?.categories || args?.categories?.length > 1) ? 2 : undefined,
+            ...(enableXAxisZoom
+                ? {
+                      events: {
+                          afterSetExtremes: function () {
+                              this.chart?.redraw(false);
+                          },
+                      },
+                  }
+                : {}),
             title: {
                 text: args?.xAxis?.title ?? '',
                 y: 8,
-            }, // 'Date'
-            tickInterval: args?.xAxis?.tickInterval ? args?.xAxis?.tickInterval : dynamicDate,
-            ...(isFormattedDateAxis && hasCategoryAxis ? { maxPadding: 0.02 } : {}),
-            // tickInterval: 0,
-            // ...(xInterval),
-            // Only set min/max for category axes (as indices), never for datetime unless explicitly provided
-            ...(args?.xAxis?.type !== 'datetime' && args?.categories?.length > 0 ? {} : {}),
-            categories: !!args?.categories && args?.categories?.length !== 0 ? args?.categories : [],
-            // Explicitly disable datetime features when using categories
-            dateTimeLabelFormats: args?.xAxis?.type === 'datetime' ? undefined : false,
-            // Prevent Highcharts from trying to calculate date ranges
-            ordinal: args?.xAxis?.type !== 'datetime',
+            },
+            tickInterval: useDatetimeAxis ? undefined : (useDynamicIntervalLabels ? undefined : (args?.xAxis?.tickInterval ?? (dynamicDate || undefined))),
+            ...(args?.xAxis?.tickPositioner
+                ? { tickPositioner: args.xAxis.tickPositioner }
+                : useDatetimeAxis
+                  ? {
+                        tickPositioner: function () {
+                            const min = this.min ?? 0;
+                            const max = this.max ?? 0;
+                            if (min === max) return [min];
+                            return getDatetimeAxisTicks({
+                                timestamps: categoryTimestamps,
+                                min,
+                                max,
+                                axisWidth: this.len,
+                            });
+                        },
+                    }
+                  : useDynamicIntervalLabels
+                    ? {
+                          tickPositioner: function () {
+                              const count = this.categories?.length ?? categoryCount;
+                              const maxLabels = getMaxLabelsForAxisWidth(this.len);
+                              const min = Math.ceil(this.min ?? 0);
+                              const max = Math.floor(this.max ?? count - 1);
+                              const visibleIndices = Array.from(
+                                  { length: Math.max(1, max - min + 1) },
+                                  (_, i) => min + i,
+                              );
+                              const ticks = getEvenlySpacedItems(visibleIndices, maxLabels);
+                              return omitLastEdgeTick(ticks, max);
+                          },
+                      }
+                    : {}),
+            categories: useDatetimeAxis ? undefined : (!!args?.categories && args?.categories?.length !== 0 ? args?.categories : []),
+            dateTimeLabelFormats: useDatetimeAxis ? undefined : (args?.xAxis?.type === 'datetime' ? undefined : false),
+            ordinal: useDatetimeAxis ? undefined : args?.xAxis?.type !== 'datetime',
+            startOnTick: showDateTimeLabels ? false : undefined,
+            endOnTick: showDateTimeLabels ? false : undefined,
+            minPadding: showDateTimeLabels ? (args?.xAxis?.minPadding ?? 0) : args?.xAxis?.minPadding,
+            maxPadding: showDateTimeLabels ? (args?.xAxis?.maxPadding ?? 0) : args?.xAxis?.maxPadding,
             offset: args?.xAxis?.offset !== undefined ? args?.xAxis?.offset : 0,
             lineWidth: args?.xAxis?.lineWidth !== undefined ? args?.xAxis?.lineWidth : 1,
             // args?.xAxis?.title === 'Hours'
@@ -248,32 +473,53 @@ const areasplineChartOptions = ({ formatdateListactivity = false, formatdatelabl
             plotLines: args?.xAxis?.plotLines ?? [],
             labels: {
                 enabled: !!args?.categories && args?.categories?.length !== 0 ? true : false,
-                step: dynamicDate,
+                step:
+                    useDynamicIntervalLabels || (showDateTimeLabels && useDatetimeAxis)
+                        ? undefined
+                        : labelStep,
+                autoRotation: false,
                 rotation: 0,
                 y: 30,
-                ...(isFormattedDateAxis ? { overflow: 'allow' } : {}),
+                overflow: showDateTimeLabels ? 'allow' : 'justify',
+                padding: showDateTimeLabels ? 3 : 0,
+                align: showDateTimeLabels
+                    ? function () {
+                          if (this.isFirst) return 'left';
+                          if (this.isLast) return 'right';
+                          const tickPositions = this.axis?.tickPositions;
+                          const pos = this.pos;
+                          if (tickPositions?.length && pos != null) {
+                              if (pos === tickPositions[0]) return 'left';
+                              if (pos === tickPositions[tickPositions.length - 1]) return 'right';
+                          }
+                          return 'center';
+                      }
+                    : undefined,
+                style: {
+                    textOverflow: 'none',
+                    whiteSpace: 'nowrap',
+                },
                 formatter: function () {
                     try {
-                        // Prevent Highcharts from trying to use date methods on non-date values
                         if (this.value === null || this.value === undefined) {
                             return '';
                         }
-                        // If this.axis is datetime type, ensure we handle it properly
-                        if (this.axis && this.axis.options && this.axis.options.type === 'datetime') {
-                            // For datetime axis, this.value should be a timestamp
-                            if (typeof this.value === 'number') {
-                                return formatdatelable ? formatDatess(new Date(this.value).toISOString()) : new Date(this.value).toLocaleString();
-                            }
-                        }
-                        // For category axis, just return the string value
-                        return formatdatelable ? formatDatess(String(this.value)) : String(this.value);
-                    } catch (error) {
-                        // Fallback: return string representation
-                        try {
-                            return this.value !== null && this.value !== undefined ? String(this.value) : '';
-                        } catch (e) {
+                        if (
+                            showDateTimeLabels &&
+                            this.axis?.options?.type === 'category' &&
+                            this.pos === (this.axis?.categories?.length ?? 0) - 1 &&
+                            (this.axis?.categories?.length ?? 0) > 1
+                        ) {
                             return '';
                         }
+                        if (this.axis?.options?.type === 'datetime' && typeof this.value === 'number') {
+                            return formatdatelable
+                                ? formatTimestampLabel(this.value)
+                                : new Date(this.value).toLocaleString();
+                        }
+                        return formatdatelable ? formatAxisDateLabel(String(this.value)) : String(this.value);
+                    } catch (error) {
+                        return this.value != null ? String(this.value) : '';
                     }
                 },
             },
@@ -331,19 +577,25 @@ const areasplineChartOptions = ({ formatdateListactivity = false, formatdatelabl
             shared: args?.tooltip?.shared ?? true,
             formatter: function () {
                 try {
-                    // For shared tooltips, use this.x; for single point, use this.point.key
                     let pointKey = '';
 
                     if (this.points && this.points.length > 0) {
-                        // Shared tooltip - get x value from the first point
-                        pointKey = this.x !== undefined
-                            ? (typeof this.x === 'string' ? this.x : String(this.x))
-                            : (this.points[0].key !== undefined ? String(this.points[0].key) : '');
+                        const firstPoint = this.points[0];
+                        if (typeof this.x === 'number' && useDatetimeAxis) {
+                            pointKey = formatTimestampLabel(this.x);
+                        } else {
+                            pointKey = this.x !== undefined
+                                ? (typeof this.x === 'string' ? this.x : String(this.x))
+                                : (firstPoint.key !== undefined ? String(firstPoint.key) : '');
+                        }
                     } else if (this.point) {
-                        // Single point tooltip
-                        pointKey = this.point.category !== undefined
-                            ? String(this.point.category)
-                            : (this.point.key !== undefined ? String(this.point.key) : '');
+                        if (typeof this.x === 'number' && useDatetimeAxis) {
+                            pointKey = formatTimestampLabel(this.x);
+                        } else {
+                            pointKey = this.point.category !== undefined
+                                ? String(this.point.category)
+                                : (this.point.key !== undefined ? String(this.point.key) : '');
+                        }
                     }
                     let tooltipHtml = `<span class="font-xs">${pointKey}`;
 
@@ -395,7 +647,17 @@ const areasplineChartOptions = ({ formatdateListactivity = false, formatdatelabl
                     useHTML: true,
                     reversed: args?.legend?.reversed ?? true,
                     labelFormatter: function () {
-                        let value = this.yData.reduce((a, b) => (a = a + b), 0);
+                        const data = this.yData ?? [];
+                        const step = scale.legendSampleStep;
+                        let value = 0;
+                        let sampled = 0;
+                        for (let i = 0; i < data.length; i += step) {
+                            value += data[i] ?? 0;
+                            sampled += 1;
+                        }
+                        if (step > 1 && sampled > 0) {
+                            value = Math.round((value / sampled) * data.length);
+                        }
                         arr.push(value);
 
                         return `<div class="sp-legend"><span class="sp-label">${this.name
@@ -407,29 +669,35 @@ const areasplineChartOptions = ({ formatdateListactivity = false, formatdatelabl
         series: (args?.series ?? [])
             .filter((item) => {
                 const dataArray = item?.data ?? item?.datas;
-                return dataArray?.some((value) => {
+                if (!dataArray?.length) return false;
+                const isValidValue = (value) => {
                     const numValue = typeof value === 'object' && value !== null ? value.y : value;
                     return numValue !== null && numValue !== undefined && !isNaN(numValue);
-                });
+                };
+                if (dataArray.length > Y_AXIS_SAMPLE_TARGET) {
+                    return isValidValue(dataArray[0]) || isValidValue(dataArray[dataArray.length - 1]);
+                }
+                return dataArray.some(isValidValue);
             })
             .map((item, index) => {
                 const chartValue = item?.data || item?.datas;
+                const seriesColor = item?.color ?? commonColorCode(args?.series)[index];
+                const mappedData = chartValue?.map((dataItem, dataIndex) => {
+                    const y = toSeriesYValue(dataItem);
+                    if (useDatetimeAxis) {
+                        const x = categoryTimestamps[dataIndex] ?? dataIndex;
+                        return [x, y];
+                    }
+                    if (typeof dataItem === 'object' && dataItem !== null && 'y' in dataItem) {
+                        return dataItem;
+                    }
+                    return y;
+                });
+
                 return {
                     name: seriesNameField(item.name),
-                    data: chartValue?.map((dataItem) => {
-                        if (typeof dataItem === 'object' && dataItem !== null && 'y' in dataItem) {
-                            return dataItem;
-                        }
-                        if (typeof dataItem === 'number') {
-                            return dataItem;
-                        }
-                        return dataItem ?? 0;
-                    }),
-                    color: item?.color ?? commonColorCode(args?.series)[index],
-                    marker: {
-                        lineColor: item?.color ?? commonColorCode(args?.series)[index],
-                        fillColor: item?.color ?? commonColorCode(args?.series)[index],
-                    },
+                    type: 'areaspline',
+                    color: seriesColor,
                     fillColor: {
                         linearGradient: { x1: 0, x2: 0, y1: 0, y2: 1 },
                         stops: [
@@ -438,6 +706,15 @@ const areasplineChartOptions = ({ formatdateListactivity = false, formatdatelabl
                         ],
                     },
                     ...item,
+                    data: mappedData,
+                    turboThreshold: scale.turboThreshold,
+                    boostThreshold: scale.boostThreshold,
+                    marker: resolveSeriesMarkerConfig({
+                        showMarkers,
+                        enableXAxisZoom,
+                        pointCount,
+                        seriesColor,
+                    }),
                 };
             }),
         // series: [

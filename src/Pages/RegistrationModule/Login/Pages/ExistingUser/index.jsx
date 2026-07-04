@@ -4,7 +4,7 @@ import { BUSSINESS_EMAIL, UNABLE_TOLOAD_DATA } from 'Constants/GlobalConstant/Pl
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import axios from 'axios';
 
-import _isEmpty from 'lodash/isEmpty';
+import { isEmpty as _isEmpty } from 'Utils/modules/lodashReplacements';
 import { useForm } from 'react-hook-form';
 import { useDispatch, useSelector } from 'react-redux';
 import { Row, Col } from 'react-bootstrap';
@@ -71,10 +71,11 @@ const ExistingUser = ({ onAuthLoadingChange = () => { } }) => {
     const [emailState, setEmailState] = useState({
         loading: false,
         isValid: false,
+        isInvalid: false,
     });
     const [msg, setMsg] = useState(null);
     const [isUserBlocked, setIsUserBlocked] = useState(false);
-    const { loading, isValid } = emailState;
+    const { loading, isValid, isInvalid } = emailState;
 
     const loginControl = watch('loginControl');
 
@@ -113,20 +114,58 @@ const ExistingUser = ({ onAuthLoadingChange = () => { } }) => {
     };
 
     useEffect(() => {
+        let timer;
         try {
             var input = document.getElementById('emailId');
-            setTimeout(() => {
+            timer = setTimeout(() => {
                 if (input?.matches(':autofill')) {
                     setEmailState((prev) => ({ ...prev, isValid: true }));
                 }
             }, 1000);
         } catch (error) {
         }
+        return () => clearTimeout(timer);
     }, []);
 
     useEffect(() => {
-        getIpAddress();
+        let cancelled = false;
+        const runIpLookup = () => {
+            if (!cancelled) getIpAddress();
+        };
+        if (typeof requestIdleCallback === 'function') {
+            const idleId = requestIdleCallback(runIpLookup, { timeout: 3000 });
+            return () => {
+                cancelled = true;
+                cancelIdleCallback(idleId);
+            };
+        }
+        const timerId = setTimeout(runIpLookup, 0);
+        return () => {
+            cancelled = true;
+            clearTimeout(timerId);
+        };
     }, []);
+
+    useEffect(() => {
+        const isMasterData = localStorage.getItem('masterData');
+        if (isMasterData && isMasterData !== 'null') return;
+        let cancelled = false;
+        const prefetch = () => {
+            if (!cancelled) dispatch(getMasterData(false));
+        };
+        if (typeof requestIdleCallback === 'function') {
+            const idleId = requestIdleCallback(prefetch, { timeout: 5000 });
+            return () => {
+                cancelled = true;
+                cancelIdleCallback(idleId);
+            };
+        }
+        const timerId = setTimeout(prefetch, 2000);
+        return () => {
+            cancelled = true;
+            clearTimeout(timerId);
+        };
+    }, [dispatch]);
 
     useEffect(() => {
         try {
@@ -237,10 +276,14 @@ const ExistingUser = ({ onAuthLoadingChange = () => { } }) => {
                         tempiv,
                     );
                     if (!isValid) {
+                        setEmailState({ loading: true, isValid: false, isInvalid: false });
                         const { status } = await handleEmailBlur(emailId, isloginControl.toLowerCase());
-                        if (!status) return null;
+                        if (!status) {
+                            setEmailState({ loading: false, isValid: false, isInvalid: true });
+                            return null;
+                        }
                     }
-                    setEmailState({ loading: false, isValid: true });
+                    setEmailState({ loading: false, isValid: true, isInvalid: false });
                     const payload = {
                         loginName: encryptWithAES(CryptoJS.enc.Utf8.parse(emailId), byteHash, tempiv),
                         loginPassword: encryptWithAES(CryptoJS.enc.Utf8.parse(password), byteHash, tempiv),
@@ -274,9 +317,13 @@ const ExistingUser = ({ onAuthLoadingChange = () => { } }) => {
 
                 if (isloginControl.toLowerCase() === 'adfs') {
                     const { emailId } = resolveLoginCredentials(formState);
+                    setEmailState({ loading: true, isValid: false, isInvalid: false });
                     const { status, data } = await handleEmailBlur(emailId, isloginControl.toLowerCase());
-                    if (!status) return null;
-                    setEmailState({ loading: false, isValid: true });
+                    if (!status) {
+                        setEmailState({ loading: false, isValid: false, isInvalid: true });
+                        return null;
+                    }
+                    setEmailState({ loading: false, isValid: true, isInvalid: false });
                     const directory = data?.directoryid;
                     const clientId = data?.clientId;
                     const redirecturl = data?.redirecturl
@@ -298,6 +345,7 @@ const ExistingUser = ({ onAuthLoadingChange = () => { } }) => {
                 return null;
             },
             onError: () => {
+                setEmailState({ loading: false, isValid: false, isInvalid: true });
                 setError('emailId', {
                     type: 'custom',
                     message: 'An error occurred during login. Please try again.',
@@ -387,13 +435,13 @@ const ExistingUser = ({ onAuthLoadingChange = () => { } }) => {
         const value = event?.target?.value?.trim() || '';
         const isEmailValid = await trigger('emailId');
         if (!isEmailValid || !value) {
-            setEmailState({ loading: false, isValid: false });
+            setEmailState({ loading: false, isValid: false, isInvalid: false });
             return;
         }
 
-        setEmailState({ loading: true, isValid: false });
+        setEmailState({ loading: true, isValid: false, isInvalid: false });
         const { status } = await handleEmailBlur(value, isloginControl.toLowerCase());
-        setEmailState({ loading: false, isValid: status });
+        setEmailState({ loading: false, isValid: status, isInvalid: !status });
     };
 
     const isSignInDisabled = emailHasError || captchaHasError || signInLoader.isLoading;
@@ -463,7 +511,7 @@ const ExistingUser = ({ onAuthLoadingChange = () => { } }) => {
                                         setValue('emailId', '');
                                         setValue('password', '');
                                         clearErrors('emailId');
-                                        setEmailState({ loading: false, isValid: false });
+                                        setEmailState({ loading: false, isValid: false, isInvalid: false });
                                     }}
                                     control={control}
                                     containerClass={'w-100 login-existing-user-dropdown position-relative'}
@@ -493,6 +541,7 @@ const ExistingUser = ({ onAuthLoadingChange = () => { } }) => {
                             autoComplete={'off'}
                             isLoading={loading}
                             isValidIcon={isValid}
+                            isInvalidIcon={isInvalid}
                             isKeyDownUpPrevent={false}
                             rules={{
                                 ...EMAIL_RULES,
@@ -519,15 +568,15 @@ const ExistingUser = ({ onAuthLoadingChange = () => { } }) => {
                             }}
                             handleOnchange={() => {
                                 if (emailHasError) clearErrors('emailId');
-                                if (isValid) {
-                                    setEmailState({ loading: false, isValid: false });
+                                if (isValid || isInvalid) {
+                                    setEmailState({ loading: false, isValid: false, isInvalid: false });
                                 }
                             }}
                             handleOnPaste={(e) => {
                                 const trimmedValue = e.clipboardData.getData('Text').trim();
                                 setValue('emailId', trimmedValue.replaceAll(' ', ''));
                                 clearErrors('emailId');
-                                setEmailState({ loading: false, isValid: false });
+                                setEmailState({ loading: false, isValid: false, isInvalid: false });
                                 e.preventDefault();
                             }}
                             handleOnBlur={handleExistingUserEmailBlur}

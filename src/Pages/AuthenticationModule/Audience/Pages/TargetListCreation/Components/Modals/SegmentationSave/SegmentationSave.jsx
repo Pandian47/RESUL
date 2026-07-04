@@ -1,4 +1,5 @@
 import { encodeUrl } from 'Utils/modules/crypto';
+import { navigateBackToCommunicationCreation } from 'Utils/modules/navigation';
 import { numberWithCommas } from 'Utils/modules/formatters';
 import { CANCEL, CONFIRMATION, ENTER_LIST_NAME, POTENTIAL_AUDIENCE, SAVE } from 'Constants/GlobalConstant/Placeholders';
 import { Fragment, useContext, useEffect, useMemo, useState } from 'react';
@@ -6,7 +7,7 @@ import { useFormContext } from 'react-hook-form';
 import { useLocation, useNavigate } from 'react-router-dom';
 
 import RSModal from 'Components/RSModal';
-import { RSInput } from 'Components/RSInput';
+import RSInput from 'Components/FormFields/RSInput';
 import { RSPrimaryButton, RSSecondaryButton } from 'Components/Buttons';
 import RSBootstrapdown from 'Components/FormFields/RSBootstrapdown';
 import { TargetListContext } from '../../..';
@@ -43,7 +44,7 @@ const SegmentationSave = ({ show, handleClose, partnerData = false, isUniqueID =
     }, [queryParams, location.state]);
     const dispatch = useDispatch();
     const navigate = useNavigate();
-    const { getValues, setValue } = useFormContext();
+    const { getValues, setValue, control } = useFormContext();
     const { dispatchState, targetListState, updateId } = useContext(TargetListContext);
     const { departmentId, clientId, userId } = useSelector((state) => getSessionId(state));
     const [isFailure, setIsFailure] = useState(false);
@@ -60,7 +61,6 @@ const SegmentationSave = ({ show, handleClose, partnerData = false, isUniqueID =
     const [isSaving, setIsSaving] = useState(false);
     const attributes = getValues();
     const {
-        segmentation: { listName },
         attributeslistCount,
         inclusionAudience,
         zeroDayLists,
@@ -194,7 +194,29 @@ const SegmentationSave = ({ show, handleClose, partnerData = false, isUniqueID =
                 };
                 const pageFrom = encodeUrl(queryParamData);
                 navigate(`/communication/mdc-workflow?q=${pageFrom}`, { state: queryParamData });
-            } else {
+            } else if(locationState?.backNavigationDetails?.isCustomNavigate && locationState?.backNavigationDetails?.backPathName){
+                const navDetails = locationState?.backNavigationDetails;
+                const backPath = navDetails?.backPathName
+                if (navDetails?.locationState) {
+                    const encryptState = encodeUrl(navDetails.locationState);
+                    return navigate(`${backPath}?q=${encryptState}`, {
+                        state: navDetails.locationState,
+                    });
+                } else {
+                    return navigate(backPath, {
+                        state: {},
+                    });
+                }
+            } else if (
+                !navigateBackToCommunicationCreation({
+                    dispatch,
+                    navigate,
+                    navigationState: locationState,
+                    extraReturnState: {
+                        savedSegmentationListId: res?.data ?? 0,
+                    },
+                })
+            ) {
                 const url = '/audience';
                 const index = 1;
                 const state1 = { index };
@@ -267,7 +289,13 @@ const SegmentationSave = ({ show, handleClose, partnerData = false, isUniqueID =
                                         )}
                                     </div>
 
-                                    <RSInput type="text" disabled value={listName} />
+                                    <RSInput
+                                        control={control}
+                                        name="segmentation.listName"
+                                        // placeholder={ENTER_LIST_NAME}
+                                        disabled
+                                        required
+                                    />
                                 </Fragment>
                             }
                             footer={

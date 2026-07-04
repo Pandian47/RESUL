@@ -11,7 +11,7 @@ import { Col, Container, Row } from 'react-bootstrap';
 import { useFormContext } from 'react-hook-form';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
-import _find from 'lodash/find';
+import { find as _find } from 'Utils/modules/lodashReplacements';
 import {
     mergeFilterBindSegments,
     getFilterBindCount,

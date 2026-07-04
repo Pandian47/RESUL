@@ -3,7 +3,7 @@ import { SETTINGS } from 'Constants/GlobalConstant/Placeholders';
 import { circle_minus_fill_edge_medium, circle_plus_fill_edge_medium } from 'Constants/GlobalConstant/Glyphicons';
 import { memo, useContext, useEffect, useState } from 'react';
 import { useFieldArray, useFormContext, useWatch } from 'react-hook-form';
-import _find from 'lodash/find';
+import { find as _find } from 'Utils/modules/lodashReplacements';
 
 
 

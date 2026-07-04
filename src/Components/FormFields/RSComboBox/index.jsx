@@ -2,7 +2,7 @@ import { memo } from 'react';
 import PropTypes from 'prop-types';
 
 import { ComboBox } from '@progress/kendo-react-dropdowns';
-import { get } from 'lodash';
+import { get } from 'Utils/modules/lodashReplacements';
 import { Controller } from 'react-hook-form';
 
 const RSKendoComboBox = ({

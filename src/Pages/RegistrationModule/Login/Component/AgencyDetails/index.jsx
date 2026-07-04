@@ -4,14 +4,13 @@ import { CITY_RULE, WEBSITE_RULES_SECURE, ZIP_RULES } from 'Constants/GlobalCons
 import { ADDRESS, AGENCY_GROUP, AGENCY_NAME, ALLOWED_FORMATS, CITY, FILE_NAME_EXTENSIONS_JPG_PNG_JPEG_1, FILE_SIZE500KB, WEBSITE, ZIP } from 'Constants/GlobalConstant/Placeholders';
 import { circle_minus_fill_medium, circle_pencil_medium, circle_plus_fill_medium, circle_question_mark_mini } from 'Constants/GlobalConstant/Glyphicons';
 import { Fragment, useEffect, useMemo, useState } from 'react';
-import _get from 'lodash/get';
 import { useSelector, useDispatch } from 'react-redux';
 import { Row, Col } from 'react-bootstrap';
 import { useForm } from 'react-hook-form';
 import { charNum } from 'Utils/modules/inputValidators';
 import { getmasterData } from 'Utils/modules/masterData';
 
-import RSFileUpload from 'Components/FormFields/RSFileUpload';
+import { useImageUpload } from 'Hooks/useImageUpload';
 import RSKendoDropDownList from 'Components/FormFields/RSKendoDropdown';
 import RSInput from 'Components/FormFields/RSInput';
 import RSTooltip from 'Components/RSTooltip';
@@ -24,11 +23,6 @@ import { checkClientNameExists, validateWebsite } from 'Reducers/login/newUser/r
 import { updateUserFormState } from 'Reducers/login/newUser/reducer';
 
 const AgencyDetails = ({ back, nextScreen }) => {
-    const [imageModalState, setImageModalState] = useState({
-        show: false,
-        tempImageData: null,
-        showFileUpload: true,
-    });
     const [loading, setLoading] = useState({
         agencyGroup: {
             loading: false,
@@ -63,6 +57,17 @@ const AgencyDetails = ({ back, nextScreen }) => {
     } = useForm({
         mode: 'onTouched',
     });
+
+    const {
+        fileInputRef,
+        imageModalState,
+        handleNativeFileChange,
+        openCropWithExistingImage,
+        handleCropComplete,
+        handleModalClose,
+        triggerUpload,
+        setTempImageData,
+    } = useImageUpload(setValue, setError, clearErrors, 'agencyPhoto');
     
     const selectedCountry = watch('country');
     const filteredStateList = useMemo(() => {
@@ -189,44 +194,7 @@ const AgencyDetails = ({ back, nextScreen }) => {
     //     }
     // };
 
-    const handleImageUpload = (base64Image, fileName) => {
-        const fileExtension = fileName?.split('.').pop()?.toLowerCase() || 'jpeg';
-        const mimeType = fileExtension === 'png' ? 'image/png' : 'image/jpeg';
-        const dataUri = base64Image?.includes('data:image') ? base64Image : `data:${mimeType};base64,${base64Image}`;
-        setImageModalState((prev) => ({ ...prev, tempImageData: dataUri, showFileUpload: false }));
-    };
 
-    const handleCropComplete = (croppedImage) => {
-        setValue('agencyPhoto', croppedImage);
-        clearErrors('agencyPhoto');
-        setImageModalState({ show: false, tempImageData: null, showFileUpload: true });
-    };
-
-    const handleModalClose = () => {
-        setImageModalState({ show: false, tempImageData: null, showFileUpload: true });
-        clearErrors('agencyPhoto');
-        clearErrors('uploadImageName');
-    };
-
-    const handleOpenImageModal = (isEdit = false) => {
-        if (isEdit) {
-            const currentImage = watch('agencyPhoto');
-            if (currentImage) {
-                let imageForCrop = currentImage;
-                if (!currentImage.includes('data:image')) {
-                    const isBase64Includes = currentImage?.includes('base64') || false;
-                    if (isBase64Includes) {
-                        imageForCrop = currentImage;
-                    } else {
-                        imageForCrop = `data:image/png;base64,${currentImage}`;
-                    }
-                }
-                setImageModalState({ show: true, tempImageData: imageForCrop, showFileUpload: false });
-            }
-        } else {
-            setImageModalState({ show: true, tempImageData: null, showFileUpload: true });
-        }
-    };
 
     const AgencyImageUploadButton = ({ value, onClick, onRemove, onEdit, error }) => {
         const [tooltip, setTooltip] = useState(false);
@@ -333,8 +301,8 @@ const AgencyDetails = ({ back, nextScreen }) => {
                         <Col md={3} sm={4} id="rs_AgencyDetails_agencyphoto" className="accountsetup-image-upload">
                             <AgencyImageUploadButton
                                 value={watch('agencyPhoto')}
-                                onClick={() => handleOpenImageModal(false)}
-                                onEdit={() => handleOpenImageModal(true)}
+                                onClick={triggerUpload}
+                                onEdit={() => openCropWithExistingImage(watch('agencyPhoto'))}
                                 onRemove={() => {
                                     setValue('agencyPhoto', null);
                                     setError('agencyPhoto', {
@@ -375,7 +343,7 @@ const AgencyDetails = ({ back, nextScreen }) => {
                                                 validate: {
                                                     groupError: () =>
                                                         agencyGroupHasError
-                                                            ? _get(errors, 'agencyGroup.message')
+                                                            ? errors?.agencyGroup?.message
                                                             : true,
                                                     // matchCompany: (value) => {
                                                     //     const brandCom = getValues('agencyName');
@@ -462,7 +430,7 @@ const AgencyDetails = ({ back, nextScreen }) => {
                                                 },
                                                 validate: {
                                                     groupError: () =>
-                                                        agencyNameHasError ? _get(errors, 'agencyName.message') : true,
+                                                        agencyNameHasError ? errors?.agencyName?.message : true,
                                                     // matchCompany: (value) => {
                                                     //     const brandCom = getValues('agencyGroup')?.trim();
                                                     //     return value?.trim()?.toLowerCase() ===
@@ -544,7 +512,7 @@ const AgencyDetails = ({ back, nextScreen }) => {
                                                 ...WEBSITE_RULES_SECURE,
                                                 validate: () =>
                                                     agencyWebsiteHasError
-                                                        ? _get(errors, 'agencyWebsite.message')
+                                                        ? errors?.agencyWebsite?.message
                                                         : true,
                                             }}
                                             placeholder={WEBSITE}
@@ -632,7 +600,14 @@ const AgencyDetails = ({ back, nextScreen }) => {
                     </RSPrimaryButton>
                 </div>
             </form>
-            {imageModalState.show && (
+            <input
+                type="file"
+                ref={fileInputRef}
+                accept=".png,.jpg,.jpeg"
+                style={{ display: 'none' }}
+                onChange={handleNativeFileChange}
+            />
+            {imageModalState.show && imageModalState.tempImageData && (
                 <RSModal
                     show={imageModalState.show}
                     header="Edit agency logo"
@@ -640,50 +615,21 @@ const AgencyDetails = ({ back, nextScreen }) => {
                     handleClose={handleModalClose}
                     body={
                         <div className="image-upload-crop-container">
-                            {imageModalState.showFileUpload && (
-                                <Row className="mt11">
-                                    <Col>
-                                        <RSFileUpload
-                                            isbase64={true}
-                                            control={control}
-                                            name={'uploadImageName'}
-                                            text="Browse"
-                                            accept=".png,.jpg,.jpeg"
-                                            customInputClass={'upload-button-top-align ml20'}
-                                            size={512000}
-                                            isBase64Status={true}
-                                            base64Data={async (base64, fileName, contentLength) => {
-                                                handleImageUpload(base64, fileName);
-                                            }}
-                                            setError={setError}
-                                            handleChange={(e) => {}}
-                                            required
-                                            watch={watch}
-                                            clearErrors={clearErrors}
-                                        />
-                                        <small className="text-muted d-block mt5">
-                                            Allowed formats: .jpg,.jpeg,.png | maximum size: 500kb
-                                        </small>
-                                    </Col>
-                                </Row>
-                            )}
-
-                            {imageModalState.tempImageData && (
-                                <>
-                                    <ImageCropModal
-                                        imageSrc={imageModalState.tempImageData}
-                                        onCropComplete={handleCropComplete}
-                                        onCancel={handleModalClose}
-                                        aspectRatio={1}
-                                        cropShape="round"
-                                        showGrid={true}
-                                        height="250px"
-                                        setTempImageData={(data) => setImageModalState((prev) => ({ ...prev, tempImageData: data }))}
-                                        setShowFileUpload={(show) => setImageModalState((prev) => ({ ...prev, showFileUpload: show }))}
-                                        setValue={setValue}
-                                    />
-                                </>
-                            )}
+                            <ImageCropModal
+                                imageSrc={imageModalState.tempImageData}
+                                onCropComplete={handleCropComplete}
+                                onCancel={handleModalClose}
+                                aspectRatio={1}
+                                cropShape="round"
+                                showGrid={true}
+                                height="250px"
+                                setTempImageData={setTempImageData}
+                                setShowFileUpload={() => {
+                                    handleModalClose();
+                                    triggerUpload();
+                                }}
+                                setValue={setValue}
+                            />
                         </div>
                     }
                 />

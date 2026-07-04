@@ -10,10 +10,7 @@ import { EMAIL_RULES, FIRSTNAME_RULES, LASTNAME_RULES, PASSWORD_RULES } from 'Co
 import { EMAIL, FIRST_NAME, LAST_NAME, MIN_8_CHARACTERS, MOBILE_NUMBER, NO_DATA_AVAILABEL, PASSWORD, PASSWORD_MAX_15_CHARACTERS } from 'Constants/GlobalConstant/Placeholders';
 import { alert_medium, circle_question_mark_mini, settings_medium } from 'Constants/GlobalConstant/Glyphicons';
 import { Fragment, useEffect, useMemo, useRef, useState } from 'react';
-import _get from 'lodash/get';
-import _size from 'lodash/size';
-import _find from 'lodash/find';
-import _isEmpty from 'lodash/isEmpty';
+import { get as _get, size as _size, find as _find, isEmpty as _isEmpty } from 'Utils/modules/lodashReplacements';
 import { useDispatch, useSelector } from 'react-redux';
 import { useForm } from 'react-hook-form';
 import { Col, Row } from 'react-bootstrap';
@@ -47,6 +44,7 @@ import LoginOTP from './Component/LoginOTP';
 import { clientIdChangeData, departmentIdChangeData, getBUList } from 'Reducers/globalState/request';
 import { updateBUByClientCompany, updatedisLicenseId, updateIndustryId } from 'Reducers/globalState/reducer';
 import { maskEmailTwoCharsBeforeAndAfterDomain, maskPhoneTwoDigitsInMiddle } from 'Utils/modules/masking';
+import { UpdateState } from 'Utils/modules/misc';
 var oldPhoneNumber = '';
 
 const AddUser = ({ nextScreen, companies = false, companyBack, campanyEdit, currentPage, back, isAgencyValue }) => {

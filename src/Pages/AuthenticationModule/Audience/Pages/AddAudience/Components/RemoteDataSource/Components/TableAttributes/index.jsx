@@ -1,3 +1,4 @@
+import { find as _find } from 'Utils/modules/lodashReplacements';
 import { updateQueryParams } from 'Utils/modules/urlQuery';
 import { getBrandName } from 'Utils/modules/brandStorage';
 import { encodeUrl } from 'Utils/modules/crypto';
@@ -20,7 +21,6 @@ import {
     getFilterBindCount,
     hasFilterBindSegments,
 } from 'Pages/AuthenticationModule/Audience/audienceDefaults';
-import _find from 'lodash/find';
 
 import {
     saveFilterJSON_Versium,

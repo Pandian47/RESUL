@@ -27,6 +27,9 @@ import { getCommunicationAttributes } from 'Reducers/communication/createCommuni
 import { AudienceScoreTabContentSkeletonGate } from 'Components/Skeleton/Components/PreferencesSubPageRouteSkeleton';
 import useApiLoader from 'Hooks/useApiLoader';
 import { FIELD_BOTH_LOADER_CONFIG as fieldLoaderConfig } from 'Hooks/loaderTypes';
+import {
+    getAudienceScoreListFromResponse,
+} from '../Components/constants';
 const CommunicationResponse = () => {
     const navigate = useNavigate();
     const methods = useForm(INITIAL_STATE);
@@ -36,11 +39,6 @@ const CommunicationResponse = () => {
     const { departmentId, clientId, userId, departmentName } = useSelector((state) => getSessionId(state));
     const { control, handleSubmit, setValue } = methods;
     const { activeTab } = useSelector((state) => state.audienceScoreReducer);
-    const [payloads] = useState([
-        { clientId, departmentId, userId, campaigntarget: 'Reach' },
-        { clientId, departmentId, userId, campaigntarget: 'Engagement' },
-        { clientId, departmentId, userId, campaigntarget: 'Leads' },
-    ]);
     const [commuResponseAllChannel, setCommuResponseAllChannel] = useState([]);
 
     const [reachData, setReachData] = useState([]);
@@ -62,6 +60,19 @@ const CommunicationResponse = () => {
     const [customCommuAttribute, setCustomAttribute] = useState([]);
     const [periodkeys, setPeriodkeys] = useState([]);
     const pageLoadApi = useApiLoader({ autoFetch: false, loaderConfig: fieldLoaderConfig, mode: 'create' });
+
+    const applyCampaignResponseState = (allChannel, response, setters) => {
+        if (!response?.status || !Array.isArray(response?.data)) {
+            setters.setDropDown([]);
+            setters.setChannelData([]);
+            setters.setAllData([]);
+            return;
+        }
+
+        setters.setDropDown(customDropdownData(response.data));
+        setters.setChannelData(commuResponseChannelData(allChannel, response.data));
+        setters.setAllData(response.data);
+    };
 
     const handleSave = (data, from) => {
         // debugger;
@@ -86,32 +97,6 @@ const CommunicationResponse = () => {
         }
     };
 
-    const fetchCampaignResponse = async (payload) => {
-        const response = await dispatch(getCampaignResponse(payload));
-
-        if (response?.status) {
-            switch (payload.campaigntarget) {
-                case 'Reach':
-                    setReachDropDownData(customDropdownData(response?.data));
-                    setReachData(commuResponseChannelData(commuResponseAllChannel, response?.data));
-                    setAllReachData(response?.data);
-                    break;
-                case 'Engagement':
-                    setEngagementDropDownData(customDropdownData(response?.data));
-                    setEngagementData(commuResponseChannelData(commuResponseAllChannel, response?.data));
-                    setAllEngagementData(response?.data);
-                    break;
-                case 'Leads':
-                    setConversionDropDownData(customDropdownData(response?.data));
-                    setConversionData(commuResponseChannelData(commuResponseAllChannel, response?.data));
-                    setAllConversionData(response?.data);
-                    break;
-                default:
-                    break;
-            }
-        }
-    };
-
     const bootstrapCommunicationResponse = useCallback(() => {
         if (!clientId || !departmentId || !userId) {
             return undefined;
@@ -119,26 +104,83 @@ const CommunicationResponse = () => {
         const payload = { clientId, departmentId, userId };
         return pageLoadApi.refetch({
             fetcher: async () => {
-                const sentimentRes = await dispatch(get_LadderSentimentKeys(payload));
-                const channelRes = await dispatch(getCampaignResponseData(payload));
-                const attributesRes = await dispatch(getCommunicationAttributes({ payload }));
-                const periodRes = await dispatch(getPeriodKeys(payload));
-                return { sentimentRes, channelRes, attributesRes, periodRes };
+                const [
+                    sentimentRes,
+                    channelRes,
+                    attributesRes,
+                    periodRes,
+                    reachRes,
+                    engagementRes,
+                    leadsRes,
+                ] = await Promise.all([
+                    dispatch(get_LadderSentimentKeys(payload)),
+                    dispatch(getCampaignResponseData(payload)),
+                    dispatch(getCommunicationAttributes({ payload })),
+                    dispatch(getPeriodKeys(payload)),
+                    dispatch(getCampaignResponse({ ...payload, campaigntarget: 'Reach' })),
+                    dispatch(getCampaignResponse({ ...payload, campaigntarget: 'Engagement' })),
+                    dispatch(getCampaignResponse({ ...payload, campaigntarget: 'Leads' })),
+                ]);
+                return { sentimentRes, channelRes, attributesRes, periodRes, reachRes, engagementRes, leadsRes };
             },
-            onSuccess: ({ sentimentRes, channelRes, attributesRes, periodRes }) => {
-                if (sentimentRes?.status) {
-                    setSentimentKeys(sentimentRes?.data ?? []);
-                }
-                if (channelRes?.status) {
-                    setCommuResponseAllChannel(channelRes?.data ?? []);
-                }
-                if (attributesRes?.status && attributesRes?.data?.length > 0) {
+            onSuccess: ({
+                sentimentRes,
+                channelRes,
+                attributesRes,
+                periodRes,
+                reachRes,
+                engagementRes,
+                leadsRes,
+            }) => {
+                const allChannel = getAudienceScoreListFromResponse(channelRes);
+
+                setSentimentKeys(getAudienceScoreListFromResponse(sentimentRes));
+                setCommuResponseAllChannel(allChannel);
+                if (attributesRes?.status && Array.isArray(attributesRes?.data) && attributesRes.data.length > 0) {
                     setCustomAttribute(getCommuAttribute(attributesRes.data));
                     setCommuAttribute(attributesRes.data);
+                } else {
+                    setCustomAttribute([]);
+                    setCommuAttribute([]);
                 }
-                if (periodRes?.status) {
-                    setPeriodkeys(periodRes?.data?.map((item) => item?.attributeName) ?? []);
-                }
+                setPeriodkeys(
+                    getAudienceScoreListFromResponse(periodRes)
+                        ?.map((item) => item?.attributeName)
+                        ?.filter(Boolean) ?? [],
+                );
+
+                applyCampaignResponseState(allChannel, reachRes, {
+                    setDropDown: setReachDropDownData,
+                    setChannelData: setReachData,
+                    setAllData: setAllReachData,
+                });
+                applyCampaignResponseState(allChannel, engagementRes, {
+                    setDropDown: setEngagementDropDownData,
+                    setChannelData: setEngagementData,
+                    setAllData: setAllEngagementData,
+                });
+                applyCampaignResponseState(allChannel, leadsRes, {
+                    setDropDown: setConversionDropDownData,
+                    setChannelData: setConversionData,
+                    setAllData: setAllConversionData,
+                });
+            },
+            onError: () => {
+                setSentimentKeys([]);
+                setCommuResponseAllChannel([]);
+                setCustomAttribute([]);
+                setCommuAttribute([]);
+                setPeriodkeys([]);
+                setReachData([]);
+                setAllReachData([]);
+                setReachDropDownData([]);
+                setEngagementData([]);
+                setAllEngagementData([]);
+                setEngagementDropDownData([]);
+                setConversionData([]);
+                setAllConversionData([]);
+                setConversionDropDownData([]);
+                setGoalFrequencyData(undefined);
             },
         });
     }, [clientId, departmentId, userId, dispatch, pageLoadApi.refetch]);
@@ -148,23 +190,24 @@ const CommunicationResponse = () => {
     }, [bootstrapCommunicationResponse]);
 
     useEffect(() => {
+        if (!Array.isArray(commuResponseAllChannel) || !commuResponseAllChannel.length) {
+            return;
+        }
         const scoreDepreciation = commuResponseAllChannel.find(
-            (item) => item.campaignGoalPeriodRange === 'year' && item.responseScore === 0,
+            (item) => item?.campaignGoalPeriodRange === 'year' && item?.responseScore === 0,
         );
         const goalFrequency = commuResponseAllChannel.find(
-            (item) => item.campaignSegment === 'Goalfrequency' && item.campaignGoalPeriodRange === 'Week',
+            (item) => item?.campaignSegment === 'Goalfrequency' && item?.campaignGoalPeriodRange === 'Week',
         );
         setGoalFrequencyData(goalFrequency);
         if (scoreDepreciation) setValue('depreciation', scoreDepreciation?.campaignSegmentRule?.Percentage);
-    }, [commuResponseAllChannel]);
+    }, [commuResponseAllChannel, setValue]);
 
     useEffect(() => {
-        setValue('priority', periodkeys[0]);
-    }, [periodkeys]);
-
-    useEffect(() => {
-        if (commuResponseAllChannel?.length > 0) payloads.forEach(fetchCampaignResponse);
-    }, [payloads, commuResponseAllChannel]);
+        if (periodkeys?.length) {
+            setValue('priority', periodkeys[0]);
+        }
+    }, [periodkeys, setValue]);
 
     // console.log(commuAttribute,customCommuAttribute);
 
@@ -186,6 +229,7 @@ const CommunicationResponse = () => {
                             constants={reachData}
                             allChannel={commuResponseAllChannel}
                             dropDownData={reachDropDownData}
+                            isLoading={pageLoadApi.isFetching}
                         />
                         <CommunicaitionCard
                             name={'engagement'}
@@ -193,6 +237,7 @@ const CommunicationResponse = () => {
                             constants={engagementData}
                             allChannel={commuResponseAllChannel}
                             dropDownData={engagementDropDownData}
+                            isLoading={pageLoadApi.isFetching}
                         />
                         <CommunicaitionCard
                             name={'conversion'}
@@ -200,6 +245,7 @@ const CommunicationResponse = () => {
                             constants={conversionData}
                             allChannel={commuResponseAllChannel}
                             dropDownData={conversionDropDownData}
+                            isLoading={pageLoadApi.isFetching}
                         />
 
                         <CommunicaitionCard
@@ -208,6 +254,7 @@ const CommunicationResponse = () => {
                             constants={customCommuAttribute}
                             allChannel={commuResponseAllChannel}
                             dropDownData={customCommuAttribute}
+                            isLoading={pageLoadApi.isFetching}
                         />
 
                         <CompareCard

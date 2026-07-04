@@ -2,9 +2,6 @@ import { numberWithCommas } from 'Utils/modules/formatters';
 import { addTabKey } from '../../../../constants';
 import { AFTER_COMMUNICATION_BLAST_COUNT, SCRUBBED_BEFORE_COMMUNICATION_BLAST, UNIQUE_AUDIENCE_COUNT } from 'Constants/GlobalConstant/Placeholders';
 import useQueryParams from 'Hooks/useQueryParams';
-import _filter from 'lodash/filter';
-import _get from 'lodash/get';
-import _map from 'lodash/map';
 import { getSummaryList } from 'Reducers/analytics/analyticsSummary/selector';
 import { useSelector } from 'react-redux';
 const InfoOverview = ({ audience, infoSelectedType }) => {
@@ -13,7 +10,7 @@ const InfoOverview = ({ audience, infoSelectedType }) => {
     const state = useQueryParams('/analytics/analytics-report');
     // console.log('state: ', state);
     const summary = useSelector((state) => getSummaryList(state));
-    const filterModals = _filter(Object.entries(_get(summary, 'factModel', {})), ([_, value]) => value !== null);
+    const filterModals = Object.entries(summary?.factModel ?? {}).filter(([_, value]) => value !== null);
     const filterModaldata = addTabKey(Object.fromEntries(filterModals));
     const getChannelKey = (type) => {
         switch (type) {
@@ -69,7 +66,7 @@ const InfoOverview = ({ audience, infoSelectedType }) => {
     };
     const channelKey = getChannelKey(infoSelectedType);
     const filteredFactData = channelKey ? filterModaldata[channelKey] || [] : [];
-    const factModals = _map(filteredFactData, (list) => ({
+    const factModals = (filteredFactData || []).map((list) => ({
         id: list?.blastId,
         text: list?.blastName || list.blastId,
         data: list,
@@ -244,21 +241,21 @@ const InfoOverview = ({ audience, infoSelectedType }) => {
                     {factModals?.map((fact, idx) => {
                         const { data = {} } = fact;
 
-                        const factAudience = {
+                       const factAudience = {
                             afterBounced:
-                                (softBouncedCount || 0) +
-                                (quarantinedCount || 0) +
-                                (hardBouncedCount || 0),
-                            deliveyCount: deliveredCount || 0,
-                            totalRecipientCount: totalNoOfRecipientsCount || 0,
-                            messageCount: messageCount || 0,
-                            noOfMessageCount: noOfAudienceCount || 0,
-                            mobilePushDeliveredCount: totalDeliveredCount || 0,
-                            mobilePushMessageCount: totalMessageCount || 0,
-                            mobilePushUndeliveredCount: unDeliveredCount || 0,
-                            appUninstallCount: appUninstallCount || 0,
-                            afterdndCount: dndCount || 0,
-                            totalAudienceCount: totalAudienceCount || 0,
+                                (data?.softBouncedCount || 0) +
+                                (data?.quarantinedCount || 0) +
+                                (data?.hardBouncedCount || 0),
+                            deliveyCount: data?.deliveredCount || 0,
+                            totalRecipientCount: data?.totalNoOfRecipientsCount || 0,
+                            messageCount: data?.messageCount || 0,
+                            noOfMessageCount: data?.noOfAudienceCount || 0,
+                            mobilePushDeliveredCount: data?.totalDeliveredCount || 0,
+                            mobilePushMessageCount: data?.totalMessageCount || 0,
+                            mobilePushUndeliveredCount: data?.unDeliveredCount || 0,
+                            appUninstallCount: data?.appUninstallCount || 0,
+                            afterdndCount: data?.dndCount || 0,
+                            totalAudienceCount: data?.totalAudienceCount || 0,
                         };
                         return (
                             <>

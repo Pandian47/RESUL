@@ -1,5 +1,5 @@
 import { Fragment, useLayoutEffect, useMemo, useRef, useState } from 'react';
-import _get from 'lodash/get';
+import { get as _get } from 'Utils/modules/lodashReplacements';
 import parse from 'html-react-parser';
 import Carousel from 'react-bootstrap/Carousel';
 

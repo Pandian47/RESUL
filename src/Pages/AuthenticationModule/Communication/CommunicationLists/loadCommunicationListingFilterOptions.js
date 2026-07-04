@@ -1,4 +1,4 @@
-import _orderBy from 'lodash/orderBy';
+import { orderBy as _orderBy } from 'Utils/modules/lodashReplacements';
 import {
     EMPTY_LISTING_FILTER_OPTIONS,
     normalizeListingFilterOptions,

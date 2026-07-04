@@ -10,7 +10,15 @@ import { convertToUserTimezone, convertUTCtoUserTimezone } from 'Utils/modules/d
 import { getmasterData } from 'Utils/modules/masterData';
 import { getUtcTimeData } from 'Reducers/globalState/selector';
 import { getUtcTimeNow } from 'Reducers/globalState/request';
-import _find from 'lodash/find';
+const toSafeDate = (val) => {
+    if (!val) return null;
+    if (val instanceof Date) {
+        return isNaN(val.getTime()) ? null : val;
+    }
+    const parsed = new Date(val);
+    return isNaN(parsed.getTime()) ? null : parsed;
+};
+
 const RSCustomRangePicker = (props) => {
     // console.log('props: ', props);
     const dispatch = useDispatch();
@@ -32,7 +40,7 @@ const RSCustomRangePicker = (props) => {
 
     const { createdDate, timeZoneId } = getUserDetails();
     const { timeZoneList } = getmasterData();
-    const timeZone = _find(timeZoneList, ['timeZoneID', timeZoneId]);
+    const timeZone = timeZoneList?.find((item) => item?.timeZoneID === timeZoneId);
     const [show, setShow] = useState(false);
     const {customDate, allowFutureDates = false} = props
     const dateRef = useRef();
@@ -131,15 +139,27 @@ const RSCustomRangePicker = (props) => {
         if (customDate?.start && customDate.end && props.show) {
             props.handleEvent(
             { value : {
-                        start: customDate?.start,
-                end:  customDate?.end,
+                start: toSafeDate(customDate?.start),
+                end:  toSafeDate(customDate?.end),
             }});
         }
     }, [props.show]);
 
-    const minDate = props?.isAnalytics ? props.fromDate : getCreatedDateInUserTimezone();
-    const maxDate = props?.isAnalytics ? props.toDate : getCurrentDateInUserTimezone();
+    const minDate = toSafeDate(props?.isAnalytics ? props.fromDate : getCreatedDateInUserTimezone());
+    const maxDate = toSafeDate(props?.isAnalytics ? props.toDate : getCurrentDateInUserTimezone());
     const dateInputBounds = { min: minDate, max: maxDate };
+
+    const getFocusedDate = () => {
+        if (customDate?.end) {
+            const end = toSafeDate(customDate.end);
+            if (end) return end;
+        }
+        if (customDate?.start) {
+            const start = toSafeDate(customDate.start);
+            if (start) return start;
+        }
+        return maxDate || new Date();
+    };
 
     return (
         <div className="rs-daterangepicker-content">
@@ -147,20 +167,21 @@ const RSCustomRangePicker = (props) => {
                 popup={CustomPopup}
                 max={maxDate}
                 min={minDate}
+                focusedDate={getFocusedDate()}
                 startDateInputSettings={dateInputBounds}
                 endDateInputSettings={dateInputBounds}
                 show={show}
                 startDateInput={CustomStartDateInput}
                 endDateInput={CustomEndDateInput}
                 defaultValue={{
-                    start: props.fromDate,
-                    end: props.toDate,
+                    start: toSafeDate(props.fromDate),
+                    end: toSafeDate(props.toDate),
                 }}
                 onChange={props.handleEvent}
                 ref={dateRef}
                 value={{
-                    start: customDate?.start,
-                    end: customDate?.end,
+                    start: toSafeDate(customDate?.start),
+                    end: toSafeDate(customDate?.end),
                 }}
             />
         </div>

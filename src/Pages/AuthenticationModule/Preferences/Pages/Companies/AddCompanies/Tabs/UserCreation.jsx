@@ -1,7 +1,6 @@
 import { encryptWithAES, getPermissions, getUserDetails, updatedPermissionList } from 'Utils/modules/crypto';
 import { useEffect, useRef, useState } from 'react';
-import _find from 'lodash/find';
-import _isEmpty from 'lodash/isEmpty';
+import { find as _find, isEmpty as _isEmpty } from 'Utils/modules/lodashReplacements';
 
 import { useSelector, useDispatch } from 'react-redux';
 import { useLocation, useNavigate } from 'react-router-dom';
@@ -22,7 +21,17 @@ import usePermission from 'Hooks/usePersmission';
 import useApiLoader, { LOADER_TYPE } from 'Hooks/useApiLoader';
 
 import CacheManager from 'Utils/cacheManager';
-const UserCreation = ({ nextScreen, back, companies, isEdit, setCurrentTitle, c_clientId, isAgencyValue ,setCurrentUserPage}) => {
+const UserCreation = ({
+    nextScreen,
+    back,
+    companies,
+    isEdit,
+    setCurrentTitle,
+    c_clientId,
+    isAgencyValue,
+    setCurrentUserPage,
+    onAssignRoleInlineLoadingChange,
+}) => {
     const { licenseTypeId, isAgency, isEnterprisePlus } = getUserDetails();
     const { userId, departmentId, clientId } = useSelector((state) => getSessionId(state));
     const navigate = useNavigate();
@@ -159,6 +168,11 @@ const UserCreation = ({ nextScreen, back, companies, isEdit, setCurrentTitle, c_
 
     const showFooterButtons = currentPage !== 'ASSIGNROLE' || !isAssignRolePageLoading;
 
+    const handleAssignRolePageLoadingChange = (isLoading) => {
+        setIsAssignRolePageLoading(isLoading);
+        onAssignRoleInlineLoadingChange?.(isLoading);
+    };
+
     return (
         <FormProvider {...methods}>
             <>
@@ -215,7 +229,7 @@ const UserCreation = ({ nextScreen, back, companies, isEdit, setCurrentTitle, c_
                     isAgencyValue={isAgencyValue}
                     currentLicenseTypeId={parseInt(location?.state?.licenseTypeId, 10)}
                     setCurrentPage={setCurrentPage}
-                    onAssignRolePageLoadingChange={setIsAssignRolePageLoading}
+                    onAssignRolePageLoadingChange={handleAssignRolePageLoadingChange}
                 />
             </>
 
@@ -228,12 +242,20 @@ const UserCreation = ({ nextScreen, back, companies, isEdit, setCurrentTitle, c_
                             if (currentPage === 'USERGRID') {
                                 setCurrentPage('ASSIGNROLE');
                             } else {
-                                back('NEW_COMPANY', '');
+                                // back('NEW_COMPANY', '');
+                                if (location?.state?.screen === 'userrole') {
+                                    navigate('/preferences/company-list');
+                                } else {
+                                    back('NEW_COMPANY', '');
+                                }
                             }
                         }}
                         blockInteraction={isAssignRoleSaveLoading}
                     >
-                        {userCreate && !isAccountSettings ? 'Back' : 'Cancel'}
+                        {/* {userCreate && !isAccountSettings ? 'Back' : 'Cancel'} */}
+                        {location?.state?.screen === 'userrole'
+                            ? 'Cancel'
+                            : (userCreate && !isAccountSettings ? 'Back' : 'Cancel')}
                     </RSSecondaryButton>
                 )}
                 {userCreate && currentPage !== 'ADDUSER' && (
@@ -250,7 +272,10 @@ const UserCreation = ({ nextScreen, back, companies, isEdit, setCurrentTitle, c_
                                     : currentPage === 'ASSIGNROLE'
                                     ? handleSave()
                                     : currentPage === 'USERGRID'
-                                    ? nextScreen('LOCALIZATION_SETTINGS', '')
+                                    // ? nextScreen('LOCALIZATION_SETTINGS', '')
+                                    ? (location?.state?.screen === 'userrole'
+                                        ? navigate('/preferences/company-list')
+                                        : nextScreen('LOCALIZATION_SETTINGS', ''))
                                     : '';
                             } // nextScreen('LOCALIZATION_SETTINGS', '');
                         }}

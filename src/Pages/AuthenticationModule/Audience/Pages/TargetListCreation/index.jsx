@@ -9,12 +9,11 @@ import { safeObjectKeys } from 'Utils/modules/misc';
 import { getWarningPopupMessage } from 'Utils/modules/warningPopup';
 import { _isAttributesErrors, applyLookAlikeAttributes, availableInclsuionExclusionList, checkCountTakenStatus, FILTER_GROUPS, FILTER_GROUPS_PARTNER, filterGroupLimitInMultiFilterConfig, filterGroupLimitInNormalFilterConfig, filterValue, finalAPIData, finalOrderWiseGroupLists, FORM_INITIAL_STATE, getallAttributes, getFieldObject, getFieldType, getFinalAudienceCount, getListMaxValue, getListTypeDetail, getPotentialCountPayload, handlePartnerAttributeData, INITIAL_STATE, LOOK_A_LIKE_GROUPS, makeExpressionVersium, safeParse, shortKeyNormalFlowConfig, solrFieldNameSplit, STATE_REDUCER, ZERO_DAY_FIELD_NAME, ZERO_DAY_FILES } from './constant';
 import { MAX_LENGTH200, MIN_LENGTH } from 'Constants/GlobalConstant/Regex';
-import { ENTER_LIST_NAME, MINLENGTH, SPECIAL_CHATACTERS_NOT_ALlOWED } from 'Constants/GlobalConstant/ValidationMessage';
+import { ENTER_LIST_NAME, MINLENGTH, SPECIAL_CHATACTERS_NOT_ALlOWED ,ENTER_EXTRACTION_LIMIT} from 'Constants/GlobalConstant/ValidationMessage';
 import { ADD_GROUP, APPLY, APPROVE, APPROVER_EMAIL, APPROVER_NAME, AUDIENCE_SELECTION, CANCEL, COMMENTS, EDIT_SEGMENT, EDIT_SUB_SEGMENT_LIST, ENTER_COMMENTS, EXTRACTION_LIMIT, LOOK_ALIKE, MAX_500_CHARACTERS, MIN_POTENTIAL_AUD_LOOKALIKE, NEW_SEGMENT, NEW_SUB_SEGMENT_LIST, OK, REJECT, RENAME, SAVE, TARGETLIST_NAME, TOT_AUDIENCE } from 'Constants/GlobalConstant/Placeholders';
 import { checkbox_mini, circle_plus_fill_edge_medium, pencil_edit_medium } from 'Constants/GlobalConstant/Glyphicons';
 import { Fragment, createContext, createRef, useCallback, useEffect, useMemo, useReducer, useRef, useState } from 'react';
-import _get from 'lodash/get';
-import _isEmpty from 'lodash/isEmpty';
+import { get as _get,isEmpty as _isEmpty} from 'Utils/modules/lodashReplacements';
 import { Col, Container, Row } from 'react-bootstrap';
 import { FormProvider, useForm } from 'react-hook-form';
 import { useLocation, useNavigate } from 'react-router-dom';
@@ -46,8 +45,9 @@ import {
     handleDuplicateAttributes,
     transformData_subsegment,
 } from 'Pages/AuthenticationModule/Components/SegmentationLists/constant';
+import { getRequestApprovalUserDetails } from 'Reducers/globalState/request';
 
-import { hasTargetListEditData, parseAudienceJsonArray } from 'Pages/AuthenticationModule/Audience/audienceDefaults';
+import { hasTargetListEditData, parseAudienceJsonArray, resolveSegmentListName } from 'Pages/AuthenticationModule/Audience/audienceDefaults';
 import {
     approveTargetList,
     checkTargetListName,
@@ -178,6 +178,7 @@ const TargetListCreation = () => {
     });
     const [showActiveCommunicationListWarning, setShowActiveCommunicationListWarning] = useState(false);
     const [isCreating, setIsCreating] = useState(false);
+    const [isActionLoading, setIsActionLoading] = useState(false);
     const apicallStatusDetail = useRef({
         fullAttributeJSONAPICall: false,
         oneAJSONAPICallStatus: false,
@@ -222,6 +223,7 @@ const TargetListCreation = () => {
     } = methods;
     const approvalList = watch('approvalList');
     const approvalcomments = watch('comments');
+    const extractionCheck = watch('extractionCheck');
     const attributes = watch();
     // console.log('@@@attributes: ', attributes);
     const {
@@ -282,21 +284,27 @@ const TargetListCreation = () => {
     useEffect(() => {
         const isApprovalLink = new URLSearchParams(window.location.search).get('rfa') || 'false';
         const isApprovalStatus = new URLSearchParams(window.location.search).get('approval') || '0';
+
         if (isApprovalLink === 'true' && isApprovalStatus === '2') {
             setRFA(true);
             setRFARejectComments(true);
-        } else if (isApprovalLink === 'true' && isApprovalStatus === '0') {
+        } else if (isApprovalLink === 'true') {
             setRFA(true);
         } else {
             setRFA(false);
+            setRFARejectComments(false);
         }
+
         if (!rfaapprovalList?.length) {
-            const payload = {
-                clientId,
-                departmentId,
-                userId,
-            };
-            // dispatch(getRequestApprovalUserDetails({ payload }));
+            dispatch(
+                getRequestApprovalUserDetails({
+                    payload: {
+                        clientId,
+                        departmentId,
+                        userId,
+                    },
+                }),
+            );
         }
     }, []);
     useEffect(() => {
@@ -797,55 +805,69 @@ const TargetListCreation = () => {
     }, [editList, updateVersium, isUpdate, editListLoading, editLoadFailed]);
 
     useEffect(() => {
-        if (isUpdate && !_isEmpty(rfaList)) {
-            if (isRFA) {
-                let tempData = rfaList?.filter((e) => e.approvalStatus === 1);
-                const myArrayFiltered = rfaapprovalList.filter((el) => {
-                    return tempData?.some((f) => {
-                        return f.approverEmail === el.email;
-                    });
-                });
-                const isUserid = myArrayFiltered?.filter((e) => e.userId === userId);
-                if (isUserid?.length === 1) {
-                    setRFAAlert({
-                        content: 'Target list has been already approved.',
-                        show: true,
-                        reject: false,
-                        isApproved: true,
-                    });
-                    setIsViewOnly(true);
-                } else {
-                    if (!rfaapprovalList.some((e) => e?.userId === userId)) {
-                        setRFAAlert((prev) => ({
-                            ...prev,
-                            content: 'You are not an approver for this target list.',
-                            show: true,
-                            isApproved: true,
-                        }));
-                        setIsViewOnly(true);
-                    } else {
-                        if (rfaList[0]?.createdBy === userId) {
-                            setRFAAlert((prev) => ({
-                                ...prev,
-                                content: 'You are not an approver for this target list.',
-                                show: true,
-                                isApproved: true,
-                            }));
-                            setIsViewOnly(true);
-                        } else {
-                            setRFAAlert((prev) => ({
-                                show: false,
-                                content: '',
-                                reject: false,
-                                isApproved: false,
-                            }));
-                            setIsViewOnly(false);
-                        }
-                    }
-                }
-            }
+        if (!isUpdate || _isEmpty(rfaList) || !rfaapprovalList?.length || !isRFA) return;
+
+        const approvalStatusParam = new URLSearchParams(window.location.search).get('approval') || '0';
+        if (approvalStatusParam === '1') return;
+
+        const approvedApprovers = rfaList.filter((approver) => approver.approvalStatus === 1);
+        const rejectedApprovers = rfaList.filter((approver) => approver.approvalStatus === 2);
+
+        const matchApproversByStatus = (statusList) =>
+            rfaapprovalList.filter((approver) =>
+                statusList.some((item) => item.approverEmail === approver.email),
+            );
+
+        let matchedApprovers = [];
+        if (approvedApprovers.length) {
+            matchedApprovers = matchApproversByStatus(approvedApprovers);
+        } else if (rejectedApprovers.length) {
+            matchedApprovers = matchApproversByStatus(rejectedApprovers);
         }
-    }, [rfaList, isUpdate]);
+
+        const isCurrentUserMatched = matchedApprovers.filter((approver) => approver.userId === userId);
+
+        if (isCurrentUserMatched.length === 1) {
+            setRFAAlert({
+                content: rejectedApprovers.length
+                    ? 'Target list has been already rejected.'
+                    : 'Target list has been already approved.',
+                show: true,
+                reject: false,
+                isApproved: !rejectedApprovers.length,
+            });
+            setIsViewOnly(true);
+            return;
+        }
+
+        if (!rfaapprovalList.some((approver) => approver?.userId === userId)) {
+            setRFAAlert({
+                content: 'You are not an approver for this target list.',
+                show: true,
+                isApproved: true,
+            });
+            setIsViewOnly(true);
+            return;
+        }
+
+        if (rfaList[0]?.createdBy === userId) {
+            setRFAAlert({
+                content: 'You are not an approver for this target list.',
+                show: true,
+                isApproved: true,
+            });
+            setIsViewOnly(true);
+            return;
+        }
+
+        setRFAAlert({
+            show: false,
+            content: '',
+            reject: false,
+            isApproved: false,
+        });
+        setIsViewOnly(false);
+    }, [rfaList, isUpdate, rfaapprovalList, isRFA, userId]);
     const handleApproveDynamicList = async () => {
         const payload = {
             segmentationId: editListID,
@@ -853,8 +875,10 @@ const TargetListCreation = () => {
             clientId,
             userId,
         };
-        try {
-            if (tempUserId?.length > 0) {
+        if (tempUserId?.length > 0) {
+            if (!isActiveRef.current) return;
+            setIsActionLoading(true);
+            try {
                 const res = await dispatch(approveTargetList({ payload }));
                 if (!isActiveRef.current) return;
                 if (res?.status) {
@@ -868,15 +892,17 @@ const TargetListCreation = () => {
                         navigateToAudienceTargetList();
                     }, 5000);
                 }
-            } else {
-                setRFAAlert((prev) => ({
-                    ...prev,
-                    content: 'You are not an approver for this target list.',
-                    show: true,
-                }));
+            } catch {
+                // Request aborted or failed
+            } finally {
+                if (isActiveRef.current) setIsActionLoading(false);
             }
-        } catch {
-            // Request aborted or failed
+        } else {
+            setRFAAlert((prev) => ({
+                ...prev,
+                content: 'You are not an approver for this target list.',
+                show: true,
+            }));
         }
     };
     const handleCloseReject = async () => {
@@ -894,6 +920,8 @@ const TargetListCreation = () => {
             comments: approvalcomments,
         };
 
+        if (!isActiveRef.current) return;
+        setIsActionLoading(true);
         try {
             const res = await dispatch(rejectTargetList({ payload }));
             if (!isActiveRef.current) return;
@@ -905,6 +933,8 @@ const TargetListCreation = () => {
             }
         } catch {
             // Request aborted or failed
+        } finally {
+            if (isActiveRef.current) setIsActionLoading(false);
         }
     };
     const getDataAttributes = (data, field) => {
@@ -1075,11 +1105,12 @@ const TargetListCreation = () => {
             payload: filterValue,
         });
         if (isUpdate) {
-            if (!locationVersium?.isMDCSubSegment) {
-                setValue('segmentation.listName', editList?.recipientsBunchName ?? '');
-                setEditListName(editList?.recipientsBunchName ?? '');
-            } else {
-                handleBindListName();
+            const segmentListName = resolveSegmentListName(editList, locationVersium);
+            if (segmentListName) {
+                setValue('segmentation.listName', segmentListName);
+                setEditListName(segmentListName);
+                listNameRef.current = segmentListName;
+                clearErrors('segmentation.listName');
             }
             if (editList?.extractionLimit !== undefined && editList?.extractionLimit !== 0) {
                 setValue('extractionCheck', true);
@@ -1138,7 +1169,7 @@ const TargetListCreation = () => {
         // if (updateVersium && versiumData?.ruleJSON === null && !Object.keys(versiumData.ruleJSON)?.length > 0) {
         if (
             (!locationVersium?.isMDCSubSegment && updateVersium && versiumData?.ruleJSON === null) ||
-            (!locationVersium?.isMDCSubSegment && !!versiumData && safeObjectKeys(versiumData?.ruleJSON).length === 0)
+            (!locationVersium?.isMDCSubSegment && !!versiumData && versiumData?.ruleJSON && !Object?.keys(versiumData?.ruleJSON)?.length > 0)
         ) {
             // if (updateVersium) {
             const resData = makeExpressionVersium(versiumData);
@@ -1320,7 +1351,7 @@ const TargetListCreation = () => {
                     const fieldType = partnerData ? '1' : getFieldType(field.SOLRFieldName?.split('_').pop());
                     handleVirtualFieldData(field);
                     const fieldObject = getFieldObject(field, fieldType, field.Category, typeData);
-                    if (updateVersium && versiumData?.ruleJSON !== null && filterData?.length === 1) {
+                    if (updateVersium && versiumData?.ruleJSON !== null && groupData?.length === 1) {
                         setValue('finalAudienceCount', field.LiwaterfallCount);
                     }
                     if (field.SOLRFieldName && !tempAttributes.includes(field.SOLRFieldName))
@@ -1521,18 +1552,29 @@ const TargetListCreation = () => {
 
             const resetFormState = () => {
                 reset((formState) => {
-                    const approverList = rfaList?.map((rfa) => ({
-                        approverName: {
-                            email: rfa?.approverEmail,
-                            firstName: rfa?.approverName,
-                            name: `${rfa?.approverName} (${rfa?.approverEmail})`,
-                        },
-                    }));
+                    const approverList = rfaList?.map((rfa) => {
+                        const matchedApprover = rfaapprovalList?.find(
+                            (approver) => approver?.email === rfa?.approverEmail,
+                        );
+
+                        return {
+                            approverName: {
+                                email: rfa?.approverEmail,
+                                firstName: rfa?.approverName,
+                                name: `${rfa?.approverName} (${rfa?.approverEmail})`,
+                                userId: matchedApprover?.userId ?? '',
+                                roleId: matchedApprover?.roleId ?? '',
+                            },
+                        };
+                    });
 
                     return {
                         ...formState,
                         segmentation: {
-                            listName: formState?.segmentation?.listName ?? locationVersium?.listName,
+                            listName:
+                                formState?.segmentation?.listName ||
+                                resolveSegmentListName(editList, locationVersium) ||
+                                '',
                             isinclusionSwitched: inclusionExpressions?.GroupingOperator === 'AND',
                         },
                         FinalAudienceCount: 0,
@@ -1541,7 +1583,7 @@ const TargetListCreation = () => {
                             name: approverList,
                             requestApproval: resData?.isRequestApproval === 1,
                             approvalFrom: 'All',
-                            approvalCount: '2',
+                            approvalCount: '',
                             followHierarchy: false,
                         },
                         ...finalFormStateField,
@@ -1550,7 +1592,6 @@ const TargetListCreation = () => {
             };
 
             initializeExpressions();
-            let filterData = filterExpressions?.Expressions;
 
             if (zeroDayExpressions?.FileName) {
                 dispatchState({
@@ -2026,32 +2067,41 @@ const TargetListCreation = () => {
     };
 
     const handleBindListName = async () => {
-        if (locationVersium) {
-            await setValue('segmentation.listName', locationVersium?.listName, {
+        const segmentListName = resolveSegmentListName(editList, locationVersium);
+
+        if (
+            locationVersium?.mdcSegmentMode === 'create' &&
+            locationVersium?.listName &&
+            !isUpdate
+        ) {
+            await setValue('segmentation.listName', locationVersium.listName, {
                 shouldValidate: true,
             });
-             if (!errors?.segmentation?.listName && locationVersium?.mdcSegmentMode === 'create') {
-                await handleListNameOnBlur(locationVersium?.listName);
-            }  else {
-                setValue('segmentation.listName', editList?.SubSegmentName ?? locationVersium?.listName);
-                setEditListName(editList?.SubSegmentName ?? locationVersium?.listName);
+            if (!errors?.segmentation?.listName) {
+                await handleListNameOnBlur(locationVersium.listName);
             }
-        } else {
-            setValue(
-                'segmentation.listName',
-                editList?.recipientsBunchName ?? editList?.SubSegmentName ?? locationVersium?.listName,
-            );
-            setEditListName(editList?.recipientsBunchName ?? editList?.SubSegmentName ?? locationVersium?.listName);
+            return;
         }
+
+        if (!segmentListName) return;
+
+        setValue('segmentation.listName', segmentListName, { shouldValidate: false });
+        setEditListName(segmentListName);
+        listNameRef.current = segmentListName;
+        clearErrors('segmentation.listName');
     };
 
     useEffect(() => {
-        if (locationVersium && Object.keys(editList)?.length && updateId) {
-            handleBindListName();
-        } else {
-            handleBindListName();
-        }
-    }, [locationVersium, editList, updateId]);
+        if (updateVersium) return;
+
+        const segmentListName = resolveSegmentListName(editList, locationVersium);
+        const hasEditData = hasTargetListEditData({ targetlist: [editList] });
+
+        if (isUpdate && !segmentListName && !hasEditData) return;
+        if (!segmentListName && !locationVersium?.listName) return;
+
+        handleBindListName();
+    }, [editList, locationVersium, isUpdate, updateVersium]);
 
     const handleHeaderTitle = () => {
         if (isUpdate) {
@@ -2159,7 +2209,7 @@ const TargetListCreation = () => {
             }
         };
 
-        validateIsCustomNavigate(location, resolvedNavigationState, navigate, defaultCancelNavigate);
+        validateIsCustomNavigate(queryParams, resolvedNavigationState, navigate, defaultCancelNavigate);
     };
 
     const isEditListFetch =
@@ -2188,6 +2238,69 @@ const TargetListCreation = () => {
         index: 1,
     };
     const encryptBackState = encodeUrl(backState);
+
+    const rfaUrlState = useMemo(() => {
+        const params = new URLSearchParams(location.search);
+        const approvalStatus = params.get('approval') || '0';
+        return {
+            isApprovalLinkApproved: approvalStatus === '1',
+            isRejectedRfaLink: approvalStatus === '2',
+        };
+    }, [location.search]);
+
+    const isPageClickOff = useMemo(
+        () => isRFA || Boolean(locationVersium?.isViewOnly) || isViewOnly,
+        [isRFA, locationVersium?.isViewOnly, isViewOnly],
+    );
+
+    const hasRfaMakeChangesComments = useMemo(
+        () => rfaList?.some((approver) => approver?.makeChangesComments?.length),
+        [rfaList],
+    );
+
+    const shouldShowRfaApproverSection = isRFA && (hasRfaMakeChangesComments || isRFARejectComments);
+
+    const renderRfaApproverComments = () => {
+        if (!shouldShowRfaApproverSection) return null;
+
+        return (
+            <div className="box-design rfa-approver-wrapper">
+                {rfaList?.map((item, index) => (
+                    <Fragment key={`${item?.approverEmail ?? 'approver'}-${index}`}>
+                        <Row className="form-group mb0">
+                            <Col sm={6}>
+                                <h4 className={`mb15 ${index === 0 ? '' : 'd-none'}`}>Approver(s)</h4>
+                                <Row className="align-items-center align-items-stretch">
+                                    <Col className={`${isPageClickOff ? 'pe-none click-off' : ''} pr80`}>
+                                        <p
+                                            className={`rfa-approver-email ${
+                                                index === 0 && rfaList?.length === 1 ? '' : 'mb23'
+                                            }`}
+                                        >
+                                            <strong>{item?.approverEmail}</strong>
+                                        </p>
+                                    </Col>
+                                </Row>
+                            </Col>
+                            {hasRfaMakeChangesComments && (
+                                <Col sm={6}>
+                                    <h4 className={`mb15 ${index === 0 ? '' : 'd-none'}`}>{COMMENTS}</h4>
+                                    <Row className="align-items-center align-items-stretch">
+                                        <Col className={isPageClickOff ? 'pe-none click-off' : ''}>
+                                            {item?.makeChangesComments?.length ? (
+                                                <p>{item.makeChangesComments}</p>
+                                            ) : null}
+                                        </Col>
+                                    </Row>
+                                </Col>
+                            )}
+                        </Row>
+                    </Fragment>
+                ))}
+            </div>
+        );
+    };
+
     return (
         // Contend holder starts
         <FormProvider {...methods}>
@@ -2242,7 +2355,7 @@ const TargetListCreation = () => {
                                 <Row>
                                     <div
                                         className={`${isAPIRequest ? 'pointer-event-none sticky' : 'sticky'} ${
-                                            locationVersium?.isViewOnly || isViewOnly ? 'click-off' : ''
+                                            isPageClickOff ? 'click-off' : ''
                                         }`}
                                         ref={scrollRef}
                                         onClick={() => {
@@ -2281,9 +2394,7 @@ const TargetListCreation = () => {
                                                     <Col
                                                         md={7}
                                                         className={`position-relative mt4 ${
-                                                            updateVersium || locationVersium?.isViewOnly || isViewOnly
-                                                                ? 'click-off'
-                                                                : ''
+                                                            isPageClickOff ? 'click-off' : ''
                                                         }`}
                                                     >
                                                         {attributesLoading ? (
@@ -2373,11 +2484,7 @@ const TargetListCreation = () => {
                                                     )}
                                                 </Col>
                                             </Row>
-                                            <div
-                                                className={`${
-                                                    locationVersium?.isViewOnly || isViewOnly ? 'click-off' : ''
-                                                }`}
-                                            >
+                                            <div className={`${isPageClickOff ? 'click-off' : ''}`}>
                                                 {filterGroups.groups?.map((group, groupIndex, total) => {
                                                     const index = total?.length === 1 ? 0 : 1;
                                                     return (
@@ -2408,53 +2515,51 @@ const TargetListCreation = () => {
                                                                 !locationVersium?.isMDCSubSegment &&
                                                                 handleHiddenPlus() && (
                                                                     <div className="groupAddPlusIcon">
-                                                                        <BootstrapDropdown
-                                                                            data={handleFilterGroupList()}
-                                                                            flatIcon
-                                                                            defaultItem={
-                                                                                <div>
-                                                                                    <RSTooltip
-                                                                                        text={ADD_GROUP}
-                                                                                        position="top"
-                                                                                    >
+                                                                        <RSTooltip text={ADD_GROUP} position="top" className="lh0">
+                                                                            <div>
+                                                                                <BootstrapDropdown
+                                                                                    data={handleFilterGroupList()}
+                                                                                    flatIcon
+                                                                                    alignRight
+                                                                                    defaultItem={
                                                                                         <i
                                                                                             id="rs_data_circle_plus_fill_edge"
-                                                                                            className={`${circle_plus_fill_edge_medium} icon-md`}
+                                                                                            className={`${circle_plus_fill_edge_medium} icon-md color-primary-blue`}
                                                                                         />
-                                                                                    </RSTooltip>
-                                                                                </div>
-                                                                            }
-                                                                            showUpdate={false}
-                                                                            className="mr15 no_caret"
-                                                                            disbleItems={filterGroups.disableGroups}
-                                                                            onSelect={(filterGroup) => {
-                                                                                let allAttributeFormState = [];
-                                                                                filterGroups?.groups?.forEach(
-                                                                                    (group) => {
-                                                                                        allAttributeFormState.push(
-                                                                                            ...getValues(group),
+                                                                                    }
+                                                                                    showUpdate={false}
+                                                                                    className="mr15 no_caret"
+                                                                                    disbleItems={filterGroups.disableGroups}
+                                                                                    onSelect={(filterGroup) => {
+                                                                                        let allAttributeFormState = [];
+                                                                                        filterGroups?.groups?.forEach(
+                                                                                            (group) => {
+                                                                                                allAttributeFormState.push(
+                                                                                                    ...getValues(group),
+                                                                                                );
+                                                                                            },
                                                                                         );
-                                                                                    },
-                                                                                );
-                                                                                const findIndex =
-                                                                                    getallAttributes(
-                                                                                        attributes,
-                                                                                        allAttributeFormState,
-                                                                                    );
-                                                                                if (findIndex === -1) {
-                                                                                    addFilterGroup(filterGroup);
-                                                                                } else {
-                                                                                    trigger();
-                                                                                }
-                                                                            }}
-                                                                            containerClass={
-                                                                                !isCreateStatus() ||
-                                                                                isDisableFilterGroup ||
-                                                                                isDisablePlusBtn()
-                                                                                    ? 'pe-none click-off'
-                                                                                    : ''
-                                                                            }
-                                                                        />
+                                                                                        const findIndex =
+                                                                                            getallAttributes(
+                                                                                                attributes,
+                                                                                                allAttributeFormState,
+                                                                                            );
+                                                                                        if (findIndex === -1) {
+                                                                                            addFilterGroup(filterGroup);
+                                                                                        } else {
+                                                                                            trigger();
+                                                                                        }
+                                                                                    }}
+                                                                                    containerClass={
+                                                                                        !isCreateStatus() ||
+                                                                                        isDisableFilterGroup ||
+                                                                                        isDisablePlusBtn()
+                                                                                            ? 'pe-none click-off'
+                                                                                            : ''
+                                                                                    }
+                                                                                />
+                                                                            </div>
+                                                                        </RSTooltip>
                                                                     </div>
                                                                 )}
                                                         </SegmentationLists>
@@ -2509,7 +2614,7 @@ const TargetListCreation = () => {
                                                 <Col md={4}>
                                                     <div
                                                         className={`${
-                                                            isCreateStatus() || attributesLoading
+                                                            (isCreateStatus() || attributesLoading) && !isPageClickOff
                                                                 ? ''
                                                                 : 'pe-none click-off'
                                                         } ${
@@ -2542,22 +2647,27 @@ const TargetListCreation = () => {
                                                                                 !checkCountTakenStatus(
                                                                                     filterGroups,
                                                                                     getValues,
-                                                                                )
+                                                                                ) || isPageClickOff
                                                                             }
                                                                             containerClass='float-end'
-                                                                            className='mr0'
+                                                                            labelClass='mr0'
                                                                         />
                                                                     </div>
                                                                 )}
                                                             </>
                                                         )}
-                                                        {getValues('extractionCheck') && (
+                                                        {extractionCheck && (
+                                                            <div className='form-group'>
                                                             <RSInput
                                                                 control={control}
                                                                 name={'extractionLimit'}
                                                                 placeholder={EXTRACTION_LIMIT}
                                                                 onKeyDown={onlyNumbers}
+                                                                disabled={isPageClickOff}
                                                                 required={isCreateStatus()}
+                                                                rules={ extractionCheck && isCreateStatus() ?  {
+                                                                    required: ENTER_EXTRACTION_LIMIT,
+                                                                } : {}}
                                                                 handleOnBlur={(e) => {
                                                                     const val = e.target.value;
                                                                     const [extractionLimit, extractionCheck] =
@@ -2580,88 +2690,64 @@ const TargetListCreation = () => {
                                                                     }
                                                                 }}
                                                             />
+                                                            </div>
                                                         )}
                                                     </div>
                                                 </Col>
                                             </Row>
 
-                                            {isRFARejectComments && (
-                                                <div>
-                                                    <h4>{COMMENTS}</h4>
-                                                    <Row>
-                                                        {rfaList?.map((e) => {
-                                                            return (
-                                                                <Col>
-                                                                    <div>
-                                                                        <label>
-                                                                            {APPROVER_NAME} :{' '}
-                                                                            {e?.approverName}
-                                                                        </label>
-                                                                    </div>
-                                                                    <div>
-                                                                        <label>
-                                                                            {APPROVER_EMAIL} :{' '}
-                                                                            {e?.approverEmail}
-                                                                        </label>
-                                                                    </div>{' '}
-                                                                    <div>
-                                                                        <label>
-                                                                            {COMMENTS} :{' '}
-                                                                            {e?.makeChangesComments}
-                                                                        </label>
-                                                                    </div>
-                                                                </Col>
-                                                            );
-                                                        })}
-                                                    </Row>
-                                                </div>
-                                            )}
+                                            {renderRfaApproverComments()}
                                             <div className="buttons-holder">
                                                 {isRFA ? (
                                                     <>
                                                         <RSSecondaryButton
                                                             type="button"
                                                             onClick={handleCancelNavigate}
-                                                            blockInteraction={isCreating}
+                                                            blockInteraction={isActionLoading}
                                                             id="rs_TargetListCreation_Cancel"
                                                         >
                                                             {CANCEL}
                                                         </RSSecondaryButton>
-                                                        {!isRFAAlert?.isApproved && (
-                                                            <>
-                                                                <RSSecondaryButton
-                                                                    type="button"
-                                                                    className="color-primary-blue"
-                                                                    onClick={() => {
-                                                                        if (tempUserId?.length > 0) {
-                                                                            setRFAAlert((prev) => ({
-                                                                                ...prev,
-                                                                                reject: true,
-                                                                            }));
-                                                                        } else {
-                                                                            setRFAAlert((prev) => ({
-                                                                                ...prev,
-                                                                                content:
-                                                                                    'You are not an approver for this target list.',
-                                                                                show: true,
-                                                                            }));
-                                                                        }
-                                                                    }}
-                                                                    id="rs_TargetListCreation_Reject"
-                                                                >
-                                                                    {REJECT}
-                                                                </RSSecondaryButton>
-                                                                <RSPrimaryButton
-                                                                    type="button"
-                                                                    onClick={() => {
-                                                                        handleApproveDynamicList();
-                                                                    }}
-                                                                    id="rs_TargetListCreation_Approve"
-                                                                >
-                                                                    {APPROVE}
-                                                                </RSPrimaryButton>
-                                                            </>
-                                                        )}
+                                                        {!rfaUrlState.isApprovalLinkApproved &&
+                                                            !rfaUrlState.isRejectedRfaLink &&
+                                                            !isRFAAlert?.isApproved && (
+                                                                <>
+                                                                    <RSSecondaryButton
+                                                                        type="button"
+                                                                        className="color-primary-blue"
+                                                                        blockInteraction={isActionLoading}
+                                                                        onClick={() => {
+                                                                            if (tempUserId?.length > 0) {
+                                                                                setRFAAlert((prev) => ({
+                                                                                    ...prev,
+                                                                                    reject: true,
+                                                                                }));
+                                                                            } else {
+                                                                                setRFAAlert((prev) => ({
+                                                                                    ...prev,
+                                                                                    content:
+                                                                                        'You are not an approver for this target list.',
+                                                                                    show: true,
+                                                                                }));
+                                                                            }
+                                                                        }}
+                                                                        id="rs_TargetListCreation_Reject"
+                                                                    >
+                                                                        {REJECT}
+                                                                    </RSSecondaryButton>
+                                                                    <RSPrimaryButton
+                                                                        type="button"
+                                                                        isLoading={isActionLoading}
+                                                                        blockBodyPointerEvents={isActionLoading}
+                                                                        onClick={() => {
+                                                                            handleApproveDynamicList();
+                                                                        }}
+                                                                        id="rs_TargetListCreation_Approve"
+                                                                    >
+                                                                        {APPROVE}
+                                                                    </RSPrimaryButton>
+                                                                </>
+                                                            )}
                                                     </>
                                                 ) : updateVersium ? (
                                                     <>
@@ -2952,7 +3038,7 @@ const TargetListCreation = () => {
                                                                 /> */}
                                                             </>
                                                         )}
-                                                        {!locationVersium?.isViewOnly && !isViewOnly ? (
+                                                        {!isPageClickOff ? (
                                                             <RSPrimaryButton
                                                                 type="submit"
                                                                 isLoading={isCreating}
@@ -2993,21 +3079,22 @@ const TargetListCreation = () => {
                             </Container>
                         </div>
 
-                        <WarningPopup
-                            show={isRFAAlert.show}
-                            handleClose={(type) => {
-                                setRFAAlert((prev) => ({
-                                    ...prev,
-                                    content: '',
-                                    show: false,
-                                }));
-                            }}
-                            text={isRFAAlert.content}
-                            isheader={false}
-                            isPrimary={true}
-                            isPrimaryText={OK}
-                            // showCancel={true}
-                        />
+                        {!showEditListSkeleton && !showEditListError && isRFAAlert.show && (
+                            <WarningPopup
+                                show={isRFAAlert.show}
+                                handleClose={() => {
+                                    setRFAAlert((prev) => ({
+                                        ...prev,
+                                        content: '',
+                                        show: false,
+                                    }));
+                                }}
+                                text={isRFAAlert.content}
+                                isheader={true}
+                                isPrimary={true}
+                                isPrimaryText={OK}
+                            />
+                        )}
                         {showActiveCommunicationListWarning && <RSConfirmationModal
                                 show={showActiveCommunicationListWarning}
                                 header="Info"
@@ -3017,23 +3104,32 @@ const TargetListCreation = () => {
                                 secondaryButton={false}
                                 primaryButtonText={OK}
                         />}
-                        <WarningPopup
-                            show={isRFAAlertReject.show}
-                            handleClose={(type) => {
-                                setisRFAAlertReject(false);
-                            }}
-                            text={'sample text'}
-                            isheader={false}
-                            isPrimary={false}
-                            showCancel={false}
-                        />
+                        {isRFAAlertReject && (
+                            <WarningPopup
+                                show={isRFAAlertReject}
+                                handleClose={() => {
+                                    setisRFAAlertReject(false);
+                                }}
+                                text="Target list rejected successfully"
+                                isheader={true}
+                                isPrimary={true}
+                                isPrimaryText={OK}
+                            />
+                        )}
+                        {isRFAAlert.reject && (
                         <RSModal
                             show={isRFAAlert.reject}
-                            handleClose={handleCloseReject}
+                            handleClose={() => {
+                                if (isActionLoading) return;
+                                handleCloseReject();
+                            }}
+                            isCloseDisabled={isActionLoading}
+                            lockBackground={isActionLoading}
                             header={'Comments'}
                             footer={
                                 <div className="buttons-holder">
                                     <RSSecondaryButton
+                                        blockInteraction={isActionLoading}
                                         onClick={() => {
                                             setRFAAlert((prev) => ({
                                                 ...prev,
@@ -3044,6 +3140,8 @@ const TargetListCreation = () => {
                                         {CANCEL}
                                     </RSSecondaryButton>
                                     <RSPrimaryButton
+                                        isLoading={isActionLoading}
+                                        blockBodyPointerEvents={isActionLoading}
                                         onClick={() => {
                                             if (!getValues('comments')?.length) {
                                                 setError(`comments`, {
@@ -3078,6 +3176,7 @@ const TargetListCreation = () => {
                                 </Fragment>
                             }
                         />
+                        )}
                         {/* Modals */}
                         {isOpenSegmentModal && !isBQAudienceCount && (
                             <SegmentationRecalculate

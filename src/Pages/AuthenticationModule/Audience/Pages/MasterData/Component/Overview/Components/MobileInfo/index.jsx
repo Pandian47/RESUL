@@ -25,6 +25,7 @@ const MobileInfo = ({ show=false, handleClose=()=>{}, chartData = {}, chartType=
         tmpChartData.angle = 90;
         return tmpChartData;
     }, [countryInfo]);
+    
 
     return (
         <RSModal
@@ -35,11 +36,11 @@ const MobileInfo = ({ show=false, handleClose=()=>{}, chartData = {}, chartType=
             body={
                 <div className="master-recip-data-popup">
                     <Row>
-                        <Col md={6} className="">
+                        <Col md={6} className="d-flex justify-content-center align-items-center">
                             {chartType === 'MultiChart' ? (
-                                <RSHighchartsContainer options={bubbleChartOptions(data)} />
+                                <RSHighchartsContainer type="bubble" options={bubbleChartOptions(data)} />
                             ) : (
-                                <RSHighchartsContainer options={pieChartOptions(data)} />
+                                <RSHighchartsContainer type="pie" isError={false} options={pieChartOptions(data)} />
                             )}
                         </Col>
                         <Col md={6} className="borderleft">

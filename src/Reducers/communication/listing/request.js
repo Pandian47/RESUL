@@ -189,7 +189,12 @@ export const getCampaignStatus =
                     ok: async ({ data }) => {
                         const { status, data: response } = normalizeCampaignStatusApiBody(data);
                         if (status) {
-                            const channelRows = Array.isArray(response) ? response : [];
+                            const rawChannelRows = Array.isArray(response) ? response : [];
+                            const channelRows = rawChannelRows.map((item) => ({
+                                ...item,
+                                sentCount: item?.sentcount !== undefined ? item.sentcount : item?.sentCount,
+                            }));
+                            data.data = channelRows;
                             const isOfflineConversionExist = channelRows.find((channel) => channel?.channelId == 0);
                             dispatch(updateCampaignStatus(channelRows));
                             isOfflineConversionExist && await dispatch(

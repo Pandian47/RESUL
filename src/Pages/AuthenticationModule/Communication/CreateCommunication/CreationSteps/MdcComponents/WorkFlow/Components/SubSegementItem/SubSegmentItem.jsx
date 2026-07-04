@@ -16,7 +16,7 @@ import {
     getSubSegmentModule,
     stashMdcCanvasSnapshot,
 } from '../../constant';
-import _cloneDeep from 'lodash/cloneDeep';
+import { cloneDeep as _cloneDeep, filter, sum } from 'Utils/modules/lodashReplacements';
 import { getCount } from '../PotentialAudience/PotentialConst';
 
 import { useDispatch, useSelector } from 'react-redux';
@@ -32,8 +32,6 @@ import {
     subsegmentDisableChannels,
     subsegmentEnableChannels,
 } from 'Reducers/communication/createCommunication/Mdc/Canvas/request';
-import filter from 'lodash/filter';
-import sum from 'lodash/sum';
 import { ChannelRemove } from '../ChannelItem/ChannelConst';
 import { handleCustomNavigationDetails } from 'Utils/modules/navigation';
 import { markAudienceRouteSkeleton } from 'Components/Skeleton/pages/audience';

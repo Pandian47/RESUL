@@ -69,7 +69,3 @@ export const getChannelMetric = (channelId, metricType) => {
     return channelConfig[metricType] || null;
 };
 
-export const getChannelMetrics = (channelId) => {
-    return CHANNEL_METRICS_CONFIG[channelId] || null;
-};
-

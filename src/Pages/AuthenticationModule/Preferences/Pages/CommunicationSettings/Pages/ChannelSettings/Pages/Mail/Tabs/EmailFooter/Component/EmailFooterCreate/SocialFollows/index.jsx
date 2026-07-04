@@ -5,7 +5,7 @@ import { TITLE } from 'Constants/GlobalConstant/Placeholders';
 import { circle_minus_fill_medium } from 'Constants/GlobalConstant/Glyphicons';
 import { memo, useEffect, useState } from 'react';
 import { Col, Offcanvas, Row } from 'react-bootstrap';
-import _find from 'lodash/find';
+import { find as _find } from 'Utils/modules/lodashReplacements';
 
 import RSInput from 'Components/FormFields/RSInput';
 

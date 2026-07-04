@@ -8,7 +8,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { Row, Col, Card } from 'react-bootstrap';
 import CampaignInfoCardMdcCanvas from '../../Component/CampaignInfoCard/CampaignInfoCardMdcCanvas';
 import ClearCanvasModal from './Components/Modal';
-import _get from 'lodash/get';
+import { get as _get, cloneDeep as _cloneDeep, find as _find } from 'Utils/modules/lodashReplacements';
 
 import MdcSidebar from './Components/MdcSidebar/MdcSidebar';
 import Canvas from './Components/Canvas/Canvas';
@@ -44,8 +44,6 @@ import Icon from 'Components/Icon/Icon';
 import { arrow_right_medium, arrow_left_medium, circle_time_large } from 'Constants/GlobalConstant/Glyphicons';
 import useQueryParams from 'Hooks/useQueryParams';
 import { resetMDC, updateSelectedRecipientList } from 'Reducers/communication/createCommunication/Mdc/Canvas/reducer';
-import _cloneDeep from 'lodash/cloneDeep';
-import _find from 'lodash/find';
 import CanvasWarning from './Components/Modal/CanvasWarning';
 import RSConfirmationModal from 'Components/ConfirmationModal';
 import MdcWorkflowSkeleton from 'Components/Loader/MdcWorkflowSkeleton';

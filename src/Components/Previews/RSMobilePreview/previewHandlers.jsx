@@ -1,6 +1,6 @@
 import { getUserCurrentFormat } from 'Utils/modules/dateTime';
 import { textFormatter } from 'Utils/modules/stringUtils';
-import { link_mini, pdf_download_large } from 'Constants/GlobalConstant/Glyphicons';
+import { link_mini } from 'Constants/GlobalConstant/Glyphicons';
 /**
  * Channel-wise preview handlers - use common prop names from ctx
  */
@@ -9,31 +9,6 @@ import { Carousel } from 'react-bootstrap';
 import { locationPreview } from 'Pages/AuthenticationModule/Communication/CreateCommunication/CreationSteps/Create/Tabs/Whatsapp/constant';
 import { toEmbedUrl, getMediaFormatFromUrl, getCarouselUrlFormat, PREVIEW_SOURCE } from './utils';
 import MediaPreview from './components/MediaPreview';
-
-// ─── Shared: render media by URL ────────────────────────────────────────────
-export const renderMediaByUrl = (url, urlFormat) => {
-    if (!url) return null;
-    const format = urlFormat || getMediaFormatFromUrl(url);
-    if (format === 'embed') {
-        return (
-            <div className="video-embed-wrapper mb10">
-                <iframe width="100%" height="auto" src={toEmbedUrl(url)} style={{ pointerEvents: 'none' }} title="media" />
-            </div>
-        );
-    }
-    if (format === 'video') {
-        return (
-            <video className="w-100" controls style={{ width: '200px', margin: '0px auto', height: 'auto' }}>
-                <source src={url} type="video/mp4" />
-            </video>
-        );
-    }
-    if (format === 'image') return <img src={url} alt="preview" />;
-    if (format === 'doc') {
-        return <i className={`${pdf_download_large} icon-lg color-primary-blue pe-none`} />;
-    }
-    return null;
-};
 
 // ─── SMS ────────────────────────────────────────────────────────────────────
 export const handlePreviewSms = (ctx) => {

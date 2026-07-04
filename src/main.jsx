@@ -6,10 +6,10 @@ import { useLocation } from 'react-router-dom';
 
 import CustomRouter from 'Hoc/CustomRouter';
 import MainPageSkeleton from 'Components/Skeleton/Components/MainPageSkeleton';
+import { LoginRouteLoading } from 'Components/Loader';
 import { isPublicAuthPath } from './Routes/appRouteConfig';
 import './i18n';
 import 'Styles/login.scss';
-import 'react-toastify/dist/ReactToastify.css';
 
 (function normalizeGenieDuplicatePrefix() {
     if (typeof window === 'undefined') return;
@@ -25,19 +25,40 @@ import 'react-toastify/dist/ReactToastify.css';
 
 function BootSkeletonFallback() {
     const { pathname } = useLocation();
-    if (isPublicAuthPath(pathname)) return null;
+    if (isPublicAuthPath(pathname)) {
+        return <LoginRouteLoading />;
+    }
     return <MainPageSkeleton withAppShell />;
 }
 
-function shouldShowBootSkeleton(pathname = '') {
-    return !isPublicAuthPath(pathname);
+function renderEarlyBootSkeleton(pathname = '') {
+    const skeleton = isPublicAuthPath(pathname) ? <LoginRouteLoading /> : <MainPageSkeleton withAppShell />;
+    return <CustomRouter history={history}>{skeleton}</CustomRouter>;
 }
 
 const rootElement = document.getElementById('root');
 
+/** Protected routes require accessToken in LS; stale redux-persist isAuth alone is not enough. */
+function redirectToLoginWhenClientSessionMissing(pathname = '') {
+    if (isPublicAuthPath(pathname)) return false;
+    if (localStorage.getItem('accessToken')) return false;
+    try {
+        sessionStorage.clear();
+    } catch {
+        // ignore storage errors
+    }
+    window.location.replace('/');
+    return true;
+}
+
 async function bootstrap() {
     if (!rootElement) {
         console.error('Root element #root not found');
+        return;
+    }
+
+    const bootPathname = window.location.pathname;
+    if (redirectToLoginWhenClientSessionMissing(bootPathname)) {
         return;
     }
 
@@ -47,22 +68,26 @@ async function bootstrap() {
         globalThis.__appRoot = root;
     }
 
-    const bootPathname = window.location.pathname;
-    if (shouldShowBootSkeleton(bootPathname)) {
-        root.render(
-            <CustomRouter history={history}>
-                <MainPageSkeleton withAppShell />
-            </CustomRouter>,
-        );
+    const isLoginBoot = isPublicAuthPath(bootPathname);
+
+    root.render(renderEarlyBootSkeleton(bootPathname));
+
+    const storeModulePromise = import('./Store');
+    const shellModulePromise = isLoginBoot ? import('./LoginApp') : import('./App');
+
+    if (isLoginBoot) {
+        void import('Pages/RegistrationModule/Login');
+        void import('./App');
+    } else {
         void import('./Utils/modules/postLoginShell').then(({ prefetchRouteModule, loadAppShellStyles }) => {
             prefetchRouteModule(bootPathname);
             return loadAppShellStyles();
         });
     }
 
-    const [{ default: createReduxStore }, { default: App }] = await Promise.all([
-        import('./Store'),
-        import('./App'),
+    const [{ default: createReduxStore }, { default: ShellApp }] = await Promise.all([
+        storeModulePromise,
+        shellModulePromise,
     ]);
 
     const { store, persistor, setFullReducer } = await createReduxStore();
@@ -76,7 +101,7 @@ async function bootstrap() {
         <CustomRouter history={history}>
             <Provider store={store}>
                 <PersistGate loading={<BootSkeletonFallback />} persistor={persistor}>
-                    <App />
+                    <ShellApp />
                 </PersistGate>
             </Provider>
         </CustomRouter>,

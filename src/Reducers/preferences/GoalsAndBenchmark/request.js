@@ -1,4 +1,4 @@
-import { ADD_COMMUNICATION_TYPES, BENCHMAKR_LIST, CHECK_ACCOUNT_ATTRIBUTE_EXISTS, EDIT_BENCHMARK_DETAILS, GET_BENCHMARK_LIST, GET_COMMUNICATION_ATTRIBUTES, ISNAME_EXITS, UPDATE_BENCHMARK_DETAILS } from 'Constants/EndPoints';
+import { ADD_COMMUNICATION_TYPES, BENCHMAKR_LIST, CHECK_ACCOUNT_ATTRIBUTE_EXISTS, GET_BENCHMARK_LIST, GET_COMMUNICATION_ATTRIBUTES, ISNAME_EXITS, UPDATE_BENCHMARK_DETAILS } from 'Constants/EndPoints';
 import request from 'Utils/Http';
 import { updateBenchmarkOverview } from './reducer';
 
@@ -99,21 +99,6 @@ export const SaveBenchmark =
                 }),
             );
         };
-
-export const UpdateBenchmark =
-    (payload) =>
-        async (dispatch) => {
-            return dispatch(
-                request.post({
-                    url: EDIT_BENCHMARK_DETAILS,
-                    payload,
-                    loading: true,
-                    ok: (res) => { },
-                    fail: (err) => {},
-                }),
-            );
-        };
-
 
 export const CheckIsNameExit =
     ({ payload }) =>

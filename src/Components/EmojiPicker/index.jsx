@@ -11,6 +11,7 @@ const RSEmojiPicker = ({
     isTitle = false,
     isTextEditor = false,
     closeOnSelect = false,
+    tooltipText = 'Emoji',
     onOpen,
     onClose,
 }) => {
@@ -137,7 +138,7 @@ const RSEmojiPicker = ({
 
     return (
         <div className={`rs-emoji-picker-wrapper position-relative lh0 ${wrapperClass}`}>
-            <RSTooltip text="Emoji" className="lh0">
+            <RSTooltip text={tooltipText} className="lh0">
                 <i
                     className={` ${
                         isTextEditor ? `${editor_circle_smile_medium}` : `${circle_smile_medium}`

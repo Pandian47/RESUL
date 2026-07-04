@@ -9,7 +9,7 @@ import { useFormContext } from 'react-hook-form';
 import { PERIODS } from '../Constants';
 
 
-const Shortly = () => {
+const Shortly = ({ isMDC = false }) => {
     const { control, getValues, clearErrors, watch, setValue, setError, reset } = useFormContext();
     const selectedPeriod = watch('shortly.period');
     // useEffect(() => {
@@ -21,8 +21,8 @@ const Shortly = () => {
     return (
         <div className="form-group mt30 mb0">
             <ul className="flex-list fl-space-15 mt30">
-                <li className="mr15">After</li>
-                <li className="mr15 width125">
+                <li className="mr8">After</li>
+                <li className={`${isMDC ? 'col-sm-3' : 'w-23'}`}>
                     <RSInput
                         control={control}
                         name={'shortly.every_time'}
@@ -43,7 +43,7 @@ const Shortly = () => {
                         }}
                     />
                 </li>
-                <li className="mr15 width125">
+                <li className={`${isMDC ? 'col-sm-3' : 'w-23'}`}>
                     <RSKendoDropDownList
                         control={control}
                         name={'shortly.period'}
@@ -82,7 +82,7 @@ const Shortly = () => {
                             }
                         }}
                         label={PERIOD}
-                        // defaultValue={'hours'}
+                    // defaultValue={'hours'}
                     />
                 </li>
                 {/* <li>

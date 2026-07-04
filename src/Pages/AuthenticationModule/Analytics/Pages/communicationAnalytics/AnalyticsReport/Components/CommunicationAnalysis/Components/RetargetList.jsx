@@ -235,7 +235,7 @@ const RetargetList = ({
                                         }  ${showMsg?.msg?.includes('not') ? 'bg-primary-red' : 'bg-primary-green'
                                         } icon-md `}
                                 ></i>
-                                <span >
+                                <span className='align-content-center'>
                                     {showMsg?.msg}
                                 </span>
                             </div>

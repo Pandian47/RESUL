@@ -655,7 +655,7 @@ $res-dd-zoom-icon: url('../../../../Assets/Images/svg/rs-zoom-medium.svg');
     .k-popup.#{$res-dd-list-popup} {
         position: relative;
         border: 1px solid $quaternary-blue;
-        border-radius: 5px;
+        border-radius: 10px;
         background-color: $white;
         margin-top: 0;
         margin-top: 0;
@@ -675,20 +675,27 @@ $res-dd-zoom-icon: url('../../../../Assets/Images/svg/rs-zoom-medium.svg');
             transition: 0.3s ease all;
         }
 
-        &.kendo-list-footer-popup .k-list {
-            border-radius: 0;
+        &.kendo-list-footer-popup {
+            .k-list {
+                border-radius: 0;
+            }
+
+            .k-list-content .k-list-ul {
+                .k-list-item:last-child,
+                li:last-child {
+                    border-bottom-left-radius: 0 !important;
+                    border-bottom-right-radius: 0 !important;
+                }
+            }
         }
 
         .k-list-filter {
             background: $white;
             border: none;
             border-radius: 5px;
-            padding: 8px 10px 0;
-            margin-bottom: 8px;
-
+            padding: 8px 0 0;
             .k-searchbox {
-                padding-bottom: 5px;
-
+            padding: 0 10px 5px;
                 &.k-input,
                 &.k-input-md,
                 &.k-input-solid {
@@ -765,7 +772,7 @@ $res-dd-zoom-icon: url('../../../../Assets/Images/svg/rs-zoom-medium.svg');
         .k-list-footer {
             background-color: $white;
             border-top: 1px solid $quaternary-blue;
-            border-radius: 0 0 5px 5px;
+            border-radius: 0 0 7px 7px;
             overflow: hidden;
 
             .tsh-icon-with-label,
@@ -774,7 +781,7 @@ $res-dd-zoom-icon: url('../../../../Assets/Images/svg/rs-zoom-medium.svg');
                 display: flex;
                 align-items: center;
                 justify-content: space-between;
-                padding: 5px 10px;
+                padding: 8px 10px;
                 font-size: $font-xsm;
                 cursor: pointer;
                 box-sizing: border-box;

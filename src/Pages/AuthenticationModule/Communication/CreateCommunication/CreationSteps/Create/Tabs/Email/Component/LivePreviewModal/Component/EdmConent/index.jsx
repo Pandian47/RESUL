@@ -1,6 +1,6 @@
 import { removeTags, sanitizeEmailHtmlForPreview } from 'Utils/modules/stringUtils';
 import { useEffect, useState } from 'react';
-import _map from 'lodash/map';
+import { map as _map } from 'Utils/modules/lodashReplacements';
 import parse from 'html-react-parser';
 
 import RSTabber from 'Components/RSTabber';

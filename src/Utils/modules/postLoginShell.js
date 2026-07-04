@@ -2,6 +2,7 @@ import { reenableGenieDisabledStyles, whenHostStylesheetsApplied } from './cssDo
 import { gridHeaderFilterFocusCriticalCss } from 'Pages/KendoDocs/CommonComponents/ResKendoGrid/gridLoadingSkeletonCriticalCss';
 
 const GRID_HEADER_FILTER_FOCUS_STYLE_ID = 'rs-kendo-grid-header-filter-focus';
+const APP_SHELL_STYLES_ATTR = 'data-resul-app-shell-styles';
 
 function injectGridHeaderFilterFocusStyles() {
     if (typeof document === 'undefined') return;
@@ -14,6 +15,8 @@ function injectGridHeaderFilterFocusStyles() {
 }
 export const LOGIN_HANDOFF_KEY = 'resul:login-handoff';
 export const POST_LOGIN_SHELL_READY_EVENT = 'resul:post-login-shell-ready';
+/** Dispatched when the session-timeout modal closes after successful re-authentication. */
+export const SESSION_RECOVERED_EVENT = 'resul:session-recovered';
 
 /** @type {Promise<void> | null} */
 let appShellStylesPromise = null;
@@ -32,18 +35,17 @@ export function loadAppShellStyles() {
 
     if (typeof document !== 'undefined' && areAppShellStylesPresentInDom()) {
         injectGridHeaderFilterFocusStyles();
-        appShellStylesLoaded = true;
+        markAppShellStylesLoaded();
         return Promise.resolve();
     }
 
     appShellStylesPromise = Promise.all([
         import('Styles/app.scss'),
         import('resul-genie-ui/resul-host-genie.css'),
-        import('@progress/kendo-theme-default/dist/all.css'),
     ])
         .then(() => {
             injectGridHeaderFilterFocusStyles();
-            appShellStylesLoaded = true;
+            markAppShellStylesLoaded();
         })
         .then(waitForHostStylesApplied)
         .catch((err) => {
@@ -54,9 +56,21 @@ export function loadAppShellStyles() {
     return appShellStylesPromise;
 }
 
+function markAppShellStylesLoaded() {
+    appShellStylesLoaded = true;
+    if (typeof document !== 'undefined') {
+        document.documentElement.setAttribute(APP_SHELL_STYLES_ATTR, 'loaded');
+    }
+}
+
 export function isAppShellStylesLoaded() {
     if (appShellStylesLoaded) return true;
-    return typeof document !== 'undefined' && areAppShellStylesPresentInDom();
+    if (typeof document === 'undefined') return false;
+    if (document.documentElement.getAttribute(APP_SHELL_STYLES_ATTR) === 'loaded') {
+        appShellStylesLoaded = true;
+        return true;
+    }
+    return areAppShellStylesPresentInDom();
 }
 
 /** Route segment → dynamic import for the post-login destination page. */
@@ -90,6 +104,8 @@ const ROUTE_MODULE_LOADERS = [
 
 function areAppShellStylesPresentInDom() {
     if (typeof document === 'undefined') return false;
+    if (document.documentElement.getAttribute(APP_SHELL_STYLES_ATTR) === 'loaded') return true;
+
     const links = document.querySelectorAll('link[rel="stylesheet"]');
     let hasKendo = false;
     let hasAppStyles = false;
@@ -99,12 +115,8 @@ function areAppShellStylesPresentInDom() {
         if (href.includes('kendo')) hasKendo = true;
         if (href.includes('app') || href.includes('resul-host-genie')) hasAppStyles = true;
     }
-    return hasKendo && (hasAppStyles || document.querySelector('style[data-vite-dev-id]'));
-}
-
-function hasInjectedAppShellStyles() {
-    if (typeof document === 'undefined') return false;
-    return Boolean(document.querySelector('style[data-vite-dev-id]'));
+    // login.scss also injects style[data-vite-dev-id] — do not treat that as the full app shell.
+    return hasKendo && hasAppStyles;
 }
 
 /** Prefetch the lazy route chunk for a path (header hover, navigation intent, refresh). */
@@ -142,14 +154,6 @@ export function resolvePostLoginTarget(response, lastURL, licenseTypeId, departm
     }
 
     return '/launch-pad';
-}
-
-export function beginLoginHandoff() {
-    sessionStorage.setItem(LOGIN_HANDOFF_KEY, '1');
-}
-
-export function endLoginHandoff() {
-    sessionStorage.removeItem(LOGIN_HANDOFF_KEY);
 }
 
 export function isLoginHandoffActive() {

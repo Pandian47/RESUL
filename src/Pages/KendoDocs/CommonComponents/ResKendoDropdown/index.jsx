@@ -1,11 +1,9 @@
 import { cloneElement, isValidElement, memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import './resKendoDropdown.scss';
-import _get from 'lodash/get';
-import _orderBy from 'lodash/orderBy';
+import { get as _get, orderBy as _orderBy, get } from 'Utils/modules/lodashReplacements';
 import PropTypes from 'prop-types';
 
 import { DropDownList } from '@progress/kendo-react-dropdowns';
-import { get } from 'lodash';
 import { Controller } from 'react-hook-form';
 
 import { normalizeDisplayText } from 'Utils/modules/stringUtils';
@@ -66,8 +64,12 @@ const ResKendoDropdown = ({
 }) => {
     const { popupSettings: consumerPopupSettings, ...dropDownRest } = rest;
     const resolvedPopupClass = useMemo(
-        () => [popupClass, consumerPopupSettings?.popupClass].filter(Boolean).join(' '),
-        [popupClass, consumerPopupSettings?.popupClass],
+        () => [
+            popupClass,
+            consumerPopupSettings?.popupClass,
+            footer ? 'kendo-list-footer-popup' : ''
+        ].filter(Boolean).join(' '),
+        [popupClass, consumerPopupSettings?.popupClass, footer],
     );
     const resolvedHeader = typeof header === 'function' ? header() : header;
     const resolvedFooter = typeof footer === 'function' ? footer() : footer;
@@ -91,23 +93,30 @@ const ResKendoDropdown = ({
         },
         [textField],
     );
-    const normalizedData = useMemo(
-        () => (Array.isArray(data) ? data.map(normalizeItem) : []),
-        [data, normalizeItem],
-    );
-    const getComparableItem = useCallback(
-        (item) => {
-            if (!_isObject(item)) return item;
+    const normalizedData = useMemo(() => {
+        if (!Array.isArray(data)) return [];
 
-            if (dataItemKey && item?.[dataItemKey] !== undefined) return item[dataItemKey];
-            if (item?.id !== undefined) return item.id;
-            if (item?.value !== undefined) return item.value;
-            if (textField && item?.[textField] !== undefined) return item[textField];
+        if (!dataItemKey) {
+            return data.filter((item) => item != null).map(normalizeItem);
+        }
 
-            return JSON.stringify(item);
-        },
-        [dataItemKey, textField],
-    );
+        const nextData = [];
+        const seenKeys = new Set();
+
+        for (const rawItem of data) {
+            if (rawItem == null || !_isObject(rawItem)) continue;
+
+            const keyValue = rawItem[dataItemKey];
+            if (keyValue == null) continue;
+            if (textField && rawItem[textField] == null) continue;
+            if (seenKeys.has(keyValue)) continue;
+
+            seenKeys.add(keyValue);
+            nextData.push(normalizeItem(rawItem));
+        }
+
+        return nextData;
+    }, [data, dataItemKey, textField, normalizeItem]);
     const isValidDropdownValue = useCallback(
         (item) => {
             if (item == null || item === '') return false;
@@ -131,10 +140,8 @@ const ResKendoDropdown = ({
     const isVirtialization = total > 5000;
     const containerWrapper = useRef();
     const orderedData = useMemo(() => {
-        if (filterName) {
-            return _orderBy(normalizedData, [filterName], [order ? order : 'asc']);
-        }
-        return normalizedData;
+        if (!filterName || !normalizedData.length) return normalizedData;
+        return _orderBy(normalizedData, [filterName], [order || 'asc']);
     }, [normalizedData, filterName, order]);
 
     const displayData = useMemo(() => {
@@ -379,6 +386,7 @@ const ResKendoDropdown = ({
 
     // Function to get the selected value text for title attribute
     const getSelectedValueText = (selectedValue = '') => {
+        
         if (selectedValue == null || selectedValue === '') return '';
 
         if (Array.isArray(selectedValue)) {
@@ -612,7 +620,7 @@ const ResKendoDropdown = ({
                 const baseLabel = _isEmpty && isError ? errMsg : label;
                 const floatingLabelTitle = [baseLabel, selectedSubLabel]
                     .filter((text) => text != null && String(text).trim() !== '')
-                    .join(' ')
+                    .join(' - ')
                     .trim();
                 // Render the selected value's subLabel as a nested span inside the
                 // floating label so it can be styled separately from the main label.
@@ -652,17 +660,33 @@ const ResKendoDropdown = ({
                     const rawData = isVirtialization ? state.options : displayData;
                     let finalData = rawData;
                     if (selectedItem) {
-                        const isAlreadyPresent = rawData.some((item) => {
-                            if (_isObject(item) && _isObject(selectedItem)) {
-                                if (dataItemKey) {
-                                    return _get(item, dataItemKey) === _get(selectedItem, dataItemKey);
-                                }
-                                return JSON.stringify(item) === JSON.stringify(selectedItem);
+                        const search = filterText.trim();
+                        let matchesFilter = true;
+                        if (search) {
+                            const needle = search.toLowerCase();
+                            const selectedItemText = String(
+                                _isObject(selectedItem) ? _get(selectedItem, textField, '') : selectedItem,
+                            ).toLowerCase();
+                            matchesFilter = selectedItemText.includes(needle);
+                            if (!matchesFilter && useSubLabel) {
+                                const sub = String(_get(selectedItem, 'subLabel', '')).toLowerCase();
+                                matchesFilter = sub.includes(needle);
                             }
-                            return item === selectedItem;
-                        });
-                        if (!isAlreadyPresent) {
-                            finalData = [selectedItem, ...rawData];
+                        }
+
+                        if (matchesFilter) {
+                            const isAlreadyPresent = rawData.some((item) => {
+                                if (_isObject(item) && _isObject(selectedItem)) {
+                                    if (dataItemKey) {
+                                        return _get(item, dataItemKey) === _get(selectedItem, dataItemKey);
+                                    }
+                                    return JSON.stringify(item) === JSON.stringify(selectedItem);
+                                }
+                                return item === selectedItem;
+                            });
+                            if (!isAlreadyPresent) {
+                                finalData = [selectedItem, ...rawData];
+                            }
                         }
                     }
 

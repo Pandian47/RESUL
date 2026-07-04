@@ -4,7 +4,7 @@ import { AGREE, BUSSINESS_EMAIL, SIGNUP, TERMSCONDITIONS, UNABLE_TOLOAD_DATA } f
 import { useEffect, useState } from 'react';
 import { FormProvider, useForm } from 'react-hook-form';
 import { useNavigate } from 'react-router-dom';
-import _isEmpty from 'lodash/isEmpty';
+import { isEmpty as _isEmpty, get as _get } from 'Utils/modules/lodashReplacements';
 import RSCheckbox from 'Components/FormFields/RSCheckbox';
 
 import { RSPrimaryButton } from 'Components/Buttons';
@@ -279,7 +279,7 @@ const NewUser = ({ onAuthLoadingChange = () => {} }) => {
                                 }}
                             >
                                 <a
-                                    href="https://www.go.resul.io/terms-and-conditions"
+                                    href="https://www.go.resul.io/terms-and-conditions.html"
                                     target="_blank"
                                     className="rs-link-secondary-login position-relative top1 pl5"
                                 >

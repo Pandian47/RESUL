@@ -5,7 +5,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 
-import _map from 'lodash/map';
+import { map as _map } from 'Utils/modules/lodashReplacements';
 import { Switch } from '@progress/kendo-react-inputs';
 import { Row, Container, Col } from 'react-bootstrap';
 import { FormProvider, useForm } from 'react-hook-form';
@@ -28,6 +28,7 @@ import { updateMobilePermissionData } from 'Reducers/preferences/CommunicationSe
 import { CommunicationSettingsWebPermissionsSkeletonGate } from 'Components/Skeleton/Components/PreferencesSubPageRouteSkeleton';
 import useApiLoader from 'Hooks/useApiLoader';
 import { FIELD_BOTH_LOADER_CONFIG as fieldLoaderConfig } from 'Hooks/loaderTypes';
+import { UpdateState } from 'Utils/modules/misc';
 
 
 

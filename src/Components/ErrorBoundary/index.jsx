@@ -87,12 +87,12 @@ class ErrorBoundary extends Component {
                                     {COPYRIGHT} &copy;{' '}
                                     <span className="init-copyright">2004 - {new Date().getFullYear()}</span>
                                 </li>
-                                <li onClick={() => window.open('https://www.go.resul.io/privacy-policy', '_blank')}>
+                                <li onClick={() => window.open('https://www.go.resul.io/privacy-policy.html', '_blank')}>
                                     {PRIVACYPOLICY}
                                 </li>
                                 <li
                                     onClick={() =>
-                                        window.open('https://www.go.resul.io/terms-and-conditions', '_blank')
+                                        window.open('https://www.go.resul.io/terms-and-conditions.html', '_blank')
                                     }
                                 >
                                     {TERMSCONDITIONS}

@@ -115,7 +115,7 @@
         visibility: hidden;
         width: 150px;
         height: 223px;
-        padding: 5px;
+        padding: 8px;
         overflow: visible;
         clip-path: inset(0 0 100% 0 round var(--globalBorderRadius));
         transform: translateY(-4px) scaleY(0.96);
@@ -151,7 +151,6 @@
             opacity: 1;
             height: 223px;
             width: 150px;
-            padding: 5px;
             border: 1px solid $quaternary-blue;
             box-shadow: 0 0 5px 0 rgb(0 0 0 / 5%), 0 0 5px 0 rgb(0 0 0 / 5%);
             clip-path: inset(-8px 0 0 0 round var(--globalBorderRadius));
@@ -194,6 +193,7 @@
                 text-align: left;
                 right: 0;
                 background-color: #ffffff;
+                width: 132px;
                 li {
                     width: 100%;
                     font-size: $font-xsm;
@@ -213,7 +213,11 @@
                         (var(--rs-dropdown-item-count, 5) - var(--rs-dropdown-item-index, 0) - 1) * 22ms
                     );
                     will-change: opacity, filter, transform;
+                    height: 38px;
 
+                    &:last-child {
+                        margin-bottom: 0;
+                    }
                     &.active {
                         color: $white;
                         background-color: $secondary-blue;
@@ -279,6 +283,12 @@
             visibility: hidden;
             transition: opacity 0.12s ease-out, transform 0.12s ease-out, visibility 0.12s ease-out;
 
+            // .rs-button {
+            //     padding: 3px 15px;
+            //     font-size: 15px;
+            //     margin-left: 0px !important;
+            // }
+
             .rs-button-primary {
                 margin-left: 15px;
             }
@@ -342,7 +352,7 @@
                             top: 0 !important;
                             left: 0 !important;
                             .k-daterangepicker-popup{
-                                padding-left: 8px;
+                                // padding-left: 8px;
                             }
                             .k-popup {
                                 margin: 0;
@@ -364,9 +374,9 @@
                                 }
 
                                 .k-calendar-view {
-                                    margin-top: 10px;
-                                    padding: 0 8px 0 0;
-
+                                    margin-top: 5px;
+                                    padding: 0 0px 0 0;
+                                    gap: 10px;
                                     .k-calendar-table {
                                         border: 1px solid $quaternary-blue;
                                         border-radius: var(--globalBorderRadius);

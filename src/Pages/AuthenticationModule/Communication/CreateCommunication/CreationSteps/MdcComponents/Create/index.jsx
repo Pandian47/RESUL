@@ -3,18 +3,18 @@ import { useSelector, useDispatch } from 'react-redux';
 
 import { Container } from 'react-bootstrap';
 
-import _get from 'lodash/get';
+import { get as _get } from 'Utils/modules/lodashReplacements';
 
 import CampaignInfoCard from '../../Component/CampaignInfoCard/CampaignInfoCard';
 import MdcContentHeader from './Components/MdcContentHeader';
 import PotentialAudienceList from '../WorkFlow/Components/PotentialAudience/PotentialAudienceList';
 import { MDC_AUTHORING_CHANNEL_CONFIG } from './constant';
-import { isGenie } from '../../Create/constant';
 import { getSessionId } from 'Reducers/globalState/selector';
 import { getPersonalizationFields } from 'Reducers/communication/createCommunication/Create/request';
 import { updateMDCEditMode } from 'Reducers/communication/createCommunication/Create/reducer';
 import { updateSaveChannelsId } from 'Reducers/communication/createCommunication/plan/reducer';
 import { getSmartUrl } from 'Reducers/communication/createCommunication/smartlink/request';
+import { resetSmartLink } from 'Reducers/communication/createCommunication/smartlink/reducer';
 import useQueryParams from 'Hooks/useQueryParams';
 import { getUserListCampaign } from 'Reducers/globalState/request';
 import { MDC_SUPPRESS_GLOBAL_LOADER } from 'Components/Skeleton/pages/communication/authoring';
@@ -37,7 +37,12 @@ const CreateMdcCommunication = () => {
         if (_get(location, 'mode', 'create') === 'edit') {
             dispatch(updateMDCEditMode('edit'));
         }
-    }, [location, dispatch]);
+    }, [location?.campaignId, dispatch]);
+
+    useEffect(() => {
+        dispatch(resetSmartLink());
+    }, []);
+
     const [mdcChannelNumericId, setMdcChannelNumericId] = useState(1);
     const [isMdcBootstrapping, setIsMdcBootstrapping] = useState(true);
 
@@ -54,7 +59,7 @@ const CreateMdcCommunication = () => {
             setChannelId(mdcChannelId);
             setMdcChannelNumericId(selectedChannel.id ?? 1);
         }
-    }, [location]);
+    }, [location?.campaignId]);
 
     useEffect(() => {
         let cancelled = false;
@@ -86,8 +91,8 @@ const CreateMdcCommunication = () => {
                     dispatch(
                         getSmartUrl({
                             payload: smartUrlPayload,
-                            reduceLoad: true,
-                            ...MDC_SUPPRESS_GLOBAL_LOADER,
+                            loading: false,
+                            iconFieldLoader: true,
                         }),
                     ),
                 ]);
@@ -102,7 +107,7 @@ const CreateMdcCommunication = () => {
         return () => {
             cancelled = true;
         };
-    }, [location, clientId, departmentId, userId, dispatch]);
+    }, [location?.campaignId, clientId, departmentId, userId, dispatch]);
 
     const showMdcLoadSkeleton = isMdcBootstrapping || !authoringChannel;
 

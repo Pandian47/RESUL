@@ -49,15 +49,6 @@ export const AddImportAudienceBodySkeleton = () => (
     </>
 );
 
-export const AddImportAudienceLoadingBlock = () => (
-    <>
-        <style>{addImportAudienceSkeletonCriticalCss}</style>
-        <div className="audience-add-import-audience-inline-skeleton">
-            <AddImportAudienceBodySkeleton />
-        </div>
-    </>
-);
-
 const AddImportAudienceSkeleton = ({ inline = false }) => (
     <div
         className={[

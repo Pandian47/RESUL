@@ -23,7 +23,7 @@ import { numberWithCommas } from 'Utils/modules/formatters';
  */
 import { cloneElement, isValidElement, memo, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
-import _get from 'lodash/get';
+import { get as _get } from 'Utils/modules/lodashReplacements';
 import {
     Grid,
     GridColumn,
@@ -1310,11 +1310,7 @@ const ResKendoGrid = ({
             buttonCount: 5,
             info: true,
             type: 'numeric',
-            pageSizes: (customPageSizes || [5, 10, 20]).filter(
-                (size) =>
-                    size <= groupedProcessedData.total ||
-                    size === (customPageSizes?.[0] || 5),
-            ),
+            pageSizes: customPageSizes || PAGER_CONFIG.pageSizes,
             previousNext: true,
         };
     }, [

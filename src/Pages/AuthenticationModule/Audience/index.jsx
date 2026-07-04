@@ -2,7 +2,7 @@ import { encodeUrl, getUserDetails } from 'Utils/modules/crypto';
 
 import { SELECT_BU } from 'Constants/GlobalConstant/Placeholders';
 import { createContext, useEffect, useMemo, useState } from 'react';
-import _get from 'lodash/get';
+import { get as _get } from 'Utils/modules/lodashReplacements';
 import { Container } from 'react-bootstrap';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
@@ -131,7 +131,7 @@ const Audience = () => {
                 <Container fluid>
                     <div className="page-content">
                         <RSTabbarFluid
-                            defaultClass={`col-md-4`}
+                            defaultClass={`col-md-4 col-sm-4`}
                             dynamicTab={`mb0 mini`}
                             activeClass={`active`}
                             tabData={config_Tab}

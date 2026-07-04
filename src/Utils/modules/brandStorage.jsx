@@ -1,4 +1,4 @@
-import _isEmpty from 'lodash/isEmpty';
+import { isEmpty as _isEmpty } from './lodashReplacements.js';
 import CacheManager from 'Utils/cacheManager';
 import { encryptWithAES, getUserDetails } from './crypto';
 

@@ -5,7 +5,7 @@ import { useContext, useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useForm, useFieldArray } from 'react-hook-form';
 import { useSelector, useDispatch } from 'react-redux';
-import _get from 'lodash/get';
+import { get as _get } from 'Utils/modules/lodashReplacements';
 import { Row, Col } from 'react-bootstrap';
 import RSKendoDropDownList from 'Components/FormFields/RSKendoDropdown';
 import { RSPrimaryButton, RSSecondaryButton } from 'Components/Buttons';

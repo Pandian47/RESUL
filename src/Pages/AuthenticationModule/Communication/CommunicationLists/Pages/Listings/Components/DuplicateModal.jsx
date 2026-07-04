@@ -5,7 +5,7 @@ import { CANCEL, DUPLICATE, DUPLICATE_COMMUNICATION_LIST, ENTER_COMMUNICATION_NA
 import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useDispatch, useSelector } from 'react-redux';
-import _get from 'lodash/get';
+import { get as _get } from 'Utils/modules/lodashReplacements';
 import RSModal from 'Components/RSModal';
 import RSInput from 'Components/FormFields/RSInput';
 import { RSPrimaryButton, RSSecondaryButton } from 'Components/Buttons';

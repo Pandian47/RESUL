@@ -4,7 +4,7 @@ import { CHAR_NUM_UNDERSCORE } from 'Constants/GlobalConstant/Regex';
 import { SMART_LINK_POPUP } from 'Constants/GlobalConstant/Placeholders';
 import { circle_plus_fill_medium, editor_smart_link_medium } from 'Constants/GlobalConstant/Glyphicons';
 import { Fragment, useRef } from 'react';
-import _findIndex from 'lodash/findIndex';
+import { findIndex as _findIndex } from 'Utils/modules/lodashReplacements';
 
 import { Row, Col } from 'react-bootstrap';
 import { useFormContext } from 'react-hook-form';
@@ -46,7 +46,7 @@ const AdsName = ({ fieldName, formState, updateSmartLink, fields, append, remove
                             <Col sm={6}>
                                 <RSInput
                                     control={control}
-                                    name={`${fieldName}[${idx}].name`}
+                                    name={`${fieldName}.${idx}.name`}
                                     placeholder={`Ad name ${placeholderText + 1}`}
                                     required
                                     maxLength={30}
@@ -85,13 +85,13 @@ const AdsName = ({ fieldName, formState, updateSmartLink, fields, append, remove
                                         }
                                     }}
                                     handleOnchange={(e) => {
-                                        setValue(`${fieldName}[${idx}].url`, '');
+                                        setValue(`${fieldName}.${idx}.url`, '');
                                     }}
                                 />
                             </Col>
                             <Col sm={1} className="fg-icons-wrapper pl0">
                                 <div className="fg-icons">
-                                    <div className="d-flex">
+                                    <div className="d-flex align-items-center">
                                         <RSTooltip text={`${selectIconTooltip(idx)}`}>
                                             <i
                                                 className={`${selectIcon(idx)} icon-md ${
@@ -110,7 +110,7 @@ const AdsName = ({ fieldName, formState, updateSmartLink, fields, append, remove
                                                         if (findErrorIndex === -1) {
                                                             append({ name: '' });
                                                         } else {
-                                                            trigger(`${fieldName}[${findErrorIndex}].name`);
+                                                            trigger(`${fieldName}.${findErrorIndex}.name`);
                                                         }
                                                     } else {
                                                         remove(idx);
@@ -121,14 +121,14 @@ const AdsName = ({ fieldName, formState, updateSmartLink, fields, append, remove
                                         {formState?.[idx]?.name && (
                                             smartLinkLoading && smartLinkLoadingIndex === idx ? (
                                                 <span
-                                                    className="d-inline-flex align-items-center justify-content-center ml5"
+                                                    className="d-inline-flex align-items-center justify-content-center ml5 mt-5"
                                                     id={`rs_AdsName_smartlink_loader_${idx}`}
                                                     style={{ minWidth: 24, minHeight: 24 }}
                                                 >
                                                     <span className="segment_loader"></span>
                                                 </span>
                                             ) : (
-                                                <RSTooltip text={SMART_LINK_POPUP} className="">
+                                                <RSTooltip text={SMART_LINK_POPUP} className="ml10">
                                                     <span
                                                         onMouseDown={() => {
                                                             skipSmartLinkBlurRef.current = true;
@@ -150,7 +150,7 @@ const AdsName = ({ fieldName, formState, updateSmartLink, fields, append, remove
                                                             }}
                                                             showUpdate={false}
                                                             name={`smartlink-${idx}`}
-                                                            className="no_caret mt-3"
+                                                            className="no_caret mt-5"
                                                             popupSettings={{
                                                                 popupClass: `addImportSmartLinkDropdownListContainer`,
                                                             }}

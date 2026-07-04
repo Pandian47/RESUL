@@ -2,7 +2,7 @@ import { COMMUNICATION_RECOMMENDATIONS, COMMUNICATION_SUMMARY_TWINS, GET_ATTRIBU
 import request from 'Utils/Http';
 import { parseAnalyticsJson, parseAnalyticsJsonArray } from 'Pages/AuthenticationModule/Analytics/analyticsDefaults';
 
-import _map from 'lodash/map';
+import { map as _map } from 'Utils/modules/lodashReplacements';
 
 import { updateTopDevice, updateSummaryReport, updateTrendsReport, updateKnownToUnknown, updatePreblast, updateGeography, updateBenchMark, updateIndustry, updatePDFDownload, updateSummaryLoading, updateNewContactLoading, updateTopDeviceLoading, updateTrendsLoading, updateRetargetListStatus, updateRetargetListLoading, updateSnapshotList, updateListingPreviewImage, updateAttributionRoiLoading, updateAttributionRoi } from './reducer';
 import { getUserCurrentFormat } from 'Utils/modules/dateTime';
@@ -199,7 +199,7 @@ export const getCommunicationTrends =
                                 updateTrendsReport({
                                     payload: {
                                         categories,
-                                        series: _map(chartSeries, (channel) => ({
+                                        series: _map(series, (channel) => ({
                                             ...channel,
                                             name: channel.name,
                                         })),
@@ -230,7 +230,7 @@ export const getCommunicationTrends =
 
                             const payload = {
                                 categories: tmpCategories,
-                                series: _map(chartSeries, (channel) => ({
+                                series: _map(series, (channel) => ({
                                     ...channel,
                                     data: handleChart(channel, key),
                                     name: channel.name,
@@ -533,7 +533,7 @@ export const getSnapDetails =
                                     if (key === 'radar') {
                                         return {
                                             categories,
-                                            series: _map(chartSeries, (channel) => ({
+                                            series: _map(series, (channel) => ({
                                                 ...channel,
                                                 name: channel.name,
                                             })),
@@ -568,7 +568,7 @@ export const getSnapDetails =
         
                                     return {
                                         categories: tmpCategories,
-                                        series: _map(chartSeries, (channel) => ({
+                                        series: _map(series, (channel) => ({
                                             ...channel,
                                             data: handleChart(channel, key),
                                             name: channel.name,

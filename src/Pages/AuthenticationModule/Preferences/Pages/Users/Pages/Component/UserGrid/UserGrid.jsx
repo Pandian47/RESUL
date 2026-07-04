@@ -6,7 +6,7 @@ import { CustomSkeleton } from 'Components/Skeleton/Components/SkeletonOverall';
 import { CANCEL, DEACTIVATE_USER, JOB_FUNCTION, NO_RECORDS_FOUND, USER_DEACTIVATE_CONFIRMATION_DIALOG, USER_DEACTIVATE_PERMANENT_WARNING_1, USER_DEACTIVATE_PERMANENT_WARNING_2, USER_DEACTIVATE_PERMANENT_WARNING_TOOLTIP, USER_NAME } from 'Constants/GlobalConstant/Placeholders';
 import { circle_plus_fill_medium, crown_fill_medium, pencil_edit_medium } from 'Constants/GlobalConstant/Glyphicons';
 import { useEffect, useMemo, useState } from 'react';
-import _get from 'lodash/get';
+import { get as _get } from 'Utils/modules/lodashReplacements';
 
 import { Switch } from '@progress/kendo-react-inputs';
 import { useDispatch, useSelector } from 'react-redux';

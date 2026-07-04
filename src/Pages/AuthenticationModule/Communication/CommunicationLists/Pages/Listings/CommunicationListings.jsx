@@ -1,58 +1,88 @@
-import { getUserDetails } from 'Utils/modules/crypto';
-import { getDateWithDaynoFormat, getYYMMDD } from 'Utils/modules/dateTime';
-import { getWarningPopupMessage } from 'Utils/modules/warningPopup';
-import { CustomSkeleton } from 'Components/Skeleton/Components/SkeletonOverall';
-import { CommunicationListRowComponent, GridDetailComponent, buildPayload, handleFinalStatusPayload, pagerSettings } from './constant';
-import { ADD_FIRST_COMMUNICATION_1, ADD_FIRST_COMMUNICATION_2, ALERT, COMPLETED, DRAFT, EXTRACTION, IN_PROGRESS, MUTLI_STATUS, PAUSE, REJECT, SCHEDULED, SELECT_BU, STOP } from 'Constants/GlobalConstant/Placeholders';
 import { alert_medium, circle_plus_fill_medium, close_mini } from 'Constants/GlobalConstant/Glyphicons';
-import { createContext, useEffect, useMemo, useRef, useState } from 'react';
-import _map from 'lodash/map';
-import _findIndex from 'lodash/findIndex';
-import { process } from '@progress/kendo-data-query';
-import { useDispatch, useSelector } from 'react-redux';
-import ResGrid from 'Pages/KendoDocs/CommonComponents/ResGrid';
-import _get from 'lodash/get';
-import HeaderCell from './Components/HeaderCell/HeaderCell';
-
-import { initialDataState } from './constant';
-import { getSessionId } from 'Reducers/globalState/selector';
-import { updateCommunicationList, updateListDuplicate, resetCommListing } from 'Reducers/communication/listing/reducer';
-import { getCampaignStatus, getCommunicationList } from 'Reducers/communication/listing/request';
-import useApiLoader from 'Hooks/useApiLoader';
-import RSConfirmationModal from 'Components/ConfirmationModal';
-
-import { useNavigate } from 'react-router-dom';
-import usePermission from 'Hooks/usePersmission';
-import { updateSaveChannelsId, updateSavedStatusId } from 'Reducers/communication/createCommunication/plan/reducer';
+import { ADD_FIRST_COMMUNICATION_1, ADD_FIRST_COMMUNICATION_2, SELECT_BU } from 'Constants/GlobalConstant/Placeholders';
 import { LAST30DAYS_DATEFILTER } from 'Constants/GlobalConstant/Regex';
+import RSConfirmationModal from 'Components/ConfirmationModal';
+import { CustomSkeleton } from 'Components/Skeleton/Components/SkeletonOverall';
 import { SkeletonCommunicationList } from 'Components/Skeleton/Skeleton';
+import useApiLoader from 'Hooks/useApiLoader';
+import useComponentWillUnmount from 'Hooks/useComponentWillUnMount';
+import usePermission from 'Hooks/usePersmission';
+import ResGrid from 'Pages/KendoDocs/CommonComponents/ResGrid';
 import {
     EMPTY_COMMUNICATION_LISTING_DATA,
     coerceApiListingPayload,
 } from 'Pages/AuthenticationModule/Communication/CommunicationLists/communicationListingDefaults';
+import { process } from '@progress/kendo-data-query';
+import { findIndex as _findIndex,map as _map,get as _get } from 'Utils/modules/lodashReplacements';
+import { createContext, useEffect, useMemo, useRef, useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
+
+import { getUserDetails } from 'Utils/modules/crypto';
+import { getDateWithDaynoFormat, getYYMMDD } from 'Utils/modules/dateTime';
+import { getWarningPopupMessage } from 'Utils/modules/warningPopup';
+import { updateSaveChannelsId, updateSavedStatusId } from 'Reducers/communication/createCommunication/plan/reducer';
+import { getCampaignStatus, getCommunicationList } from 'Reducers/communication/listing/request';
+import { updateCommunicationList, updateListDuplicate, resetCommListing } from 'Reducers/communication/listing/reducer';
+import { getSessionId } from 'Reducers/globalState/selector';
+
+import HeaderCell from './Components/HeaderCell/HeaderCell';
+import {
+    CommunicationListRowComponent,
+    GridDetailComponent,
+    buildPayload,
+    handleFinalStatusPayload,
+    initialDataState,
+    pagerSettings,
+} from './constant';
 
 export const CommunicationListingsContext = createContext({
-    expandChange: () => { },
+    expandChange: () => {},
     requestPayload: {},
-    setPlayPauseStopStatusContent: () => { },
+    setPlayPauseStopStatusContent: () => {},
     playPauseInitialPayload: {},
-    setPlayPauseInitialPayload: () => { },
+    setPlayPauseInitialPayload: () => {},
 });
 
+const collapseOtherRows = (list, activeIndex) =>
+    _map(list, (campaign, index) => {
+        const row = { ...campaign };
+        if (index !== activeIndex) row.expanded = false;
+        return row;
+    });
+
 const CommunicationListings = () => {
+    // Selectors
     const dispatch = useDispatch();
-    const { licenseTypeId, isCampaign } = getUserDetails();
-    const [confirmationModal, setConfimrationModal] = useState(false);
-    const { clientId, userId, departmentId, departmentName } = useSelector((state) => getSessionId(state) ?? {});
-    const [disableCard, setDisableCard] = useState(false);
+    const navigate = useNavigate();
+    const { licenseTypeId, isCampaign } = getUserDetails() || {};
+    const { clientId, userId, departmentId, departmentName } = useSelector((state) => getSessionId(state) ?? {}) ?? {};
     const {
         data = EMPTY_COMMUNICATION_LISTING_DATA,
         isLoading = true,
         isFailure = false,
         isDuplicate = false,
-    } = useSelector((state) => state.communicationListingReducer ?? {});
-    const { failureApiErrors = [] } = useSelector((state) => state.globalstate ?? {});
+    } = useSelector((state) => state.communicationListingReducer ?? {}) ?? {};
+    const { failureApiErrors = [] } = useSelector((state) => state.globalstate ?? {}) ?? {};
+    const { permissions } = usePermission() || {};
+    const { addAccess } = permissions || {};
 
+    const communicationListAPI = useApiLoader({ actionCreator: getCommunicationList });
+    const campaignStatusAPI = useApiLoader({ actionCreator: getCampaignStatus });
+
+    const { communicationsList = [], totalCampaigns = 0 } = data || {};
+    const loading = isLoading || isFailure;
+    const nodata = communicationsList?.length === 0;
+
+    // Refs
+    const communicationsListRef = useRef(communicationsList);
+    const { isMounted } = useComponentWillUnmount(() => {
+        dispatch(resetCommListing());
+    });
+
+    // State
+    const [confirmationModal, setConfimrationModal] = useState(false);
+    const [disableCard] = useState(false);
     const [formState, setFormState] = useState({});
     const [requestPayload, setRequestPayload] = useState({});
     const [playPauseInitialPayload, setPlayPauseInitialPayload] = useState({
@@ -73,43 +103,35 @@ const CommunicationListings = () => {
         communicationType: '',
     });
     const [getPagination, setGetPagination] = useState(null);
-    const { communicationsList = [], totalCampaigns = 0, totalRows = 5 } = data;
-    const communicationsListRef = useRef(communicationsList);
-    useEffect(() => {
-        communicationsListRef.current = communicationsList;
-    }, [communicationsList]);
-    const loading = isLoading || isFailure;
-    const nodata = communicationsList?.length === 0;
-
-    const { permissions } = usePermission();
     const [playPauseStopStatusContent, setPlayPauseStopStatusContent] = useState({
         showContent: false,
         messageContent: '',
     });
-
     const [campaignData, setCampaignData] = useState({
         dataState: initialDataState,
         campaignList: [],
     });
 
-    const communicationListAPI = useApiLoader({ actionCreator: getCommunicationList });
-    const campaignStatusAPI = useApiLoader({
-        actionCreator: getCampaignStatus,
-    });
-
-    useEffect(() => {
-        return () => {
-            dispatch(resetCommListing());
-        };
-    }, []);
-
     const { showContent, messageContent } = playPauseStopStatusContent;
 
-    const { addAccess } = permissions || {};
-    const navigate = useNavigate();
-    useEffect(() => {
+    // Memo / Callback
+    const listColumns = useMemo(
+        () => [
+            {
+                cell: (props) =>
+                    CommunicationListRowComponent(props, requestPayload, setRequestPayload, setCampaignData),
+            },
+        ],
+        [requestPayload],
+    );
 
-        const { userId: requestUserId, ...restRequestPayload } = requestPayload;
+    // Effects
+    useEffect(() => {
+        communicationsListRef.current = communicationsList;
+    }, [communicationsList]);
+
+    useEffect(() => {
+        const { userId: _requestUserId, ...restRequestPayload } = requestPayload || {};
         const payload = buildPayload(
             {
                 ...restRequestPayload,
@@ -124,18 +146,18 @@ const CommunicationListings = () => {
             false,
         );
         if (isDuplicate) {
-            setCampaignData(prevState => ({
+            if (!isMounted.current) return;
+            setCampaignData((prevState) => ({
                 ...prevState,
-                dataState: { skip: 0, take: getPagination }
+                dataState: { skip: 0, take: getPagination },
             }));
             setRequestPayload(payload);
         }
         dispatch(updateListDuplicate(false));
     }, [isDuplicate]);
 
-
-
     useEffect(() => {
+        if (!isMounted.current) return;
         if (departmentName?.toLowerCase() === 'all' && licenseTypeId === '3') {
             setConfimrationModal(true);
         } else {
@@ -149,168 +171,176 @@ const CommunicationListings = () => {
 
     useEffect(() => {
         const { data: processed } = process(communicationsList, campaignData.dataState);
+        if (!isMounted.current) return;
         setCampaignData((prev) => ({
             ...prev,
             campaignList: Array.isArray(processed) ? processed : [],
         }));
     }, [communicationsList, campaignData.dataState]);
+
+    // Handlers
     const dataStateChange = async (event) => {
-        const { skip, take } = event.dataState;
-        setGetPagination(take);
-        const index = Math.floor(skip / take + 1);
-        const { userId: requestUserId, ...restRequestPayload } = requestPayload;
-        const payload = buildPayload(
-            {
-                ...restRequestPayload,
-                pageSize: take,
-                index,
-                departmentId,
-                clientId,
-                userId: requestUserId ?? userId,
-            },
-            true,
-        );
-        const apiResult = await communicationListAPI.refetch({ payload });
-        const { data: listPayload } = coerceApiListingPayload(apiResult);
-        const { communicationsList } = listPayload ?? EMPTY_COMMUNICATION_LISTING_DATA;
-        setRequestPayload(payload);
-        setCampaignData({
-            dataState: event.dataState,
-            campaignList: Array.isArray(communicationsList) ? communicationsList : [],
-        });
-        window.scrollTo(0, 0);
+        try {
+            const { skip, take } = event?.dataState || {};
+            setGetPagination(take);
+            const index = Math.floor(skip / take + 1);
+            const { userId: requestUserId, ...restRequestPayload } = requestPayload || {};
+            const payload = buildPayload(
+                {
+                    ...restRequestPayload,
+                    pageSize: take,
+                    index,
+                    departmentId,
+                    clientId,
+                    userId: requestUserId ?? userId,
+                },
+                true,
+            );
+            const apiResult = await communicationListAPI.refetch({ payload });
+            if (!isMounted.current) return;
+
+            const { data: listPayload } = coerceApiListingPayload(apiResult);
+            const { communicationsList: nextCommunicationsList } = listPayload ?? EMPTY_COMMUNICATION_LISTING_DATA;
+            setRequestPayload(payload);
+            setCampaignData({
+                dataState: event?.dataState,
+                campaignList: Array.isArray(nextCommunicationsList) ? nextCommunicationsList : [],
+            });
+            window.scrollTo(0, 0);
+        } catch {
+            // Pagination fetch failed
+        }
     };
 
-    const collapseOtherRows = (list, activeIndex) =>
-        _map(list, (campaign, index) => {
-            const row = { ...campaign };
-            if (index !== activeIndex) row.expanded = false;
-            return row;
-        });
-
     const expandChange = async ({ dataItem }, updateCommunicationsList) => {
-        const channel = dataItem?.channelsDetails;
-        const isExpand = dataItem?.expanded || false;
-        let temp =
-            updateCommunicationsList?.length && updateCommunicationsList
-                ? [...updateCommunicationsList]
-                : [...communicationsList];
-        const campaignIndex = _findIndex(temp, ['campaignId', dataItem?.campaignId]);
-        if (campaignIndex < 0) return;
-        const tempCampaign =
-            updateCommunicationsList?.length && updateCommunicationsList
-                ? { ...(updateCommunicationsList[campaignIndex] ?? {}) }
-                : { ...(communicationsList[campaignIndex] ?? {}) };
-        const hasChannelData = Number(channel?.[0]?.channeldetailId ?? channel?.[0]?.channelDetailId) > 0;
-        if (!isExpand && !hasChannelData) {
-            const payload = {
-                userId: userId,
-                departmentId,
-                clientId,
-                campaignId: dataItem?.campaignId,
-            };
+        try {
+            const channel = dataItem?.channelsDetails;
+            const isExpand = dataItem?.expanded || false;
+            let temp =
+                updateCommunicationsList?.length && updateCommunicationsList
+                    ? [...updateCommunicationsList]
+                    : [...(communicationsList || [])];
+            const campaignIndex = _findIndex(temp, ['campaignId', dataItem?.campaignId]);
+            if (campaignIndex < 0) return;
+            const tempCampaign =
+                updateCommunicationsList?.length && updateCommunicationsList
+                    ? { ...(updateCommunicationsList[campaignIndex] ?? {}) }
+                    : { ...(communicationsList?.[campaignIndex] ?? {}) };
+            const hasChannelData = Number(channel?.[0]?.channeldetailId ?? channel?.[0]?.channelDetailId) > 0;
 
-            tempCampaign.expanded = true;
-            tempCampaign.extendedCampaignId = dataItem.campaignId;
-            tempCampaign.channelDetailsLoading = true;
-            tempCampaign.isFailure = false;
-            tempCampaign.channelsDetails = [];
-            temp[campaignIndex] = tempCampaign;
-            temp = collapseOtherRows(temp, campaignIndex);
-            dispatch(updateCommunicationList(temp));
+            if (!isExpand && !hasChannelData) {
+                const payload = {
+                    userId: userId,
+                    departmentId,
+                    clientId,
+                    campaignId: dataItem?.campaignId,
+                };
 
-            const apiResult = await campaignStatusAPI.refetch({ payload, loading: false });
-            if (apiResult == null) return;
+                tempCampaign.expanded = true;
+                tempCampaign.extendedCampaignId = dataItem?.campaignId;
+                tempCampaign.channelDetailsLoading = true;
+                tempCampaign.isFailure = false;
+                tempCampaign.channelsDetails = [];
+                temp[campaignIndex] = tempCampaign;
+                temp = collapseOtherRows(temp, campaignIndex);
+                dispatch(updateCommunicationList(temp));
 
-            const { data: channelDetails, status } = apiResult;
-            const latestList = [...communicationsListRef.current];
-            const latestIndex = _findIndex(latestList, ['campaignId', dataItem.campaignId]);
-            if (latestIndex < 0) {
-                return;
-            }
-            const row = { ...latestList[latestIndex] };
-            row.channelDetailsLoading = false;
-            row.expanded = true;
-            row.extendedCampaignId = dataItem.campaignId;
+                const apiResult = await campaignStatusAPI.refetch({ payload, loading: false });
+                if (apiResult == null || !isMounted.current) return;
 
-            try {
-                if (status) {
-                    row.channelsDetails = channelDetails;
-                    row.isFailure = false;
-                    if (channelDetails?.length) {
-                        const filterChannel = channelDetails?.reduce((acc, item) => {
-                            const id = item.channelId;
-                            if (!acc[id]) {
-                                acc[id] = [];
-                            }
-                            if (id === 7) {
-                                acc[id].push(item?.socialPostChannelId);
-                            } else if (id === 10) {
-                                acc[id].push(item?.socialPostChannelId);
-                            } else {
-                                acc[id].push(id);
-                            }
-                            return acc;
-                        }, {});
-                        dispatch(updateSaveChannelsId(filterChannel));
-                        const updateStatusDetailData = channelDetails.map((item) => ({
-                            statusId: item?.statusId,
-                            channelDetailId: item?.channeldetailId,
-                            channelId: item?.channelId,
-                            subSegmentLevel: item?.subSegmentLevel,
-                            triggerPlayPauseStatus: item?.triggerPlayPauseStatus,
-                        }));
-                        dispatch(updateSavedStatusId(updateStatusDetailData));
+                const { data: channelDetails, status } = apiResult || {};
+                const latestList = [...(communicationsListRef.current || [])];
+                const latestIndex = _findIndex(latestList, ['campaignId', dataItem?.campaignId]);
+                if (latestIndex < 0) {
+                    return;
+                }
+                const row = { ...latestList[latestIndex] };
+                row.channelDetailsLoading = false;
+                row.expanded = true;
+                row.extendedCampaignId = dataItem?.campaignId;
+
+                try {
+                    if (status) {
+                        row.channelsDetails = channelDetails;
+                        row.isFailure = false;
+                        if (channelDetails?.length) {
+                            const filterChannel = channelDetails?.reduce((acc, item) => {
+                                const id = item?.channelId;
+                                if (!acc[id]) {
+                                    acc[id] = [];
+                                }
+                                if (id === 7) {
+                                    acc[id].push(item?.socialPostChannelId);
+                                } else if (id === 10) {
+                                    acc[id].push(item?.socialPostChannelId);
+                                } else {
+                                    acc[id].push(id);
+                                }
+                                return acc;
+                            }, {});
+                            dispatch(updateSaveChannelsId(filterChannel));
+                            const updateStatusDetailData = channelDetails.map((item) => ({
+                                statusId: item?.statusId,
+                                channelDetailId: item?.channeldetailId,
+                                channelId: item?.channelId,
+                                subSegmentLevel: item?.subSegmentLevel,
+                                triggerPlayPauseStatus: item?.triggerPlayPauseStatus,
+                            }));
+                            dispatch(updateSavedStatusId(updateStatusDetailData));
+                        } else {
+                            dispatch(updateSaveChannelsId({}));
+                            dispatch(updateSavedStatusId([]));
+                        }
                     } else {
+                        row.channelsDetails = [];
+                        row.isFailure = true;
                         dispatch(updateSaveChannelsId({}));
                         dispatch(updateSavedStatusId([]));
                     }
-                } else {
+                } catch {
                     row.channelsDetails = [];
                     row.isFailure = true;
                     dispatch(updateSaveChannelsId({}));
                     dispatch(updateSavedStatusId([]));
+                } finally {
+                    if (!isMounted.current) return;
+                    const currentList = [...(communicationsListRef.current || [])];
+                    const currentIndex = _findIndex(currentList, ['campaignId', dataItem?.campaignId]);
+                    if (currentIndex < 0 || !currentList[currentIndex]?.expanded) return;
+                    currentList[currentIndex] = row;
+                    dispatch(updateCommunicationList(collapseOtherRows(currentList, currentIndex)));
                 }
-            } catch {
-                row.channelsDetails = [];
-                row.isFailure = true;
-                dispatch(updateSaveChannelsId({}));
-                dispatch(updateSavedStatusId([]));
-            } finally {
-                const currentList = [...communicationsListRef.current];
-                const currentIndex = _findIndex(currentList, ['campaignId', dataItem.campaignId]);
-                if (currentIndex < 0 || !currentList[currentIndex]?.expanded) return;
-                currentList[currentIndex] = row;
-                dispatch(updateCommunicationList(collapseOtherRows(currentList, currentIndex)));
+            } else {
+                campaignStatusAPI.abort();
+                tempCampaign.expanded = !isExpand;
+                tempCampaign.extendedCampaignId = null;
+                tempCampaign.channelDetailsLoading = false;
+                temp[campaignIndex] = tempCampaign;
+                dispatch(updateCommunicationList(collapseOtherRows(temp, campaignIndex)));
             }
-        } else {
-            campaignStatusAPI.abort();
-            tempCampaign.expanded = !isExpand;
-            tempCampaign.extendedCampaignId = null;
-            tempCampaign.channelDetailsLoading = false;
-            temp[campaignIndex] = tempCampaign;
-            dispatch(updateCommunicationList(collapseOtherRows(temp, campaignIndex)));
+        } catch {
+            // Row expand failed
         }
     };
 
-    // useEffect(()=>{
-    //     window.scrollTo(0, 0);
-    // },[communicationsList])
+    const handleConfirmationClose = () => {
+        if (!isMounted.current) return;
+        setConfimrationModal(false);
+    };
 
-    const listColumns = useMemo(
-        () => [
-            {
-                cell: (props) =>
-                    CommunicationListRowComponent(
-                        props,
-                        requestPayload,
-                        setRequestPayload,
-                        setCampaignData,
-                    ),
-            },
-        ],
-        [requestPayload],
-    );
+    const handleDismissPlayPauseStatus = () => {
+        if (!isMounted.current) return;
+        setPlayPauseStopStatusContent({
+            showContent: false,
+            messageContent: '',
+        });
+    };
+
+    const handleNavigateToCreation = () => {
+        if (addAccess) {
+            navigate(`communication-creation`, {});
+        }
+    };
 
     const contextValues = {
         expandChange,
@@ -320,14 +350,13 @@ const CommunicationListings = () => {
         setPlayPauseInitialPayload,
     };
 
+    // JSX
     return (
         <CommunicationListingsContext.Provider value={contextValues}>
             {departmentName?.toLowerCase() === 'all' && licenseTypeId === '3' ? (
-                <>
-                    <div className="mt15">
-                        <CustomSkeleton isError={true} count={5} height={80} />
-                    </div>
-                </>
+                <div className="mt15">
+                    <CustomSkeleton isError={true} count={5} height={80} />
+                </div>
             ) : (
                 <>
                     <HeaderCell
@@ -346,12 +375,7 @@ const CommunicationListings = () => {
                                 <p className="ml3"> {messageContent}</p>
                             </div>
                             <i
-                                onClick={() =>
-                                    setPlayPauseStopStatusContent({
-                                        showContent: false,
-                                        messageContent: '',
-                                    })
-                                }
+                                onClick={handleDismissPlayPauseStatus}
                                 className={`${close_mini} icon-sm cp  color-primary-white mr5 cursor-default`}
                             ></i>
                         </div>
@@ -365,24 +389,19 @@ const CommunicationListings = () => {
                                     height={38}
                                     isShowIcon={false}
                                     text={
-                                        <>
-                                            <span>
-
-                                                {ADD_FIRST_COMMUNICATION_1}
-                                                <i
-                                                    onClick={() => {
-                                                        if (addAccess) navigate(`communication-creation`, {});
-                                                    }}
-                                                    className={`${departmentName?.toLowerCase() === 'all' && licenseTypeId == '3'
-                                                            ? 'click-off'
-                                                            : ''
-                                                        } ${circle_plus_fill_medium
-                                                        } icon-md px5 color-primary-blue position-relative top4`}
-                                                    id="rs_data_circle_plus_fill"
-                                                ></i>
-                                                {ADD_FIRST_COMMUNICATION_2}.
-                                            </span>
-                                        </>
+                                        <span>
+                                            {ADD_FIRST_COMMUNICATION_1}
+                                            <i
+                                                onClick={handleNavigateToCreation}
+                                                className={`${
+                                                    departmentName?.toLowerCase() === 'all' && licenseTypeId == '3'
+                                                        ? 'click-off'
+                                                        : ''
+                                                } ${circle_plus_fill_medium} icon-md px5 color-primary-blue position-relative top4`}
+                                                id="rs_data_circle_plus_fill"
+                                            ></i>
+                                            {ADD_FIRST_COMMUNICATION_2}.
+                                        </span>
                                     }
                                 />
                             </div>
@@ -472,12 +491,8 @@ const CommunicationListings = () => {
             <RSConfirmationModal
                 show={confirmationModal}
                 text={SELECT_BU}
-                handleClose={() => {
-                    setConfimrationModal(false);
-                }}
-                handleConfirm={() => {
-                    setConfimrationModal(false);
-                }}
+                handleClose={handleConfirmationClose}
+                handleConfirm={handleConfirmationClose}
                 secondaryButton={false}
             />
 

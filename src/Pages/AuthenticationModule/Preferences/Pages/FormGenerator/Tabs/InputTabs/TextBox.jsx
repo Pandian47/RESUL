@@ -6,7 +6,7 @@ import { useFormContext, useWatch } from 'react-hook-form';
 
 import RSInput from 'Components/FormFields/RSInput';
 
-import _find from 'lodash/find';
+import { find as _find } from 'Utils/modules/lodashReplacements';
 
 import { ASTERISK_ICON, BODYCONFIG, mapToItemRender, SETTINGS_ICON_MD, handleAttributeDuplicates } from '../../constant';
 import SettingsPopup from './SettingsPopup';

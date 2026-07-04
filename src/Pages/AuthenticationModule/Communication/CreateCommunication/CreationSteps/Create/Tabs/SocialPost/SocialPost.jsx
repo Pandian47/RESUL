@@ -12,14 +12,11 @@ import { ENTER_EDITOR_TEXT, ENTER_SOCIAL_POST, ENTER_URL, MINLENGTH, SELECT_AGE_
 import { ADD_POST, AGE, ARE_YOU_SURE_WANT_TO_RESET, BOOST_POST, CANCEL, CHECK_START_DATE_AND_END_DATE, CITY, COMMUNICATION_SCHEDULED, CONFIRM, COUNTRY, ENTER_YOUR_POST_TEXT, GENDER, IGNORE_CHANNEL, NEXT, OK, POST_LINK, POST_NAME, POST_ON, PREVIEW, RESET, SAVE, TARGET, TRENDING_TOPICS } from 'Constants/GlobalConstant/Placeholders';
 import { builder_upload_medium, circle_info_medium, circle_plus_fill_medium, circle_question_mark_mini, communication_target_medium, editor_smart_link_medium, eye_medium, pencil_edit_medium, refresh_large, smart_link_medium } from 'Constants/GlobalConstant/Glyphicons';
 import { Fragment, useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import _get from 'lodash/get';
-import _cloneDeep from 'lodash/cloneDeep';
-import _isEmpty from 'lodash/isEmpty';
+import { get as _get, cloneDeep as _cloneDeep, isEmpty as _isEmpty, find as _find } from 'Utils/modules/lodashReplacements';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { useForm, FormProvider } from 'react-hook-form';
 import { Row, Col } from 'react-bootstrap';
-import _find from 'lodash/find';
 
 import {
     getTextLimit,
@@ -958,294 +955,294 @@ const SocialPost = ({ type, subChannelId }) => {
     const postSaveSocialPost = async (formData, typeButton) => {
         beginSubmit(getAuthoringSaveButtonType(typeButton === 'save' ? 'save' : 'form'));
         try {
-        const utcTimeResponse = await dispatch(getUtcTimeNow(false));
-        const currentUtcTimeData = utcTimeResponse || utcTimeData;
-        const values = getValues();
+            const utcTimeResponse = await dispatch(getUtcTimeNow(false));
+            const currentUtcTimeData = utcTimeResponse || utcTimeData;
+            const values = getValues();
 
-        if (
-            location?.campaignType !== 'T' &&
-            validatePastPlanDurationOnSubmit({
-                location,
-                formState: values,
-                setError,
-                currentUtcTime: currentUtcTimeData?.utcTime,
-            })
-        ) {
-            return;
-        }
-
-        let statusId = fetchedSocialPostStatusId;
-        if (values?.postOnAudience?.length === 0 && values?.postOnList?.length === 0) {
-            setError(`postOnAudience`, {
-                type: 'custom',
-                message: 'Select an audience',
-            });
-            return;
-        }
-        if (values?.editorText?.length > getTextLimit(type, values?.postType)) {
-            setError(`editorText`, {
-                type: 'custom',
-                message: `Max. ${getTextLimit(type, values?.postType)}`,
-            });
-            return;
-        }
-        if (values?.isBoostPost) {
-            let ageFrom = values?.boostPost?.ageFrom || 0 === 0;
-            if (ageFrom && !boostPostAry[1])
-                setError('boostPost.ageFrom', { type: 'custom', message: SELECT_AGE_FROM });
-            let ageTo = values?.boostPost?.ageTo || 0 === 0;
-            if (ageTo && !boostPostAry[2])
-                setError('boostPost.ageTo', { type: 'custom', message: SELECT_AGE_TO });
-            let country = _isEmpty(values?.boostPost?.country);
-            if (country && !boostPostAry[0])
-                setError('boostPost.country', { type: 'custom', message: SELECT_COUNTRY });
-            if (boostPostAry?.length === 0 && ageFrom && ageTo && country) {
-                setTargetPopover(true);
-                setFocus('isBoostPost');
+            if (
+                location?.campaignType !== 'T' &&
+                validatePastPlanDurationOnSubmit({
+                    location,
+                    formState: values,
+                    setError,
+                    currentUtcTime: currentUtcTimeData?.utcTime,
+                })
+            ) {
                 return;
             }
-        }
-        let pageImageUrls = [];
 
-        if (socialPostGalleryImages.length > 0) {
-            const ordered = new Array(socialPostGalleryImages.length).fill('');
-            const dataUrlJobs = [];
-            const fileJobs = [];
-
-            socialPostGalleryImages.forEach((img, idx) => {
-                const src = img?.src || '';
-                const label = getGalleryImageLabel(img, idx);
-                const kind = img?.mediaKind || null;
-                if (/^https?:\/\//i.test(src)) {
-                    ordered[idx] = src;
-                } else if (src.startsWith('data:')) {
-                    dataUrlJobs.push({ idx, src, label, mediaKind: kind });
-                } else if (img?.file) {
-                    fileJobs.push({ idx, file: img.file, label, mediaKind: kind });
-                }
-            });
-
-            const dataUrlValidationResults = await Promise.all(
-                dataUrlJobs.map(({ idx, src, label, mediaKind }) =>
-                    validateGalleryDataMedia(src, label, type, values?.postType, mediaKind).then((r) => ({
-                        idx,
-                        label,
-                        ...r,
-                    })),
-                ),
-            );
-            const fileValidationResults = await Promise.all(
-                fileJobs.map(({ idx, file, label, mediaKind }) =>
-                    validateGalleryFileMedia(file, label, type, values?.postType, mediaKind).then((r) => ({
-                        idx,
-                        label,
-                        ...r,
-                    })),
-                ),
-            );
-            const validationResults = [...dataUrlValidationResults, ...fileValidationResults];
-
-            const failedValidation = validationResults.filter((r) => !r.ok);
-            if (failedValidation.length > 0) {
-                setError('previewImage', {
+            let statusId = fetchedSocialPostStatusId;
+            if (values?.postOnAudience?.length === 0 && values?.postOnList?.length === 0) {
+                setError(`postOnAudience`, {
                     type: 'custom',
-                    message: failedValidation.map((r) => r.error).join(' · '),
+                    message: 'Select an audience',
                 });
                 return;
             }
-
-            const toUpload = validationResults.filter((r) => r.ok && r.blob);
-            const toUploadSorted = [...toUpload].sort((a, b) => a.idx - b.idx);
-
-            const pickRowUrl = (row) =>
-                row?.url || row?.filePath || row?.url || (typeof row === 'string' ? row : '');
-
-            const uploadAllMedia = async (batch, kindLabel) => {
-                if (!batch.length) return { status: true, data: [] };
-                const formData = new FormData();
-                batch.forEach((r) => {
-                    formData.append('File', r.blob, r.fileName);
+            if (values?.editorText?.length > getTextLimit(type, values?.postType)) {
+                setError(`editorText`, {
+                    type: 'custom',
+                    message: `Max. ${getTextLimit(type, values?.postType)}`,
                 });
-                const res = await dispatch(uploadSocialPostDocuments({ payload: formData }));
-                if (!res?.status) {
+                return;
+            }
+            if (values?.isBoostPost) {
+                let ageFrom = values?.boostPost?.ageFrom || 0 === 0;
+                if (ageFrom && !boostPostAry[1])
+                    setError('boostPost.ageFrom', { type: 'custom', message: SELECT_AGE_FROM });
+                let ageTo = values?.boostPost?.ageTo || 0 === 0;
+                if (ageTo && !boostPostAry[2])
+                    setError('boostPost.ageTo', { type: 'custom', message: SELECT_AGE_TO });
+                let country = _isEmpty(values?.boostPost?.country);
+                if (country && !boostPostAry[0])
+                    setError('boostPost.country', { type: 'custom', message: SELECT_COUNTRY });
+                if (boostPostAry?.length === 0 && ageFrom && ageTo && country) {
+                    setTargetPopover(true);
+                    setFocus('isBoostPost');
+                    return;
+                }
+            }
+            let pageImageUrls = [];
+
+            if (socialPostGalleryImages.length > 0) {
+                const ordered = new Array(socialPostGalleryImages.length).fill('');
+                const dataUrlJobs = [];
+                const fileJobs = [];
+
+                socialPostGalleryImages.forEach((img, idx) => {
+                    const src = img?.src || '';
+                    const label = getGalleryImageLabel(img, idx);
+                    const kind = img?.mediaKind || null;
+                    if (/^https?:\/\//i.test(src)) {
+                        ordered[idx] = src;
+                    } else if (src.startsWith('data:')) {
+                        dataUrlJobs.push({ idx, src, label, mediaKind: kind });
+                    } else if (img?.file) {
+                        fileJobs.push({ idx, file: img.file, label, mediaKind: kind });
+                    }
+                });
+
+                const dataUrlValidationResults = await Promise.all(
+                    dataUrlJobs.map(({ idx, src, label, mediaKind }) =>
+                        validateGalleryDataMedia(src, label, type, values?.postType, mediaKind).then((r) => ({
+                            idx,
+                            label,
+                            ...r,
+                        })),
+                    ),
+                );
+                const fileValidationResults = await Promise.all(
+                    fileJobs.map(({ idx, file, label, mediaKind }) =>
+                        validateGalleryFileMedia(file, label, type, values?.postType, mediaKind).then((r) => ({
+                            idx,
+                            label,
+                            ...r,
+                        })),
+                    ),
+                );
+                const validationResults = [...dataUrlValidationResults, ...fileValidationResults];
+
+                const failedValidation = validationResults.filter((r) => !r.ok);
+                if (failedValidation.length > 0) {
                     setError('previewImage', {
                         type: 'custom',
-                        message: `${res?.message || 'Upload failed'} (${kindLabel}). Files: ${batch
-                            .map((r) => r.label)
-                            .join(', ')}`,
-                    });
-                    return null;
-                }
-                const raw = res?.data;
-                const data = Array.isArray(raw)
-                    ? raw
-                    : raw && typeof raw === 'object'
-                        ? [raw]
-                        : typeof raw === 'string'
-                            ? [{ url: raw }]
-                            : [];
-                return { status: true, data };
-            };
-
-            const uploadedRes = await uploadAllMedia(toUploadSorted, 'media');
-            if (!uploadedRes) return;
-
-            const missingUrls = [];
-            toUploadSorted.forEach((r, j) => {
-                const url = pickRowUrl(uploadedRes.data[j]);
-                if (url) {
-                    ordered[r.idx] = url;
-                } else {
-                    const serverLabel = uploadedRes.data[j]?.originalName || uploadedRes.data[j]?.filename;
-                    missingUrls.push(serverLabel || r.label);
-                }
-            });
-
-            if (missingUrls.length > 0) {
-                setError('previewImage', {
-                    type: 'custom',
-                    message: `No URL returned for: ${missingUrls.join(', ')}`,
-                });
-                return;
-            }
-
-            if (ordered.some((u) => !u)) {
-                const missingLabels = ordered
-                    .map((u, i) =>
-                        !u ? getGalleryImageLabel(socialPostGalleryImages[i], i) : null,
-                    )
-                    .filter(Boolean);
-                setError('previewImage', {
-                    type: 'custom',
-                    message: `Missing image URL for: ${missingLabels.join(', ')}`,
-                });
-                return;
-            }
-            pageImageUrls = ordered;
-        } else if (previewName && String(previewImage || '').includes('base64')) {
-            const res = await dispatch(
-                imageUplodaSocilaPost({ fileName: previewName, fileByte: previewImage?.split(',')[1] }),
-            );
-            if (res?.status) {
-                const url =
-                    typeof res?.data === 'string'
-                        ? res?.data
-                        : res?.data?.url || res?.data?.filePath || res?.data?.data?.filePath;
-                if (url) {
-                    pageImageUrls = [url];
-                }
-            }
-        } else {
-            const single = (values.browserImage || values.previewImage || '').trim();
-            if (single) {
-                pageImageUrls = [single];
-            }
-        }
-
-        if (values?.postType?.id === 'pinterest_carousel_pin') {
-            const n = pageImageUrls.length || socialPostGalleryImages.length;
-            if (n < 2 || n > 5) {
-                setError('previewImage', {
-                    type: 'custom',
-                    message: 'Pinterest carousel pins require 2–5 images.',
-                });
-                return;
-            }
-        }
-        if (
-            (values?.postType?.id === 'pinterest_single_pin' || values?.postType?.id === 'pinterest_video_pin') &&
-            pageImageUrls.length === 0
-        ) {
-            setError('previewImage', {
-                type: 'custom',
-                message: 'Add media for this Pinterest post type before saving.',
-            });
-            setMediaStatus(true);
-            return;
-        }
-
-        if (!values?.schedule && typeButton !== 'confirmationSave') {
-            formTypeRef.current = typeButton;
-            setShowConfirmationStatus(true);
-            return;
-        }
-        if (isMediaRequired(type) && pageImageUrls.length === 0) {
-            setError(`previewImage`, {
-                type: 'custom',
-                message: `${getPlatformDisplayName(type)} requires media content to proceed`,
-            });
-            setMediaStatus(true);
-            return;
-        }
-        if (isValid || Object.keys(errors)?.length === 0) {
-            if (formData?.schedule !== '' && formData?.schedule !== null) {
-                const { adjustedStartDate, adjustedEndDate } = getTimezoneAdjustedDateRange(null, formData?.timezone);
-                const ScheduleStatus = checkScheduleDate(formData?.schedule, adjustedStartDate, adjustedEndDate);
-                if (ScheduleStatus) {
-                    setError(`schedule`, {
-                        type: 'custom',
-                        // message: 'Select a date and time later than ' + scheduleError + '.',
-                        message: CHECK_START_DATE_AND_END_DATE,
+                        message: failedValidation.map((r) => r.error).join(' · '),
                     });
                     return;
                 }
-                let scheduleError = campaignSchedule(
-                    formData?.schedule,
-                    formData?.timezone?.gmtOffset,
-                    statusId,
-                    currentUtcTimeData?.utcTime,
+
+                const toUpload = validationResults.filter((r) => r.ok && r.blob);
+                const toUploadSorted = [...toUpload].sort((a, b) => a.idx - b.idx);
+
+                const pickRowUrl = (row) =>
+                    row?.url || row?.filePath || row?.url || (typeof row === 'string' ? row : '');
+
+                const uploadAllMedia = async (batch, kindLabel) => {
+                    if (!batch.length) return { status: true, data: [] };
+                    const formData = new FormData();
+                    batch.forEach((r) => {
+                        formData.append('File', r.blob, r.fileName);
+                    });
+                    const res = await dispatch(uploadSocialPostDocuments({ payload: formData }));
+                    if (!res?.status) {
+                        setError('previewImage', {
+                            type: 'custom',
+                            message: `${res?.message || 'Upload failed'} (${kindLabel}). Files: ${batch
+                                .map((r) => r.label)
+                                .join(', ')}`,
+                        });
+                        return null;
+                    }
+                    const raw = res?.data;
+                    const data = Array.isArray(raw)
+                        ? raw
+                        : raw && typeof raw === 'object'
+                            ? [raw]
+                            : typeof raw === 'string'
+                                ? [{ url: raw }]
+                                : [];
+                    return { status: true, data };
+                };
+
+                const uploadedRes = await uploadAllMedia(toUploadSorted, 'media');
+                if (!uploadedRes) return;
+
+                const missingUrls = [];
+                toUploadSorted.forEach((r, j) => {
+                    const url = pickRowUrl(uploadedRes.data[j]);
+                    if (url) {
+                        ordered[r.idx] = url;
+                    } else {
+                        const serverLabel = uploadedRes.data[j]?.originalName || uploadedRes.data[j]?.filename;
+                        missingUrls.push(serverLabel || r.label);
+                    }
+                });
+
+                if (missingUrls.length > 0) {
+                    setError('previewImage', {
+                        type: 'custom',
+                        message: `No URL returned for: ${missingUrls.join(', ')}`,
+                    });
+                    return;
+                }
+
+                if (ordered.some((u) => !u)) {
+                    const missingLabels = ordered
+                        .map((u, i) =>
+                            !u ? getGalleryImageLabel(socialPostGalleryImages[i], i) : null,
+                        )
+                        .filter(Boolean);
+                    setError('previewImage', {
+                        type: 'custom',
+                        message: `Missing image URL for: ${missingLabels.join(', ')}`,
+                    });
+                    return;
+                }
+                pageImageUrls = ordered;
+            } else if (previewName && String(previewImage || '').includes('base64')) {
+                const res = await dispatch(
+                    imageUplodaSocilaPost({ fileName: previewName, fileByte: previewImage?.split(',')[1] }),
                 );
-                if (!scheduleError) {
-                    const cityTime = convertUserTimezoneToTarget(
-                        currentUtcTimeData?.utcTime
-                            ? new Date(currentUtcTimeData.utcTime.replace('Z', ''))
-                            : new Date(),
-                        '(GMT+00:00) ',
-                        formData?.timezone?.gmtOffset,
-                    );
-                    // Add 15 minutes to cityTime
-                    const cityTimeWithBuffer = new Date(cityTime);
-                    cityTimeWithBuffer.setMinutes(cityTimeWithBuffer.getMinutes() + 15);
-                    const formattedCityTime = cityTimeWithBuffer.toLocaleString();
-                    setError(`schedule`, {
+                if (res?.status) {
+                    const url =
+                        typeof res?.data === 'string'
+                            ? res?.data
+                            : res?.data?.url || res?.data?.filePath || res?.data?.data?.filePath;
+                    if (url) {
+                        pageImageUrls = [url];
+                    }
+                }
+            } else {
+                const single = (values.browserImage || values.previewImage || '').trim();
+                if (single) {
+                    pageImageUrls = [single];
+                }
+            }
+
+            if (values?.postType?.id === 'pinterest_carousel_pin') {
+                const n = pageImageUrls.length || socialPostGalleryImages.length;
+                if (n < 2 || n > 5) {
+                    setError('previewImage', {
                         type: 'custom',
-                        message: `Select a date & time later than ${formattedCityTime}`,
+                        message: 'Pinterest carousel pins require 2–5 images.',
                     });
                     return;
                 }
             }
-            const payload = buildPayloadForSaveData(
-                values,
-                userId,
-                clientId,
-                departmentId,
-                campaignId,
-                type,
-                campaignType,
-                timeZone,
-                boostPostAry,
-                locationAds,
-                {
-                    pageImageUrls,
-                    mediaIsVideo: inferPayloadMediaIsVideo(pageImageUrls, socialPostGalleryImages),
-                },
-            );
-            // debugger;
-            let res = await runSave(getAuthoringSaveButtonType(typeButton === 'save' ? 'save' : 'form'), () =>
-                dispatch(saveSocialPost(payload, { loading: false })),
-            );
-            if (res?.status) {
-                await handleSaveChannelsId();
-                const selectedAudience = Array.isArray(audience) ? audience : [];
-                dispatch(updateChannelAudiences(mergeChannelAudiences('SocialPost', selectedAudience, channelAudiences)));
-                const finalTypeButton = typeButton === 'confirmationSave' ? formTypeRef.current : typeButton;
-                if (finalTypeButton === 'save') {
-                    navigate('/communication');
-                } else {
-                    tabChange();
+            if (
+                (values?.postType?.id === 'pinterest_single_pin' || values?.postType?.id === 'pinterest_video_pin') &&
+                pageImageUrls.length === 0
+            ) {
+                setError('previewImage', {
+                    type: 'custom',
+                    message: 'Add media for this Pinterest post type before saving.',
+                });
+                setMediaStatus(true);
+                return;
+            }
+
+            if (!values?.schedule && typeButton !== 'confirmationSave') {
+                formTypeRef.current = typeButton;
+                setShowConfirmationStatus(true);
+                return;
+            }
+            if (isMediaRequired(type) && pageImageUrls.length === 0) {
+                setError(`previewImage`, {
+                    type: 'custom',
+                    message: `${getPlatformDisplayName(type)} requires media content to proceed`,
+                });
+                setMediaStatus(true);
+                return;
+            }
+            if (isValid || Object.keys(errors)?.length === 0) {
+                if (formData?.schedule !== '' && formData?.schedule !== null) {
+                    const { adjustedStartDate, adjustedEndDate } = getTimezoneAdjustedDateRange(null, formData?.timezone);
+                    const ScheduleStatus = checkScheduleDate(formData?.schedule, adjustedStartDate, adjustedEndDate);
+                    if (ScheduleStatus) {
+                        setError(`schedule`, {
+                            type: 'custom',
+                            // message: 'Select a date and time later than ' + scheduleError + '.',
+                            message: CHECK_START_DATE_AND_END_DATE,
+                        });
+                        return;
+                    }
+                    let scheduleError = campaignSchedule(
+                        formData?.schedule,
+                        formData?.timezone?.gmtOffset,
+                        statusId,
+                        currentUtcTimeData?.utcTime,
+                    );
+                    if (!scheduleError) {
+                        const cityTime = convertUserTimezoneToTarget(
+                            currentUtcTimeData?.utcTime
+                                ? new Date(currentUtcTimeData.utcTime.replace('Z', ''))
+                                : new Date(),
+                            '(GMT+00:00) ',
+                            formData?.timezone?.gmtOffset,
+                        );
+                        // Add 15 minutes to cityTime
+                        const cityTimeWithBuffer = new Date(cityTime);
+                        cityTimeWithBuffer.setMinutes(cityTimeWithBuffer.getMinutes() + 15);
+                        const formattedCityTime = cityTimeWithBuffer.toLocaleString();
+                        setError(`schedule`, {
+                            type: 'custom',
+                            message: `Select a date & time later than ${formattedCityTime}`,
+                        });
+                        return;
+                    }
+                }
+                const payload = buildPayloadForSaveData(
+                    values,
+                    userId,
+                    clientId,
+                    departmentId,
+                    campaignId,
+                    type,
+                    campaignType,
+                    timeZone,
+                    boostPostAry,
+                    locationAds,
+                    {
+                        pageImageUrls,
+                        mediaIsVideo: inferPayloadMediaIsVideo(pageImageUrls, socialPostGalleryImages),
+                    },
+                );
+                // debugger;
+                let res = await runSave(getAuthoringSaveButtonType(typeButton === 'save' ? 'save' : 'form'), () =>
+                    dispatch(saveSocialPost(payload, { loading: false })),
+                );
+                if (res?.status) {
+                    await handleSaveChannelsId();
+                    const selectedAudience = Array.isArray(audience) ? audience : [];
+                    dispatch(updateChannelAudiences(mergeChannelAudiences('SocialPost', selectedAudience, channelAudiences)));
+                    const finalTypeButton = typeButton === 'confirmationSave' ? formTypeRef.current : typeButton;
+                    if (finalTypeButton === 'save') {
+                        navigate('/communication');
+                    } else {
+                        tabChange();
+                    }
                 }
             }
-        }
         } finally {
             endSubmit();
         }
@@ -1383,6 +1380,7 @@ const SocialPost = ({ type, subChannelId }) => {
                     params: { payload: channelPayload },
                 })) || {};
             if (status) {
+                const { urlName, smartCode, blastSC } = data || {};
                 const text = editorText || '';
                 const smartURL = urlName + smartCode + blastSC;
                 const maxLength = getMaxLengthByType();
@@ -1716,63 +1714,63 @@ const SocialPost = ({ type, subChannelId }) => {
 
     return (
         <AuthoringChannelEditSkeletonGate channelId={channelId} isLoading={showEditSkeleton && isSavedChannel}>
-        <FormProvider {...methods}>
-            <div className="rsv-tabs-content position-relative allow-copy">
-                <div
-                    className={`box-design bd-top-border ${checkTrigger(locationAds?.campaignType, locationAds?.endDate)
-                        ? 'pe-none click-off'
-                        : !statusIdCheck(fetchedSocialPostStatusId)
-                            ? 'click-off'
-                            : ''
-                        }`}
-                >
-                    {!tabSmartLink_Flag &&
-                        tabSmartLink_Flag !== null &&
-                        statusIdCheck(fetchedSocialPostStatusId) && (
-                            <SmartLinkEnable
-                                onSave={() => setIsSmartLink(false)}
-                                onReject={() => {
-                                    dispatch(showTabsSmartlink(true));
-                                    setIsSmartLink(false);
-                                }}
-                            />
-                        )}
-                    <div className="form-group pt20">
-                        <Row>
-                            <Col sm={{ offset: 1, span: 2 }}>
-                                <label className="control-label-left">{POST_NAME}</label>
-                            </Col>
-                            <Col sm={6}>
-                                <RSInput
-                                    required
-                                    id="rs_SocialPost_postName"
-                                    control={control}
-                                    name={'postName'}
-                                    placeholder={POST_NAME}
-                                    onKeyDown={charNumUnderScore}
-                                    restrictSpecialChars
-                                    minLength={MIN_LENGTH}
-                                    rules={{
-                                        required: ENTER_SOCIAL_POST,
-                                        minLength: {
-                                            value: MIN_LENGTH,
-                                            message: MINLENGTH,
-                                        },
+            <FormProvider {...methods}>
+                <div className="rsv-tabs-content position-relative allow-copy">
+                    <div
+                        className={`box-design bd-top-border ${checkTrigger(locationAds?.campaignType, locationAds?.endDate)
+                            ? 'pe-none click-off'
+                            : !statusIdCheck(fetchedSocialPostStatusId)
+                                ? 'click-off'
+                                : ''
+                            }`}
+                    >
+                        {!tabSmartLink_Flag &&
+                            tabSmartLink_Flag !== null &&
+                            statusIdCheck(fetchedSocialPostStatusId) && (
+                                <SmartLinkEnable
+                                    onSave={() => setIsSmartLink(false)}
+                                    onReject={() => {
+                                        dispatch(showTabsSmartlink(true));
+                                        setIsSmartLink(false);
                                     }}
-                                    maxLength={MAX_LENGTH200}
                                 />
-                            </Col>
-                        </Row>
-                    </div>
-                    {/* {type === 'facebook' && ( */}
-                    <div className="form-group post_on_group">
-                        <Row>
-                            <Col sm={{ offset: 1, span: 2 }}>
-                                <label className="control-label-left">{POST_ON}</label>
-                            </Col>
-                            <Col sm={6}>
-                                <Row>
-                                    {/* {locationAds?.campaignType !== 'T' && type === 'facebook' && (
+                            )}
+                        <div className="form-group pt20">
+                            <Row>
+                                <Col sm={{ offset: 1, span: 2 }}>
+                                    <label className="control-label-left">{POST_NAME}</label>
+                                </Col>
+                                <Col sm={6}>
+                                    <RSInput
+                                        required
+                                        id="rs_SocialPost_postName"
+                                        control={control}
+                                        name={'postName'}
+                                        placeholder={POST_NAME}
+                                        onKeyDown={charNumUnderScore}
+                                        restrictSpecialChars
+                                        minLength={MIN_LENGTH}
+                                        rules={{
+                                            required: ENTER_SOCIAL_POST,
+                                            minLength: {
+                                                value: MIN_LENGTH,
+                                                message: MINLENGTH,
+                                            },
+                                        }}
+                                        maxLength={MAX_LENGTH200}
+                                    />
+                                </Col>
+                            </Row>
+                        </div>
+                        {/* {type === 'facebook' && ( */}
+                        <div className="form-group post_on_group">
+                            <Row>
+                                <Col sm={{ offset: 1, span: 2 }}>
+                                    <label className="control-label-left">{POST_ON}</label>
+                                </Col>
+                                <Col sm={6}>
+                                    <Row>
+                                        {/* {locationAds?.campaignType !== 'T' && type === 'facebook' && (
                                         <Fragment>
                                             <Col md={5} id="rs_SocialPost_postOnAudience">
                                                 <RSMultiSelect
@@ -1811,54 +1809,54 @@ const SocialPost = ({ type, subChannelId }) => {
                                             </Col>
                                         </Fragment>
                                     )} */}
-                                    <Col md={12} id="rs_SocialPost_postOnList">
-                                        <RSKendoDropDownList
-                                            data={socialMediaDropDown}
-                                            isLoading={postOnLoader.isLoading}
-                                            className={
-                                                audienceList?.postFirstItem?.length > 0 ||
-                                                    getValues('postOnAudience')?.length > 0
-                                                    ? 'click-off'
-                                                    : ''
-                                            }
-                                            control={control}
-                                            name={'postOnList'}
-                                            textField={'pageName'}
-                                            label={POST_ON}
-                                            dataItemKey={'socialMediaSetupId'}
-                                            handleChange={(e) => {
-                                                setAudienceList({ postSecondItem: [e.value], postFirstItem: [] });
-                                                clearErrors('postOnAudience');
-                                                clearErrors('postOnList');
-                                            }}
-                                            rules={
-                                                // (audienceList?.postSecondItem?.length !== 0 || type === 'facebook') &&
-                                                {
-                                                    required: SELECT_POST_ON,
+                                        <Col md={12} id="rs_SocialPost_postOnList">
+                                            <RSKendoDropDownList
+                                                data={socialMediaDropDown}
+                                                isLoading={postOnLoader.isLoading}
+                                                className={
+                                                    audienceList?.postFirstItem?.length > 0 ||
+                                                        getValues('postOnAudience')?.length > 0
+                                                        ? 'click-off'
+                                                        : ''
                                                 }
-                                            }
-                                            defaultValue={postOnList}
-                                            required
-                                            footer={
-                                                <RSDropdownFooterBtn
-                                                    title={ADD_POST}
-                                                    handleClick={() => {
-                                                        const state = {
-                                                            backPath: window.location.search,
-                                                            remoteDataSourceID: getRemoteSource(),
-                                                            fromCommunication: true,
-                                                        };
-                                                        localStorage.setItem('socialPostQuery', encodeUrl(state));
-                                                        const url = '/preferences/data-exchange';
-                                                        navigate(`${url}?q=${encodeUrl(state)}`, { state });
-                                                    }}
-                                                />
-                                            }
-                                        />
-                                    </Col>
-                                </Row>
-                            </Col>
-                            {/* <Col sm={1} className="fg-icons-wrapper pl0">
+                                                control={control}
+                                                name={'postOnList'}
+                                                textField={'pageName'}
+                                                label={POST_ON}
+                                                dataItemKey={'socialMediaSetupId'}
+                                                handleChange={(e) => {
+                                                    setAudienceList({ postSecondItem: [e.value], postFirstItem: [] });
+                                                    clearErrors('postOnAudience');
+                                                    clearErrors('postOnList');
+                                                }}
+                                                rules={
+                                                    // (audienceList?.postSecondItem?.length !== 0 || type === 'facebook') &&
+                                                    {
+                                                        required: SELECT_POST_ON,
+                                                    }
+                                                }
+                                                defaultValue={postOnList}
+                                                required
+                                                footer={
+                                                    <RSDropdownFooterBtn
+                                                        title={ADD_POST}
+                                                        handleClick={() => {
+                                                            const state = {
+                                                                backPath: window.location.search,
+                                                                remoteDataSourceID: getRemoteSource(),
+                                                                fromCommunication: true,
+                                                            };
+                                                            localStorage.setItem('socialPostQuery', encodeUrl(state));
+                                                            const url = '/preferences/data-exchange';
+                                                            navigate(`${url}?q=${encodeUrl(state)}`, { state });
+                                                        }}
+                                                    />
+                                                }
+                                            />
+                                        </Col>
+                                    </Row>
+                                </Col>
+                                {/* <Col sm={1} className="fg-icons-wrapper pl0">
                                 <div className="fg-icons">
                                     {type !== 'instagram' && (
                                         <div className="d-flex">
@@ -1875,24 +1873,24 @@ const SocialPost = ({ type, subChannelId }) => {
                                     )}
                                 </div>
                             </Col> */}
-                        </Row>
-                    </div>
-                    <div className="form-group">
-                        <Row>
-                            <Col sm={{ offset: 1, span: 10 }}>
-                                <PostTypeVisualSelect
-                                    options={postTypeOptions}
-                                    value={postType}
-                                    onSelect={handlePostTypeCardSelect}
-                                    lockOtherOptions={hasUserSelectedPostType && !!postType}
-                                    showReset={hasUserSelectedPostType && !!postType}
-                                    onReset={handlePostTypeReset}
-                                />
-                            </Col>
-                        </Row>
-                    </div>
-                    {/* )} */}
-                    {/* {type === 'facebook' && (
+                            </Row>
+                        </div>
+                        <div className="form-group">
+                            <Row>
+                                <Col sm={{ offset: 1, span: 10 }}>
+                                    <PostTypeVisualSelect
+                                        options={postTypeOptions}
+                                        value={postType}
+                                        onSelect={handlePostTypeCardSelect}
+                                        lockOtherOptions={hasUserSelectedPostType && !!postType}
+                                        showReset={hasUserSelectedPostType && !!postType}
+                                        onReset={handlePostTypeReset}
+                                    />
+                                </Col>
+                            </Row>
+                        </div>
+                        {/* )} */}
+                        {/* {type === 'facebook' && (
                         <div className="form-group fg-wl-textfield">
                             <Row>
                                 <Col sm={{ offset: 1, span: 2 }}>
@@ -1914,64 +1912,64 @@ const SocialPost = ({ type, subChannelId }) => {
                             </Row>
                         </div>
                     )} */}
-                    {isBoostPost && (
-                        <div className="form-group">
-                            <Row>
-                                <Col sm={{ offset: 1, span: 2 }}>
-                                    <label className="control-label-left">{TARGET}</label>
-                                </Col>
-                                <Col sm={6}>
-                                    <div className="rs-communication-target-wrapper">
-                                        <div className="mt5 d-flex  gap-1">
-                                            <i
-                                                className={`${communication_target_medium} color-primary-blue icon-md`}
-                                                onClick={() => setTargetPopover(!targetPopover)}
-                                                id="rs_SocialPost_communication_target"
-                                            />
-                                            <small className="color-primary-red">{isBoostError}</small>
+                        {isBoostPost && (
+                            <div className="form-group">
+                                <Row>
+                                    <Col sm={{ offset: 1, span: 2 }}>
+                                        <label className="control-label-left">{TARGET}</label>
+                                    </Col>
+                                    <Col sm={6}>
+                                        <div className="rs-communication-target-wrapper">
+                                            <div className="mt5 d-flex  gap-1">
+                                                <i
+                                                    className={`${communication_target_medium} color-primary-blue icon-md`}
+                                                    onClick={() => setTargetPopover(!targetPopover)}
+                                                    id="rs_SocialPost_communication_target"
+                                                />
+                                                <small className="color-primary-red">{isBoostError}</small>
+                                            </div>
+                                            {targetPopover && (
+                                                <BoostPost
+                                                    isDirty={formDirty}
+                                                    isValid={isValid}
+                                                    boostPostAry={boostPostAry}
+                                                    isBoostPostSaved={isBoostPostSaved}
+                                                    handleBoostPostSaved={(data) => {
+                                                        setBoostPostSaved(true);
+                                                        setBoostPostAry(data);
+                                                    }}
+                                                    handleClose={(status) => {
+                                                        setTargetPopover(false);
+                                                    }}
+                                                />
+                                            )}
                                         </div>
-                                        {targetPopover && (
-                                            <BoostPost
-                                                isDirty={formDirty}
-                                                isValid={isValid}
-                                                boostPostAry={boostPostAry}
-                                                isBoostPostSaved={isBoostPostSaved}
-                                                handleBoostPostSaved={(data) => {
-                                                    setBoostPostSaved(true);
-                                                    setBoostPostAry(data);
-                                                }}
-                                                handleClose={(status) => {
-                                                    setTargetPopover(false);
-                                                }}
-                                            />
-                                        )}
-                                    </div>
+                                    </Col>
+                                </Row>
+                            </div>
+                        )}
+                        {isBoostpostSaved && (
+                            <Row className="mb24">
+                                <Col md={{ offset: 4 }}>
+                                    <span>{COUNTRY} </span>
+                                    <span className="color-primary-blue">{_get(boostPost, 'country.country', '')},</span>
+                                    <span className="ml10">{CITY} </span>
+                                    <span className="color-primary-blue">{_get(boostPost, 'city', '')},</span>
+                                    <span className="ml10">{AGE} </span>
+                                    <span className="color-primary-blue">
+                                        {_get(boostPost, 'ageFrom', '')} - {_get(boostPost, 'ageTo', '')},
+                                    </span>
+                                    <span className="ml10">{GENDER} </span>
+                                    <span className="color-primary-blue">{_get(boostPost, 'gender', '')},</span>
+                                    <i
+                                        id="rs_data_pencil_edit"
+                                        className={`${pencil_edit_medium} icon-md color-primary-blue ml10`}
+                                        onClick={() => setTargetPopover(true)}
+                                    />
                                 </Col>
                             </Row>
-                        </div>
-                    )}
-                    {isBoostpostSaved && (
-                        <Row className="mb24">
-                            <Col md={{ offset: 4 }}>
-                                <span>{COUNTRY} </span>
-                                <span className="color-primary-blue">{_get(boostPost, 'country.country', '')},</span>
-                                <span className="ml10">{CITY} </span>
-                                <span className="color-primary-blue">{_get(boostPost, 'city', '')},</span>
-                                <span className="ml10">{AGE} </span>
-                                <span className="color-primary-blue">
-                                    {_get(boostPost, 'ageFrom', '')} - {_get(boostPost, 'ageTo', '')},
-                                </span>
-                                <span className="ml10">{GENDER} </span>
-                                <span className="color-primary-blue">{_get(boostPost, 'gender', '')},</span>
-                                <i
-                                    id="rs_data_pencil_edit"
-                                    className={`${pencil_edit_medium} icon-md color-primary-blue ml10`}
-                                    onClick={() => setTargetPopover(true)}
-                                />
-                            </Col>
-                        </Row>
-                    )}
-                    {/* <div className="form-group">
+                        )}
+                        {/* <div className="form-group">
                         <Row>
                             <Col sm={4} className="text-right">
                                 <label className="control-label-left">Enter your post text</label>
@@ -2067,8 +2065,8 @@ const SocialPost = ({ type, subChannelId }) => {
                         </Row>
                     </div> */}
 
-                    <div className="pt15 pb41 ">
-                        {/* <div className="form-group mb0">
+                        <div className="pt15 pb41 ">
+                            {/* <div className="form-group mb0">
                             <Row>
                                 <Col sm={{ offset: 1, span: 10 }}>
                                     <div className="rs-live-preview-wrapper mt30">
@@ -2077,7 +2075,7 @@ const SocialPost = ({ type, subChannelId }) => {
                                 </Col>
                             </Row>
                         </div> */}
-                        {/* <Row>
+                            {/* <Row>
                             <Col sm={{ offset: 1, span: 3 }} className="mb8">
                                 <label className="control-label-left">{ENTER_YOUR_POST_TEXT}</label>
                             </Col>
@@ -2094,39 +2092,38 @@ const SocialPost = ({ type, subChannelId }) => {
                                     <div className="rstcw-top-icons">
                                         <ul className="float-left">
                                             <li className="emoji-top">
-                                                <RSTooltip text="Insert emoji">
                                                     <EmojiPicker
                                                         onEmojiSelect={(e) => {
                                                             handleChange(e?.native, 'static', 'emoji');
                                                         }}
                                                         isTextEditor
+                                                        tooltipText= {"Insert emoji"}
                                                     />
-                                                </RSTooltip>
                                             </li>
 
-                                            <li
-                                                className={
-                                                    !canOpenSocialPostMediaUploadFromToolbar
-                                                        ? 'click-off opacity-50'
-                                                        : ''
-                                                }
-                                            >
-                                                <RSTooltip text="Upload media" position="top">
-                                                    <i
-                                                        id="rs_social_post_toolbar_upload_media"
-                                                        role="button"
-                                                        tabIndex={0}
-                                                        className={`${builder_upload_medium} icon-md color-primary-blue`}
-                                                        onClick={() => openSocialPostMediaUploadFromToolbar()}
-                                                        onKeyDown={(e) => {
-                                                            if (e.key === 'Enter' || e.key === ' ') {
-                                                                e.preventDefault();
-                                                                openSocialPostMediaUploadFromToolbar();
-                                                            }
-                                                        }}
-                                                    />
-                                                </RSTooltip>
-                                            </li>
+                                                <li
+                                                    className={
+                                                        !canOpenSocialPostMediaUploadFromToolbar
+                                                            ? 'click-off opacity-50'
+                                                            : ''
+                                                    }
+                                                >
+                                                    <RSTooltip text="Upload media" position="top">
+                                                        <i
+                                                            id="rs_social_post_toolbar_upload_media"
+                                                            role="button"
+                                                            tabIndex={0}
+                                                            className={`${builder_upload_medium} icon-md color-primary-blue`}
+                                                            onClick={() => openSocialPostMediaUploadFromToolbar()}
+                                                            onKeyDown={(e) => {
+                                                                if (e.key === 'Enter' || e.key === ' ') {
+                                                                    e.preventDefault();
+                                                                    openSocialPostMediaUploadFromToolbar();
+                                                                }
+                                                            }}
+                                                        />
+                                                    </RSTooltip>
+                                                </li>
 
                                             <li>
                                                 <RSTooltip text="Insert SmartLink">
@@ -2168,9 +2165,9 @@ const SocialPost = ({ type, subChannelId }) => {
                                             </li>
                                         </ul>
                                         <ul className="float-right position-relative right-10 preview-right">
-                                            <RSTooltip position="top" text={PREVIEW}>
+                                            <RSTooltip position="top" text={PREVIEW} >
                                                 <li
-                                                    className={`${eye_medium} icon-md ${editorText?.length > 0 ||
+                                                    className={`${eye_medium} icon-md cp ${editorText?.length > 0 ||
                                                         getValues('browserImage') ||
                                                         getValues('previewImage') ||
                                                         socialPostGalleryImages.length > 0
@@ -2388,25 +2385,25 @@ const SocialPost = ({ type, subChannelId }) => {
                                         </>
                                     </RSSocialPostPreview>
 
-                                    {
-                                        postType &&
-                                        <div className="rs-social-post-preview-column__spec-footer mt5 w-100">
-                                            <small className="d-flex align-items-center float-end">Info
-                                                <RSTooltip text="Info" className="lh0">
-                                                    <i
-                                                        className={`${circle_info_medium} icon-md color-primary-blue ml5`}
-                                                        aria-hidden
-                                                        onClick={() => setCarouselSpecModalOpen(true)}
-                                                    />
-                                                </RSTooltip>
+                                        {
+                                            postType &&
+                                            <div className="rs-social-post-preview-column__spec-footer mt5 w-100">
+                                                <small className="d-flex align-items-center float-end">Info
+                                                    <RSTooltip text="Info" className="lh0">
+                                                        <i
+                                                            className={`${circle_info_medium} icon-md color-primary-blue ml5`}
+                                                            aria-hidden
+                                                            onClick={() => setCarouselSpecModalOpen(true)}
+                                                        />
+                                                    </RSTooltip>
 
-                                            </small>
+                                                </small>
 
-                                        </div>
-                                    }
-                                </div>
-                                {/* <div className={`rs-social-post-live-preview-wrapper rssplp-${type}`}> */}
-                                {/* <div className="rs-social-live-preview-content">
+                                            </div>
+                                        }
+                                    </div>
+                                    {/* <div className={`rs-social-post-live-preview-wrapper rssplp-${type}`}> */}
+                                    {/* <div className="rs-social-live-preview-content">
                                         <div className="rs-social-live-preview-image">
                                             {imagePreviewStatus && <Preview {...previewProps} />}
                                             {getValues('browserImage') !== undefined && (
@@ -2414,13 +2411,13 @@ const SocialPost = ({ type, subChannelId }) => {
                                             )}
                                         </div>
                                     </div> */}
-                                {/* </div> */}
-                            </Col>
-                            {/* /Right column ends */}
-                        </Row>
-                    </div>
+                                    {/* </div> */}
+                                </Col>
+                                {/* /Right column ends */}
+                            </Row>
+                        </div>
 
-                    {/* {type !== 'twitter' && (
+                        {/* {type !== 'twitter' && (
                         <div className="form-group d-none">
                             <Row>
                                 <Col sm={{ offset: 1, span: 2 }}>
@@ -2462,7 +2459,7 @@ const SocialPost = ({ type, subChannelId }) => {
                             </Row>
                         </div>
                     )} */}
-                    {/* <div className="form-group d-none">
+                        {/* <div className="form-group d-none">
                         <Row>
                             <Col sm={{ offset: 1, span: 2 }}>
                                 <label className="control-label-left">#{TRENDING_TOPICS}</label>
@@ -2504,182 +2501,183 @@ const SocialPost = ({ type, subChannelId }) => {
                             isRequired={false}
                             isRfaEnabled={false}
                             disableAutoScroll={true}
+                            rootClassName = {'mb30'}
                         />
                     )}
                 </div>
 
-                <div className="buttons-holder">
-                    <RSSecondaryButton
-                        onClick={() => {
-                            navigate('/communication');
-                        }}
-                        id="rs_SocialPost_Cancel"
-                    >
-                        {CANCEL}
-                    </RSSecondaryButton>
-                    <RSSecondaryButton
-                        className={`color-primary-blue${checkTrigger(location?.campaignType, location?.endDate)
-                            ? 'pe-none click-off'
-                            : !statusIdCheck(fetchedSocialPostStatusId)
+                    <div className="buttons-holder">
+                        <RSSecondaryButton
+                            onClick={() => {
+                                navigate('/communication');
+                            }}
+                            id="rs_SocialPost_Cancel"
+                        >
+                            {CANCEL}
+                        </RSSecondaryButton>
+                        <RSSecondaryButton
+                            className={`color-primary-blue${checkTrigger(location?.campaignType, location?.endDate)
                                 ? 'pe-none click-off'
-                                : ''
-                            } ${Object.keys(errors)?.length > 0 ? 'click-off' : ''} ${isPastPlanDurationBlocked ? PAST_PLAN_DURATION_CLICK_OFF_CLASS : ''}`}
-                        onClick={() => {
-                            if (isPastPlanDurationBlocked) return;
-                            handleSubmit((data) => postSaveSocialPost(data, 'save'))();
-                        }}
-                        name="saveButton"
-                        id="rs_SocialPost_Save"
-                        isLoading={isSaveLoading}
-                        blockBodyPointerEvents
-                        disabledClass={isSubmitting ? 'pe-none click-off' : ''}
-                    >
-                        {SAVE}
-                    </RSSecondaryButton>
+                                : !statusIdCheck(fetchedSocialPostStatusId)
+                                    ? 'pe-none click-off'
+                                    : ''
+                                } ${Object.keys(errors)?.length > 0 ? 'click-off' : ''} ${isPastPlanDurationBlocked ? PAST_PLAN_DURATION_CLICK_OFF_CLASS : ''}`}
+                            onClick={() => {
+                                if (isPastPlanDurationBlocked) return;
+                                handleSubmit((data) => postSaveSocialPost(data, 'save'))();
+                            }}
+                            name="saveButton"
+                            id="rs_SocialPost_Save"
+                            isLoading={isSaveLoading}
+                            blockBodyPointerEvents
+                            disabledClass={isSubmitting ? 'pe-none click-off' : ''}
+                        >
+                            {SAVE}
+                        </RSSecondaryButton>
 
-                    <RSPrimaryButton
-                        className={` ${checkTrigger(location?.campaignType, location?.endDate)
-                            ? 'pe-none click-off'
-                            : !statusIdCheck(fetchedSocialPostStatusId)
+                        <RSPrimaryButton
+                            className={` ${checkTrigger(location?.campaignType, location?.endDate)
                                 ? 'pe-none click-off'
-                                : ''
-                            } ${Object.keys(errors)?.length > 0 ? 'click-off' : ''} ${isDirty && Object.keys(errors)?.length > 0 ? 'click-off' : ''
-                            } ${isPastPlanDurationBlocked ? PAST_PLAN_DURATION_CLICK_OFF_CLASS : ''}`}
-                        isLoading={isNextLoading}
-                        blockBodyPointerEvents
-                        disabledClass={isSubmitting ? 'pe-none click-off' : ''}
-                        onClick={() => {
-                            if (isPastPlanDurationBlocked) return;
-                            if (!isDirty && !isValid) {
-                                setNavigate_confirm(true);
-                            } else {
-                                handleSubmit((data) => postSaveSocialPost(data, 'next'))();
-                            }
-                        }}
-                        name="saveButton"
-                        id="rs_SocialPost_Next"
-                    >
-                        {NEXT}
-                    </RSPrimaryButton>
+                                : !statusIdCheck(fetchedSocialPostStatusId)
+                                    ? 'pe-none click-off'
+                                    : ''
+                                } ${Object.keys(errors)?.length > 0 ? 'click-off' : ''} ${isDirty && Object.keys(errors)?.length > 0 ? 'click-off' : ''
+                                } ${isPastPlanDurationBlocked ? PAST_PLAN_DURATION_CLICK_OFF_CLASS : ''}`}
+                            isLoading={isNextLoading}
+                            blockBodyPointerEvents
+                            disabledClass={isSubmitting ? 'pe-none click-off' : ''}
+                            onClick={() => {
+                                if (isPastPlanDurationBlocked) return;
+                                if (!isDirty && !isValid) {
+                                    setNavigate_confirm(true);
+                                } else {
+                                    handleSubmit((data) => postSaveSocialPost(data, 'next'))();
+                                }
+                            }}
+                            name="saveButton"
+                            id="rs_SocialPost_Next"
+                        >
+                            {NEXT}
+                        </RSPrimaryButton>
+                    </div>
                 </div>
-            </div>
-            {/* //Modals*/}
+                {/* //Modals*/}
 
-            <RSConfirmationModal
-                header={RESET}
-                show={isRefresh}
-                text={ARE_YOU_SURE_WANT_TO_RESET}
-                handleConfirm={() => {
-                    setAudienceList({ postSecondItem: [], postFirstItem: [] });
-                    setRefresh(false);
-                    reset((formState) => ({
-                        ...formState,
-                        postOnList: [],
-                        postOnAudience: [],
-                    }));
-                }}
-                handleClose={() => setRefresh(false)}
-            />
-            <PreviewModal
-                type={type}
-                previewFlag={previewFlag}
-                setPreviewFlage={setPreviewFlage}
-                editorText={editorText}
-                mode={locationAds?.isEditable}
-                previewImage={String(getValues('browserImage') || getValues('previewImage') || previewImage || '').trim()}
-                galleryImages={socialPostGalleryImages}
-                previewLayout={
-                    type === 'instagram' || type === 'pinterest'
-                        ? 'instagram'
-                        : type === 'facebook'
-                            ? 'facebook'
-                            : type === 'linkedIn'
-                                ? 'linkedIn'
-                                : 'default'
-                }
-                previewMediaType={
-                    imageUploadVariant === 'video' ? 'video' : imageUploadVariant === 'pdf' ? 'pdf' : 'image'
-                }
-                scheduleDate={schedule}
-            />
-            <CarouselMultiImageSpecModal
-                show={carouselSpecModalOpen}
-                onClose={() => setCarouselSpecModalOpen(false)}
-                channelType={type}
-                postType={postType}
-            />
-            <RSConfirmationModal
-                show={navigate_confirm}
-                text={IGNORE_CHANNEL}
-                primaryButtonText={OK}
-                handleClose={() => {
-                    setNavigate_confirm(false);
-                }}
-                handleConfirm={() => {
-                    tabChange();
-                    setNavigate_confirm(false);
-                }}
-            />
-            <RSConfirmationModal
-                show={mediaStatus}
-                text={'Upload media content to proceed.'}
-                primaryButtonText={OK}
-                handleClose={() => {
-                    setMediaStatus(false);
-                }}
-                handleConfirm={() => {
-                    setMediaStatus(false);
-                }}
-                secondaryButton={false}
-            />
-            <RSConfirmationModal
-                show={showConfirmationStatus}
-                text={COMMUNICATION_SCHEDULED}
-                primaryButtonText={SAVE}
-                handleClose={() => {
-                    setShowConfirmationStatus(false);
-                }}
-                handleConfirm={() => {
-                    handleSubmit((data) => postSaveSocialPost(data, 'confirmationSave'))();
-                    setShowConfirmationStatus(false);
-                }}
-            />
-            <RSConfirmationModal
-                show={postTypeMediaSwitchConfirm}
-                header={CONFIRM}
-                text={
-                    'Switching post type will remove uploaded images, videos, or documents. Continue?'
-                }
-                primaryButtonText={OK}
-                secondaryButtonText={CANCEL}
-                handleClose={() => {
-                    setPostTypeMediaSwitchConfirm(false);
-                    setPendingPostTypeOption(null);
-                }}
-                handleConfirm={() => {
-                    clearUploadedSocialMedia();
-                    const nextOpt = pendingPostTypeOption;
-                    if (nextOpt && isPostTypeOptionSelectable(nextOpt)) {
-                        setValue('postType', nextOpt, { shouldDirty: true, shouldTouch: true });
-                        setHasUserSelectedPostType(true);
-                        if (shouldAutoOpenSocialPostMediaUploadOnPostTypeSelect(nextOpt.id)) {
-                            if (isSingleImageSocialPostTypeId(nextOpt.id)) {
-                                setSocialPostAutoOpenSingleUpload(true);
-                            } else if (isMultiSlideSocialPostTypeId(nextOpt.id)) {
-                                setSocialPostAutoOpenMultiUploadKey((n) => n + 1);
-                            } else if (isVideoSocialPostTypeId(nextOpt.id)) {
-                                setSocialPostAutoOpenVideoUpload(true);
-                            } else if (isPdfSocialPostTypeId(nextOpt.id)) {
-                                setSocialPostAutoOpenPdfUpload(true);
+                <RSConfirmationModal
+                    header={RESET}
+                    show={isRefresh}
+                    text={ARE_YOU_SURE_WANT_TO_RESET}
+                    handleConfirm={() => {
+                        setAudienceList({ postSecondItem: [], postFirstItem: [] });
+                        setRefresh(false);
+                        reset((formState) => ({
+                            ...formState,
+                            postOnList: [],
+                            postOnAudience: [],
+                        }));
+                    }}
+                    handleClose={() => setRefresh(false)}
+                />
+                <PreviewModal
+                    type={type}
+                    previewFlag={previewFlag}
+                    setPreviewFlage={setPreviewFlage}
+                    editorText={editorText}
+                    mode={locationAds?.isEditable}
+                    previewImage={String(getValues('browserImage') || getValues('previewImage') || previewImage || '').trim()}
+                    galleryImages={socialPostGalleryImages}
+                    previewLayout={
+                        type === 'instagram' || type === 'pinterest'
+                            ? 'instagram'
+                            : type === 'facebook'
+                                ? 'facebook'
+                                : type === 'linkedIn'
+                                    ? 'linkedIn'
+                                    : 'default'
+                    }
+                    previewMediaType={
+                        imageUploadVariant === 'video' ? 'video' : imageUploadVariant === 'pdf' ? 'pdf' : 'image'
+                    }
+                    scheduleDate={schedule}
+                />
+                <CarouselMultiImageSpecModal
+                    show={carouselSpecModalOpen}
+                    onClose={() => setCarouselSpecModalOpen(false)}
+                    channelType={type}
+                    postType={postType}
+                />
+                <RSConfirmationModal
+                    show={navigate_confirm}
+                    text={IGNORE_CHANNEL}
+                    primaryButtonText={OK}
+                    handleClose={() => {
+                        setNavigate_confirm(false);
+                    }}
+                    handleConfirm={() => {
+                        tabChange();
+                        setNavigate_confirm(false);
+                    }}
+                />
+                <RSConfirmationModal
+                    show={mediaStatus}
+                    text={'Upload media content to proceed.'}
+                    primaryButtonText={OK}
+                    handleClose={() => {
+                        setMediaStatus(false);
+                    }}
+                    handleConfirm={() => {
+                        setMediaStatus(false);
+                    }}
+                    secondaryButton={false}
+                />
+                <RSConfirmationModal
+                    show={showConfirmationStatus}
+                    text={COMMUNICATION_SCHEDULED}
+                    primaryButtonText={SAVE}
+                    handleClose={() => {
+                        setShowConfirmationStatus(false);
+                    }}
+                    handleConfirm={() => {
+                        handleSubmit((data) => postSaveSocialPost(data, 'confirmationSave'))();
+                        setShowConfirmationStatus(false);
+                    }}
+                />
+                <RSConfirmationModal
+                    show={postTypeMediaSwitchConfirm}
+                    header={CONFIRM}
+                    text={
+                        'Switching post type will remove uploaded images, videos, or documents. Continue?'
+                    }
+                    primaryButtonText={OK}
+                    secondaryButtonText={CANCEL}
+                    handleClose={() => {
+                        setPostTypeMediaSwitchConfirm(false);
+                        setPendingPostTypeOption(null);
+                    }}
+                    handleConfirm={() => {
+                        clearUploadedSocialMedia();
+                        const nextOpt = pendingPostTypeOption;
+                        if (nextOpt && isPostTypeOptionSelectable(nextOpt)) {
+                            setValue('postType', nextOpt, { shouldDirty: true, shouldTouch: true });
+                            setHasUserSelectedPostType(true);
+                            if (shouldAutoOpenSocialPostMediaUploadOnPostTypeSelect(nextOpt.id)) {
+                                if (isSingleImageSocialPostTypeId(nextOpt.id)) {
+                                    setSocialPostAutoOpenSingleUpload(true);
+                                } else if (isMultiSlideSocialPostTypeId(nextOpt.id)) {
+                                    setSocialPostAutoOpenMultiUploadKey((n) => n + 1);
+                                } else if (isVideoSocialPostTypeId(nextOpt.id)) {
+                                    setSocialPostAutoOpenVideoUpload(true);
+                                } else if (isPdfSocialPostTypeId(nextOpt.id)) {
+                                    setSocialPostAutoOpenPdfUpload(true);
+                                }
                             }
                         }
-                    }
-                    setPostTypeMediaSwitchConfirm(false);
-                    setPendingPostTypeOption(null);
-                }}
-            />
-            {getWarningPopupMessage(failureApiErrors, dispatch, handleErrClose)}
-        </FormProvider>
+                        setPostTypeMediaSwitchConfirm(false);
+                        setPendingPostTypeOption(null);
+                    }}
+                />
+                {getWarningPopupMessage(failureApiErrors, dispatch, handleErrClose)}
+            </FormProvider>
         </AuthoringChannelEditSkeletonGate>
     );
 };

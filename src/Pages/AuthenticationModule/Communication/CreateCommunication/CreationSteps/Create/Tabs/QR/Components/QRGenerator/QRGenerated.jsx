@@ -1,5 +1,5 @@
 import { DOWNLOAD_QR_POPHOVER_TEXT, QR_POPHOVER_TEXT } from 'Constants/GlobalConstant/Placeholders';
-import { circle_question_mark_mini, copy_medium, download_medium } from 'Constants/GlobalConstant/Glyphicons';
+import { circle_question_mark_mini, copy_medium, download_medium, circle_tick_medium } from 'Constants/GlobalConstant/Glyphicons';
 import { useEffect, useRef, useState } from 'react';
 import { Col } from 'react-bootstrap';
 import { useFormContext } from 'react-hook-form';
@@ -10,6 +10,7 @@ import RSTooltip from 'Components/RSTooltip';
 import RSSwitch from 'Components/FormFields/RSSwitch';
 import *  as placeholder  from 'Constants/GlobalConstant/Placeholders';
 import TruncatedCell from 'Components/RSKendoGrid/TruncateCell';
+// import { UpdateState } from 'Utils/modules/misc';
 
 const QRGenrated = ({
     range,
@@ -319,7 +320,7 @@ const QRGenrated = ({
     }, []);
     return (
         <div
-            className={`bg-tertiary-blue p10 theme-radius ${
+            className={`bg-tertiary-blue p19 theme-radius ${
                 tab === 'url' ? (!cmnURL && !value ? 'click-off' : '') : !value ? 'click-off' : ''
             }`}
         >
@@ -343,7 +344,7 @@ const QRGenrated = ({
             </figure>
             <hr></hr>
             <div className="my30">
-                <div className='align-items-center d-flex mb15'>
+                <div className='align-items-center d-flex justify-content-between mb15'>
                     <span className="mr10">Short URL</span>
                     <div className={`d-flex align-items-center ${tab === 'sms' ? 'click-off pe-none' : ''}`}>
                         <RSSwitch
@@ -369,13 +370,7 @@ const QRGenrated = ({
                             //     }
                             // }}
                         />
-                        {/* <RSPPophover pophover={'Selected short URL included to download as format.'}>
-                            <i className={`${circle_question_mark_mini} icon-xs color-primary-blue`} id='circle_question_mark'></i>
-                        </RSPPophover> */}
-
-                      
-                    </div>
-                    <RSPPophover
+                        <RSPPophover
                             pophover={
                                 <ul>
                                     <li>
@@ -389,6 +384,10 @@ const QRGenrated = ({
                                 id="circle_question_mark"
                             ></i>
                         </RSPPophover>
+
+                      
+                    </div>
+                   
                 </div>
 
                 {/* <Row className="pb10">
@@ -412,16 +411,14 @@ const QRGenrated = ({
                     <div className="d-flex align-items-center justify-content-between mb15 p0">
                         <Col sm={10} className='border-secondary border-bottom pr0'>
                             {/* {short_url && !isCopied && <span>{cmnsURLSML ? cmnsURLSML : cmnURL}</span>} */}
-                            {short_url &&
-                                !isCopied &&
+                            {short_url && (
                                  <TruncatedCell value={cmnsURLSML ? cmnsURLSML : cmnURL} noTable={true} />
-                               }
-                            {isCopied && <small className="color-primary-green lh20">Copied successfully</small>}
+                            )}
                         </Col>
                         <Col sm={2} className="text-right">
                             <div className="rs-qr-link-copy position-relative right8 top4">
                                 {/* Copy{' '} */}
-                                <RSTooltip text={'Copy'} className="lh0">
+                                <RSTooltip text={isCopied ? 'Copied successfully' : 'Copy'} className="lh0">
                                     <i
                                         onClick={async () => {
                                             if ('clipboard' in navigator) {
@@ -443,7 +440,7 @@ const QRGenrated = ({
                                                                                                     }
                                             }
                                         }}
-                                        className={`${copy_medium} color-primary-blue icon-md`}
+                                        className={isCopied ? `${circle_tick_medium} color-primary-green icon-md` : `${copy_medium} color-primary-blue icon-md`}
                                     ></i>
                                 </RSTooltip>
                             </div>
@@ -451,13 +448,13 @@ const QRGenrated = ({
                     </div>
                 )}
             </div>
-            <div className="d-flex align-items-center">
-                <span className="mr5">Image size</span>
+            <div className="d-flex align-items-center mb10">
+                <span className="">Image size</span>
                 {/* <RSPPophover pophover={'Specify the pixel dimensions for the download'}>
                     <i className={`${circle_question_mark_mini} icon-xs  color-primary-blue`} id='circle_question_mark'></i>
                 </RSPPophover> */}
             </div>
-            <Col sm={10} className="position-relative">
+            <Col sm={10} className="position-relative d-flex align-items-center gap-3 w-100 ">
                 <input
                     type="range"
                     min="200"
@@ -478,12 +475,12 @@ const QRGenrated = ({
                     }
                 >
                     <i
-                        className={`${circle_question_mark_mini} icon-xs color-primary-blue position-absolute mt8 right-23`}
+                        className={`${circle_question_mark_mini} icon-xs color-primary-blue `}
                         id="circle_question_mark"
                     ></i>
                 </RSPPophover>
             </Col>
-            <small className="position-relative top-10 text-center">{currentRange || 200}px</small>
+            <small className="text-center">{currentRange || 200}px</small>
             {show && !!download_img && !!download_pdf && (
                 <div style={{ textAlign: 'center' }}>
                     <ul className="rs-list-inline rli-space-5">

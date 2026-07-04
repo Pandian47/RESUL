@@ -3,10 +3,7 @@ import { AUDIENCE_LIST, CHOOSE_ATTRIBUTES_TO_DISPLAY_IN_TABLE, CSV_DOWNLOAD, DOW
 import { csv_download_medium, field_selector_large, field_selector_medium, in_progress_medium } from 'Constants/GlobalConstant/Glyphicons';
 import { Fragment, memo, useEffect, useMemo, useState } from 'react';
 import { Col, Row } from 'react-bootstrap';
-import _map from 'lodash/map';
-import _key from 'lodash/keys';
-import _omit from 'lodash/omit';
-import _compact from 'lodash/compact';
+import { map as _map,keys as _key,omit as _omit,compact as _compact } from 'Utils/modules/lodashReplacements';
 import { useSelector, useDispatch } from 'react-redux';
 
 import KendoGrid from 'Components/RSKendoGrid';
@@ -293,7 +290,7 @@ const AudienceList = ({ show = {}, setIsShow }) => {
                                     {AUDIENCE_LIST}:{' '}
                                     <span className="font-bold font-md ml5">{gridData?.length} </span>
                                 </h4>
-                                <p className="my5">{SEARCH_FILTERS_SAMPLE_RECORD}</p>
+                                <small className="my5-del">{SEARCH_FILTERS_SAMPLE_RECORD}</small>
                             </div>
                             <div className="float-end">
                                 <ul

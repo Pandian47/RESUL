@@ -2333,6 +2333,9 @@ body:has(.reskendogrid .k-grid) {
         }
     }
 }
+.k-animation-container-shown {
+    overflow: inherit;
+}
 
 // Operator dropdown list ("Is equal to") — portaled outside the filter box
 .k-animation-container.rs-filter-dropdown-popup,

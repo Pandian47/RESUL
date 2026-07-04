@@ -116,6 +116,15 @@
                                 border-color: $secondary-grey;
                             }
                         }
+                        &.click-off,
+                        &.pe-none.click-off {
+                            cursor: not-allowed !important;
+
+                            label {
+                                cursor: not-allowed !important;
+                                pointer-events: none;
+                            }
+                        }
                     }
                 }
                 .accordion {
@@ -202,6 +211,15 @@
                                             background-color: $draft;
                                             span {
                                                 border-color: $quaternary-grey;
+                                            }
+                                        }
+                                        &.click-off,
+                                        &.pe-none.click-off {
+                                            cursor: not-allowed !important;
+
+                                            label {
+                                                cursor: not-allowed !important;
+                                                pointer-events: none;
                                             }
                                         }
                                     }
@@ -436,9 +454,9 @@
             width: calc(100% - 355px);
         }
     }
-    .requestApprovalBlock {
-        margin-bottom: 50px;
-    }
+    // .requestApprovalBlock {
+    //     margin-bottom: 50px;
+    // }
     .nameSucessIcon,
     .nameEditIcon {
         position: absolute;

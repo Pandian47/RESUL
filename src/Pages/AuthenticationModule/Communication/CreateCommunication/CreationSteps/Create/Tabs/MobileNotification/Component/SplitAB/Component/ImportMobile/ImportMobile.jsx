@@ -7,7 +7,7 @@ import { ADD_VIEW_IN_BROWSER, COMMUNICATION_URL, EMAIL_NOT_DISPLAYING, FILE_NAME
 import { builder_upload_large, import_link_large, restart_medium, spam_assassin_medium, zip_large } from 'Constants/GlobalConstant/Glyphicons';
 import { Fragment, useCallback, useEffect, useRef, useState } from 'react';
 
-import _get from 'lodash/get';
+import { get as _get } from 'Utils/modules/lodashReplacements';
 
 import { useDispatch, useSelector } from 'react-redux';
 import { Row, Col } from 'react-bootstrap';
@@ -400,6 +400,9 @@ const ImportMobile = ({
     setAmpValidations('');
   }, [importType]);
   useEffect(() => {
+    const timeoutIds = [];
+    let videoEl;
+    let onVideoReady;
     if (edmContent) {
       let iframeEl = document.querySelector('#template iframe');
       let edmelement = document.querySelector('.edm-import-wrapper');
@@ -407,7 +410,7 @@ const ImportMobile = ({
 
       // Check if it's an image (not iframe)
       const imgElement = templateElement?.querySelector('img');
-      const videoEl = templateElement?.querySelector('video');
+      videoEl = templateElement?.querySelector('video');
       if (imgElement && !iframeEl) {
         const imageHeight = imgElement.offsetHeight || imgElement.naturalHeight;
         const imageWidth = imgElement.offsetWidth || imgElement.naturalWidth;
@@ -427,7 +430,7 @@ const ImportMobile = ({
           edmelement.style.overflowY = 'hidden';
         }
       } else if (videoEl && !iframeEl) {
-        const onVideoReady = () => {
+        onVideoReady = () => {
           const vw = videoEl.videoWidth || videoEl.offsetWidth;
           const vh = videoEl.videoHeight || videoEl.offsetHeight;
           if (templateElement && vh) {
@@ -446,7 +449,7 @@ const ImportMobile = ({
             edmelement.style.overflowY = 'hidden';
           }
           if (isInPageBannerDeliveryType && inPageBanner) {
-            setTimeout(() => checkBannerDimensions(), 100);
+            timeoutIds.push(setTimeout(() => checkBannerDimensions(), 100));
           }
         };
         if (videoEl.readyState >= 1) {
@@ -458,18 +461,23 @@ const ImportMobile = ({
         // Use the helper function to properly calculate and set height
         updateIframeHeight(iframeEl);
         // Also recalculate after delays to ensure content is fully loaded
-        setTimeout(() => updateIframeHeight(iframeEl), 200);
-        setTimeout(() => updateIframeHeight(iframeEl), 500);
-        setTimeout(() => updateIframeHeight(iframeEl), 1000);
+        timeoutIds.push(setTimeout(() => updateIframeHeight(iframeEl), 200));
+        timeoutIds.push(setTimeout(() => updateIframeHeight(iframeEl), 500));
+        timeoutIds.push(setTimeout(() => updateIframeHeight(iframeEl), 1000));
       }
 
       // Check banner dimensions after elements are rendered
       if (isInPageBannerDeliveryType && inPageBanner) {
-        setTimeout(() => {
+        timeoutIds.push(setTimeout(() => {
           checkBannerDimensions();
-        }, 600);
+        }, 600));
       }
     }
+
+    return () => {
+      timeoutIds.forEach(clearTimeout);
+      if (videoEl && onVideoReady) videoEl.removeEventListener('loadedmetadata', onVideoReady);
+    };
   }, [edmContent, isInPageBannerDeliveryType, inPageBanner, checkBannerDimensions]);
 
   // Check banner size when banner changes (separate from edmContent effect)

@@ -4,7 +4,7 @@ import { AUDIENCE_COUNT_RESPONSE, DUPLICATE, EXCLUSIONSWITCHOPTIONS, REMOVE, VIE
 import { ARE_YOU_SURE_DELETE, ARE_YOU_SURE_REMOVE, CHOOSE_ATTRIBUTES, DELETE_GROUP, DELETE_USER_ROLE, EXCLUSION_COUNT, INCLUSION_COUNT, OK, RECOMMENDED_8_10_ATTRIBUTES, RECOMMENDED_8_25_ATTRIBUTES, SEGMENT } from 'Constants/GlobalConstant/Placeholders';
 import { circle_arrow_right_medium, circle_minus_fill_medium, circle_tick_medium, delete_medium, duplicate_medium, recycle_medium, restart_medium } from 'Constants/GlobalConstant/Glyphicons';
 import { Fragment, forwardRef, useContext, useEffect, useImperativeHandle, useState } from 'react';
-import _get from 'lodash/get';
+import { get as _get } from 'Utils/modules/lodashReplacements';
 import { Col, Container, Row } from 'react-bootstrap';
 import { useFieldArray, useFormContext, useWatch } from 'react-hook-form';
 import RSTooltip from 'Components/RSTooltip';
@@ -1282,11 +1282,13 @@ const SegmentationLists = (
             }
         }
 
-        const currentFieldValues = watch(fieldName) ?? [];
-        currentFieldValues?.forEach((fieldValue, index) => {
-            if (!fieldValue?.isStatus) {
-                setValue(`${fieldName}.${index}.isLoading`, true);
-            }
+        filterGroups?.groups?.forEach((group) => {
+            const groupFieldValues = getValues()[group] ?? [];
+            groupFieldValues.forEach((fieldValue, index) => {
+                if (!fieldValue?.isStatus) {
+                    setValue(`${group}.${index}.isLoading`, true);
+                }
+            });
         });
         const { attributeslistCount, inclusionLists, exclusionLists, lookALikeAudLists, lookALikeAttrLists } = watch();
         dispatchState({
@@ -1701,6 +1703,9 @@ const SegmentationLists = (
         }
     };
 
+    const getExclusionMergeDisabledItems = (currentMergeValue) =>
+        currentMergeValue === 'Merge' ? ['Merge'] : ['Unmerge'];
+
     const onExclusionMerge = (value, fieldIndex) => {
         const allFormState = watch();
         const currentExclsuionList = allFormState[fieldName];
@@ -1749,7 +1754,21 @@ const SegmentationLists = (
     const getGroupCountLabel = (groupFieldName) =>
         groupFieldName?.includes('exclusionLists') ? EXCLUSION_COUNT : INCLUSION_COUNT;
 
+    const hasSegmentCountStatus = () => {
+        const groups = filterGroups?.groups || [];
+        const hasAttributes = groups.some((group) => (getValues()[group] || []).length > 0);
+        if (!hasAttributes) return false;
+
+        return groups.some((group) =>
+            (getValues()[group] || []).some((field) => field?.isStatus === true),
+        );
+    };
+
     const handleFinalAudienceCountRender = () => {
+        if (!hasSegmentCountStatus()) {
+            return null;
+        }
+
         const groups = filterGroups?.groups || [];
         const lastGroupCount = attributesCount?.[attributesCount.length - 1]?.[0] || 0;
         const { finalAudienceCount, inclusionAudience } = getValues();
@@ -2097,7 +2116,7 @@ const SegmentationLists = (
                                                                         defaultItem=""
                                                                         showUpdate={false}
                                                                         className=""
-                                                                        disbleItems={[mergeValue]}
+                                                                        disbleItems={getExclusionMergeDisabledItems(mergeValue)}
                                                                         onSelect={(value) => {
                                                                             onExclusionMerge(value, fieldIndex);
                                                                             setValue(

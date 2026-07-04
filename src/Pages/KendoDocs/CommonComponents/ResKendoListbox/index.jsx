@@ -1,4 +1,4 @@
-import { AVAILABLE_ATTRIBUTES, COUNT, LISTBOX_NOTES_TEXT, NO_DATA_AVAILABEL, SELECTED_ATTRIBUTES, SELECT_LEFT_ATTRIBUTES, SELECT_RIGHT_ATTRIBUTES, NO_ATTRIBUTES_FOUND } from 'Constants/GlobalConstant/Placeholders';
+import { AVAILABLE_ATTRIBUTES, COUNT, NO_DATA_AVAILABEL, SELECTED_ATTRIBUTES, SELECT_LEFT_ATTRIBUTES, SELECT_RIGHT_ATTRIBUTES, NO_ATTRIBUTES_FOUND } from 'Constants/GlobalConstant/Placeholders';
 import { circle_info_mini } from 'Constants/GlobalConstant/Glyphicons';
 import { memo, useCallback, useEffect, useRef, useState } from 'react';
 import './resKendoListbox.scss';
@@ -697,7 +697,8 @@ const ResKendoListbox = ({
                                 <i
                                     className={`${circle_info_mini} icon-xs color-primary-blue mr5 cursor-default`}
                                 ></i>
-                                <small>{LISTBOX_NOTES_TEXT}</small>
+                                {/* <small>{LISTBOX_NOTES_TEXT}</small> */}
+                                <small>{`Hold ${isMac ? 'Cmd' : 'Ctrl'} to select multiple items`}</small>
                             </div>
                         </div>
                     )}
@@ -764,28 +765,32 @@ const ResKendoListbox = ({
             ref={wrapperRef}
             tabIndex={-1}
             onKeyDownCapture={handleListboxKeyDown}
-            className={`reskendolist-wrapper ${wrapperClassName} ${layoutClass}`.trim()}
+            className={`reskendolist-wrapper d-grid ${wrapperClassName} ${layoutClass}`.trim()}
         >
             <div className="multiSelect">
                 <div className="multiClm multiLftClm">
-                    <h4 className="m0 py10">{leftHeaderTitle || AVAILABLE_ATTRIBUTES}</h4>
-                    {leftList.length > SEARCH_THRESHOLD && (
-                        <RSSearchField
-                            searchedText={(text) => {
-                                setSearch((prev) => ({ ...prev, leftAttributes: text }));
-                            }}
-                            debounceOnChange={true}
-                            searchClassName={searchClassName}
-                            isCloseSearch={isCloseSearch}
-                            setIsCloseSearch={setIsCloseSearch}
-                            disableSearchIcon={isLeftLoading}
-                        />
-                    )}
+                    <div className="d-flex justify-content-between align-items-center mb10">
+                        <h4 className="m0 py5">{leftHeaderTitle || AVAILABLE_ATTRIBUTES}</h4>
+                        {leftList.length > SEARCH_THRESHOLD && (
+                            <RSSearchField
+                                searchedText={(text) => {
+                                    setSearch((prev) => ({ ...prev, leftAttributes: text }));
+                                }}
+                                debounceOnChange={true}
+                                searchClassName={searchClassName}
+                                isCloseSearch={isCloseSearch}
+                                setIsCloseSearch={setIsCloseSearch}
+                                disableSearchIcon={isLeftLoading}
+                            />
+                        )}
+                    </div>
                     {renderLeftColumn()}
                     {leftNotes}
                 </div>
                 <div className="multiClm multiRghtClm">
-                    <h4 className="m0 py10">{rightHeaderTitle || SELECTED_ATTRIBUTES}</h4>
+                    <div className="d-flex justify-content-between align-items-center mb10">
+                        <h4 className="m0 py5">{rightHeaderTitle || SELECTED_ATTRIBUTES}</h4>
+                    </div>
                     {rightHeaderExtra}
                     {rightList.length > SEARCH_THRESHOLD && (
                         <RSSearchField

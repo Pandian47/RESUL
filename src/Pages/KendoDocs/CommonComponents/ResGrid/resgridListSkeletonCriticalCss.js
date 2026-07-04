@@ -1,7 +1,7 @@
 /** ResGrid list card skeleton — mirrors resgrid.scss skeleton-list block (before app.scss load). */
 const RESGRID_SKELETON_BASE = '#e0e5eb';
 const RESGRID_SKELETON_SHINE = '#eeeeee';
-const RESGRID_BORDER_COLOR = '#a6c6e2';
+const RESGRID_BORDER_COLOR = '#c2cfe3';
 const RESGRID_CARD_BOX_SHADOW = '0 0 5px rgba(0, 0, 0, 0.05), 0 0 5px rgba(0, 0, 0, 0.05)';
 const RESGRID_DIVIDER = '#c2cfe3';
 

@@ -434,7 +434,7 @@ export const preferencesSkeletonCriticalCss = `
 }
 .preferences-subpage-skeleton-scope .pref-users-add-edit-sk-checkbox-label {
     width: 140px;
-    height: 14px;
+    height: 15px;
 }
 .preferences-subpage-skeleton-scope .pref-users-add-edit-sk-btn {
     width: 100px;
@@ -728,7 +728,7 @@ export const preferencesSkeletonCriticalCss = `
 }
 .preferences-subpage-skeleton-scope .pref-roles-perm-sk-label {
     width: 80px;
-    height: 14px;
+    height: 15px;
 }
 .preferences-subpage-skeleton-scope .pref-roles-perm-sk-input {
     width: 100%;
@@ -817,7 +817,7 @@ export const preferencesSkeletonCriticalCss = `
     white-space: nowrap;
 }
 .preferences-subpage-skeleton-scope .pref-roles-perm-sk-title {
-    height: 14px;
+    height: 15px;
 }
 .preferences-subpage-skeleton-scope .pref-roles-perm-sk-title--0 {
     width: 50%;
@@ -1168,12 +1168,12 @@ export const preferencesSkeletonCriticalCss = `
 }
 .preferences-subpage-skeleton-scope .pref-companies-sk-action-icon {
     width: 14px;
-    height: 14px;
+    height: 15px;
     border-radius: 50%;
 }
 .preferences-subpage-skeleton-scope .pref-companies-sk-action-label {
     width: 40px;
-    height: 14px;
+    height: 15px;
     margin-top: 4px;
 }
 .preferences-subpage-skeleton-scope .pref-companies-sk-actions-right {
@@ -1253,7 +1253,6 @@ export const preferencesSkeletonCriticalCss = `
 }
 .preferences-subpage-skeleton-scope .pref-sk-offer-toolbar,
 .preferences-subpage-skeleton-scope .pref-sk-offer-brands-toolbar {
-    margin-bottom: var(--pageButtonTopSpace, 21px);
     min-height: 32px;
     align-items: center;
 }
@@ -1354,11 +1353,266 @@ export const preferencesSkeletonCriticalCss = `
     width: 100%;
     box-sizing: border-box;
 }
+/* Template gallery inner routes — email / webpush / mobile builder galleries */
+.preferences-subpage-skeleton-scope .pc-template-gallery-inner {
+    background-color: #f5f7fc;
+    box-sizing: border-box;
+}
+.preferences-subpage-skeleton-scope .pc-template-gallery-inner .pc-tabs-wrapper,
+.preferences-subpage-skeleton-scope .pc-tabs-wrapper .pc-template-gallery-inner {
+    margin-top: 0;
+}
+.preferences-subpage-skeleton-scope .pref-tg-tabs-skeleton.fullWhiteBackground,
+.page-content.pc-template-gallery-inner .pref-tg-tabs-skeleton.fullWhiteBackground {
+    width: 100%;
+    max-width: 100%;
+    background: #f5f7fc;
+    margin-bottom: 0;
+    box-sizing: border-box;
+}
+.preferences-subpage-skeleton-scope .pref-tg-tabs-skeleton__container,
+.page-content.pc-template-gallery-inner .pref-tg-tabs-skeleton__container {
+    max-width: 1260px;
+    width: 100%;
+    margin-left: auto;
+    margin-right: auto;
+    padding-left: 0;
+    padding-right: 0;
+    box-sizing: border-box;
+}
+.preferences-subpage-skeleton-scope .pref-tg-tabs-skeleton__list,
+.page-content.pc-template-gallery-inner .pref-tg-tabs-skeleton__list {
+    display: flex;
+    flex-wrap: nowrap;
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    box-sizing: border-box;
+}
+.preferences-subpage-skeleton-scope .pref-tg-tabs-skeleton .tabDefault,
+.preferences-subpage-skeleton-scope .pref-tg-tabs-skeleton__tab,
+.page-content.pc-template-gallery-inner .pref-tg-tabs-skeleton .tabDefault,
+.page-content.pc-template-gallery-inner .pref-tg-tabs-skeleton__tab {
+    flex: 1 1 33.333%;
+    max-width: 33.333%;
+    min-width: 0;
+    min-height: 41px;
+    display: block;
+    background: #e2e7ee !important;
+    background-color: #e2e7ee !important;
+    border-left: 3px solid #f5f7fc;
+    border-top-left-radius: var(--globalBorderRadius, 5px);
+    border-top-right-radius: var(--globalBorderRadius, 5px);
+    box-sizing: border-box;
+}
+.preferences-subpage-skeleton-scope .pref-tg-tabs-skeleton .tabDefault:first-child,
+.preferences-subpage-skeleton-scope .pref-tg-tabs-skeleton__tab:first-child,
+.page-content.pc-template-gallery-inner .pref-tg-tabs-skeleton .tabDefault:first-child {
+    border-left: none;
+}
+.preferences-subpage-skeleton-scope .pref-tg-inner-tabbed-skeleton .gallery-list.skeleton {
+    margin-bottom: 0;
+}
 .preferences-subpage-skeleton-scope .pref-sk-assign-user-row--alt {
-    background-color: rgba(240, 248, 252, 0.85);
+    background-color: #f0f8ff;
+}
+.preferences-subpage-skeleton-scope .pref-sk-assign-bar {
+    background-color: #e2e7ee;
+    display: block;
+    box-sizing: border-box;
+    border-radius: 4px;
+    flex-shrink: 0;
+}
+.preferences-subpage-skeleton-scope .pref-sk-assign-bar--toolbar-dropdown {
+    height:24px;
+    width: 75%;
+    min-width: 0;
+}
+.preferences-subpage-skeleton-scope .pref-sk-assign-bar--toolbar-select {
+    height: 32px;
+    width: 40%;
+    min-width: 0;
+}
+.preferences-subpage-skeleton-scope .pref-sk-assign-bar--toolbar-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+.preferences-subpage-skeleton-scope .pref-sk-assign-bar--user-name {
+    height: 24px;
+    width: 68%;
+}
+.preferences-subpage-skeleton-scope .pref-sk-assign-bar--user-name-short {
+    height: 15px;
+    width: 62%;
+}
+.preferences-subpage-skeleton-scope .pref-sk-assign-bar--user-status {
+    height: 12px;
+    width: 52%;
+}
+.preferences-subpage-skeleton-scope .pref-sk-assign-bar--user-status-short {
+    height: 12px;
+    width: 42%;
+}
+.preferences-subpage-skeleton-scope .pref-sk-assign-bar--card-name {
+    height: 24px;
+    width: 128px;
+    max-width: 55%;
+}
+.preferences-subpage-skeleton-scope .pref-sk-assign-bar--card-meta {
+    height: 12px;
+    width: 96px;
+    max-width: 40%;
+}
+.preferences-subpage-skeleton-scope .pref-sk-assign-bar--bu-label {
+    height: 24px;
+    width: 55%;
+}
+.preferences-subpage-skeleton-scope .pref-sk-assign-bar--role-field {
+    height: 24px;
+    width: 100%;
+}
+.preferences-subpage-skeleton-scope .pref-sk-assign-bar--remove-icon {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+}
+.preferences-subpage-skeleton-scope .pref-sk-assign-bar--hint {
+    height: 12px;
+    width: 240px;
+}
+.preferences-subpage-skeleton-scope .pref-sk-assign-bar--action-text {
+    height: 20px;
+    width: 56px;
+}
+.preferences-subpage-skeleton-scope .pref-sk-assign-bar--action-btn {
+    height: 36px;
+    width: 88px;
+    border-radius: 5px;
+}
+.preferences-subpage-skeleton-scope .pref-company-assign-role-skeleton .pref-sk-assign-user-list,
+.preferences-subpage-skeleton-scope .pref-company-assign-role-skeleton .pref-sk-assign-entity-panel {
+    height: calc(100vh - 312px);
+    min-height: 360px;
+    border: 1px solid #c2cfe3;
+    background: #fff;
+}
+.preferences-subpage-skeleton-scope .pref-sk-assign-user-list-group {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+.preferences-subpage-skeleton-scope .pref-sk-assign-user-card {
+    border: 0;
+    border-bottom: 1px solid #c2cfe3;
+    border-radius: 0 !important;
+    padding: 10px 12px;
+    list-style: none;
+}
+.preferences-subpage-skeleton-scope .pref-sk-assign-user-card-info {
+    width: 100%;
+}
+.preferences-subpage-skeleton-scope .pref-sk-assign-user-card:nth-child(odd) {
+    background-color: #fff;
+}
+.preferences-subpage-skeleton-scope .pref-sk-assign-user-card:nth-child(even) {
+    background-color: #f0f8ff;
+}
+.preferences-subpage-skeleton-scope .pref-sk-assign-user-card--active {
+    background-color: #f0f8ff !important;
+}
+.preferences-subpage-skeleton-scope .pref-sk-assign-entity-card {
+    border: 1px solid #c2cfe3;
+    border-radius: 10px;
+    overflow: hidden;
+    background: #fff;
+}
+.preferences-subpage-skeleton-scope .pref-sk-assign-entity-header {
+    padding: 10px 12px;
+    background: #fff;
+    border-bottom: 1px solid #c2cfe3;
+}
+.preferences-subpage-skeleton-scope .pref-sk-assign-entity-body {
+    background: #fff;
+}
+.preferences-subpage-skeleton-scope .pref-sk-assign-entity-row {
+    border-bottom: 1px solid #c2cfe3;
+}
+.preferences-subpage-skeleton-scope .pref-sk-assign-entity-row:last-child {
+    border-bottom: 0;
+}
+.preferences-subpage-skeleton-scope .pref-sk-assign-entity-cards {
+    padding: 10px;
 }
 .preferences-subpage-skeleton-scope .pref-sk-assign-role-actions {
     margin-top: 21px;
+}
+/* Company wizard — RSProgressSteps shimmer (assign role inline load) */
+.preferences-subpage-skeleton-scope .cc-plan-steps-skeleton__list,
+.preferences-subpage-skeleton-scope .plan-progress-steps-skeleton__list {
+    display: table;
+    table-layout: fixed;
+    width: 100%;
+    max-width: 800px;
+    position: relative;
+    padding: 0;
+    margin: 1px auto 30px;
+    list-style: none;
+    box-sizing: border-box;
+}
+.preferences-subpage-skeleton-scope .cc-plan-steps-skeleton__item,
+.preferences-subpage-skeleton-scope .plan-progress-steps-skeleton__list .plan-progress-steps-skeleton__item {
+    display: table-cell;
+    vertical-align: top;
+    text-align: center;
+    width: 1%;
+    padding: 0;
+    margin: 0;
+    border: none;
+    background: transparent;
+    list-style: none;
+    box-sizing: border-box;
+}
+.preferences-subpage-skeleton-scope .cc-plan-steps-skeleton__item::before,
+.preferences-subpage-skeleton-scope .plan-progress-steps-skeleton__list .plan-progress-steps-skeleton__item::before {
+    display: block;
+    overflow: hidden;
+    position: relative;
+    top: 19px;
+    z-index: 1;
+    left: 50%;
+    width: 100%;
+    height: 0;
+    font-size: 0;
+    border: none;
+    border-top: 1px solid #e2e7ee;
+    content: '';
+    box-sizing: border-box;
+    padding: 0 10px;
+}
+.preferences-subpage-skeleton-scope .cc-plan-steps-skeleton__item:last-child::before,
+.preferences-subpage-skeleton-scope .plan-progress-steps-skeleton__list .plan-progress-steps-skeleton__item:last-child::before {
+    content: inherit;
+}
+.preferences-subpage-skeleton-scope .cc-plan-steps-skeleton__step,
+.preferences-subpage-skeleton-scope .plan-progress-steps-skeleton__step {
+    display: inline-block;
+    position: relative;
+    z-index: 2;
+    margin: 0 auto 5px;
+    box-sizing: border-box;
+}
+.preferences-subpage-skeleton-scope .cc-plan-steps-skeleton__title,
+.preferences-subpage-skeleton-scope .plan-progress-steps-skeleton__title {
+    display: block;
+    position: relative;
+    top: 0;
+    z-index: 4;
+    margin: 0 auto;
+    padding: 0;
+    box-sizing: border-box;
 }
 .preferences-subpage-skeleton-scope .pc-company-list .row {
     margin-left: -12px;
@@ -1917,6 +2171,102 @@ export const preferencesSkeletonCriticalCss = `
     max-width: 1260px;
     margin-left: auto;
     margin-right: auto;
+}
+.preferences-subpage-skeleton-scope .pref-sk-goals-benchmark-toolbar,
+.page-content-holder .pref-sk-goals-benchmark-toolbar,
+.communication-settings-goals-benchmark-skeleton .pref-sk-goals-benchmark-toolbar,
+.pref-sk-goals-benchmark-page-scope .pref-sk-goals-benchmark-toolbar {
+    display: flex;
+    justify-content: flex-end;
+    width: 100%;
+    min-height: 32px;
+    margin-bottom: 0;
+    box-sizing: border-box;
+    margin-top:5px;
+}
+.preferences-subpage-skeleton-scope .pref-sk-goals-benchmark-toolbar__actions,
+.page-content-holder .pref-sk-goals-benchmark-toolbar__actions,
+.communication-settings-goals-benchmark-skeleton .pref-sk-goals-benchmark-toolbar__actions,
+.pref-sk-goals-benchmark-page-scope .pref-sk-goals-benchmark-toolbar__actions {
+    float: right;
+    width: auto;
+}
+.preferences-subpage-skeleton-scope .pref-sk-goals-benchmark-toolbar__list,
+.page-content-holder .pref-sk-goals-benchmark-toolbar__list,
+.communication-settings-goals-benchmark-skeleton .pref-sk-goals-benchmark-toolbar__list,
+.pref-sk-goals-benchmark-page-scope .pref-sk-goals-benchmark-toolbar__list {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    box-sizing: border-box;
+}
+.preferences-subpage-skeleton-scope .pref-sk-goals-benchmark-toolbar__item,
+.page-content-holder .pref-sk-goals-benchmark-toolbar__item,
+.communication-settings-goals-benchmark-skeleton .pref-sk-goals-benchmark-toolbar__item,
+.pref-sk-goals-benchmark-page-scope .pref-sk-goals-benchmark-toolbar__item {
+    display: flex;
+    align-items: center;
+    box-sizing: border-box;
+}
+.preferences-subpage-skeleton-scope .pref-sk-goals-benchmark-toolbar__icon,
+.page-content-holder .pref-sk-goals-benchmark-toolbar__icon,
+.communication-settings-goals-benchmark-skeleton .pref-sk-goals-benchmark-toolbar__icon,
+.pref-sk-goals-benchmark-page-scope .pref-sk-goals-benchmark-toolbar__icon {
+    margin-left: 5px;
+}
+.preferences-subpage-skeleton-scope .pref-cs-goals-benchmark-form-skeleton,
+.page-content-holder .pref-cs-goals-benchmark-form-skeleton,
+.communication-settings-goals-benchmark-skeleton .pref-cs-goals-benchmark-form-skeleton,
+.pref-sk-goals-benchmark-page-scope .pref-cs-goals-benchmark-form-skeleton {
+    width: 100%;
+    box-sizing: border-box;
+    margin-top: 12px;
+}
+.preferences-subpage-skeleton-scope .pref-sk-goals-benchmark-form-skeleton__row,
+.page-content-holder .pref-sk-goals-benchmark-form-skeleton__row,
+.communication-settings-goals-benchmark-skeleton .pref-sk-goals-benchmark-form-skeleton__row,
+.pref-sk-goals-benchmark-page-scope .pref-sk-goals-benchmark-form-skeleton__row {
+    margin-top: 25px;
+    margin-bottom: 0;
+    box-sizing: border-box;
+}
+.preferences-subpage-skeleton-scope .pref-sk-goals-benchmark-form-skeleton__row--last,
+.page-content-holder .pref-sk-goals-benchmark-form-skeleton__row--last,
+.communication-settings-goals-benchmark-skeleton .pref-sk-goals-benchmark-form-skeleton__row--last,
+.pref-sk-goals-benchmark-page-scope .pref-sk-goals-benchmark-form-skeleton__row--last {
+    margin-bottom: 0;
+}
+.preferences-subpage-skeleton-scope .pref-sk-goals-benchmark-field,
+.page-content-holder .pref-sk-goals-benchmark-field,
+.communication-settings-goals-benchmark-skeleton .pref-sk-goals-benchmark-field,
+.pref-sk-goals-benchmark-page-scope .pref-sk-goals-benchmark-field {
+    margin-bottom: 0;
+    box-sizing: border-box;
+}
+.preferences-subpage-skeleton-scope .pref-sk-goals-benchmark-field__label,
+.page-content-holder .pref-sk-goals-benchmark-field__label,
+.communication-settings-goals-benchmark-skeleton .pref-sk-goals-benchmark-field__label,
+.pref-sk-goals-benchmark-page-scope .pref-sk-goals-benchmark-field__label,
+.preferences-subpage-skeleton-scope .pref-cs-goals-benchmark-form-skeleton .pref-sk-label,
+.page-content-holder .pref-cs-goals-benchmark-form-skeleton .pref-sk-label,
+.pref-sk-goals-benchmark-page-scope .pref-cs-goals-benchmark-form-skeleton .pref-sk-label {
+    display: block;
+    margin-bottom: 8px;
+}
+.preferences-subpage-skeleton-scope .pref-sk-goals-benchmark-field__input,
+.page-content-holder .pref-sk-goals-benchmark-field__input,
+.communication-settings-goals-benchmark-skeleton .pref-sk-goals-benchmark-field__input,
+.pref-sk-goals-benchmark-page-scope .pref-sk-goals-benchmark-field__input,
+.preferences-subpage-skeleton-scope .pref-sk-goals-benchmark-field__textarea,
+.page-content-holder .pref-sk-goals-benchmark-field__textarea,
+.communication-settings-goals-benchmark-skeleton .pref-sk-goals-benchmark-field__textarea,
+.pref-sk-goals-benchmark-page-scope .pref-sk-goals-benchmark-field__textarea {
+    display: block;
+    width: 100%;
+    box-sizing: border-box;
 }
 ${formGeneratorPublishModalSkeletonCriticalCss}
 `;
@@ -2664,9 +3014,13 @@ export const communicationSettingsSkeletonCriticalCss = `
     border-top: 1px solid #c2cfe3;
 }
 /* Inner icon sub-tab Suspense — nested inside channel RSTabbar tabs-content. */
-.page-content.pc-communication-settings .rs-vertical-tabs-wrapper .rs-cc-sub-tabs ~ .tabs-content > .pref-cs-smtp-root,
+.page-content.pc-communication-settings .rs-vertical-tabs-wrapper .res-cc-sub-tabs ~ .res-tabs-content > .pref-cs-smtp-root,
+.page-content.pc-communication-settings .rs-vertical-tabs-wrapper .res-cc-sub-tabs ~ .res-tabs-content > .rsv-tabs-content,
+.page-content.pc-communication-settings .rs-vertical-tabs-wrapper .res-cc-sub-tabs ~ .res-tabs-content > .pref-cs-smtp-root,
+.page-content.pc-communication-settings .rs-vertical-tabs-wrapper .pref-cs-mail-tabs-content > .res-tabs-content > .pref-cs-smtp-root,
 .page-content.pc-communication-settings .rs-vertical-tabs-wrapper .pref-cs-mail-tabs-content > .tabs-content > .pref-cs-smtp-root,
 .page-content.pc-communication-settings .rs-vertical-tabs-wrapper .pref-cs-channel-lazy-shell .pref-cs-mail-tabs-content > .tabs-content > .pref-cs-smtp-root,
+.preferences-subpage-skeleton-scope.communication-settings .rs-vertical-tabs-wrapper .res-cc-sub-tabs ~ .res-tabs-content > .pref-cs-smtp-root,
 .preferences-subpage-skeleton-scope.communication-settings .rs-vertical-tabs-wrapper .rs-cc-sub-tabs ~ .tabs-content > .pref-cs-smtp-root,
 .preferences-subpage-skeleton-scope.communication-settings .rs-vertical-tabs-wrapper .pref-cs-mail-tabs-content > .tabs-content > .pref-cs-smtp-root {
     float: none !important;
@@ -2676,13 +3030,19 @@ export const communicationSettingsSkeletonCriticalCss = `
     clear: both;
     box-sizing: border-box;
 }
+.page-content.pc-communication-settings .rs-vertical-tabs-wrapper .res-cc-sub-tabs ~ .res-tabs-content > .pref-cs-smtp-root .pref-cs-smtp-panel,
+.page-content.pc-communication-settings .rs-vertical-tabs-wrapper .res-cc-sub-tabs ~ .res-tabs-content > .rsv-tabs-content .box-design.bd-top-border,
 .page-content.pc-communication-settings .rs-vertical-tabs-wrapper .rs-cc-sub-tabs ~ .tabs-content > .pref-cs-smtp-root .pref-cs-smtp-panel,
+.preferences-subpage-skeleton-scope.communication-settings .rs-vertical-tabs-wrapper .res-cc-sub-tabs ~ .res-tabs-content > .pref-cs-smtp-root .pref-cs-smtp-panel,
 .preferences-subpage-skeleton-scope.communication-settings .rs-vertical-tabs-wrapper .rs-cc-sub-tabs ~ .tabs-content > .pref-cs-smtp-root .pref-cs-smtp-panel {
     width: 100%;
     margin-top: 0;
     box-sizing: border-box;
 }
+.page-content.pc-communication-settings .rs-vertical-tabs-wrapper .res-cc-sub-tabs ~ .res-tabs-content > .pref-cs-smtp-root .pref-cs-smtp-tab-body,
+.page-content.pc-communication-settings .rs-vertical-tabs-wrapper .res-cc-sub-tabs ~ .res-tabs-content > .rsv-tabs-content .res-tabs-content,
 .page-content.pc-communication-settings .rs-vertical-tabs-wrapper .rs-cc-sub-tabs ~ .tabs-content > .pref-cs-smtp-root .pref-cs-smtp-tab-body,
+.preferences-subpage-skeleton-scope.communication-settings .rs-vertical-tabs-wrapper .res-cc-sub-tabs ~ .res-tabs-content > .pref-cs-smtp-root .pref-cs-smtp-tab-body,
 .preferences-subpage-skeleton-scope.communication-settings .rs-vertical-tabs-wrapper .rs-cc-sub-tabs ~ .tabs-content > .pref-cs-smtp-root .pref-cs-smtp-tab-body {
     width: 100% !important;
     float: none;
@@ -2690,8 +3050,11 @@ export const communicationSettingsSkeletonCriticalCss = `
     margin-top: 20px;
     box-sizing: border-box;
 }
+.page-content.pc-communication-settings .rs-vertical-tabs-wrapper .res-cc-sub-tabs + .res-tabs-content .res-v-tabs-content,
+.page-content.pc-communication-settings .rs-vertical-tabs-wrapper .res-cc-sub-tabs + .res-tabs-content .rsv-tabs-content,
 .page-content.pc-communication-settings .rs-vertical-tabs-wrapper .rs-cc-sub-tabs + .tabs-content .rsv-tabs-content,
-.page-content.pc-communication-settings .rs-vertical-tabs-wrapper .tabs-right-align.pageSub_tab {
+.page-content.pc-communication-settings .rs-vertical-tabs-wrapper .tabs-right-align.pageSub_tab,
+.page-content.pc-communication-settings .rs-vertical-tabs-wrapper .res-tabs-right-align.pageSub_tab {
     width: 100%;
     max-width: 100%;
     float: none;
@@ -2725,6 +3088,16 @@ export const communicationSettingsSkeletonCriticalCss = `
     width: auto;
     max-width: none;
 }
+.page-content.pc-communication-settings .pref-cs-inner-tab-skeleton-embedded,
+.preferences-subpage-skeleton-scope.communication-settings .pref-cs-inner-tab-skeleton-embedded {
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+    border: none !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    padding: 0;
+}
 .page-content.pc-communication-settings .pref-cs-notification-subtabs .tabs-content,
 .page-content.pc-communication-settings .rs-vertical-tabs-wrapper .tabs-right-align.pageSub_tab .tabs-content,
 .page-content.pc-communication-settings .rs-vertical-tabs-wrapper .tabs-right-align.pageSub_tab .res-tabs-content,
@@ -2746,18 +3119,41 @@ export const communicationSettingsSkeletonCriticalCss = `
     display: table;
     clear: both;
 }
+.page-content.pc-communication-settings .rs-vertical-tabs-wrapper > .res-tabber {
+    box-sizing: border-box;
+}
+.page-content.pc-communication-settings .rs-vertical-tabs-wrapper > .res-tabber::after {
+    content: '';
+    display: table;
+    clear: both;
+}
+.page-content.pc-communication-settings .rs-vertical-tabs-wrapper > .res-tabber > .res-v-tabs-list.vertical-tabs,
+.page-content.pc-communication-settings .rs-vertical-tabs-wrapper > .res-tabber > .rsv-tabs-list.vertical-tabs,
 .page-content.pc-communication-settings .rs-vertical-tabs-wrapper > .rsv-tabs-list.vertical-tabs {
     float: left;
     width: 150px;
+    max-width: 150px;
+    min-width: 150px;
     margin-right: 10px;
     box-sizing: border-box;
 }
+.page-content.pc-communication-settings .rs-vertical-tabs-wrapper > .res-tabber > .res-tabs-content,
+.page-content.pc-communication-settings .rs-vertical-tabs-wrapper > .res-tabber > .tabs-content,
 .page-content.pc-communication-settings .rs-vertical-tabs-wrapper > .tabs-content {
     float: left;
     width: calc(100% - 160px);
     max-width: calc(100% - 160px);
     box-sizing: border-box;
 }
+.page-content.pc-communication-settings .rs-vertical-tabs-wrapper > .res-tabber > .res-tabs-content > .res-tabber > .res-tabs-content,
+.page-content.pc-communication-settings .rs-vertical-tabs-wrapper > .res-tabber > .res-tabs-content .res-cc-sub-tabs + .res-tabs-content {
+    width: 100% !important;
+    max-width: 100% !important;
+    float: none;
+    clear: both;
+    box-sizing: border-box;
+}
+.page-content.pc-communication-settings .rs-vertical-tabs-wrapper .res-cc-sub-tabs,
 .page-content.pc-communication-settings .rs-vertical-tabs-wrapper .rs-cc-sub-tabs {
     float: left;
     width: 100%;
@@ -2766,6 +3162,8 @@ export const communicationSettingsSkeletonCriticalCss = `
     z-index: 101;
     box-sizing: border-box;
 }
+.page-content.pc-communication-settings .rs-vertical-tabs-wrapper .res-cc-sub-tabs + .res-tabs-content,
+.page-content.pc-communication-settings .rs-vertical-tabs-wrapper .res-cc-sub-tabs + .tabs-content,
 .page-content.pc-communication-settings .rs-vertical-tabs-wrapper .rs-cc-sub-tabs + .tabs-content {
     float: left;
     width: 100%;
@@ -2774,6 +3172,7 @@ export const communicationSettingsSkeletonCriticalCss = `
     box-sizing: border-box;
 }
 /* Lazy channel shell — skeleton only; lives inside channel column */
+.page-content.pc-communication-settings .rs-vertical-tabs-wrapper > .res-tabber > .res-tabs-content > .pref-cs-channel-lazy-shell--channel,
 .page-content.pc-communication-settings .rs-vertical-tabs-wrapper > .tabs-content > .pref-cs-channel-lazy-shell--channel {
     width: 100%;
     max-width: 100%;

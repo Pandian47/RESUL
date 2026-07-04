@@ -2,7 +2,7 @@ import { menu_dot_mini } from 'Constants/GlobalConstant/Glyphicons';
 import { useState } from 'react';
 import { Card } from 'react-bootstrap';
 import { useFieldArray, useFormContext } from 'react-hook-form';
-import _find from 'lodash/find';
+import { find as _find } from 'Utils/modules/lodashReplacements';
 
 import { DROP_TEXT_CONTENT, TEMPLATE_COMPONENTS } from '../../Constant';
 import EBElementActions from '../../../InputControls/EBElementActions';

@@ -28,7 +28,7 @@
  */
 import { useRef, useState, useEffect, useMemo, useCallback, forwardRef, useImperativeHandle } from 'react';
 import PropTypes from 'prop-types';
-import _isNil from 'lodash/isNil';
+import { isNil as _isNil } from 'Utils/modules/lodashReplacements';
 import { Editor, EditorUtils } from '@progress/kendo-react-editor';
 
 import { EDITOR_CONFIG, editorClass, getToolbarIconConfig } from './config';

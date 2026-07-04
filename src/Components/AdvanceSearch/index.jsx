@@ -6,10 +6,7 @@ import { ENTER_GREATER_VALUE, NO_RESULTS_FOUND } from 'Constants/GlobalConstant/
 import { CANCEL, CLEAR, CLOSE, FILTER, MORE_OPTIONS, REMOVE, SEARCH_TEXT, TEXT, BRAND_ID } from 'Constants/GlobalConstant/Placeholders';
 import { advance_search_arrow_double_down_mini, advance_search_arrow_double_up_mini, advance_search_close_mini, advance_search_justify_dropdown_mini, circle_minus_fill_mini, circle_zoom_fill_edge_large, clear_mini, filter_circle_edge_large, filter_circle_fill_edge_large, zoom_medium } from 'Constants/GlobalConstant/Glyphicons';
 import { Fragment, memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import _map from 'lodash/map';
-import _get from 'lodash/get';
-import _find from 'lodash/find';
-import _debounce from 'lodash/debounce';
+import { debounce as _debounce } from 'Utils/modules/lodashReplacements';
 import PropTypes from 'prop-types';
 import { useForm, FormProvider } from 'react-hook-form';
 
@@ -348,7 +345,7 @@ const RSAdvanceSearch = ({
                                     !!error
                                         ? error
                                         : !showAdavanceSearch
-                                        ? 'By ' + (searchType || '').toLowerCase()
+                                        ? 'By ' + (searchType || '')
                                         : 'Search..'
                                 }
                                 className={showAdavanceSearch ? 'pe-none' : ''}
@@ -415,8 +412,9 @@ const RSAdvanceSearch = ({
                                 {filterAdvanceSearch.map(([key, value], index) => {
                                     const updateValue = Array?.isArray(value) ? value?.length : !!value;
                                     // console.log('ASDASDA :::: ', key, !!value, value);
-                                    const fieldKey = _get(_find(config, ['config.name', key]), 'fieldKey', '');
-                                    const isMandatory = _get(_find(config, ['config.name', key]), 'isMandatory', false);
+                                    const matchedConfig = config.find((item) => item?.config?.name === key);
+                                    const fieldKey = matchedConfig?.fieldKey ?? '';
+                                    const isMandatory = matchedConfig?.isMandatory ?? false;
                                     //Updating the Key firstKey to uppercase and capitalize other keys
                                     const customizeKey =
                                         key.charAt(0).toUpperCase() + key.slice(1).split('_').join(' ');
@@ -660,7 +658,7 @@ const RSAdvanceSearch = ({
                                 })}
                                 className="row mx0 mt20"
                             >
-                                {_map(config, (info, index) => {
+                                {config.map((info, index) => {
                                     let processedInfo = { ...info };
                                     if (
                                         info.label === 'Product type' &&
@@ -685,11 +683,11 @@ const RSAdvanceSearch = ({
                                         };
                                     }
                                     return (
-                                        <Col sm={6} className="px30 borderR" key={_get(info, 'config.name', index)}>
+                                        <Col sm={6} className="px30 borderR" key={info?.config?.name ?? index}>
                                             <div className="form-group">
                                                 <RenderInput
                                                     info={processedInfo}
-                                                    key={_get(info, 'config.name', index)}
+                                                    key={info?.config?.name ?? index}
                                                     setSearchDropdown={setSearchDropdown}
                                                     searchDropdown={searchDropdown}
                                                     searchTypeField={searchTypeField}

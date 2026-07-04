@@ -1,8 +1,12 @@
 import { encodeUrl } from 'Utils/modules/crypto';
 import { getDateWithDaynoFormat, getYYMMDD } from 'Utils/modules/dateTime';
 import { createCommunicationSettingsNavState, MAIL_TAB_ID } from 'Utils/modules/navigation';
-import { useEffect, useRef, useState } from 'react';
-import { RSPEmailBuilder } from 'resul-template-builder';
+import { lazy, Suspense, useEffect, useRef, useState } from 'react';
+import RSLoader from 'Components/Loader';
+
+const RSPEmailBuilderLazy = lazy(() =>
+    import('resul-template-builder').then((module) => ({ default: module.RSPEmailBuilder })),
+);
 import { getSessionId } from 'Reducers/globalState/selector';
 import { useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
@@ -975,9 +979,8 @@ const FooterBuilder = () => {
     }, [savedVersions]);
 
     return (
-        <>
-            {/* <InfoCardFooterBuilder data={state}></InfoCardFooterBuilder> */}
-            <RSPEmailBuilder
+        <Suspense fallback={<RSLoader fallback />}>
+            <RSPEmailBuilderLazy
                 pconfig={{
                     ...pconfig,
                     saveCallback: (data) => saveTemplate(data),
@@ -988,7 +991,7 @@ const FooterBuilder = () => {
                 templateName={state?.templateName || ''}
                 emailFooter={true}
             />
-        </>
+        </Suspense>
     );
 };
 

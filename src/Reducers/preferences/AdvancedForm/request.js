@@ -20,11 +20,11 @@ export const advancedFormListApi = (payload) => async (dispatch) => {
 };
 
 /** Create (RESUL form / survey forge) — API expects empty body; session from headers. */
-export const getNewFormRedirectUrl = () => async (dispatch) => {
+export const getNewFormRedirectUrl = (payload) => async (dispatch) => {
     return dispatch(
         request.post({
             url: GET_NEW_FORM_REDIRECT_URL,
-            payload: {},
+            payload,
             isToast: false,
             isFailureCheck: true,
             ok: () => { },
@@ -34,11 +34,11 @@ export const getNewFormRedirectUrl = () => async (dispatch) => {
 };
 
 /** Edit — API expects `{ formId: string }`. */
-export const getFormEditUrl = (formId) => async (dispatch) => {
+export const getFormEditUrl = (payload) => async (dispatch) => {
     return dispatch(
         request.post({
             url: GET_FORM_EDIT_URL,
-            payload: { formId: String(formId) },
+            payload,
             isToast: false,
             isFailureCheck: true,
             ok: () => { },
@@ -48,11 +48,11 @@ export const getFormEditUrl = (formId) => async (dispatch) => {
 };
 
 /** Analytics SSO — API expects `{ formId: string }`. */
-export const getFormAnalyticsUrl = (formId) => async (dispatch) => {
+export const getFormAnalyticsUrl = (payload) => async (dispatch) => {
     return dispatch(
         request.post({
             url: GET_FORM_ANALYTICS_URL,
-            payload: { formId: String(formId) },
+            payload,
             isToast: false,
             isFailureCheck: true,
             ok: () => { },

@@ -41,7 +41,7 @@ const SplitHeader = (props) => {
     const advanceSearchFilterLoader = useApiLoader({ autoFetch: false, loaderConfig: ANALYTICS_FIELD_LOADER_CONFIG });
     const { userId, clientId } = useSelector((state) => getSessionId(state));
     const { defaultItemSplitHeader } = useSelector(({ analyticsDetails }) => analyticsDetails);
-    const { refAPIStatus } = useContext(DetailAnalyticsProvider) || {};
+    const { refAPIStatus, isPdfExporting } = useContext(DetailAnalyticsProvider) || {};
     const { control, setValue, getValues, watch } = useForm();
     const queryParams = useQueryParams('/analytics/analytics-report');
     const detailParams = useQueryParams('/analytics/detail-analytics');
@@ -418,21 +418,39 @@ const SplitHeader = (props) => {
 
                     {props?.detailAnalytics && (
                         <Fragment>
-                            <RSTooltip text="Download PDF" position="top" show={state?.downloadShow}>
-                                <i
-                                    id="rs_data_download"
-                                    className={`${pdf_download_medium} icon-md ml10`}
-                                    onMouseEnter={() => {
-                                        setState((pre) => ({ ...pre, downloadShow: true }));
-                                    }}
-                                    onMouseLeave={() => {
-                                        setState((pre) => ({ ...pre, downloadShow: false }));
-                                    }}
-                                    onClick={() => {
-                                        setState((pre) => ({ ...pre, downloadShow: false }));
-                                        props.isDownloadUI?.(true);
-                                    }}
-                                />
+                            <RSTooltip
+                                text={isPdfExporting ? 'Preparing PDF...' : 'Download PDF'}
+                                position="top"
+                                show={state?.downloadShow && !isPdfExporting}
+                            >
+                                <span
+                                    className={`eye-icon-wrapper d-inline-flex align-items-center justify-content-center ml10 ${
+                                        isPdfExporting ? 'pe-none click-off eye-icon-wrapper--loading' : 'cp'
+                                    }`}
+                                >
+                                    {isPdfExporting ? (
+                                        <span
+                                            className="segment_loader listing-preview-eye-loader"
+                                            aria-hidden="true"
+                                        />
+                                    ) : (
+                                        <i
+                                            id="rs_data_download"
+                                            className={`${pdf_download_medium} icon-md`}
+                                            onMouseEnter={() => {
+                                                setState((pre) => ({ ...pre, downloadShow: true }));
+                                            }}
+                                            onMouseLeave={() => {
+                                                setState((pre) => ({ ...pre, downloadShow: false }));
+                                            }}
+                                            onClick={() => {
+                                                if (isPdfExporting) return;
+                                                setState((pre) => ({ ...pre, downloadShow: false }));
+                                                props.isDownloadUI?.(true);
+                                            }}
+                                        />
+                                    )}
+                                </span>
                             </RSTooltip>
                         </Fragment>
                     )}
@@ -733,7 +751,7 @@ const SplitHeader = (props) => {
                             </RSTooltip>
                         </div>
 
-                        <div className={`mr55 ${accumulatedFilterValues?.length === 0 && !searchInput?.length ? 'pe-none click-off' : ''}`}>
+                        <div className={`mr55 ${accumulatedFilterValues?.length === 0 && !searchInput?.length || !hasFilterDropdownOptions ? 'pe-none click-off' : ''}`}>
                             <RSPrimaryButton
                                 onClick={() => {
                                     let finalFilterValues = [...accumulatedFilterValues];

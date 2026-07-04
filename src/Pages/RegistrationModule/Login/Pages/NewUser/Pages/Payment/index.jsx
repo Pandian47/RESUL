@@ -1,7 +1,7 @@
+import { get as _get } from 'Utils/modules/lodashReplacements';
 import { AMOUNT, AMOUNT_PAYABLE, CANCEL, CONFIRM, DISCOUNT, PAYMENT_FREQUENCY as PAYMENT_FREQUENCY_PH, PAYMENT_METHOD, PRICE_MONTH, SUB_TYPE, USD } from 'Constants/GlobalConstant/Placeholders';
 import { credit_card_large, invoices_large, restart_medium } from 'Constants/GlobalConstant/Glyphicons';
 import { useEffect, useState } from 'react';
-import _get from 'lodash/get';
 import { Container, Col, Row } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
@@ -42,8 +42,8 @@ const Payment = () => {
     const [total, setTotal] = useState(0);
     let fromCompanies = '';
 
-    const licenceType = _get(state, 'licenseTypeID', '1');
-    const frequencyValue = _get(state, 'frequencyId', 1);
+    const licenceType = state?.licenseTypeID ?? '1';
+    const frequencyValue = state?.frequencyId ?? 1;
     let frequencyValueNumber = 0;
     useEffect(() => {
         fromCompanies = state?.from; //_get(state, 'from', '');

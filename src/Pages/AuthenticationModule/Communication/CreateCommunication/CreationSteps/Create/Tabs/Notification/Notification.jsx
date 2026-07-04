@@ -13,12 +13,7 @@ import { COMMUNICATION_URL, ENTER_COMUNICATION_TEXT, ENTER_HASHTAG, ENTER_INBOX_
 import { ADD_DOMAIN, ADJUST_SPLIT_SIZE, ARE_YOU_SURE_WANT_TO_RESET, AUDIENCE, AUDIENCE_CHANGE_CONFIRMATION, AUDIENCE_COUNT_ZERO_ENABLE_AUTO_REFRESH, AUTO_REFRESH, AUTO_REFRESH_POP_HOVER_TEXT, AUTO_SCHEDULE, AUTO_SCHEDULE_SPLITS, CANCEL, CHECK_START_DATE_AND_END_DATE, CLOSE, COMMUNICATION_LIST_SCREEN, COMMUNICATION_SCHEDULED, IGNORE_CHANNEL, INBOX_CLASSIFICATION, INBOX_CLASSIFICATION_NAME, LAYOUT, LAYOUT_POSITION as LAYOUT_POSITION_PH, MINIMUM_DIFFERENCE_SPLITS, NEXT, OK, POSITION, RESET, RESET_DOMAIN, SAVE, SELECT_A_FILE_TO_PROCEED, SELECT_CONTENT_PROCEED, SELECT_DATE_TIME, SELECT_SCHEDULE_TIME, SPLIT_AB_TEST_REQUIRES, SPLIT_AB_TEST_TEXT, SPLIT_AB_TURNOFF, TEST_PREVIEW_SENT, UPLOAD_MEDIA, WARNING, YES } from 'Constants/GlobalConstant/Placeholders';
 import { adjust_split_medium, circle_minus_fill_medium, circle_plus_fill_medium, circle_plus_medium, circle_question_mark_medium, circle_question_mark_mini, close_medium, close_mini, restart_medium, save_mini, shield_medium, shield_tick_medium, timer_medium } from 'Constants/GlobalConstant/Glyphicons';
 import { Fragment, useEffect, useMemo, useRef, useState } from 'react';
-import _map from 'lodash/map';
-import _get from 'lodash/get';
-import _find from 'lodash/find';
-import _forEach from 'lodash/forEach';
-import _cloneDeep from 'lodash/cloneDeep';
-import _isEmpty from 'lodash/isEmpty';
+import { map as _map, get as _get, find as _find, forEach as _forEach, cloneDeep as _cloneDeep, isEmpty as _isEmpty } from 'Utils/modules/lodashReplacements';
 import { Row, Col } from 'react-bootstrap';
 import { useForm, FormProvider } from 'react-hook-form';
 
@@ -1559,14 +1554,14 @@ const Notification = ({ type = 'web', mCampType }) => {
                                                 // message: 'Select a date and time later than ' + scheduleError + '.',
                                             });
 
-                                    setTabs((prev) => ({
-                                        ...prev,
-                                        currentTab: k,
-                                    }));
+                                            setTabs((prev) => ({
+                                                ...prev,
+                                                currentTab: k,
+                                            }));
 
-                                            return;
-                                        }
-                                    }
+                                                    return;
+                                                }
+                                            }
                                 } else {
                                     let scheduleError = campaignSchedule(
                                         formState[tabs?.splitTabsList[k]]?.schedule,
@@ -1719,6 +1714,7 @@ const Notification = ({ type = 'web', mCampType }) => {
             }
 
             const payload = buildPayload(formState, type, timeZoneId, mobileApp, location, notificationEditData);
+
 
             // console.log(payload, communicationChannels, '--payload');
 

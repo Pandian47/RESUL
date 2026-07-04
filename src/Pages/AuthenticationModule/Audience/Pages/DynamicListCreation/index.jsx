@@ -4,12 +4,12 @@ import { encodeUrl, getUserDetails } from 'Utils/modules/crypto';
 import { safeObjectKeys } from 'Utils/modules/misc';
 import { formatName } from 'Utils/modules/formatters';
 import { getWarningPopupMessage } from 'Utils/modules/warningPopup';
-import { checkRequestApproval, FORM_INITIAL_STATE, INITIAL_STATE, MatchTypeCheck, repeatedGroupValuesCheck, repeatedValuesCheck, STATE_REDUCER } from './constant';
+import { checkRequestApproval, FORM_INITIAL_STATE, INITIAL_STATE, MatchTypeCheck, repeatedGroupValuesCheck, repeatedValuesCheck, STATE_REDUCER, buildFieldTriggerValuesKey, buildTriggerDdlCacheKey, buildCustomEventValuesCacheKey, formatFieldTriggerValuesData, shouldSkipTriggerAttributeValuesApi, shouldFetchTriggerAttributeValuesForRule, extractTriggerAttributeValuesList, normalizeCustomEventRuleTypeOptions } from './constant';
 import { MAX_LENGTH200 } from 'Constants/GlobalConstant/Regex';
 import { ENTER_COMMENTS, ENTER_LIST_NAME as ENTER_LIST_NAME_MSG, NAME_CANNOT_BE_EMPTY } from 'Constants/GlobalConstant/ValidationMessage';
 import { ADD_RULE_GROUP, APPROVE, CANCEL, COMMENTS, CREATE_RULE, DYNAMIC_CROSS_DEVICE, DYNAMICLIST_NAME, EDIT_DYNAMIC_LIST, ENTER_LIST_NAME, MAXIMUM_LIMIT_REACHED, NEW_DYNAMIC_LIST, OK, REJECT, RENAME, SAVE, SELECT_TRIGGERS_AS_SPECIFIED, TRIGGERS, UP_TO_5_MATCH, UPDATE_RULE, USED_LIST_TEXT, YOU_ARE_NOT_APPROVER } from 'Constants/GlobalConstant/Placeholders';
 import { alert_xlarge, circle_plus_fill_edge_medium, pencil_edit_medium } from 'Constants/GlobalConstant/Glyphicons';
-import { Fragment, Suspense, createContext, lazy, useCallback, useEffect, useMemo, useReducer, useRef, useState } from 'react';
+import { Fragment, createContext, useCallback, useEffect, useMemo, useReducer, useRef, useState } from 'react';
 import { Col, Container, Row } from 'react-bootstrap';
 import { FormProvider, useFieldArray, useForm, useWatch } from 'react-hook-form';
 import { useLocation, useNavigate } from 'react-router-dom';
@@ -36,7 +36,6 @@ import {
     dynamicList_Comm_count,
     getTriggerAttributeValuesData,
     getTimezoneDetails,
-    resolveTriggerAttributeValues,
 } from 'Reducers/audience/dynamicList/request';
 import { getSessionId, getRequestApprovalList } from 'Reducers/globalState/selector';
 
@@ -58,12 +57,12 @@ import useApiLoader, { resetAbortableRequests } from 'Hooks/useApiLoader';
 import { FIELD_LOADER_CONFIG as fieldLoaderConfig } from 'Hooks/loaderTypes';
 import useComponentWillUnmount from 'Hooks/useComponentWillUnMount';
 
-const RuleGrouping = lazy(() => import('./Component/ruleGrouping'));
-const RequestApproval = lazy(() => import('Pages/AuthenticationModule/Components/RequestApproval/RequestApproval'));
+import RuleGrouping from './Component/ruleGrouping';
+import RequestApproval from 'Pages/AuthenticationModule/Components/RequestApproval/RequestApproval';
+import { loadGeoFencesFullList, clearGeoFencesListSessionCache, buildGeofenceComparisonFromEditRule } from './Component/GeoFencing/DynamicListGeoFencing';
 export const DynamicListCreateContext = createContext({
     ListState: {},
     dispatchState: () => {},
-    ruleIndex: 0,
     setRuleIndex: () => {},
     duplicateRule: {},
     setDuplicateRule: () => {},
@@ -75,6 +74,7 @@ export const DynamicListCreateContext = createContext({
     errorCustomGroup: null,
     setErrorCustomGroup: () => {},
     ensureTimeZoneDetail: async () => {},
+    dispatchTriggerAttributeValues: async () => {},
 });
 const DynamicListCreation = () => {
     const navigate = useNavigate();
@@ -88,11 +88,13 @@ const DynamicListCreation = () => {
         });
     }, [navigate]);
     const queryParamDetails = useQueryParams('/audience');
-    const DynamicListId = window.location.search;
-    const urlIsUpdate = DynamicListId !== '';
-    const urlEditListID = urlIsUpdate ? DynamicListId.split('=')?.[1] : 0;
-    const location = useLocation();
 
+    const dynamicListId = new URLSearchParams(window.location.search).get('DynamicListId') || null;
+    let isApprovalLinkApproved = new URLSearchParams(window.location.search).get('approverStatus') === '1';
+    let isRejectedLink = new URLSearchParams(window.location.search).get('approverStatus') === '2';
+    const isEdit = !!dynamicListId;
+    const location = useLocation();
+    const [disableGroups, setDisableGroups] = useState(isEdit);
     const [isUpdate, setUpdate] = useState(false);
     const [isUpdateRFA, setUpdateRFA] = useState([]);
     const [isRFA, setRFA] = useState(false);
@@ -109,7 +111,6 @@ const DynamicListCreation = () => {
     const [mdcChannelDetails, setMdcChannelDetails] = useState({});
     const [isActionLoading, setIsActionLoading] = useState(false);
     const methods = useForm(FORM_INITIAL_STATE);
-    const [ruleIndex, setRuleIndex] = useState(0);
     const { departmentId, clientId, userId } = useSelector((state) => getSessionId(state)) ?? {};
     const rfaapprovalList = useSelector((state) => getRequestApprovalList(state)) ?? [];
     const { failureApiErrors } = useSelector((state) => state?.globalstate ?? {});
@@ -131,7 +132,7 @@ const DynamicListCreation = () => {
 
     const dispatch = useDispatch();
     const store = useStore();
-    const { isValidListname, isUpdateList, isRequestApproved, fullAttributeJSONValues } = ListState ?? {};
+    const { isValidListname, isUpdateList, isRequestApproved, fullAttributeJSONValues, triggerDdlValues } = ListState ?? {};
     const rule = useWatch({ control, name: `rule` });
     const dynamicListName = useWatch({ control, name: `dynamicListName` });
     const approvalList = watch('approvalList');
@@ -155,6 +156,7 @@ const DynamicListCreation = () => {
 
     const editListControllRef = useRef(true);
     const dynamicListSessionRef = useRef(`${clientId}_${departmentId}`);
+    const triggerDdlValuesRef = useRef({});
     const timeZoneFetchRef = useRef(null);
     const [showCrossDevice, setShowCrossDevice] = useState(false);
 
@@ -163,13 +165,11 @@ const DynamicListCreation = () => {
     const [getDlFail, setGetDlFail] = useState(false);
     const [isEditDataLoading, setEditDataLoading] = useState(() =>
         Boolean(new URLSearchParams(window.location.search).get('DynamicListId')),
-    );
+);
     const triggerSourceAPI = useApiLoader();
-    const triggerBaseDDLAPI = useApiLoader();
-    const triggerAttributesAPI = useApiLoader();
     const editListAPI = useApiLoader({ actionCreator: getDynamicListById, autoFetch: false });
-    const apiRefs = useRef({ triggerSourceAPI, triggerBaseDDLAPI, triggerAttributesAPI, editListAPI });
-    apiRefs.current = { triggerSourceAPI, triggerBaseDDLAPI, triggerAttributesAPI, editListAPI };
+    const apiRefs = useRef({ triggerSourceAPI, editListAPI });
+    apiRefs.current = { triggerSourceAPI, editListAPI };
     const { triggerSourceData = [] } = useSelector(
         (state) => state?.dynamicListReducer ?? dynamicListInitialState,
     );
@@ -178,13 +178,15 @@ const DynamicListCreation = () => {
         dispatch(get_trigger_source_data([]));
         const {
             triggerSourceAPI: source,
-            triggerBaseDDLAPI: baseDDL,
-            triggerAttributesAPI: attributes,
             editListAPI: editList,
         } = apiRefs.current;
-        resetAbortableRequests(source, baseDDL, attributes, editList);
+        resetAbortableRequests(source, editList);
     });
-
+    useEffect(() => {
+        if (!isEdit) {
+            getTriggerSourceData();
+        }
+    }, [isEdit]);
     useEffect(() => {
         if (queryParamDetails && Object.keys(queryParamDetails)?.length) {
             if (queryParamDetails?.from !== 'dashboard') {
@@ -244,8 +246,7 @@ const DynamicListCreation = () => {
             }
         }
     }, [location.state]);
-    let isApprovalLinkApproved = new URLSearchParams(window.location.search).get('approverStatus') === '1';
-    let isRejectedLink = new URLSearchParams(window.location.search).get('approverStatus') === '2';
+    
     useEffect(() => {
         const isApprovalLink = new URLSearchParams(window.location.search).get('rfa') || 'false';
         isApprovalLinkApproved = new URLSearchParams(window.location.search).get('approverStatus') === '1';
@@ -258,7 +259,7 @@ const DynamicListCreation = () => {
     }, []);
 
     useEffect(() => {
-        if (!isRFA || rfaapprovalList?.length) return;
+        if (rfaapprovalList?.length) return;
 
         dispatch(
             getRequestApprovalUserDetails({
@@ -283,131 +284,475 @@ const DynamicListCreation = () => {
         });
     };
 
-    const fetchTriggerAttributes = (payload) => {
-        const cached = getCachedTriggerAttributes(store.getState(), payload);
-        if (cached !== undefined) {
-            return Promise.resolve({ status: true, data: cached });
-        }
-        return triggerAttributesAPI.refetch({
-            fetcher: ({ payload: requestPayload }) =>
-                dispatch(getTriggerAttributes({ payload: requestPayload, loading: false })),
-            mode: 'create',
-            loaderConfig: fieldLoaderConfig,
-            params: { payload },
-        });
-    };
+    const fetchTriggerAttributes = useCallback(
+        (payload) => {
+            const cached = getCachedTriggerAttributes(store.getState(), payload);
+            if (cached !== undefined) {
+                return Promise.resolve({ status: true, data: cached });
+            }
+            return dispatch(getTriggerAttributes({ payload, loading: false }));
+        },
+        [dispatch, store],
+    );
 
-    const getTriggerAttributesData = (value, pages) => {
+   const getTriggerAttributesData = useCallback(
+    async (value, pages) => {
+        const triggerId = value?.triggerId;
         const payload = {
             clientId,
             userId,
             departmentId,
-            triggerSourceId: value?.triggerId,
+            triggerSourceId: triggerId,
             triggerddlValue: pages?.id || '',
         };
-        if ((value?.triggerId === 1 || value?.triggerId === 5) && pages?.id) {
-            fetchTriggerAttributes(payload);
-        } else if (value?.triggerId >= 0 && value?.triggerId !== 1 && value?.triggerId !== 5) {
-            fetchTriggerAttributes(payload);
-            if (value?.triggerId === 14 && !fullAttributeJSONValues?.length) {
-                const attrPayload = {
-                    clientId,
-                    userId,
-                    departmentId,
-                };
-                void import('../../../../../Reducers/audience/targetListCreation/request').then(
-                    ({ getFullAttributeJSONValues: fetchFullAttributeJSON }) => {
-                        if (!isMounted.current) return;
-                        dispatch(fetchFullAttributeJSON({ payload: attrPayload, dispatchState, from: 'dynamicList' }));
-                    },
-                ).catch(() => {});
-            }
-        }
-    };
 
-    const getTriggerBaseDDL = (value) => {
+        const shouldFetchAttributes =
+            triggerId === 1 || triggerId === 5
+                ? !!pages?.id
+                : triggerId >= 0;
+
+        let res;
+
+        if (shouldFetchAttributes) {
+            res = await fetchTriggerAttributes(payload);
+        }
+
+        if (triggerId === 14 && !fullAttributeJSONValues?.length && isMounted.current) {
+            dispatch(
+                getFullAttributeJSONValues({
+                    payload: {
+                        clientId,
+                        userId,
+                        departmentId,
+                    },
+                    dispatchState,
+                    from: 'dynamicList',
+                })
+            );
+        }
+
+        return res?.data || [];
+    },
+    [
+        clientId,
+        userId,
+        departmentId,
+        fetchTriggerAttributes,
+        fullAttributeJSONValues?.length,
+        dispatch,
+        dispatchState,
+    ]
+);
+
+    const getTriggerBaseDDL = useCallback(
+    (value) => {
         const payload = {
             clientId,
             userId,
             departmentId,
             triggerSourceId: value?.triggerId,
         };
+
         const cached = getCachedTriggerBaseDDL(store.getState(), payload);
+
         if (cached !== undefined) {
             return Promise.resolve({ status: true, data: cached });
         }
-        return triggerBaseDDLAPI.refetch({
-            fetcher: ({ payload: requestPayload }) =>
-                dispatch(getTriggerBaseDDLData({ payload: requestPayload, loading: false })),
-            mode: 'create',
-            loaderConfig: fieldLoaderConfig,
-            params: { payload },
-        });
-    };
 
-    const handleFromAttributesApiData = async (values) => {
-        try {
-            const { triggerddlValue, attributeName, triggerSourceId, fieldType, value, formId, dataAttributeId, id } =
-                values ?? {};
-            const payloadLevel1 = {
-                triggerddlValue: triggerddlValue,
-                attributeName: attributeName,
-                triggerSourceId: triggerSourceId,
-                fieldType: fieldType,
+        return dispatch(
+            getTriggerBaseDDLData({
+                payload,
+                loading: false,
+            }),
+        );
+    },
+    [clientId, userId, departmentId, dispatch, store],
+);
+
+
+    const dispatchTriggerAttributeValues = useCallback(
+        async (payload, fldname, selectedRuleType, options = {}) => {
+            if (!fldname) {
+                return;
+            }
+
+            const triggerSourceId = payload?.triggerSourceId ?? options?.triggerSourceId;
+            if (shouldSkipTriggerAttributeValuesApi(triggerSourceId)) {
+                return [];
+            }
+
+            const ruleMeta = selectedRuleType ?? {
+                value: payload?.attributeName,
+                fieldType: payload?.fieldType,
+            };
+
+            const skipCache = options?.skipCache ?? false;
+
+            const fieldType =
+                payload?.fieldType ||
+                selectedRuleType?.fieldType ||
+                selectedRuleType?.fieldtype ||
+                '';
+            const levelNo = payload?.levelNo ?? '';
+            const storageKey = buildFieldTriggerValuesKey(fldname, fieldType, levelNo);
+            const isCustomEventValues =
+                formatName(payload?.attributeName ?? selectedRuleType?.value) === 'customevents' &&
+                Boolean(payload?.attributevalue);
+            const cacheKey = isCustomEventValues
+                ? buildCustomEventValuesCacheKey(payload?.columnName, payload?.attributevalue)
+                : buildTriggerDdlCacheKey(selectedRuleType, fieldType, levelNo, {
+                      formId: payload?.formId,
+                      columnName: payload?.columnName,
+                      triggerddlValue: payload?.triggerddlValue,
+                      triggerSourceId: payload?.triggerSourceId,
+                  });
+
+            if (!isCustomEventValues && !shouldFetchTriggerAttributeValuesForRule(ruleMeta, triggerSourceId)) {
+                return [];
+            }
+
+            dispatchState({
+                type: 'UPDATE_FIELD_TRIGGER_VALUES',
+                payload: { fieldName: storageKey, isLoading: true },
+            });
+
+            try {
+                const cached =
+                    !skipCache && cacheKey
+                        ? (triggerDdlValuesRef.current[cacheKey] ?? triggerDdlValues?.[cacheKey])
+                        : undefined;
+                const isGeofence =
+                    formatName(payload?.attributeName ?? selectedRuleType?.value) === 'geofence';
+                let responseData = [];
+
+                if (Array.isArray(cached) && cached.length > 0) {
+                    responseData = cached;
+                } else if (isCustomEventValues) {
+                    const result = await dispatch(getCustomEventsValueData({ payload, loading: false }));
+                    responseData = result?.data ?? [];
+                } else if (isGeofence) {
+                    responseData = await loadGeoFencesFullList(dispatch, {
+                        departmentId: payload?.departmentId,
+                        clientId: payload?.clientId,
+                        userId: payload?.userId,
+                    });
+                } else {
+                    const result = await dispatch(
+                        getTriggerAttributeValuesData({ payload, loading: false }),
+                    );
+                    responseData = extractTriggerAttributeValuesList(result);
+                }
+
+                dispatchState({
+                    type: 'UPDATE_FIELD_TRIGGER_VALUES',
+                    payload: {
+                        fieldName: storageKey,
+                        isLoading: false,
+                        triggerValues: formatFieldTriggerValuesData(payload, responseData),
+                    },
+                });
+
+                if (cacheKey && responseData?.length) {
+                    triggerDdlValuesRef.current[cacheKey] = responseData;
+                    dispatchState({
+                        type: 'UPDATE_TRIGGER_DDL_VALUES',
+                        payload: {
+                            fieldName: cacheKey,
+                            data: responseData,
+                        },
+                    });
+                }
+
+                return responseData;
+            } catch {
+                dispatchState({
+                    type: 'UPDATE_FIELD_TRIGGER_VALUES',
+                    payload: {
+                        fieldName: storageKey,
+                        isLoading: false,
+                        triggerValues: formatFieldTriggerValuesData(payload, []),
+                    },
+                });
+                return [];
+            }
+        },
+        [dispatch, dispatchState, triggerDdlValues],
+    );
+
+    const resetEditListHydrationState = useCallback(() => {
+        clearDynamicListApiCaches();
+        clearGeoFencesListSessionCache();
+        triggerDdlValuesRef.current = {};
+        dispatch(resetDynamicListState());
+        dispatchState({ type: 'RESET_DROPDOWN_STATE' });
+        setTriggerValues([]);
+        setDuplicateRule({ show: false, index: 0 });
+        setErrorGroup(null);
+        setErrorCustomGroup(null);
+    }, [dispatch, dispatchState]);
+
+    const buildRuleTypeTriggerPayload = useCallback(
+        ({ selectedRuleType, triggerSource, pagesItem, levelNo = 1, overrides = {} }) => {
+            const triggerId = triggerSource?.triggerId;
+            return {
+                triggerddlValue: triggerId === 15 ? pagesItem?.value : pagesItem?.id || '',
+                attributeName:
+                    triggerId === 14 ? selectedRuleType?.fieldName : selectedRuleType?.value,
+                triggerSourceId: triggerId,
+                fieldType: overrides.fieldType ?? selectedRuleType?.fieldType ?? selectedRuleType?.fieldtype ?? '',
                 departmentId,
                 clientId,
                 userId,
+                levelNo,
+                formId: overrides.formId ?? '',
+                columnName: overrides.columnName ?? '',
+                ...(overrides.dataAttributeId != null ? { dataAttributeId: overrides.dataAttributeId } : {}),
+                ...('attributevalue' in overrides ? { attributevalue: overrides.attributevalue ?? '' } : {}),
+            };
+        },
+        [clientId, departmentId, userId],
+    );
+
+    const buildCustomEventsTriggerPayload = useCallback(
+        ({ triggerSource, pagesItem, columnName = '', attributevalue = '' }) =>
+            buildRuleTypeTriggerPayload({
+                selectedRuleType: { value: 'Custom events', fieldType: 'D' },
+                triggerSource,
+                pagesItem,
                 levelNo: 1,
-                formId: formatName(attributeName) === 'forms' ? id : formId,
-                columnName: value,
-                dataAttributeId: dataAttributeId,
-            };
-            const payloadLevel2 = {
-                ...payloadLevel1,
-                formId: formId,
-                levelNo: 2,
-            };
-            const responseLevel1 = await resolveTriggerAttributeValues({
-                dispatch,
-                getState: store.getState,
-                payload: payloadLevel1,
-                loading: false,
-            });
-            if (!isMounted.current) {
-                return { level1: [], level2: [] };
-            }
-            const responseLevel2 = await resolveTriggerAttributeValues({
-                dispatch,
-                getState: store.getState,
-                payload: payloadLevel2,
-                loading: false,
-            });
-            if (!isMounted.current) {
-                return { level1: [], level2: [] };
-            }
-            const responseLevel1Data = responseLevel1?.status ? responseLevel1?.data ?? [] : [];
-            const responseLevel2Data = responseLevel2?.status ? responseLevel2?.data ?? [] : [];
-            setValue(`triggerValues.${payloadLevel1?.attributeName}`, responseLevel1Data);
-            setValue(`triggerValues.${payloadLevel1?.attributeName + 2}`, responseLevel2Data);
-            return {
-                level1: responseLevel1Data,
-                level2: responseLevel2Data,
-            };
-        } catch {
-            return { level1: [], level2: [] };
+                overrides: {
+                    columnName,
+                    attributevalue,
+                },
+            }),
+        [buildRuleTypeTriggerPayload],
+    );
+
+    const resolveEditSelectedRuleType = useCallback((findTriggerAttributes, ruleAttribute, triggerSource) => {
+        const selectedRuleType = findTriggerAttributes?.[0];
+        if (!ruleAttribute) {
+            return selectedRuleType;
         }
-    };
+
+        const triggerId = triggerSource?.triggerId;
+        const fieldType = ruleAttribute?.FieldType;
+        const sourceName = ruleAttribute?.SourceName;
+
+        if (
+            (triggerId === 13 ||
+                triggerId === 27 ||
+                ((triggerId === 18 || triggerId === 5) && sourceName === 'Latitude & Longitude - Radius')) &&
+            fieldType === '2D'
+        ) {
+            return {
+                ...(selectedRuleType ?? {}),
+                fieldType,
+                fieldtype: fieldType,
+                id: parseInt(ruleAttribute?.Id, 10) || ruleAttribute?.Id,
+                placeholder: 'Select',
+                value: sourceName,
+            };
+        }
+
+        return selectedRuleType;
+    }, []);
+
+    const resolveEditAttributeNameLabel = useCallback((ruleAttribute, triggerSource) => {
+        const sourceNorm = formatName(ruleAttribute?.SourceName);
+        if (['attributes', 'eventbrite', 'forms'].includes(sourceNorm)) {
+            return ruleAttribute?.SourceName;
+        }
+
+        const triggerId = triggerSource?.triggerId;
+        if (
+            triggerId === 18 &&
+            (formatName(ruleAttribute?.Name) === 'beacon' || formatName(ruleAttribute?.Name) === 'city/area')
+        ) {
+            return ruleAttribute?.Name;
+        }
+
+        return ruleAttribute?.SourceName || ruleAttribute?.Name;
+    }, []);
+
+    const hydrateEditTwoDimensionalAttribute = useCallback(
+        async ({ fieldPath, selectedRuleType, triggerSource, pagesItem, ruleAttribute }) => {
+            const triggerId = triggerSource?.triggerId;
+            const attributeNameLabel = resolveEditAttributeNameLabel(ruleAttribute, triggerSource);
+            const isForms = formatName(attributeNameLabel) === 'forms';
+            const level1FormId = isForms ? ruleAttribute?.Id : ruleAttribute?.formId;
+
+            const level1Payload = buildRuleTypeTriggerPayload({
+                selectedRuleType: { ...selectedRuleType, value: attributeNameLabel },
+                triggerSource,
+                pagesItem,
+                levelNo: 1,
+                overrides: {
+                    formId: level1FormId,
+                    columnName: ruleAttribute?.Name,
+                    dataAttributeId: ruleAttribute?.dataAttributeId,
+                },
+            });
+
+            const level1Data = await dispatchTriggerAttributeValues(
+                level1Payload,
+                fieldPath,
+                selectedRuleType,
+            );
+
+            if (level1FormId && triggerId) {
+                dispatchState({
+                    type: 'UPDATE_FORM',
+                    field: triggerId,
+                    payload: level1FormId,
+                });
+            }
+
+            const level2Payload = buildRuleTypeTriggerPayload({
+                selectedRuleType: { ...selectedRuleType, value: attributeNameLabel },
+                triggerSource,
+                pagesItem,
+                levelNo: 2,
+                overrides: {
+                    formId: ruleAttribute?.formId,
+                    columnName: ruleAttribute?.Name,
+                    dataAttributeId: ruleAttribute?.dataAttributeId,
+                },
+            });
+
+            const level2Data = await dispatchTriggerAttributeValues(
+                level2Payload,
+                fieldPath,
+                selectedRuleType,
+            );
+
+            if (ruleAttribute?.dataAttributeId && triggerId) {
+                dispatchState({
+                    type: 'UPDATE_DATA_ATTRIBUTE_ID',
+                    field: triggerId,
+                    payload: ruleAttribute.dataAttributeId,
+                });
+            }
+
+            return {
+                level1: Array.isArray(level1Data) ? level1Data : [],
+                level2: Array.isArray(level2Data) ? level2Data : [],
+            };
+        },
+        [buildRuleTypeTriggerPayload, dispatchState, dispatchTriggerAttributeValues, resolveEditAttributeNameLabel],
+    );
+
+    const hydrateEditRuleAttributeDropdowns = useCallback(
+        async ({
+            fieldPath,
+            selectedRuleType,
+            triggerSource,
+            pagesItem,
+            ruleAttribute,
+        }) => {
+            if (!fieldPath || !selectedRuleType?.value) {
+                return { level1: [], level2: [] };
+            }
+
+            const fieldType = selectedRuleType?.fieldType ?? selectedRuleType?.fieldtype;
+            const normalizedValue = formatName(selectedRuleType?.value);
+            const triggerId = triggerSource?.triggerId;
+            const sourceNorm = formatName(ruleAttribute?.SourceName);
+
+            if (shouldSkipTriggerAttributeValuesApi(triggerId)) {
+                return { level1: [], level2: [] };
+            }
+
+            if (normalizedValue === 'geofence') {
+                const geofenceList = await dispatchTriggerAttributeValues(
+                    buildRuleTypeTriggerPayload({
+                        selectedRuleType,
+                        triggerSource,
+                        pagesItem,
+                        levelNo: 1,
+                    }),
+                    fieldPath,
+                    selectedRuleType,
+                );
+                return {
+                    level1: [],
+                    level2: [],
+                    geofenceList: Array.isArray(geofenceList) ? geofenceList : [],
+                };
+            }
+
+            const isTwoDimensionalRule =
+                (fieldType === '2D' && normalizedValue !== 'geofence') ||
+                ['attributes', 'eventbrite', 'forms'].includes(sourceNorm) ||
+                (triggerId === 18 &&
+                    (normalizedValue === 'beacon' ||
+                        normalizedValue === 'city/area' ||
+                        formatName(ruleAttribute?.Name) === 'beacon' ||
+                        formatName(ruleAttribute?.Name) === 'city/area'));
+
+            if (isTwoDimensionalRule) {
+                return hydrateEditTwoDimensionalAttribute({
+                    fieldPath,
+                    selectedRuleType,
+                    triggerSource,
+                    pagesItem,
+                    ruleAttribute,
+                });
+            }
+
+            if (normalizedValue === 'customevents') {
+                await dispatchTriggerAttributeValues(
+                    buildRuleTypeTriggerPayload({
+                        selectedRuleType,
+                        triggerSource,
+                        pagesItem,
+                        levelNo: 1,
+                    }),
+                    fieldPath,
+                    selectedRuleType,
+                );
+                return { level1: [], level2: [] };
+            }
+
+            if (shouldFetchTriggerAttributeValuesForRule(selectedRuleType, triggerId)) {
+                await dispatchTriggerAttributeValues(
+                    buildRuleTypeTriggerPayload({
+                        selectedRuleType,
+                        triggerSource,
+                        pagesItem,
+                        levelNo: 1,
+                    }),
+                    fieldPath,
+                    selectedRuleType,
+                );
+            }
+
+            return { level1: [], level2: [] };
+        },
+        [
+            buildRuleTypeTriggerPayload,
+            buildCustomEventsTriggerPayload,
+            dispatchTriggerAttributeValues,
+            hydrateEditTwoDimensionalAttribute,
+            resolveEditAttributeNameLabel,
+        ],
+    );
 
     const getEditListData = async (data) => {
         setEditDataLoading(true);
         try {
-        const {
-            convertComparisonValue,
-            extractAttributeValuesInEditFlow,
-            handleAttributeComparison,
-            handleAttributeName: resolveAttributeName,
-        } = await import('./constant');
-        editListControllRef.current = false;
+            resetEditListHydrationState();
+            if (isMounted.current) {
+                setTitle(['Rule']);
+                setGroup([]);
+            }
+
+            const {
+                convertComparisonValue,
+                extractAttributeValuesInEditFlow,
+                handleAttributeComparison,
+                handleAttributeName: resolveAttributeName,
+            } = await import('./constant');
+            editListControllRef.current = false;
         const fromDashboard = data?.from === 'dashboard';
         const payload = {
             dynamicListId: editListID,
@@ -547,19 +892,22 @@ const DynamicListCreation = () => {
             };
         }
         if (requestApprovalList?.length > 0) {
-            for (var i = 0; i < requestApprovalList?.length; i++) {
+            requestApprovalList.forEach((approvalItem) => {
+                const matchedApprover = rfaapprovalList?.find(
+                    (el) => el?.email === approvalItem?.approverEmail,
+                );
                 temp.approvalList?.name.push({
-                    approverName: {
-                        email: requestApprovalList[i]?.approverEmail,
-                        firstName: requestApprovalList[i]?.approverName,
-                        // roleId: 5,
-                        // userId: 26,
-                        name: requestApprovalList[i]?.approverName + ' (' + requestApprovalList[i]?.approverEmail + ')',
-                    },
+                    approverName:
+                        matchedApprover ?? {
+                            email: approvalItem?.approverEmail,
+                            firstName: approvalItem?.approverName,
+                            name: `${approvalItem?.approverName ?? ''} (${approvalItem?.approverEmail ?? ''})`,
+                        },
+                    mandatory: approvalItem?.isMandatory ?? false,
                 });
-            }
+            });
         } else {
-                temp.approvalList?.name.push({ approverName: '', mandatory: false });
+            temp.approvalList?.name.push({ approverName: '', mandatory: false });
         }
         var tempArrRule = [];
 
@@ -602,6 +950,8 @@ const DynamicListCreation = () => {
         if(tempArrRule?.some((item) => Number(item.TriggerName) === 14)){
             await dispatch(getFullAttributeJSONValues({ payload, dispatchState, from: 'dynamicList', loading: false }));
         }
+        const editTitles = [];
+        const editGroups = [];
         for (var i = 0; i < (Number(ruleData?.RuleGroups) || 0); i++) {
             if (!isMounted.current) return;
             // console.log('ruleData: ', ruleData);
@@ -673,11 +1023,10 @@ const DynamicListCreation = () => {
                 pages: findTriggerSource?.[0]?.isDDLExist ? findTriggerBaseDDL?.[0] : '',
                 RuleAttributes: [],
             };
-            title[i] = tempArrRule[i]?.RuleType;
-            let groupTemp = [...(group ?? [])];
-            groupTemp.push(tempArrRule[i]?.RuleType?.includes('Inclusion') ? 'Inclusion' : tempArrRule[i]?.RuleType);
-            if (isMounted.current) setGroup([...groupTemp]);
-            // group[i] = tempArrRule[i]?.RuleType?.includes('Inclusion') ? 'Inclusion' : tempArrRule[i]?.RuleType;
+            editTitles[i] = tempArrRule[i]?.RuleType || (i === 0 ? 'Rule' : `Inclusion Group ${i + 1}`);
+            editGroups.push(
+                tempArrRule[i]?.RuleType?.includes('Inclusion') ? 'Inclusion' : tempArrRule[i]?.RuleType,
+            );
             for (var j = 0; j < (RuleAttributes?.length ?? 0); j++) {
                 let findTriggerAttributes =
                     findTriggerSource?.[0]?.triggerId === 14
@@ -702,84 +1051,127 @@ const DynamicListCreation = () => {
                         (item) => item.id == RuleAttributes[j]?.Id,
                     );
                 }
-                if (
+                const fieldPath = `rule.${i}.RuleAttributes[${j}]`;
+                const selectedRuleType = resolveEditSelectedRuleType(
+                    findTriggerAttributes,
+                    RuleAttributes[j],
+                    findTriggerSource?.[0],
+                );
+                const pagesItem = findTriggerSource?.[0]?.isDDLExist ? findTriggerBaseDDL?.[0] : '';
+                const isFormAgainstAttributeRule =
                     formatName(RuleAttributes[j]?.SourceName) === 'attributes' ||
                     formatName(RuleAttributes[j]?.SourceName) === 'eventbrite' ||
                     formatName(RuleAttributes[j]?.SourceName) === 'forms' ||
                     (findTriggerSource?.[0]?.triggerId === 18 &&
                         (formatName(RuleAttributes[j]?.Name) === 'beacon' ||
-                            formatName(RuleAttributes[j]?.Name) === 'city/area'))
-                ) {
-                    const handleAttributeName = () => {
-                        if (
-                            formatName(RuleAttributes[j]?.SourceName) === 'attributes' ||
-                            formatName(RuleAttributes[j]?.SourceName) === 'eventbrite' ||
-                            formatName(RuleAttributes[j]?.SourceName) === 'forms'
-                        ) {
-                            return RuleAttributes[j]?.SourceName;
-                        } else if (
-                            findTriggerSource?.[0]?.triggerId === 18 &&
-                            (formatName(RuleAttributes[j]?.Name) === 'beacon' ||
-                                formatName(RuleAttributes[j]?.Name) === 'city/area')
-                        ) {
-                            return RuleAttributes[j]?.Name;
-                        }
-                    };
-                    const values = {
-                        triggerddlValue: '',
-                        attributeName: handleAttributeName(),
-                        triggerSourceId: findTriggerSource?.[0]?.triggerId,
-                        fieldType: RuleAttributes[j].FieldType,
-                        value: RuleAttributes[j].Name,
-                        formId: RuleAttributes[j].formId,
-                        dataAttributeId: RuleAttributes[j].dataAttributeId,
-                        id: RuleAttributes[j].Id,
-                    };
-                    const attributeData = await handleFromAttributesApiData(values);
-                    formAgainstAttributeData.level1[RuleAttributes[j].formId] = attributeData.level1;
-                    formAgainstAttributeData.level2[RuleAttributes[j].formId + '_' + RuleAttributes[j].Name] = attributeData.level2;
+                            formatName(RuleAttributes[j]?.Name) === 'city/area'));
+
+                let geofenceComparisonFromEdit = null;
+
+                if (selectedRuleType) {
+                    const attributeData = await hydrateEditRuleAttributeDropdowns({
+                        fieldPath,
+                        selectedRuleType,
+                        triggerSource: findTriggerSource?.[0],
+                        pagesItem,
+                        ruleAttribute: RuleAttributes[j],
+                    });
+
+                    if (formatName(selectedRuleType?.value) === 'geofence' && RuleAttributes[j]?.GeofenceId) {
+                        geofenceComparisonFromEdit = buildGeofenceComparisonFromEditRule(
+                            RuleAttributes[j],
+                            attributeData?.geofenceList,
+                        );
+                    }
+
+                    if (isFormAgainstAttributeRule) {
+                        formAgainstAttributeData.level1[RuleAttributes[j].formId] = attributeData.level1;
+                        formAgainstAttributeData.level2[RuleAttributes[j].formId + '_' + RuleAttributes[j].Name] =
+                            attributeData.level2;
+                    }
                 }
 
                 let customData = [];
+                const customEventsColumnValue = RuleAttributes[j]?.Value ?? '';
+                let customRuleTypeOptions = [];
+
+                if (formatName(selectedRuleType?.value) === 'customevents' && customEventsColumnValue !== '') {
+                    const customRuleTypesRes = await dispatch(
+                        getCustomEventsValueData({
+                            payload: buildCustomEventsTriggerPayload({
+                                triggerSource: findTriggerSource?.[0],
+                                pagesItem,
+                                columnName: customEventsColumnValue,
+                                attributevalue: '',
+                            }),
+                            loading: false,
+                        }),
+                    );
+                    customRuleTypeOptions = customRuleTypesRes?.status ? customRuleTypesRes?.data ?? [] : [];
+                }
+
                 for (var k = 0; k < (RuleAttributes[j]?.Customevent_attributes?.length ?? 0); k++) {
-                    setRuleIndex(j);
-                    const payload = {
-                        triggerddlValue: findTriggerSource?.[0]?.isDDLExist ? findTriggerBaseDDL?.[0]?.id : '',
-                        attributeName: 'Custom events',
-                        triggerSourceId: findTriggerSource?.[0]?.triggerId,
-                        fieldType: 'D',
-                        departmentId: departmentId,
-                        clientId: 1,
-                        levelNo: '',
-                        formId: '',
-                        columnName: RuleAttributes[j]?.Value,
-                        attributevalue: '',
-                    };
-                    let res = {};
+                    const customAttributeName = RuleAttributes[j]?.Customevent_attributes[k].cName;
+                    const customRowPath = `${fieldPath}.attributeCustom[${k}]`;
+
+                    let res = { status: false, data: [] };
                     if (RuleAttributes[j]?.Value === '') {
-                        res = await dispatch(getTriggerAttributeValuesData({ payload }));
+                        const customEventPayload = buildCustomEventsTriggerPayload({
+                            triggerSource: findTriggerSource?.[0],
+                            pagesItem,
+                            columnName: '',
+                            attributevalue: '',
+                        });
+                        res = await dispatch(getTriggerAttributeValuesData({ payload: customEventPayload }));
                     } else {
-                        res = await dispatch(getCustomEventsValueData({ payload }));
+                        res = { status: customRuleTypeOptions.length > 0, data: customRuleTypeOptions };
                     }
+
                     if (res?.status) {
-                        let findCustomAttributes = res?.data?.filter(
-                            (item) => item.value === RuleAttributes[j]?.Customevent_attributes[k].cName,
+                        const normalizedRuleTypes = normalizeCustomEventRuleTypeOptions(
+                            Array.isArray(res?.data) ? res.data : customRuleTypeOptions,
                         );
-                        let tempCustom = {
-                            attributeName: findCustomAttributes?.[0],
-                            // attributeValue: RuleAttributes[j]?.Customevent_attributes[k].cValue,
-                            attributeValue: RuleAttributes[j]?.Customevent_attributes[k].cValue?.split(','),
+                        const findCustomAttributes = normalizedRuleTypes.filter(
+                            (item) => item.value === customAttributeName,
+                        );
+                        const customFieldType =
+                            findCustomAttributes?.[0]?.fieldType ??
+                            findCustomAttributes?.[0]?.fieldtype ??
+                            RuleAttributes[j]?.Customevent_attributes[k].cFieldType ??
+                            'D';
+                        const customCValueParts = (RuleAttributes[j]?.Customevent_attributes[k].cValue ?? '')
+                            .split(',')
+                            .filter(Boolean);
+                        let customValueOptions = [];
+
+                        if (customAttributeName && RuleAttributes[j]?.Value !== '') {
+                            customValueOptions = await dispatchTriggerAttributeValues(
+                                buildCustomEventsTriggerPayload({
+                                    triggerSource: findTriggerSource?.[0],
+                                    pagesItem,
+                                    columnName: RuleAttributes[j]?.Value ?? '',
+                                    attributevalue: customAttributeName,
+                                }),
+                                customRowPath,
+                                { value: 'Custom events', fieldType: 'D' },
+                            );
+                        }
+
+                        customData.push({
+                            attributeName:
+                                findCustomAttributes?.[0] ?? {
+                                    value: customAttributeName,
+                                    fieldType: customFieldType,
+                                },
+                            attributeValue: customFieldType === 'D' ? '' : (customCValueParts[0] ?? ''),
                             attributeType: '',
-                            // attributeMultipleValues: [RuleAttributes[j]?.Customevent_attributes[k].cValue],
-                            attributeMultipleValues: RuleAttributes[j]?.Customevent_attributes[k].cValue?.split(','),
-                            // attributeComparison: RuleAttributes[j]?.Customevent_attributes[k].cFilterText,
+                            attributeMultipleValues: customFieldType === 'D' ? customCValueParts : [],
                             attributeComparison: convertComparisonValue(
                                 RuleAttributes[j]?.Customevent_attributes[k].cFilterText,
                                 RuleAttributes[j]?.Customevent_attributes[k].cFieldType,
-                                'edit'
+                                'edit',
                             ),
-                        };
-                        customData.push(tempCustom);
+                        });
                     }
                 }
                 const { attributeFrom, attributeTo, attributeValue, range } = extractAttributeValuesInEditFlow(
@@ -843,6 +1235,9 @@ const DynamicListCreation = () => {
                     ruleAttrTemp.attributeChannelValues = RuleAttributes[j]?.attributeChannelValues || '';
                     ruleAttrTemp.attributeActionValues = RuleAttributes[j]?.attributeActionValues || '';
                 }
+                if (geofenceComparisonFromEdit) {
+                    ruleAttrTemp.attributeComparison = geofenceComparisonFromEdit;
+                }
                 // Geofence Action is multi-select: bind saved Value (e.g. "In" or "In,Out") as array of objects
                 if (ruleAttrTemp.attributeName?.value === 'Geofence' && RuleAttributes[j].Value != null) {
                     const actionStr = String(RuleAttributes[j].Value).trim();
@@ -859,12 +1254,17 @@ const DynamicListCreation = () => {
         //debugger
         if (!isMounted.current) return;
         setEditListName(temp?.dynamicListName ?? '');
+        setTitle(editTitles);
+        setGroup(editGroups);
         reset((formState) => {
             return {
                 ...formState,
                 ...temp,
             };
         });
+        if (isMounted.current) {
+            setControllEditModeApiCall(false);
+        }
         } catch {
             if (isMounted.current) setGetDlFail(true);
         } finally {
@@ -872,6 +1272,8 @@ const DynamicListCreation = () => {
         }
     };
 
+    console.log('new URLSearchParams(window.location.search).get', new URLSearchParams(window.location.search).get('view'));
+    
     useEffect(() => {
         const nextSession = `${clientId}_${departmentId}`;
         if (dynamicListSessionRef.current === nextSession) return;
@@ -1027,20 +1429,30 @@ const DynamicListCreation = () => {
         setShowCrossDevice(statusCrossDevice);
     }, [rule]);
 
-    const removeRule = (idx, status) => {
-        if (status) {
-            ruleRemove(idx);
-        }
-        title.splice(idx, 1);
-        if (title?.length === 1 || title[1] === 'Exclusion') {
-            let temp = [...title];
 
-            temp.splice(0, 1, 'Rule');
-            setTitle([...temp]);
-        }
-        let tempGrp = group.slice(idx, 1);
-        setGroup(tempGrp);
-    };
+    const removeRule = useCallback(
+        (idx, status) => {
+            if (status) {
+                dispatchState({
+                    type: 'REMOVE_RULE_FIELD_TRIGGER_VALUES',
+                    payload: { ruleIndex: idx },
+                });
+                ruleRemove(idx);
+            }
+
+            title.splice(idx, 1);
+
+            if (title?.length === 1 || title[1] === 'Exclusion') {
+                const temp = [...title];
+                temp.splice(0, 1, 'Rule');
+                setTitle(temp);
+            }
+
+            const tempGrp = group.slice(idx, 1);
+            setGroup(tempGrp);
+        },
+    [ruleRemove, title, group, dispatchState]
+);
     const handleApproveDynamicList = async () => {
         const payload = {
             dynamicListId: editListID,
@@ -1149,12 +1561,12 @@ const DynamicListCreation = () => {
             departmentId,
             userId,
         };
-        
+        setIsActionLoading(true);
         if(editListName?.toLowerCase() !== dynamicListName?.trim().toLowerCase()) {
             try {
                 const nameValidationResult = await dispatch(isListNameExist({ 
                     payload: nameValidationPayload,
-                    loading: true
+                    loading: false
                 }));
                 
                 // If name exists (status is false), show error
@@ -1271,7 +1683,7 @@ const DynamicListCreation = () => {
                 const payload = BuildCreatePayload(submitData, temp, rule ?? [], window.location, crossDeviceStatus);
 
                 if (!isMounted.current) return;
-                setIsActionLoading(true);
+                
                 try {
                 const res = await dispatch(createDynamicList({ payload , loading: false}));
                 if (!isMounted.current) return;
@@ -1300,14 +1712,12 @@ const DynamicListCreation = () => {
             if (isMounted.current) setIsActionLoading(false);
         }
     };
-    // const value = { ListState, dispatchState, ruleIndex, setRuleIndex };
+    // const value = { ListState, dispatchState };
 
     const value = useMemo(
         () => ({
             ListState,
             dispatchState,
-            ruleIndex,
-            setRuleIndex,
             duplicateRule,
             setDuplicateRule,
             triggerValues,
@@ -1318,8 +1728,17 @@ const DynamicListCreation = () => {
             setErrorCustomGroup,
             errorCustomGroup,
             ensureTimeZoneDetail,
+            triggerSourceData,
+            removeRule,
+            getTriggerAttributesData,
+            getTriggerBaseDDL,
+            setErrorGroup,
+            errorGroup,
+            dispatchTriggerAttributeValues,
         }),
-        [ListState, ruleIndex, duplicateRule, triggerValues, isUpdate, controllEditModeApiCall, ensureTimeZoneDetail],
+        [ListState, duplicateRule, triggerValues, isUpdate, controllEditModeApiCall, ensureTimeZoneDetail,triggerSourceData, removeRule, 
+          setDuplicateRule,  getTriggerAttributesData, getTriggerBaseDDL,setErrorGroup,
+            errorGroup, dispatchTriggerAttributeValues],
     );
     const handleMdcNavigation = (res) => {
         const { data: dynamicListId } = res ?? {};
@@ -1420,6 +1839,26 @@ const DynamicListCreation = () => {
 
         return true;
     };
+
+    const isClickOff = useMemo(() => {
+        let clickOff =
+            isRFA ||
+            new URLSearchParams(window.location.search).get('view') === 'true' ||
+            warningListCount?.disable ||
+            !(isUpdate || isValidListname || (campaignType && campaignType === 'M'));
+
+        if (!offClick) {
+            clickOff = false;
+        }
+
+        return clickOff;
+    }, [isRFA, warningListCount?.disable, isUpdate, isValidListname, campaignType, offClick]);
+
+    const hasRfaMakeChangesComments = useMemo(
+        () => isUpdateRFA?.some((approver) => approver?.makeChangesComments?.length),
+        [isUpdateRFA],
+    );
+
     return (
         // Contend holder starts
         <FormProvider {...methods}>
@@ -1478,7 +1917,7 @@ const DynamicListCreation = () => {
                                         <ListNameExists
                                             name="dynamicListName"
                                             field="listName"
-                                            maxLength={campaignType === 'M' ? MAX_LENGTH200 : MAX_LENGTH200}
+                                            maxLength={MAX_LENGTH200}
                                             settings={{
                                                 disabled: campaignType === 'M',
                                             }}
@@ -1491,7 +1930,6 @@ const DynamicListCreation = () => {
                                                         payload: true,
                                                         field: 'isValidListname',
                                                     });
-
                                                     getTriggerSourceData();
                                                 } else {
                                                     dispatchState({
@@ -1517,93 +1955,22 @@ const DynamicListCreation = () => {
                                             customErrorMessage={ENTER_LIST_NAME_MSG}
                                             campaignType={campaignType}
                                         />
-                                        {/* <RSInput
-                                            control={control}
-                                            name="dynamicListName"
-                                            placeholder={DYNAMICLIST_NAME}
-                                            rules={LIST_NAME_RULES(NAME_CANNOT_BE_EMPTY)}
-                                            required
-                                            handleOnBlur={(e) => {
-                                                const { value } = e.target;
-                                                isListnameExistsCheck(value);
-                                            }}
-                                            disabled={isUpdate && !isUpdateList}
-                                        /> */}
                                     </Col>
-                                    {/* {dynamicListName !== '' && (
-                                        <Col sm={2}>
-                                            <div className="fg-icons ml-35 mt-2 dynamiclist-input-icon">
-                                                {isUpdate && !isUpdateList && (
-                                                    <>
-                                                        <RSTooltip text={RENAME} position="top">
-                                                            <i
-                                                                id="rs_data_pencil_edit"
-                                                                className={`${pencil_edit_medium} icon-md color-primary-blue`}
-                                                                onClick={() => {
-                                                                    dispatchState({
-                                                                        type: 'UPDATE',
-                                                                        payload: true,
-                                                                        field: 'isUpdateList',
-                                                                    });
-                                                                }}
-                                                            />
-                                                        </RSTooltip>
-                                                    </>
-                                                )}
-                                            </div>
-                                        </Col>
-                                    )} */}
                                 </Row>
                                 <div
-                                    className={
-                                        new URLSearchParams(window.location.search).get('view') === 'true' ||
-                                        warningListCount?.disable
-                                            ? 'createDynamicListBox'
-                                            : isUpdate || isValidListname || campaignType === 'M'
-                                            ? 'createDynamicListBox'
-                                            : 'createDynamicListBox'
-                                    }
+                                    className={'createDynamicListBox'}
                                 >
                                     {ruleFields?.map((field, fieldIndex) => {
-                                         let isClickOff =
-                                                    isRFA ||
-                                                    new URLSearchParams(window.location.search).get('view') === 'true' ||
-                                                    warningListCount?.disable ||
-                                                    !(isUpdate || isValidListname || (campaignType && campaignType === 'M'));
-
-                                                    if (!offClick) {
-                                                        isClickOff = false;
-                                                    }
+                                        
                                         return (
                                             <div key={field.id}>
-                                                <Suspense fallback={<></>}>
                                                     <RuleGrouping
                                                         key={field.id}
                                                         index={fieldIndex}
                                                         title={title?.[fieldIndex]}
-                                                        sourceData={triggerSourceData ?? []}
-                                                        exclusionData={triggerSourceData ?? []}
-                                                        removeRule={removeRule}
-                                                        ruleIndex={ruleIndex}
-                                                        setRuleIndex={setRuleIndex}
-                                                        getTriggerAttributesData={getTriggerAttributesData}
-                                                        getTriggerBaseDDL={getTriggerBaseDDL}
-                                                        ListState={ListState}
-                                                        dispatchState={dispatchState}
-                                                        duplicateRule={duplicateRule}
-                                                        setDuplicateRule={setDuplicateRule}
-                                                        setErrorGroup={setErrorGroup}
-                                                        errorGroup={errorGroup}
-                                                        setControllEditModeApiCall={setControllEditModeApiCall}
-                                                        controllEditModeApiCall={controllEditModeApiCall}
-                                                        errorCustomGroup={errorCustomGroup}
-                                                        setErrorCustomGroup={setErrorCustomGroup}
                                                         isTriggerSourceLoading={triggerSourceAPI?.isLoading}
-                                                        isPagesLoading={triggerBaseDDLAPI?.isLoading}
-                                                        isRuleTypeListLoading={triggerAttributesAPI?.isLoading}
                                                         isClickOff={isClickOff}
                                                     />
-                                                </Suspense>
                                                 <div
                                                     className={`rightOutSidePlusIcon position-absolute ${isClickOff ? 'pe-none click-off' : ''}`}
                                                 >
@@ -1620,6 +1987,7 @@ const DynamicListCreation = () => {
                                                                     <BootstrapDropdown
                                                                         data={['Inclusion', 'Exclusion']}
                                                                         flatIcon
+                                                                        alignRight
                                                                         defaultItem={
                                                                             <RSTooltip
                                                                                 text={ADD_RULE_GROUP}
@@ -1678,50 +2046,59 @@ const DynamicListCreation = () => {
                                         );
                                     })}
                                 </div>
-                                {new URLSearchParams(window.location.search).get('view') !== 'false' && isRFA && (
-                                        <div className={isRFA ? 'box-design rfa-approver-wrapper' : ''}>
-                                            {isUpdateRFA?.map((item, index) => (
-                                                <>
-                                              <Row className="form-group mb0">
-                                                <Col sm={6}>
-                                                <h4 className={`mb15 ${index === 0 ? '': 'd-none'}`}>Approver(s)</h4>
-                                                    <Row className="align-items-center align-items-stretch">
-                                                    {/* <Col sm={4}>
-                                                        <label className={`control-label-left ${index === 0 ? '': 'd-none'}`}>Approver(s)</label>
-                                                    </Col> */}
-                                                    <Col className={`${isRFA ? 'pe-none click-off' : ''} pr80`}>
-                                                        <p className={`rfa-approver-email ${index === 0 && isUpdateRFA?.length === 1 ? '': 'mb23'}`}>
-                                                        <strong>{item?.approverEmail}</strong>
-                                                        </p>
+                                {new URLSearchParams(window.location.search).get('view') !== 'false' && isRFA && hasRfaMakeChangesComments && (
+                                    <div className={isRFA ? 'box-design rfa-approver-wrapper' : ''}>
+                                        {isUpdateRFA?.map((item, index) => (
+                                            <Fragment key={`${item?.approverEmail ?? 'approver'}-${index}`}>
+                                                <Row className="form-group mb0">
+                                                    <Col sm={6}>
+                                                        <h4
+                                                            className={`mb15 ${index === 0 ? '' : 'd-none'}`}
+                                                        >
+                                                            Approver(s)
+                                                        </h4>
+                                                        <Row className="align-items-center align-items-stretch">
+                                                            <Col
+                                                                className={`${isRFA ? 'pe-none click-off' : ''} pr80`}
+                                                            >
+                                                                <p
+                                                                    className={`rfa-approver-email ${
+                                                                        index === 0 && isUpdateRFA?.length === 1
+                                                                            ? ''
+                                                                            : 'mb23'
+                                                                    }`}
+                                                                >
+                                                                    <strong>{item?.approverEmail}</strong>
+                                                                </p>
+                                                            </Col>
+                                                        </Row>
                                                     </Col>
-                                                    </Row>
-                                                </Col>
 
-                                                     <Col sm={6}>
-                                                     {item?.makeChangesComments?.length &&
-                                                      <h4 className={`mb15 ${index === 0 ? '': 'd-none'}`}>Comments</h4>
-                                                     }
-                                                    <Row className="align-items-center align-items-stretch">
-                                                    {/* <Col sm={3}>
-                                                        <label className={`control-label-left ${index === 0 ? '': 'd-none'}`}>Comments</label>
-                                                    </Col> */}
-
-                                                    <Col className={isRFA ? 'pe-none click-off' : ''}>
-                                                        <p>{item?.makeChangesComments}</p>
-                                                         {/* {index < isUpdateRFA?.length - 1 && (
-                                                        <p style={{ margin: "10px 0" }}></p>
-                                                        )} */}
-                                                    </Col>
-                                                    </Row>
-                                                </Col>
+                                                    {hasRfaMakeChangesComments && (
+                                                        <Col sm={6}>
+                                                            <h4
+                                                                className={`mb15 ${
+                                                                    index === 0 ? '' : 'd-none'
+                                                                }`}
+                                                            >
+                                                                Comments
+                                                            </h4>
+                                                            <Row className="align-items-center align-items-stretch">
+                                                                <Col className={isRFA ? 'pe-none click-off' : ''}>
+                                                                    {item?.makeChangesComments?.length ? (
+                                                                        <p>{item?.makeChangesComments}</p>
+                                                                    ) : null}
+                                                                </Col>
+                                                            </Row>
+                                                        </Col>
+                                                    )}
                                                 </Row>
-                                                </>
-                                            ))}
-                                        </div>
-                                    )}
+                                            </Fragment>
+                                        ))}
+                                    </div>
+                                )}
                                 <div className="position-relative">
-                                    {(isUpdate || isValidListname || isDirty) && approvalList?.requestApproval && (
-                                        <Suspense fallback={null}>
+                                    {(isUpdate || isValidListname || isDirty) && !isRFA &&(
                                             <RequestApproval
                                             name="approvalList.name"
                                             parent="approvalList"
@@ -1746,9 +2123,8 @@ const DynamicListCreation = () => {
                                                     : 'click-off pe-none'
                                             }
                                         />
-                                        </Suspense>
                                     )}
-                                    {showCrossDevice && (
+                                    {showCrossDevice && !isRFA &&(
                                         <div
                                             className={`${
                                                 !isValidListname ? 'pe-none click-off' : ''
@@ -1953,7 +2329,7 @@ const DynamicListCreation = () => {
                         </div>
                             </Container>
                         </div>
-                        <WarningPopup
+                        {!isEditDataLoading && isRFAAlert.show && <WarningPopup
                             show={isRFAAlert.show}
                             handleClose={(type) => {
                                 setRFAAlert((prev) => ({
@@ -1967,7 +2343,7 @@ const DynamicListCreation = () => {
                             isPrimary={true}
                             isPrimaryText={OK}
                             // showCancel={true}
-                        />
+                        />}
                         <RSModal
                             show={isRFAAlert.reject}
                             handleClose={() => {
@@ -2034,7 +2410,7 @@ const DynamicListCreation = () => {
                             }
                         />
 
-                        <WarningPopup
+                         {!isEditDataLoading && warningListCount.show &&<WarningPopup
                             show={warningListCount.show}
                             handleClose={(type) => {
                                 setWarningListCount((prev) => ({
@@ -2048,7 +2424,7 @@ const DynamicListCreation = () => {
                             isPrimaryText={OK}
                             isBorder
                             // showCancel={true}
-                        />
+                        />}
                     </Container>
                     {/* Main page content block ends */}
                 </div>

@@ -3,7 +3,7 @@ import { REPEAT_TIMES } from '../../constant';
 import { SELECT_AUDIO_FILE, SELECT_RETRY_TIMES } from 'Constants/GlobalConstant/ValidationMessage';
 import { ALLOWED_FORMATS, AUDIO_FILE, FILE_NAME_EXTENSIONSAUDIO, FILE_SIZE5MB, NO_OF_RETRIES, RETRY } from 'Constants/GlobalConstant/Placeholders';
 import { Fragment, useEffect, useState } from 'react';
-import _isEmpty from 'lodash/isEmpty';
+import { isEmpty as _isEmpty } from 'Utils/modules/lodashReplacements';
 import { useDispatch, useSelector } from 'react-redux';
 import { Row, Col } from 'react-bootstrap';
 import { useFormContext } from 'react-hook-form';
@@ -40,11 +40,13 @@ const Audio = () => {
         <Fragment>
             <div className="form-group mt41">
                 <Row>
-                    <Col sm={{ offset: 1, span: 2 }}>
+                <Col sm={3}  style={{ width: '20%' }}>
                         <label className="control-label-left">{AUDIO_FILE}</label>
                     </Col>
-                    <Col sm={6}>
-                        <RSFileUpload
+                    <Col
+                        sm={6}
+                        style={{ width: '544px' }}
+                    >                         <RSFileUpload
                             control={control}
                             name={'audioFile'}
                             accept={'.mp3,.wav'}
@@ -94,7 +96,13 @@ const Audio = () => {
             {isEdit && !!audioFile && (
                 <Row>
                     <div className='form-group'>
-                    <Col sm={{ span: 6, offset: 3 }} className='px10'>
+                    <Col sm={3}  style={{ width: '20%' }}>
+                        <label className="control-label-left">{AUDIO_FILE}</label>
+                    </Col>
+                    <Col
+                        sm={6}
+                        style={{ width: '544px' }}
+                    >                
                         <AudioPlayer
                             fieldName={'audioFile'}
                             // audio={audioFile[0]}
@@ -113,10 +121,13 @@ const Audio = () => {
             )}
             <div className="form-group">
                 <Row>
-                    <Col sm={{ offset: 1, span: 2 }}>
+                <Col sm={3}  style={{ width: '20%' }}>
                         <label className="control-label-left">{RETRY}</label>
                     </Col>
-                    <Col sm={6}>
+                    <Col
+                        sm={6}
+                        style={{ width: '544px' }}
+                        >
                         <RSKendoDropdown
                             control={control}
                             name={'repeat'}

@@ -22,7 +22,7 @@ import {
     updateOtpToken,
     updateisAuthQrScan
 } from './reducer';
-import { resetGlobalState, updateAccountAdmin, updateAuth, updateBUList, updateBuAndDepId, updateClientBranch, updateClientList, updateSessionModal, updateisClientID, updatedisLicenseId, updateBUByClient, updateBUByClientCompany, updateIndustryId, updateCurrentPageConfig, update_user_email_id, updateRenewalData, getGlobalStateValue } from 'Reducers/globalState/reducer';
+import { resetGlobalState, updateAccountAdmin, updateAuth, updateBUList, updateBuAndDepId, updateClientBranch, updateClientList, updateSessionModal, updateisClientID, updatedisLicenseId, updateBUByClient, updateBUByClientCompany, updateIndustryId, updateCurrentPageConfig, update_user_email_id, updateRenewalData, getGlobalStateValue, notifySessionRecovered, reset_global_loading } from 'Reducers/globalState/reducer';
 
 import { resetdashboardState } from 'Reducers/dashboard/dashboardReducer';
 import { resetTargetListData } from 'Reducers/audience/targetList/reducer';
@@ -32,7 +32,8 @@ import { updateHQData } from 'Reducers/preferences/accountSettings/request';
 import { setWelcomeModal } from 'Reducers/preferences/myProfile/reducer';
 import CacheManager from 'Utils/cacheManager';
 import { mountFullAppReducer } from 'Store/mountFullAppReducer';
-import { prefetchPostLoginShell, resolvePostLoginTarget } from 'Utils/modules/postLoginShell';
+import { getStoreInstance } from 'Store/storeRef';
+import { prefetchPostLoginShell, resolvePostLoginTarget, SESSION_RECOVERED_EVENT } from 'Utils/modules/postLoginShell';
 
 export const accountResponse = async (response, navigate, dispatch, lastURL = '') => {
     const {
@@ -63,9 +64,9 @@ export const accountResponse = async (response, navigate, dispatch, lastURL = ''
     const tempNewVersionConfirm = localStorage.getItem('newVersionConfirm');
     let temp_session_credentials = localStorage.getItem('sessionCredentials');
     localStorage.clear();
-    if (tempMasterData) {
-        localStorage.setItem('masterData', tempMasterData);
-    }
+    // if (tempMasterData) {
+    //     localStorage.setItem('masterData', tempMasterData);
+    // }
     if (tempipAddressData) {
         localStorage.setItem('ipAddressData', tempipAddressData);
     }
@@ -239,6 +240,13 @@ export const accountResponse = async (response, navigate, dispatch, lastURL = ''
             accessToken: accessToken || '',
         }),
     );
+
+    const pendingSessionRecovery = getStoreInstance()?.getState()?.globalstate?.pendingSessionRecovery;
+    if (pendingSessionRecovery || lastURL !== '') {
+        dispatch(reset_global_loading());
+        dispatch(notifySessionRecovered());
+        window.dispatchEvent(new CustomEvent(SESSION_RECOVERED_EVENT));
+    }
 };
 
 export const emailExist =
@@ -1024,9 +1032,9 @@ export const clearClientSessionForLoginRedirect = (dispatch) => {
 
     localStorage.clear();
 
-    if (tempMasterData) {
-        localStorage.setItem('masterData', tempMasterData);
-    }
+    // if (tempMasterData) {
+    //     localStorage.setItem('masterData', tempMasterData);
+    // }
     if (tempipAddressData) {
         localStorage.setItem('ipAddressData', tempipAddressData);
     }
@@ -1047,7 +1055,20 @@ export const clearClientSessionForLoginRedirect = (dispatch) => {
     dispatch(resetLoginFormState());
     dispatch(resetNewUserFormState());
 
+    CacheManager.clear();
     localStorage.setItem('logoutEvent', Date.now().toString());
+};
+
+/** Clear client session then route to login without a full page reload. */
+export const navigateToLoginAfterSessionClear = (dispatch, navigate) => {
+    clearClientSessionForLoginRedirect(dispatch);
+    if (typeof navigate === 'function') {
+        navigate('/', { replace: true });
+        return;
+    }
+    if (typeof window !== 'undefined') {
+        window.location.href = '/';
+    }
 };
 
 export const logOut =
@@ -1058,18 +1079,13 @@ export const logOut =
                     url: LOGOUT,
                     payload,
                     loading,
-                    ok: ({ data }) => {
-                        const logoutExecute = () => {
-                            try {
-                                setShow(false);
-                                clearClientSessionForLoginRedirect(dispatch);
-                            } catch (error) {
-                                setShow(false);
-                            }
-                        };
-                        window.location.href = '/';
-                        setShow(false);
-                        logoutExecute();
+                    ok: () => {
+                        try {
+                            setShow(false);
+                            navigateToLoginAfterSessionClear(dispatch, navigate);
+                        } catch (error) {
+                            setShow(false);
+                        }
                     },
                     fail: (err) => {
                         setShow(false);

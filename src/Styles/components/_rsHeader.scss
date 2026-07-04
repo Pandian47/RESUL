@@ -66,6 +66,11 @@ header.rs-page-header-wrapper {
                         &:visited {
                             outline: 0;
                         }
+                        .tooltip-wrap {
+                            display: grid;
+                            align-items: center;
+                            justify-content: center;
+                        }
                     }
                     &:nth-child(1),
                     &:nth-child(5) {

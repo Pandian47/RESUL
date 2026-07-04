@@ -401,7 +401,13 @@ const CommunicationGallery = (type) => {
                 {isLoading ? (
                     <Row className="mt15 mb15">
                         {Array.from({ length: 4 }).map((_, idx) => (
-                            <SkeletonGalleryCard key={`loading-skeleton-${idx}`} isLoading={isLoading} />
+                            <SkeletonGalleryCard
+                                key={`loading-skeleton-${idx}`}
+                                isLoading
+                                col={3}
+                                hideBottomAccent
+                                cardPadding={10}
+                            />
                         ))}
                     </Row>
                 ) : template && template?.items?.length > 0 ? (

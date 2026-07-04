@@ -4,7 +4,7 @@ import { EMAIL_APPROVAL_RULES } from 'Constants/GlobalConstant/Rules';
 import { ADD, ADD_NEW_MAIL_ADDRESS, APPROVAL_SETTINGS, CLEAR, EMAIL, ENTER_EMAIL_ID, MANDATORY, REMOVE, REQUEST_APPROVAL, REQUEST_APPROVAL_AUTHORIZED_APPROVERS, REQUEST_APPROVAL_CONCERNED_PERSON, REQUEST_APPROVAL_REQUEST, REQUEST_APPROVAL_TEST_EMAIL, SEND, SEND_APPROVAL_REQUEST, TEST_EMAIL } from 'Constants/GlobalConstant/Placeholders';
 import { clear_medium, mandatory_mini, settings_medium } from 'Constants/GlobalConstant/Glyphicons';
 import { Fragment, Suspense, lazy, useEffect, useMemo, useRef, useState } from 'react';
-import _get from 'lodash/get';
+import { get as _get } from 'Utils/modules/lodashReplacements';
 import { Col, Row } from 'react-bootstrap';
 import { useFieldArray, useFormContext, useWatch } from 'react-hook-form';
 
@@ -848,13 +848,13 @@ const RequestApproval = ({
     return (
         <Fragment>
             <>
+            {isCustomapproval && (
                 <div
                     className={`form-group ${isEnable} ${isAudience && !approvalListRequestApproval ? 'mb0' : ''} ${
                         isAudience ? 'audienceRFA' : 'rfa'
                     } `}
                 >
-                    {isCustomapproval && (
-                        // <Row className={isValid || isRequestApproval ? '' : 'click-off'}>
+                        {/* <Row className={isValid || isRequestApproval ? '' : 'click-off'}> */}
                         <Row className={''}>
                             {/* <Col sm={{ offset: 1, span: 2 }}></Col> */}
                             <Col sm={{ ...(isCustomapproval && isOffset && { offset: 3 }), span: 6 }}>
@@ -893,12 +893,12 @@ const RequestApproval = ({
                                 />
                             </Col>
                         </Row>
-                    )}
                 </div>
+                )}
                 <div className={`form-group mb10 `}>
                     <Row className={`requestApprovalBlock ${isAudience && !approvalListRequestApproval ? 'mb0' : ''}`}>
                         <>
-                            <Col sm={isOffSet ? { offset: 0, span: 3 } : { offset: 1, span: 2 }}>
+                            <Col sm={isOffSet ? { offset: 0, span: isDynamic ? 2 : 3 } : { offset: 1, span: 2 }}>
                                 {!isCustomapproval && (
                                     <label className="control-label-left">
                                         {isRequestApproval
@@ -910,7 +910,7 @@ const RequestApproval = ({
                                     <label className="control-label-left">{SEND_APPROVAL_REQUEST}</label>
                                 )}
                             </Col>
-                            <Col sm={isAudience && !isDynamic ? 7 : 6} className={`${isEnable}`}>
+                            <Col sm={isAudience && !isDynamic ? 7 : 6} className={`${isEnable} ${isDynamic ? 'pl30': ''}`}>
                                 {!isCustomapproval && isApprovalInputEmail && !isRequestApproval && (
                                     <div className="position-relative group">
                                         <RSInput

@@ -9,7 +9,7 @@ $resgrid: resgrid;
 // ---------------------------------------------------------------------------
 $resgrid-skeleton-base:  #e0e5eb;
 $resgrid-skeleton-shine: #eeeeee;
-$resgrid-border-color:  #a6c6e2;
+$resgrid-border-color:  #c2cfe3;
 $resgrid-card-box-shadow: 0 0 5px #0000000d, 0 0 5px #0000000d;
 $expand-corner-icon-size: 10px;
 $expand-corner-icon-stroke: 2px;
@@ -1067,6 +1067,16 @@ $expand-corner-icon-stroke: 2px;
                     }
                 }
 
+                td.#{$resgrid}--detail-skel-sent-by-channel {
+                    text-align: right;
+
+                    .#{$resgrid}--detail-skel-line {
+                        width: 56px;
+                        max-width: 100%;
+                        margin-left: auto;
+                    }
+                }
+
                 td.#{$resgrid}--detail-skel-action-cell {
                     width: 160px;
                     min-width: 160px;
@@ -1150,6 +1160,22 @@ $expand-corner-icon-stroke: 2px;
                     }
                 }
             }
+        }
+    }
+
+    &.#{$resgrid}-listing--communication {
+        .rs-grid-detail-view {
+            overflow: hidden;
+            transform-origin: top center;
+            will-change: height, opacity, transform;
+
+            &.is-detail-collapsing {
+                pointer-events: none;
+            }
+        }
+
+        .rs-grid-detail-measure {
+            width: 100%;
         }
     }
 

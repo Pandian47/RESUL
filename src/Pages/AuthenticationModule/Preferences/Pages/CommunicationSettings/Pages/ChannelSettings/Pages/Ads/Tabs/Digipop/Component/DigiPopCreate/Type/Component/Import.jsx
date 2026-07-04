@@ -1,7 +1,7 @@
 import { DIGIPOP_AUDIO_UPLOAD, DIGIPOP_AUDIO_URL as DIGIPOP_AUDIO_URL_MSG, DIGIPOP_IAMGE_UPLOAD, DIGIPOP_IMAGE_URL as DIGIPOP_IMAGE_URL_MSG, DIGIPOP_VIDEO_UPLOAD, DIGIPOP_VIDEO_URL as DIGIPOP_VIDEO_URL_MSG } from 'Constants/GlobalConstant/ValidationMessage';
 import { DIGIPOP_AUDIO_URL, DIGIPOP_IMAGE_URL, DIGIPOP_VIDEO_URL } from 'Constants/GlobalConstant/Placeholders';
 import { import_file_edge_large, import_link_large, restart_medium } from 'Constants/GlobalConstant/Glyphicons';
-import _get from 'lodash/get';
+import { get as _get } from 'Utils/modules/lodashReplacements';
 
 import { Row, Col } from 'react-bootstrap';
 import { useFormContext } from 'react-hook-form';

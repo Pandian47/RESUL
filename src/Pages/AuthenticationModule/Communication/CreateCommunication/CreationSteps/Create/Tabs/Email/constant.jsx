@@ -1,16 +1,22 @@
 import { cloneElement } from 'react';
 
-import { getUserDetails } from 'Utils/modules/crypto';
 import { circle_plus_medium, import_file_edge_large, template_edge_large, text_document_edge_large } from 'Constants/GlobalConstant/Glyphicons';
-import _map from 'lodash/map';
-import _get from 'lodash/get';
-import _reduce from 'lodash/reduce';
+import { map as _map, get as _get,reduce as _reduce  } from 'Utils/modules/lodashReplacements';
 import { Row } from 'react-bootstrap';
 import Import from 'Pages/AuthenticationModule/Components/Import';
 import TextEditor from './Component/TextEditor/TextEditor';
 import Template from './Component/Template/Template';
 import SplitABTab from './Component/SplitABTab/SplitABTab';
-import { handleAllChannelPayload, handleAllChannelTimeZonePayload, handleMDCExtraPayload, getSavedPushChannelFlagPayload, resolveLocalBlastDateTime } from '../../constant';
+import {
+    formatDateScheculer,
+    handleAllChannelPayload,
+    handleAllChannelTimeZonePayload,
+    handleMDCExtraPayload,
+    getSavedPushChannelFlagPayload,
+    resolveLocalBlastDateTime,
+    resolveMdcSchedule,
+} from '../../constant';
+import { getUserDetails, isValidDate } from 'Utils/index';
 import { updateSenderDetails } from 'Reducers/communication/createCommunication/Create/request';
 import { saveEmailCampaign, saveEmailTemplateContent } from 'Reducers/communication/createCommunication/Create/request';
 
@@ -50,10 +56,10 @@ const resolveCampaignStateForPausedEtCheck = ({ campaignDetails, locationState }
 };
 
 
-export const resolvePausedEtSaveThunk = ({ payload, savedChannelsId, campaignDetails, locationState, thunks }) => {
+export const resolvePausedEtSaveThunk = ({ payload, savedChannelsId, campaignDetails, locationState, thunks, loading = true }) => {
     const { saveDefault, saveTemplateContent } = thunks || {};
     if (typeof saveDefault !== 'function' || typeof saveTemplateContent !== 'function') {
-        return saveEmailCampaign({ payload, savedChannelsId });
+        return saveEmailCampaign({ payload, savedChannelsId, loading });
     }
     const { campaignType, triggerPlayPauseStatus, statusId } = resolveCampaignStateForPausedEtCheck({
         campaignDetails,
@@ -61,20 +67,28 @@ export const resolvePausedEtSaveThunk = ({ payload, savedChannelsId, campaignDet
     });
     const shouldUseNew = isPausedEventTriggerCampaign({ campaignType, triggerPlayPauseStatus, statusId });
     return shouldUseNew
-        ? saveTemplateContent({ payload, savedChannelsId })
-        : saveDefault({ payload, savedChannelsId });
+        ? saveTemplateContent({ payload, savedChannelsId, loading })
+        : saveDefault({ payload, savedChannelsId, loading });
 };
 
-export const resolvePausedEtSaveEmailThunk = ({ payload, savedChannelsId, campaignDetails, locationState }) =>
+export const resolvePausedEtSaveEmailThunk = ({
+    payload,
+    savedChannelsId,
+    campaignDetails,
+    locationState,
+    loading = true,
+}) =>
     resolvePausedEtSaveThunk({
         payload,
         savedChannelsId,
         campaignDetails,
         locationState,
+        loading,
         thunks: {
-            saveDefault: ({ payload: p, savedChannelsId: sc }) => saveEmailCampaign({ payload: p, savedChannelsId: sc }),
-            saveTemplateContent: ({ payload: p, savedChannelsId: sc }) =>
-                saveEmailTemplateContent({ payload: p, savedChannelsId: sc }),
+            saveDefault: ({ payload: savePayload, savedChannelsId: savedChannels, loading: saveLoading }) =>
+                saveEmailCampaign({ payload: savePayload, savedChannelsId: savedChannels, loading: saveLoading }),
+            saveTemplateContent: ({ payload: savePayload, savedChannelsId: savedChannels, loading: saveLoading }) =>
+                saveEmailTemplateContent({ payload: savePayload, savedChannelsId: savedChannels, loading: saveLoading }),
         },
     });
 
@@ -274,14 +288,49 @@ export const getCommunicationPerformanceId = (id) => {
     return '';
 };
 
+
+function cleanHtmlForOverFlowHidden(html) {
+    return html
+        // Remove DOCTYPE   
+        .replace(/<!DOCTYPE[^>]*>\s*/i, "")
+
+        // Remove overflow:hidden from <html style="">
+        .replace(
+            /(<html\b[^>]*style="[^"]*)\s*overflow\s*:\s*hidden;?\s*([^"]*")/i,
+            "$1$2"
+        )
+
+        // Remove overflow:hidden from <body style="">
+        .replace(
+            /(<body\b[^>]*style="[^"]*)\s*overflow\s*:\s*hidden;?\s*([^"]*")/i,
+            "$1$2"
+        )
+
+        // Clean up duplicate semicolons/spaces in style attributes
+        .replace(/style="\s*;\s*/gi, 'style="')
+        .replace(/;;+/g, ";")
+        .replace(/:\s*;/g, ":")
+        .replace(/style="\s*"/gi, "")
+
+        .replace(
+            /(<body\b[^>]*>[\s\S]*)(<style\b[^>]*>[\s\S]*?<\/style>)([\s\S]*<\/body>)/i,
+            "$1$3"
+        )
+}
+
+// Usage
+
 export const getLatestEdmContentFromIframe = () => {
     try {
         const iframe = document.querySelector('#template iframe');
         const doc = iframe?.contentWindow?.document;
         if (!doc) return '';
-        return [...doc.childNodes]
+        let edmContent = [...doc.childNodes]
             .map((item) => new XMLSerializer().serializeToString(item))
             .join('');
+
+        edmContent = cleanHtmlForOverFlowHidden(edmContent);
+        return edmContent
     } catch {
         return '';
     }
@@ -339,12 +388,7 @@ export const buildPayload = (formState, checkSpam, type = '', locationState) => 
         ...restState
     } = formState;
     const { timeZoneId = 0 } = getUserDetails();
-    restState.schedule =
-        levelNumber > 1
-            ? new Date(formState.scheduleDate)
-            : levelNumber == 1 && campaignType === 'M' && dataSource === 'DL'
-                ? new Date()
-                : restState.schedule;
+    restState.schedule = resolveMdcSchedule(formState, locationState, levelNumber, campaignType, dataSource, restState.schedule);
     const getSourceType = (id) => {
         if (id === 0) return 'R';
         else if (id === 1) return 'Z';

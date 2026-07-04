@@ -2,7 +2,7 @@ import { NO_RESULTS_FOUND } from 'Constants/GlobalConstant/ValidationMessage';
 import { CLEAR, SEARCH, SEARCH_TEXT } from 'Constants/GlobalConstant/Placeholders';
 import { clear_mini, zoom_medium } from 'Constants/GlobalConstant/Glyphicons';
 import { useEffect, useRef, useState } from 'react';
-import _debounce from 'lodash/debounce';
+import { debounce as _debounce } from 'Utils/modules/lodashReplacements';
 import PropTypes from 'prop-types';
 
 import RSTooltip from 'Components/RSTooltip';
@@ -207,7 +207,7 @@ const RSSearchField = ({
                 <RSTooltip
                     text={SEARCH_TEXT}
                     position="top"
-                    className="lh0 d-flex align-items-center justify-content-center height32"
+                    className="lh0 d-flex text-center"
                     innerContent={false}
                     tooltipOverlayClass={'toolTipOverlayZindexCSS'}
                 >

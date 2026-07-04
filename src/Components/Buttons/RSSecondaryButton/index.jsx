@@ -43,9 +43,9 @@ const RSSecondaryButton = ({
                     {showLoading && (
                         <motion.div
                             className="segment_loader"
-                            initial={{ width: 0, opacity: 0, x: 15 }}
-                            animate={{ width: 16, opacity: 1, x: 0 }}
-                            exit={{ width: 0, opacity: 0, x: -15 }}
+                            initial={{ width: 0, height: 0, opacity: 0, x: 15 }}
+                            animate={{ width: 16, height: 16, opacity: 1, x: 0 }}
+                            exit={{ width: 0, height: 0, opacity: 0, x: -15 }}
                             transition={{ duration: 0.25, ease: 'easeInOut' }}
                             style={{ overflow: 'hidden' }}
                         />

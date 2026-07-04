@@ -1,7 +1,4 @@
 import { AUDIENCE_GLYPH as G } from 'Pages/AuthenticationModule/Audience/audienceGlyphs';
-import _map from 'lodash/map';
-import _flattenDeep from 'lodash/flattenDeep';
-import _compact from 'lodash/compact';
 import { mySqlUpdate, mySqlDataUpdate } from 'Reducers/remoteDataSource/reducer';
 import { INTEGRATED_SQL_CONNECTOR_IDS } from '../constants';
 
@@ -259,7 +256,7 @@ const getKeyValue = (obj) => {
 };
 
 export const getSelectedTables = (mySql) => {
-    return _map(mySql, (res, key) => {
+    return Object.entries(mySql).map(([key, res]) => {
         return {
             table: key,
             selectedKey: getKeyValue(res),
@@ -270,10 +267,10 @@ export const getSelectedTables = (mySql) => {
 
 export const generateRightAttributes = (mySql) => {
     const tmpMysqlm = { ...mySql };
-    let allAttr = _map(tmpMysqlm, (res) => {
-        return _map(res.attributes.rightAttributes, (attr) => attr);
+    let allAttr = Object.values(tmpMysqlm).map((res) => {
+        return res.attributes.rightAttributes.map((attr) => attr);
     });
-    return _flattenDeep(allAttr);
+    return allAttr.flat(Infinity);
 };
 
 export const generateLeftAttributes = (left, right) => {
@@ -284,7 +281,7 @@ export const generateLeftAttributes = (left, right) => {
     return leftAttr;
 };
 export const getPreviewData = (mySql) => {
-    return _map(mySql, (res, key) => {
+    return Object.entries(mySql).map(([key, res]) => {
         return {
             table: key,
             selectedKey: getKeyValue(res),
@@ -299,13 +296,13 @@ export const finalPayload_mySQL = (mySql, getValues, type) => {
         data: { sourceName, remoteDataSourceID },
     } = type;
     const { ipAddress, userName, password, databaseName, portNumber, instanceName, updatedCycle, primaryKey, foreignKey } = getValues();
-    const tableName = _map(mySql, (res, key) => {
+    const tableName = Object.entries(mySql).map(([key, res]) => {
         if (res.foreignKey) return key + '.' + getKeyValue(res);
     });
-    const columname = _map(mySql, (res, key) => {
+    const columname = Object.entries(mySql).map(([key, res]) => {
         return key + '.' + getKeyValue(res);
     });
-    const updateDatecolumn = _map(mySql, (res, key) => {
+    const updateDatecolumn = Object.entries(mySql).map(([key, res]) => {
         return key + '.' + getKeyValue(res) + '.' + res.checkUpdate.type;
     });
     const primaryKeyTable = Object.keys(mySql)[0];
@@ -468,7 +465,7 @@ export const finalPayload_hubspot = (mySql, getValues, type, tabledata) => {
         data: { sourceName, remoteDataSourceID },
     } = type;
 
-    const tableName = _map(mySql, (res, key) => key);
+    const tableName = Object.keys(mySql);
     const rightAtt = [];
     let columnName = Object.keys(mySql).map((ele, ind) => {
         let keys = mySql[ele];
@@ -510,7 +507,7 @@ export const finalPayload_salesForce = (mySql, getValues, type, tabledata) => {
         data: { sourceName, remoteDataSourceID },
     } = type;
 
-    const tableName = _map(mySql, (res, key) => key);
+    const tableName = Object.keys(mySql);
 
     const rightAtt = [];
     let columnName = Object.keys(mySql).map((ele, ind) => {
@@ -584,7 +581,7 @@ export const finalPayload_shopify = (mySql, getValues, type, tabledata) => {
         data: { sourceName, remoteDataSourceID },
     } = type;
 
-    const tableName = _map(mySql, (res, key) => key);
+    const tableName = Object.keys(mySql);
     const rightAtt = [];
 
     let columnName = Object.keys(mySql).map((ele, ind) => {
@@ -647,7 +644,7 @@ export const finalPayload_pipeDrive = (mySql, getValues, type, tabledata) => {
         data: { sourceName, remoteDataSourceID },
     } = type;
 
-    const tableName = _map(mySql, (res, key) => key);
+    const tableName = Object.keys(mySql);
     const rightAtt = [];
 
     let columnName = Object.keys(mySql).map((ele, ind) => {
@@ -700,7 +697,7 @@ export const finalPayload_cassandra = (mySql, getValues, type, tabledata) => {
         data: { sourceName, remoteDataSourceID },
     } = type;
 
-    const tableName = _map(mySql, (res, key) => key);
+    const tableName = Object.keys(mySql);
     const rightAtt = [];
     let columnName = Object.keys(mySql).map((ele, ind) => {
         let keys = mySql[ele];
@@ -755,7 +752,7 @@ export const finalPayload_aeroSpike = (mySql, getValues, type, tabledata) => {
         data: { sourceName, remoteDataSourceID },
     } = type;
 
-    const tableName = _map(mySql, (res, key) => key);
+    const tableName = Object.keys(mySql);
     const rightAtt = [];
     let columnName = Object.keys(mySql).map((ele, ind) => {
         let keys = mySql[ele];
@@ -895,7 +892,7 @@ export const finalPayload_postgresql = (mySql, getValues, type, tabledata) => {
         data: { sourceName, remoteDataSourceID },
     } = type;
 
-    const tableName = _map(mySql, (res, key) => key);
+    const tableName = Object.keys(mySql);
     const rightAtt = [];
 
     let columnName = Object.keys(mySql).map((ele, ind) => {
@@ -943,7 +940,7 @@ export const finalPayload_dataBricks = (mySql, getValues, type, tabledata) => {
         data: { sourceName, remoteDataSourceID },
     } = type;
 
-    const tableName = _map(mySql, (res, key) => key);
+    const tableName = Object.keys(mySql);
     const rightAtt = [];
 
     let columnName = Object.keys(mySql).map((ele, ind) => {
@@ -990,7 +987,7 @@ export const finalPayload_eventbrite = (mySql, getValues, type, tabledata) => {
         data: { sourceName, remoteDataSourceID },
     } = type;
 
-    const tableName = _map(mySql, (res, key) => key);
+    const tableName = Object.keys(mySql);
     const rightAtt = [];
     let columnName = Object.keys(mySql).map((ele, ind) => {
         let keys = mySql[ele];
@@ -1044,7 +1041,7 @@ export const finalPayload_bigCommerce = (mySql, getValues, type, tabledata) => {
         data: { sourceName, remoteDataSourceID },
     } = type;
 
-    const tableName = _map(mySql, (res, key) => key);
+    const tableName = Object.keys(mySql);
 
     const rightAtt = [];
     let columnName = Object.keys(mySql).map((ele, ind) => {
@@ -1099,7 +1096,7 @@ export const finalPayload_prestashop = (mySql, getValues, type, tabledata) => {
         data: { sourceName, remoteDataSourceID },
     } = type;
 
-    const tableName = _map(mySql, (res, key) => key);
+    const tableName = Object.keys(mySql);
 
     const rightAtt = [];
     let columnName = Object.keys(mySql).map((ele, ind) => {
@@ -1154,7 +1151,7 @@ export const finalPayload_blackBaud = (mySql, getValues, type, tabledata) => {
         data: { sourceName, remoteDataSourceID, remoteSettingId },
     } = type;
 
-    const tableName = _map(mySql, (res, key) => key);
+    const tableName = Object.keys(mySql);
 
     const rightAtt = [];
     let columnName = Object.keys(mySql).map((ele, ind) => {
@@ -1194,7 +1191,7 @@ export const finalPayload_magento = (mySql, getValues, type, tabledata) => {
         data: { sourceName, remoteDataSourceID },
     } = type;
 
-    const tableName = _map(mySql, (res, key) => key);
+    const tableName = Object.keys(mySql);
 
     const rightAtt = [];
     let columnName = Object.keys(mySql).map((ele, ind) => {
@@ -1238,7 +1235,7 @@ export const finalPayload_leadSquare = (mySql, getValues, type, tabledata) => {
         data: { sourceName, remoteDataSourceID },
     } = type;
 
-    const tableName = _map(mySql, (res, key) => key);
+    const tableName = Object.keys(mySql);
 
     const rightAtt = [];
     let columnName = Object.keys(mySql).map((ele, ind) => {
@@ -1280,7 +1277,7 @@ export const finalPayload_wooCommerce = (mySql, getValues, type, tabledata) => {
         data: { sourceName, remoteDataSourceID },
     } = type;
 
-    const tableName = _map(mySql, (res, key) => key);
+    const tableName = Object.keys(mySql);
 
     const rightAtt = [];
     let columnName = Object.keys(mySql).map((ele, ind) => {
@@ -1323,7 +1320,7 @@ export const finalPayload_wix = (mySql, getValues, type, tabledata) => {
         data: { sourceName, remoteDataSourceID },
     } = type;
 
-    const tableName = _map(mySql, (res, key) => key);
+    const tableName = Object.keys(mySql);
 
     const rightAtt = [];
     let columnName = Object.keys(mySql).map((ele, ind) => {
@@ -1388,10 +1385,7 @@ export const finalPayload_wix = (mySql, getValues, type, tabledata) => {
 export const finalPayload_Versium = (mySql, getValues, type) => {
     const { ipAddress, userName, password, databaseName, portNumber, instanceName, api, updatedCycle, resource, credentials } =
         getValues();
-    const tableName = _map(mySql, (res, key) => {
-        // return key;
-        return key.replaceAll(',', '!');
-    });
+    const tableName = Object.keys(mySql).map((key) => key.replaceAll(',', '!'));
     let columnName = Object.keys(mySql).map((ele, ind) => {
         let keys = mySql[ele];
         return {
@@ -1428,9 +1422,7 @@ export const finalPayload_VersiumUpload = (mySql, getValues, type, tableDropDown
         checkUpdate,
         credentials
     } = getValues();
-    const tableName = _map(mySql, (res, key) => {
-        return key;
-    });
+    const tableName = Object.keys(mySql);
     let columnName = Object.keys(mySql).map((ele, ind) => {
         let keys = mySql[ele];
         return {
@@ -1485,9 +1477,7 @@ export const finalPayload_Digipop = (mySql, getValues, type, tableDropDown) => {
         versium_volume,
         checkUpdate,
     } = getValues();
-    const tableName = _map(mySql, (res, key) => {
-        return key;
-    });
+    const tableName = Object.keys(mySql);
     let columnName = Object.keys(mySql).map((ele, ind) => {
         let keys = mySql[ele];
         return {
@@ -1533,9 +1523,7 @@ export const finalPayload_DyCRM = (mySql, getValues, type) => {
         foreignKey,
         primaryKey,
     } = getValues();
-    const tableName = _map(mySql, (res, key) => {
-        return key;
-    });
+    const tableName = Object.keys(mySql);
     const rightAtt = [];
     let columnName = Object.keys(mySql).map((ele, ind) => {
         let keys = mySql[ele];
@@ -1591,7 +1579,7 @@ export const finalPayload_googleBigQuery = (mySql, getValues, type, tabledata) =
         data: { sourceName, remoteDataSourceID },
     } = type;
 
-    const tableName = _map(mySql, (res, key) => key);
+    const tableName = Object.keys(mySql);
 
     const rightAtt = [];
     let columnName = Object.keys(mySql).map((ele, ind) => {
@@ -1634,7 +1622,7 @@ export const finalPayload_Insightly = (mySql, getValues, type, tabledata) => {
         data: { sourceName, remoteDataSourceID },
     } = type;
 
-    const tableName = _map(mySql, (res, key) => key);
+    const tableName = Object.keys(mySql);
 
     const rightAtt = [];
     let columnName = Object.keys(mySql).map((ele, ind) => {
@@ -1675,7 +1663,7 @@ export const finalPayload_Webinar = (mySql, getValues, type, tabledata) => {
         data: { sourceName, remoteDataSourceID, remoteSettingId, schemaName },
     } = type;
 
-    const tableName = _map(mySql, (res, key) => key);
+    const tableName = Object.keys(mySql);
 
     const rightAtt = [];
     let columnName = Object.keys(mySql).map((ele, ind) => {
@@ -1717,7 +1705,7 @@ export const finalPayload_Webex = (mySql, getValues, type, tabledata) => {
         data: { sourceName, remoteDataSourceID, remoteSettingId, schemaName },
     } = type;
 
-    const tableName = _map(mySql, (res, key) => key);
+    const tableName = Object.keys(mySql);
 
     const rightAtt = [];
     let columnName = Object.keys(mySql).map((ele, ind) => {
@@ -1761,7 +1749,7 @@ export const finalPayload_Prestodb = (mySql, getValues, type, tabledata) => {
         data: { sourceName, remoteDataSourceID, remoteSettingId, schemaName },
     } = type;
 
-    const tableName = _map(mySql, (res, key) => key);
+    const tableName = Object.keys(mySql);
 
     const rightAtt = [];
     let columnName = Object.keys(mySql).map((ele, ind) => {
@@ -1808,7 +1796,7 @@ export const finalPayload_Commercetools = (mySql, getValues, type, tabledata) =>
         data: { sourceName, remoteDataSourceID, remoteSettingId, schemaName },
     } = type;
 
-    const tableName = _map(mySql, (res, key) => key);
+    const tableName = Object.keys(mySql);
 
     const rightAtt = [];
     let columnName = Object.keys(mySql).map((ele, ind) => {
@@ -1853,7 +1841,7 @@ export const finalPayload_GoogleSheets = (mySql, getValues, type, tabledata) => 
         data: { sourceName, remoteDataSourceID, remoteSettingId, schemaName },
     } = type;
 
-    const tableName = _map(mySql, (res, key) => key);
+    const tableName = Object.keys(mySql);
 
     const rightAtt = [];
     let columnName = Object.keys(mySql).map((ele, ind) => {
@@ -1891,13 +1879,13 @@ export const finalPayload_GoogleSheets = (mySql, getValues, type, tabledata) => 
 export const finalPayload = (mySql, getValues) => {
     //remotesourceid :1&2
     const { ipAddress, userName, password, instanceName, updatedCycle } = getValues();
-    const tableName = _map(mySql, (res, key) => {
+    const tableName = Object.entries(mySql).map(([key, res]) => {
         if (res.foreignKey) return key + '.' + getKeyValue(res);
     });
-    const columname = _map(mySql, (res, key) => {
+    const columname = Object.entries(mySql).map(([key, res]) => {
         return key + '.' + getKeyValue(res);
     });
-    const updateDatecolumn = _map(mySql, (res, key) => {
+    const updateDatecolumn = Object.entries(mySql).map(([key, res]) => {
         return key + '.' + getKeyValue(res) + '.' + res.checkUpdate.type;
     });
     const primaryKeyTable = Object.keys(mySql)[0];
@@ -1919,7 +1907,7 @@ export const finalPayload = (mySql, getValues) => {
         updateDatecolumn: updateDatecolumn.join(','), //TABLE.KEY.UPDATECHECK
         primaryTableName: primaryKeyTable,
         primaryKeyColumn: primaryKeyObj.primaryKey.type,
-        foreignKeyColumn: _compact(tableName).join(','),
+        foreignKeyColumn: tableName.filter(Boolean).join(','),
     };
 };
 

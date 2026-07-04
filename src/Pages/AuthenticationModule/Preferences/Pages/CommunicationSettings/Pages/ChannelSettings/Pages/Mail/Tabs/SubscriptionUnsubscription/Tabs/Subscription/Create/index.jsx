@@ -11,8 +11,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { Row, Container, Col } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
 import { FormProvider, useForm } from 'react-hook-form';
-import _find from 'lodash/find';
-import _map from 'lodash/map';
+import { find as _find, map as _map } from 'Utils/modules/lodashReplacements';
 import { useDispatch, useSelector, useStore } from 'react-redux';
 
 

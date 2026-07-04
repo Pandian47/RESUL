@@ -48,8 +48,8 @@ const Daily = ({ isMDC = false, isTLShare = false }) => {
     };
     return (
         <ul className={`flex-list mt30 ${isMDC ? 'mdc' : ''}`}>
-            <li className="mr15">{EVERY}</li>
-            <li className="mr15 width125" title={errors?.daily?.days?.message || ''}>
+            <li className="mr10">{EVERY}</li>
+            <li className={`${isMDC ? 'col-sm-3' : 'w-23'}`} title={errors?.daily?.days?.message || ''}>
                 <RSInput
                     // type={'number'}
                     control={control}
@@ -88,7 +88,7 @@ const Daily = ({ isMDC = false, isTLShare = false }) => {
                                 }
                             } else {
                                 clearErrors('enddate');
-                            }                    
+                            }
                         }
                         if (isMDC) {
                             handleFrequency(value);
@@ -96,8 +96,8 @@ const Daily = ({ isMDC = false, isTLShare = false }) => {
                     }}
                 />
             </li>
-            <li className="mr15">@ </li>
-            <li className="mr15 width125">
+            <li className="mr10">@ </li>
+            <li className={`${isMDC ? 'col-sm-3' : 'w-23'}`} title={errors?.daily?.days?.message || ''}>
                 <RSKendoDropDownList
                     control={control}
                     name="daily.hours"

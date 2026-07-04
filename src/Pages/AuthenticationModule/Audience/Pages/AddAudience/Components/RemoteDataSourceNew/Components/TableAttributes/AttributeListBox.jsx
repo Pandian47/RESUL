@@ -2,7 +2,7 @@ import { SELECT_LEFT_ATTRIBUTES } from 'Constants/GlobalConstant/Placeholders';
 import { justify_dropdown_mini } from 'Constants/GlobalConstant/Glyphicons';
 import { memo, useCallback, useContext, useEffect, useState } from 'react';
 import { useFormContext } from 'react-hook-form';
-import _size from 'lodash/size';
+import { size as _size } from 'Utils/modules/lodashReplacements';
 
 import { KendoIconDropdown } from 'Components/RSDropDown';
 import ResKendoListbox from 'Pages/KendoDocs/CommonComponents/ResKendoListbox';

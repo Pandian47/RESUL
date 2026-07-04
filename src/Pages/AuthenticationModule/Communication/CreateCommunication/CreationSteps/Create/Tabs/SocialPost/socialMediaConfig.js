@@ -473,30 +473,6 @@ export const validateImageFormat = (fileName, platform, postType = null) => {
     return { isValid: true, message: '' };
 };
 
-export const validateCarouselUniformAspectRatio = (imageAspectRatios, platform, postType = null) => {
-    const specs = getImageSpecs(platform, postType);
-    
-    if (!specs.uniformMandatory) {
-        return { isValid: true, message: '' };
-    }
-    
-    if (!imageAspectRatios || imageAspectRatios.length === 0) {
-        return { isValid: true, message: '' };
-    }
-    
-    const firstRatio = imageAspectRatios[0];
-    const allUniform = imageAspectRatios.every(ratio => Math.abs(ratio - firstRatio) < 0.01);
-    
-    if (!allUniform) {
-        return {
-            isValid: false,
-            message: `${getPlatformDisplayName(platform)} carousel requires all images to have the same aspect ratio (Uniform Mandatory)`,
-        };
-    }
-    
-    return { isValid: true, message: '' };
-};
-
 export const validateVideoFileSize = (fileSize, platform, postType = null) => {
     const specs = getVideoSpecs(platform, postType);
     const maxSize = specs.maxFileSize;
@@ -614,10 +590,6 @@ export const probeVideoForSocialValidation = (src, opts = {}) =>
         v.src = src;
     });
 
-const formatMaxDurationLabel = (maxSec) => {
-    return `${maxSec} seconds`;
-};
-
 const formatDurationToken = (seconds) => {
     if (seconds == null || !Number.isFinite(seconds)) return '';
     if (seconds < 60 || seconds % 60 !== 0) {
@@ -638,18 +610,6 @@ const formatDurationRangeLabel = (minSec, maxSec) => {
     }
     if (min && max) return `${min}-${max}`;
     return max || min || '';
-};
-
-/** Max duration snippet for upload-modal helper text (e.g. 90s Reels, not "1m"). */
-const formatMaxDurationForRequirementsCopy = (maxSec) => {
-    if (maxSec >= 3600) {
-        return formatMaxDurationLabel(maxSec);
-    }
-    if (maxSec % 60 === 0) {
-        const m = maxSec / 60;
-        return m === 1 ? '1 minute' : `${m} minutes`;
-    }
-    return `${maxSec}s`;
 };
 
 export const validateVideoDuration = (duration, platform, postType = null) => {
@@ -773,53 +733,6 @@ export const getPlatformDisplayName = (platform) => {
         [SOCIAL_MEDIA_PLATFORMS.PINTEREST]: 'Pinterest',
     };
     return names[platform] || platform;
-};
-
-/** Aspect ratio + recommended px + max file size only (no format list — pair with {@link getSocialImageFormatHint}). */
-export const getImageUploadDimensionsAndMaxSizeOnly = (platform, postType = null) => {
-    const specs = getImageSpecs(platform, postType);
-    const dimensions = Object.entries(specs.aspectRatios).map(([key, value]) => {
-        const label = key.charAt(0).toUpperCase() + key.slice(1);
-        const ratioPart = value.ratio ? `${value.ratio} ` : '';
-        const minW = value.minWidth != null ? `, min width ${value.minWidth}px` : '';
-        return `${label} ${ratioPart}(~${value.width}×${value.height}px${minW})`;
-    }).join(' or ');
-    const maxSize = specs.maxFileSize;
-    const maxSizeLabel = maxSize >= 1024 * 1024 * 1024
-        ? `${Math.round(maxSize / (1024 * 1024 * 1024))} GB`
-        : `${Math.round(maxSize / (1024 * 1024))} MB`;
-
-    return `${dimensions}, max ${maxSizeLabel}`;
-};
-
-export const getImageUploadRequirements = (platform, postType = null) => {
-    const specs = getImageSpecs(platform, postType);
-    return `${getImageUploadDimensionsAndMaxSizeOnly(platform, postType)}, ${specs.formats.join('/')}`;
-};
-
-export const getVideoUploadRequirements = (platform, postType = null) => {
-    const specs = getVideoSpecs(platform, postType);
-
-    if (!specs.isSupported) {
-        return `Video upload is not supported for ${getPlatformDisplayName(platform)}`;
-    }
-
-    const ratios = specs.aspectRatios?.map((r) => r.ratio).join(', ') || 'see platform spec';
-    const maxSize = specs.maxFileSize >= 1024 * 1024 * 1024
-        ? `${Math.round(specs.maxFileSize / (1024 * 1024 * 1024))} GB`
-        : `${Math.round(specs.maxFileSize / (1024 * 1024))} MB`;
-
-    const minDuration = specs.duration?.min != null ? `${specs.duration.min}s` : '';
-    const maxDuration =
-        specs.duration?.max != null ? formatMaxDurationForRequirementsCopy(specs.duration.max) : '';
-    const duration = minDuration && maxDuration ? `${minDuration}-${maxDuration}` : maxDuration;
-
-    const longest =
-        specs.resolution?.maxLongestEdge != null
-            ? `, longest edge ≤${specs.resolution.maxLongestEdge}px`
-            : '';
-
-    return `${getPlatformDisplayName(platform)}: max ${maxSize}, duration ${duration}, ${specs.formats.join(', ')} (${ratios})${longest}`;
 };
 
 const MIME_BY_IMAGE_EXT = {

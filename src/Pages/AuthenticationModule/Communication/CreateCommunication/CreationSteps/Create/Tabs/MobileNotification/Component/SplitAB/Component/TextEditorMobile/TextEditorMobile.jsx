@@ -1,4 +1,3 @@
-import { colorpicker_bg_medium, colorpicker_text_medium, user_question_mark_medium } from 'Constants/GlobalConstant/Glyphicons';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { EditorTools, EditorUtils, ProseMirror } from '@progress/kendo-react-editor';
 import { convert } from 'html-to-text';
@@ -8,16 +7,12 @@ import ResTextEditor from 'Pages/KendoDocs/CommonComponents/ResTextEditor';
 import TimerIcon from '../TimerIcon/TimerIcon';
 import ImageUpload from 'Pages/AuthenticationModule/Communication/CreateCommunication/CreationSteps/Create/Component/ImageUpload/ImageUpload';
 import { useDispatch, useSelector } from 'react-redux';
-import RSBootstrapdown from 'Components/FormFields/RSBootstrapdown';
-import RSColorPicker from 'Components/ColorPicker';
 import RSConfirmationModal from 'Components/ConfirmationModal';
 import { useFormContext, useWatch } from 'react-hook-form';
 import { uploadMobilePush } from 'Reducers/communication/createCommunication/Create/request';
 import { getSessionId } from 'Reducers/globalState/selector';
 import Personalize from 'Pages/AuthenticationModule/Communication/CreateCommunication/CreationSteps/Create/Component/Personalize';
-import { handlePersonalization } from '../../../../../../constant';
-import { debounce } from 'lodash';
-import useQueryParams from 'Hooks/useQueryParams';
+import { debounce } from 'Utils/modules/lodashReplacements';
 const { Plugin, PluginKey, Decoration, DecorationSet, InputRule, inputRules } = ProseMirror;
 export function placeholder(emptyMessage) {
     return new Plugin({
@@ -52,136 +47,6 @@ export const styles = `p.placeholder:first-child:before {
     }`;
 
 const { Bold, Italic, Underline, Strikethrough, FormatBlock, ForeColor, BackColor } = EditorTools;
-
-const personalizationMobile = ({ handleChange }) => {
-    const { personalization, listTypeWisePersonlization } = useSelector(({ createCommunicationReducer }) => createCommunicationReducer);
-    const location = useQueryParams('/communication');
-    const { control, setValue, watch, trigger, getValues } = useFormContext();
-    const splitTest = useWatch({
-        name: 'splitTest',
-        control,
-    });
-
-    const { notification } = useSelector(({ createCommunicationReducer }) => createCommunicationReducer);
-    const editorTextName = splitTest ? `${notification?.mobile?.fieldNameIndex}.editorText` : 'editorText';
-
-    const [editorText] = watch([editorTextName]);
-
-    return (
-        <RSBootstrapdown
-            data={handlePersonalization(personalization, location?.audience?.length ? location?.audience : (watch('audience')?.length ? watch('audience') : getValues()?.audience), listTypeWisePersonlization)}
-            isObject
-            fieldKey="personalizationKey"
-            flatIcon
-            defaultItem={{
-                attributeName: '',
-                dataAttributeId: 0,
-                fallbackAttributeName: null,
-                personalizationKey: <i className={`${user_question_mark_medium} icon-md`} />,
-            }}
-            showUpdate={false}
-            className="no_caret"
-            onSelect={({ personalizationKey }) => {
-                const text = editorText || '';
-
-                setValue(editorTextName, text + personalizationKey);
-
-                trigger(editorTextName);
-            }}
-            showSearch
-        />
-    );
-};
-
-const backgroundColorMobile = ({ isSplit, fieldName }) => {
-    const customizationName = isSplit ? `${fieldName}.customization` : 'customization';
-
-    const { setValue, watch } = useFormContext();
-    const customization = watch(customizationName);
-    
-    // Helper function to convert opacity to hex
-    const opacityToHex = (opacity) => {
-        const alpha = Math.round(opacity * 255);
-        return alpha.toString(16).padStart(2, '0').toUpperCase();
-    };
-    
-    // Helper function to extract current color value
-    const getCurrentColorValue = () => {
-        const currentValue = customization?.background || '';
-        if (typeof currentValue === 'string' && currentValue.length === 9) {
-            // Extract color part from hex format (#RRGGBBAA)
-            return currentValue.substring(0, 7);
-        }
-        return currentValue;
-    };
-    
-    return (
-        <RSColorPicker
-            icon={colorpicker_bg_medium}
-            onSelect={(e) => {
-                if (typeof e === 'string' && e.toLowerCase() === 'transparent') {
-                    setValue(`${customizationName}.background`, 'transparent');
-                    return;
-                }
-                if (typeof e === 'object' && e.color && e.opacity !== undefined) {
-                    if (typeof e.color === 'string' && e.color.toLowerCase() === 'transparent') {
-                        setValue(`${customizationName}.background`, 'transparent');
-                        return;
-                    }
-                    const hexOpacity = opacityToHex(e.opacity);
-                    const colorWithOpacity = `${e.color}${hexOpacity}`;
-                    setValue(`${customizationName}.background`, colorWithOpacity);
-                } else {
-                    setValue(`${customizationName}.background`, e);
-                }
-            }}
-            isOpacity={true}
-            colorValue={getCurrentColorValue()}
-        />
-    );
-};
-
-const textColorMobile = ({ isSplit, fieldName }) => {
-    const customizationName = isSplit ? `${fieldName}.customization` : 'customization';
-
-    const { setValue, watch } = useFormContext();
-    const customization = watch(customizationName);
-    
-    // Helper function to convert opacity to hex
-    const opacityToHex = (opacity) => {
-        const alpha = Math.round(opacity * 255);
-        return alpha.toString(16).padStart(2, '0').toUpperCase();
-    };
-    
-    // Helper function to extract current color value
-    const getCurrentColorValue = () => {
-        const currentValue = customization?.color || '';
-        if (typeof currentValue === 'string' && currentValue.length === 9) {
-            // Extract color part from hex format (#RRGGBBAA)
-            return currentValue.substring(0, 7);
-        }
-        return currentValue;
-    };
-
-    return (
-        <RSColorPicker
-            icon={colorpicker_text_medium}
-            isOpacity={true}
-            onSelect={(e) => {
-                if (typeof e === 'object' && e.color && e.opacity !== undefined) {
-                    // Handle opacity - convert to hex and append to color
-                    const hexOpacity = opacityToHex(e.opacity);
-                    const colorWithOpacity = `${e.color}${hexOpacity}`;
-                    setValue(`${customizationName}.color`, colorWithOpacity);
-                } else {
-                    // Handle simple color selection without opacity
-                    setValue(`${customizationName}.color`, e);
-                }
-            }}
-            colorValue={getCurrentColorValue()}
-        />
-    );
-};
 
 const ImageUploadMobile = () => {
     const dispatch = useDispatch();
@@ -226,18 +91,6 @@ const ImageUploadMobile = () => {
             }}
         />
     );
-};
-
-const handleContentChange = (editorText, editorTextName, editorTextValue, smartLinkData, setValue, trigger) => {
-    const text = editorText || '';
-    if (editorTextValue.current === undefined) {
-        setValue(editorTextName, text + smartLinkData);
-    } else {
-        var start = text.slice(0, editorTextValue?.current?.startPoistion);
-        var end = text.slice(editorTextValue?.current?.endPosition);
-        setValue(editorTextName, start + ' ' + smartLinkData + ' ' + end);
-    }
-    trigger(editorTextName);
 };
 
 const TextEditorMobile = ({

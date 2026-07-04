@@ -1,8 +1,8 @@
 const FACT_ROWS = [
     { labelWidth: 100, valueWidth: 48 },
-    { labelWidth: 56, valueWidth: 40 },
-    { labelWidth: 88, valueWidth: 44 },
-    { labelWidth: 80, valueWidth: 52 },
+    { labelWidth: 100, valueWidth: 48 },
+    { labelWidth: 100, valueWidth: 48 },
+    { labelWidth: 100, valueWidth: 48 },
 ];
 
 /** Inline skeleton for gallery card GetChannelFact metrics (rsgpc-bottom). */

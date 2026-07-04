@@ -29,10 +29,10 @@ import useQueryParams from 'Hooks/useQueryParams';
 import { RSPageHeaderSkeleton } from 'Components/Skeleton/Components/common';
 import {
     DETAIL_ANALYTICS_LOADING_HOLDER_STYLE,
-    DetailAnalyticsPdfExportSkeleton,
     DetailAnalyticsLoadingBlock,
     detailAnalyticsSkeletonCriticalCss,
 } from 'Components/Skeleton/pages/analytics';
+import RSLoader from 'Components/Loader';
 import { SkeletonTable } from 'Components/Skeleton/Skeleton';
 import {
     linkPreviewDetailsData,
@@ -720,6 +720,7 @@ const DetailAnalytics = () => {
     
     const contextValue = {
         refAPIStatus,
+        isPdfExporting,
     };
 
     return (
@@ -871,13 +872,11 @@ const DetailAnalytics = () => {
                 !isChannelLoading &&
                 createPortal(
                     <div
-                        className="analytics-report-pdf-skeleton-overlay analytics-detail-skeleton-scope dask-scope"
-                        style={DETAIL_ANALYTICS_LOADING_HOLDER_STYLE}
+                        className="analytics-report-pdf-loader-overlay"
                         aria-busy="true"
                         aria-label="Preparing PDF download"
                     >
-                        <style>{detailAnalyticsSkeletonCriticalCss}</style>
-                        <DetailAnalyticsPdfExportSkeleton />
+                        <RSLoader fallback />
                     </div>,
                     document.body,
                 )}

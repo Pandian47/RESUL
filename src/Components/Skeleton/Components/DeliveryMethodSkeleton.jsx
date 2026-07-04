@@ -96,7 +96,7 @@ const InlineLines = ({ count, lineMod = 'w64' }) => (
 
 const CoreFormSkeleton = () => (
     <>
-        <SkeletonRowWithCheckbox labelMod="w68" checkboxMod="w160" />
+        <SkeletonRowWithCheckbox labelMod="w68" checkboxMod="w160" rowMod="dm-skeleton__row--with-checkbox dm-skeleton__row--mt20" />
         <SkeletonRowWithCheckbox labelMod="w65" checkboxMod="w220" />
         <SkeletonRowTwoFields labelMod="w78" />
         <SkeletonRowTwoFields labelMod="w58" />

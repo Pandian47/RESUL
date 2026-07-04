@@ -3,7 +3,7 @@ import { useDrop } from 'react-dnd';
 import { Handle, Position } from 'reactflow';
 import { useDispatch, useSelector } from 'react-redux';
 
-import _cloneDeep from 'lodash/cloneDeep';
+import { cloneDeep as _cloneDeep } from 'Utils/modules/lodashReplacements';
 
 import CreateWorkFlowContext, { CreateWorkFlowOtherContext } from '../../context';
 import { findChannelExistForLp, GenerateNodeIdForAddon, GenerateNodePositionForAddon, GetAudienceBasedOnChannel } from '../../constant';

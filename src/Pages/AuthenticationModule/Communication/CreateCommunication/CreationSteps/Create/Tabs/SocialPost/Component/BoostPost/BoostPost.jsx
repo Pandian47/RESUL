@@ -3,7 +3,7 @@ import { useEffect } from 'react';
 import { Row, Col } from 'react-bootstrap';
 import { useForm } from 'react-hook-form';
 import { Button, ButtonGroup } from '@progress/kendo-react-buttons';
-import _isEmpty from 'lodash/isEmpty';
+import { isEmpty as _isEmpty } from 'Utils/modules/lodashReplacements';
 
 import RSKendoDropdown from 'Components/FormFields/RSKendoDropdown';
 

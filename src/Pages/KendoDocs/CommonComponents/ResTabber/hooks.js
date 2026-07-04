@@ -1,7 +1,8 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 const SCROLL_AMOUNT = 200;
 
-export const normalizeTabIndex = (tab) => {
+export const normalizeTabIndex = (tab, { preserveNull = false } = {}) => {
+    if (preserveNull && tab === null) return null;
     if (tab === '' || tab === null || tab === undefined) return 0;
     const index = Number(tab);
     return Number.isFinite(index) ? index : 0;
@@ -16,10 +17,19 @@ export const useTabState = ({
     callBack = () => {},
     onTabChange,
     syncDefaultTab = true,
+    preserveNullDefault = false,
 }) => {
-    const notifyChange = onTabChange || callBack;
-    const [selectedIdx, setSelectedIdx] = useState(defaultTab);
+    const notifyChangeRef = useRef(onTabChange || callBack);
+    notifyChangeRef.current = onTabChange || callBack;
+
+    const normalizedDefaultTab = normalizeTabIndex(defaultTab, { preserveNull: preserveNullDefault });
+    const [selectedIdx, setSelectedIdx] = useState(normalizedDefaultTab);
     const [tabconfig, setTabConfig] = useState(tabData);
+    const selectedIdxRef = useRef(normalizedDefaultTab);
+
+    useEffect(() => {
+        selectedIdxRef.current = selectedIdx;
+    }, [selectedIdx]);
 
     useEffect(() => {
         if (tabData?.length) {
@@ -28,19 +38,29 @@ export const useTabState = ({
     }, [tabData]);
 
     useEffect(() => {
-        if (syncDefaultTab && defaultTab !== selectedIdx) {
-            setSelectedIdx(defaultTab);
+        if (syncDefaultTab && normalizedDefaultTab !== selectedIdxRef.current) {
+            selectedIdxRef.current = normalizedDefaultTab;
+            setSelectedIdx(normalizedDefaultTab);
         }
-    }, [defaultTab, syncDefaultTab]);
+    }, [normalizedDefaultTab, syncDefaultTab]);
 
     const setSelectedIndex = useCallback(
         (index, isForceUpdate = false) => {
-            setSelectedIdx(index);
-            if (!isForceUpdate && tabData?.[index]) {
-                notifyChange(tabData[index], index, isForceUpdate);
+            const nextIndex = normalizeTabIndex(index, { preserveNull: preserveNullDefault });
+            const prevIndex = selectedIdxRef.current;
+
+            if (prevIndex === nextIndex) {
+                return;
+            }
+
+            selectedIdxRef.current = nextIndex;
+            setSelectedIdx(nextIndex);
+
+            if (!isForceUpdate && nextIndex !== null && tabData?.[nextIndex]) {
+                notifyChangeRef.current(tabData[nextIndex], nextIndex, isForceUpdate);
             }
         },
-        [tabData, notifyChange],
+        [preserveNullDefault, tabData],
     );
 
     return {

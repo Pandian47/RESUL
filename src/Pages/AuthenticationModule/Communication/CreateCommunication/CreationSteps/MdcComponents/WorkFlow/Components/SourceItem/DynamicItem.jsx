@@ -7,8 +7,7 @@ import DeleteChannel from '../ChannelItem/DeleteChannel';
 import Icon from 'Components/Icon/Icon';
 import { BootstrapDropdown } from 'Components/RSBootstrapDropDown';
 
-import _cloneDeep from 'lodash/cloneDeep';
-import _get from 'lodash/get';
+import { cloneDeep as _cloneDeep, get as _get } from 'Utils/modules/lodashReplacements';
 
 import CreateWorkFlowContext from '../../context';
 import { GenerateNodeId, GenerateNodePosition } from '../../constant';

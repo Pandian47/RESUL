@@ -1,6 +1,5 @@
 import Charts from './Components/Charts';
- 
-import moment from 'moment';
+
 import { getChannelId } from 'Utils/modules/communicationChannels';
 
 export const getListActivityChannelDisplayLabel = (seriesName = '', channelId = '') => {
@@ -35,121 +34,6 @@ export const LIST_TAB_CONFIG = [
 ];
 
  
-
-export const reachOverallChart = (data, callBack, acquisitionNotes) => {
-    let maxValue = null;
-    data?.recipientListSeries?.forEach((item) => {
-        item?.seriesData.forEach((item) => {
-            maxValue = Math.max(item, maxValue);
-        });
-    });
-    const dateTempValue = [];
-    if (acquisitionNotes?.length) {
-        acquisitionNotes?.forEach((item) => {
-            const date = new Date(item?.eventDate);
-            if (!isNaN(date.getTime())) {
-                dateTempValue.push([
-                    // `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()}`,
-                    moment(date).format('YYYY-MM-DD'),
-                    item?.eventChannelName,
-                ]);
-            }
-        });
-    }
-    const getIndexofDateItems = [];
-    data?.dateRanges?.length &&
-        dateTempValue?.length &&
-        dateTempValue.forEach((item) => {
-            const index = data?.dateRanges.findIndex((date) => date === item[0]);
-            if (index !== -1 && !getIndexofDateItems.includes(index)) {
-                getIndexofDateItems.push([index, item[1]]);
-            }
-        });
-
-    const chartOptions = {
-        chart: { type: 'areaspline' },
-        xAxis: {
-            title: 'Date',
-            tickInterval: data?.dateRanges?.length < 30 ? 4 : Math.floor(data?.dateRanges?.length / 6),
-            categories: data?.dateRanges,
-            plotLines: [
-                {
-                    color: '#eeeeee',
-                    value: 12,
-                    width: 1,
-                    label: {
-                        useHTML: true,
-                        className: '',
-                        verticalAlign: 'bottom',
-                        text: '<i class="chart-icon-plot">&nbsp;</i>',
-                    },
-                },
-            ],
-            plotOptions: {
-                series: {
-                    marker: {
-                        enabled: true,
-                        symbol: 'square',
-                        radius: 1,
-                    },
-                },
-            },
-
-            labels: {
-                formatter: function () {
-                    return this.value;
-                },
-            },
-        },
-        yAxis: {
-            title: 'Count',
-            tickInterval: maxValue,
-        },
-        legend: {
-            itemStyle: { width: '150px' },
-        },
-        series: data?.recipientListSeries?.map((item, index) => {
-            const color = ['#2896f0', '#fd8f40'];
-            return {
-                cursor: 'pointer',
-                point: {
-                    events: {
-                        click: (e) => {
-                            const FilterAcqusitionNotes = acquisitionNotes?.filter(
-                                (filteritem) =>
-                                    filteritem?.eventDate === e?.point?.category &&
-                                    item.seriesName === filteritem.eventChannelName,
-                            );
-                            return callBack(e?.point, item, FilterAcqusitionNotes);
-                        },
-                    },
-                },
-                name: item.seriesName,
-                color: color[index],
-                marker: {
-                    lineColor: color[index],
-                    fillColor: 'white',
-                },
-                data: item.seriesData.map((data, index) => {
-                    const findItem = getIndexofDateItems.some(
-                        (series) => series[0] === index && series[1] === item?.seriesName,
-                    );
-                    if (findItem) {
-                        return {
-                            y: data,
-                            marker: {
-                                symbol: 'url(https://run.resulticks.com/Images/icon-bookmark-blue.png)',
-                            },
-                        };
-                    }
-                    return data;
-                }),
-                dateRange: item.dateRanges,
-            };
-        }),
-    };
-    return chartOptions;
-};
 
 export const transformListAcquisitionData = (newData) => {
     if (!newData || typeof newData !== 'object') {

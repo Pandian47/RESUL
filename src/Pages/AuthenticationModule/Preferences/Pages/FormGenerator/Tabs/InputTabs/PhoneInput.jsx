@@ -2,7 +2,7 @@ import { formatName } from 'Utils/modules/formatters';
 import { MAKE_DEFAULT, MAP_TO, NEW_ATTRIBUTE, PLACEHOLDER_SETTINGS, SETTINGS, SET_MANDATORY } from 'Constants/GlobalConstant/Placeholders';
 import { memo, useContext, useEffect, useState } from 'react';
 import { useFormContext } from 'react-hook-form';
-import _find from 'lodash/find';
+import { find as _find } from 'Utils/modules/lodashReplacements';
 
 
 

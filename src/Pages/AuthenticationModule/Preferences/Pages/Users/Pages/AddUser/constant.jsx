@@ -1,6 +1,6 @@
 import { iv, encryptWithAES } from 'Utils/modules/crypto';
 import { GeneratePasswordpseudorandom } from 'Utils/modules/passwordUtils';
-import _get from 'lodash/get';
+import { get as _get } from 'Utils/modules/lodashReplacements';
 import CryptoJS from 'crypto-js';
 export const INITIAL_STATE = {
     title: '',

@@ -1,8 +1,8 @@
 import { getUserCurrentFormat } from 'Utils/modules/dateTime';
 import { truncateTitle } from 'Utils/modules/displayCore';
 import { numberWithCommas } from 'Utils/modules/formatters';
-import { ACTION, ARE_YOU_SURE_DELETE, CANCEL, CREATE_DATE, DELETE, DELETE_USER_ROLE, DOMAIN_NAME, EDIT, VOLUME, YES } from 'Constants/GlobalConstant/Placeholders';
-import { circle_tick_medium, delete_medium, pencil_edit_medium, smtp_approved_medium, smtp_inprogress_medium, smtp_pending_medium } from 'Constants/GlobalConstant/Glyphicons';
+import { ACTION, ARE_YOU_SURE_DELETE, CANCEL, CREATE_DATE, DELETE, DELETE_USER_ROLE, DOMAIN_NAME, EDIT, VOLUME, YES,EMAIL_NAME } from 'Constants/GlobalConstant/Placeholders';
+import { circle_tick_medium, delete_medium, pencil_edit_medium, smtp_approved_medium, smtp_inprogress_medium, smtp_pending_medium,email_medium } from 'Constants/GlobalConstant/Glyphicons';
 import { useContext, useEffect, useState } from 'react';
 import moment from 'moment';
 import KendoGrid from 'Components/RSKendoGrid';
@@ -11,8 +11,9 @@ import { ActionsType } from '../..';
 import usePermission from 'Hooks/usePersmission';
 
 import { useDispatch, useSelector } from 'react-redux';
-import { deleteSmtpDomainSettingsById, getSmtpDomainSettingsGrid } from 'Reducers/preferences/CommunicationSettings/request';
+import { deleteSmtpDomainSettingsById, getSmtpDomainSettingsGrid, sendDomainDetailsMail } from 'Reducers/preferences/CommunicationSettings/request';
 import RSModal from 'Components/RSModal';
+import RSConfirmationModal from 'Components/ConfirmationModal';
 import { RSPrimaryButton, RSSecondaryButton } from 'Components/Buttons';
 import { getSessionId } from 'Reducers/globalState/selector';
 
@@ -32,6 +33,7 @@ const SMTPDomainNameSettingsGrid = () => {
         show: false,
         id: 0,
     });
+    const [warning, setWarning] = useState(false);
     const dispatch = useDispatch();
 
     const [gridData, setGridData] = useState({
@@ -98,6 +100,14 @@ const SMTPDomainNameSettingsGrid = () => {
         }
     };
 
+    const handleDomainMail = async (smtpDomainSettingId) => {
+        const payload = { smtpDomainSettingId, userId, clientId, departmentId };
+        const { status } = await dispatch(sendDomainDetailsMail(payload));
+        if (status) {
+            setWarning(true);
+        }
+    };
+
     return (
         <>
             <KendoGrid
@@ -158,6 +168,7 @@ const SMTPDomainNameSettingsGrid = () => {
                         field: 'createdDate',
                         title: CREATE_DATE,
                         filter:'date',
+                        width: 300,
                         cell: (props) => {
                             return (
                                 <td>
@@ -227,25 +238,38 @@ const SMTPDomainNameSettingsGrid = () => {
                                 <td>
                                     <ul className="rs-list-inline rli-space-15 ">
                                         {showEdit && (
-                                            <li>
-                                                <RSTooltip text={EDIT} position="top" className={"lh0"}>
-                                                    <i
-                                                        id="rs_data_pencil_edit"
-                                                        className={`${pencil_edit_medium} icon-md color-primary-blue`}
-                                                        onClick={() => {
-                                                            setDomainToggle('edit');
-                                                            setActions({
-                                                                type: 'Domain Create',
-                                                                state: {
-                                                                    mode: 'edit',
-                                                                    settingsId: dataItem?.smtpdomainSettingId,
-                                                                    domainStatus: dataItem?.status,
-                                                                },
-                                                            });
-                                                        }}
-                                                    />
-                                                </RSTooltip>
-                                            </li>
+                                            <>
+                                                <li>
+                                                    <RSTooltip text={EDIT} position="top" className={"lh0"}>
+                                                        <i
+                                                            id="rs_data_pencil_edit"
+                                                            className={`${pencil_edit_medium} icon-md color-primary-blue`}
+                                                            onClick={() => {
+                                                                setDomainToggle('edit');
+                                                                setActions({
+                                                                    type: 'Domain Create',
+                                                                    state: {
+                                                                        mode: 'edit',
+                                                                        settingsId: dataItem?.smtpdomainSettingId,
+                                                                        domainStatus: dataItem?.status,
+                                                                    },
+                                                                });
+                                                            }}
+                                                        />
+                                                    </RSTooltip>
+                                                </li>
+                                                <li>
+                                                    <RSTooltip text={EMAIL_NAME} position="top" className={"lh0"}>
+                                                        <i
+                                                            id="rs_data_email"
+                                                            className={`${email_medium} icon-md color-primary-blue`}
+                                                            onClick={() => {
+                                                                handleDomainMail(dataItem?.smtpdomainSettingId);
+                                                            }}
+                                                        />
+                                                    </RSTooltip>
+                                                </li>
+                                            </>
                                         )}
                                         <li className="d-none">
                                             {/* ${!deleteAccess ? "click-off" : ""} */}
@@ -300,6 +324,20 @@ const SMTPDomainNameSettingsGrid = () => {
                         </RSPrimaryButton>
                     </>
                 }
+            />
+
+            <RSConfirmationModal
+                show={warning}
+                text="Your domain will be integrated within the next 12 hours."
+                primaryButtonText="Ok"
+                secondaryButton={false}
+                handleConfirm={() => {
+                    setWarning(false);
+                }}
+                handleClose={() => {
+                    setWarning(false);
+                }}
+                header="Information"
             />
         </>
     );

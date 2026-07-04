@@ -1,4 +1,4 @@
-import { circle_paid_media_xlarge, email_xlarge, form_generator_xlarge, landing_page_builder_xlarge, mobile_notification_xlarge, mobile_sms_xlarge, notification_xlarge, qrcode_xlarge, rcs_large, social_post_xlarge, social_whatsapp_xlarge, web_notification_xlarge } from 'Constants/GlobalConstant/Glyphicons';
+import { circle_paid_media_xlarge, email_xlarge, form_generator_xlarge, forms_large, landing_page_builder_xlarge, mobile_notification_xlarge, mobile_sms_xlarge, notification_xlarge, qrcode_xlarge, rcs_large, social_post_xlarge, social_whatsapp_xlarge, web_notification_xlarge } from 'Constants/GlobalConstant/Glyphicons';
 import { isPushChannelsDisabled } from 'Utils/modules/environment';
 // const templateLists = [
 //     {
@@ -64,7 +64,7 @@ const templateLists = (env) => {
             itemClass: '',
         },
         {
-            icon: form_generator_xlarge,
+            icon: forms_large,
             title: 'Forms',
             link: 'template-gallery/form-generator',
             itemClass: '',

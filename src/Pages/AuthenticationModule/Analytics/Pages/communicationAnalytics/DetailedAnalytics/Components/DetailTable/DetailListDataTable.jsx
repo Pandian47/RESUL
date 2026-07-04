@@ -474,7 +474,7 @@ const DetailListDataTable = ({
                         onDataStateChange={(data) => handlePagerChange(data)}
                         pagerChange={initialPagination}
                         setInitialPagination={setInitialPagination}
-                        isCustomClass={detailListData?.items?.length > 4 ? 'pb65 detail-table' : ''}
+                        isCustomClass={detailListData?.items?.length > 4 ? ' detail-table' : ''}
                         isLoading={isDetailsLoading || isCommStatusLoading}
                     />
                 </div>

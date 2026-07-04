@@ -9,6 +9,7 @@ import {
     INITIAL_GALLERY_CONFIG,
     RESPAGER_SIZE_DROPDOWN_POPUP_SETTINGS,
     RESPAGER_SIZES_POPUP_CLASS,
+    RESPAGER_SIZES_POPUP_Z_INDEX,
 } from './constant';
 import './resPager.scss';
 
@@ -29,6 +30,67 @@ const resolvePageState = (isGalleryMode, pagerConfig) => ({
     ...(isGalleryMode ? INITIAL_GALLERY_CONFIG : INITIAL_PAGE_CONFIG),
     ...pagerConfig,
 });
+
+const PAGER_POPUP_EDGE_GAP = 8;
+const PAGER_POPUP_ITEM_HEIGHT = 30;
+const PAGER_POPUP_FALLBACK_HEIGHT = 90;
+
+const measurePagerSizePopupHeight = (popupContainer) => {
+    const rectHeight = popupContainer.getBoundingClientRect().height;
+    if (rectHeight > 4) return rectHeight;
+
+    const listEl =
+        popupContainer.querySelector('.k-list-content')
+        || popupContainer.querySelector('.k-list');
+    if (listEl?.scrollHeight > 4) return listEl.scrollHeight;
+
+    const itemCount = popupContainer.querySelectorAll(
+        '.k-list-item, .k-list-ul > li',
+    ).length;
+    if (itemCount > 0) return itemCount * PAGER_POPUP_ITEM_HEIGHT;
+
+    return 0;
+};
+
+/** Prefer below; flip above only when the list cannot fit under the trigger. */
+const shouldOpenPagerSizePopupAbove = (spaceBelow, spaceAbove, popupHeight) => {
+    const needed = popupHeight + PAGER_POPUP_EDGE_GAP;
+
+    if (spaceBelow >= needed) return false;
+    if (spaceAbove >= needed) return true;
+    return spaceAbove > spaceBelow;
+};
+
+const getPagerSizePopupSpaces = (sizeDropdown) => {
+    const dropdownRect = sizeDropdown.getBoundingClientRect();
+    let spaceBelow = window.innerHeight - dropdownRect.bottom - PAGER_POPUP_EDGE_GAP;
+    let spaceAbove = dropdownRect.top - PAGER_POPUP_EDGE_GAP;
+
+    const constrainToHost = (host) => {
+        if (!host) return;
+        const bounds = host.getBoundingClientRect();
+        spaceBelow = Math.min(spaceBelow, bounds.bottom - dropdownRect.bottom - PAGER_POPUP_EDGE_GAP);
+        spaceAbove = Math.min(spaceAbove, dropdownRect.top - bounds.top - PAGER_POPUP_EDGE_GAP);
+    };
+
+    constrainToHost(sizeDropdown.closest('.modal.show .modal-content'));
+    constrainToHost(sizeDropdown.closest('.carousel-item'));
+    constrainToHost(sizeDropdown.closest('.target-info-crossfade-wrapper'));
+
+    let node = sizeDropdown.parentElement;
+    while (node && node !== document.body) {
+        const { overflow, overflowY } = window.getComputedStyle(node);
+        if (overflow === 'hidden' || overflowY === 'hidden') {
+            constrainToHost(node);
+        }
+        node = node.parentElement;
+    }
+
+    return {
+        spaceBelow: Math.max(0, spaceBelow),
+        spaceAbove: Math.max(0, spaceAbove),
+    };
+};
 
 /**
  * Returns the active page button's position relative to rootEl.
@@ -220,28 +282,36 @@ const ResPager = ({
             if (sizeDropdown.getAttribute('aria-expanded') !== 'true') return;
 
             const dropdownRect = sizeDropdown.getBoundingClientRect();
-            const popupRect = popupContainer.getBoundingClientRect();
-            const popupHeight = popupRect.height || popupContainer.offsetHeight;
             const popupWidth = dropdownRect.width;
-            const viewportPadding = 8;
+            const measuredHeight = measurePagerSizePopupHeight(popupContainer);
+            const popupHeight = measuredHeight || PAGER_POPUP_FALLBACK_HEIGHT;
 
-            const spaceBelow = window.innerHeight - dropdownRect.bottom - viewportPadding;
-            const spaceAbove = dropdownRect.top - viewportPadding;
-            const openAbove = spaceBelow < popupHeight && spaceAbove >= spaceBelow;
+            const { spaceBelow, spaceAbove } = getPagerSizePopupSpaces(sizeDropdown);
+            const openAbove = shouldOpenPagerSizePopupAbove(spaceBelow, spaceAbove, popupHeight);
 
+            popupContainer.classList.add('k-animation-container-shown', RESPAGER_SIZES_POPUP_CLASS);
             popupContainer.classList.toggle('showing-top', openAbove);
             popupContainer.classList.toggle('showing-below', !openAbove);
 
             const top = openAbove
-                ? Math.max(viewportPadding, dropdownRect.top - popupHeight)
+                ? Math.max(PAGER_POPUP_EDGE_GAP, dropdownRect.top - popupHeight)
                 : dropdownRect.bottom;
 
+            if (popupContainer.parentElement !== document.body) {
+                document.body.appendChild(popupContainer);
+            }
+
+            popupContainer.style.overflow = 'visible';
+            popupContainer.style.visibility = 'visible';
+            popupContainer.style.opacity = '1';
             popupContainer.style.position = 'fixed';
             popupContainer.style.top = `${top}px`;
             popupContainer.style.left = `${dropdownRect.left}px`;
             popupContainer.style.width = `${popupWidth}px`;
+            popupContainer.style.height = 'auto';
             popupContainer.style.bottom = 'auto';
-            popupContainer.style.zIndex = '1103';
+            popupContainer.style.zIndex = String(RESPAGER_SIZES_POPUP_Z_INDEX);
+            popupContainer.style.pointerEvents = 'auto';
 
             const childContainer = popupContainer.querySelector('.k-child-animation-container');
             if (childContainer) {
@@ -249,11 +319,12 @@ const ResPager = ({
                 childContainer.style.top = '0';
                 childContainer.style.left = '0';
             }
+
+            return measuredHeight === 0;
         };
 
-        const tagSizePopup = () => {
-            const sizeDropdown = getSizesDropdown();
-            if (!sizeDropdown) return;
+        const findPagerSizePopupContainer = (sizeDropdown) => {
+            if (!sizeDropdown) return null;
 
             const listId = resolveListId(sizeDropdown);
             let popupContainer = findListElement(listId)?.closest('.k-animation-container');
@@ -269,6 +340,30 @@ const ResPager = ({
                 );
             }
 
+            return popupContainer ?? null;
+        };
+
+        const closePagerSizeDropdown = (sizeDropdown) => {
+            if (!sizeDropdown || sizeDropdown.getAttribute('aria-expanded') !== 'true') return;
+
+            sizeDropdown.dispatchEvent(
+                new KeyboardEvent('keydown', { key: 'Escape', bubbles: true, cancelable: true }),
+            );
+
+            if (sizeDropdown.getAttribute('aria-expanded') === 'true') {
+                const toggle =
+                    sizeDropdown.querySelector('.k-input-button, .k-select-button, button[aria-label]')
+                    || sizeDropdown.querySelector('button');
+                toggle?.click();
+            }
+        };
+
+        const tagSizePopup = () => {
+            const sizeDropdown = getSizesDropdown();
+            if (!sizeDropdown) return;
+
+            const popupContainer = findPagerSizePopupContainer(sizeDropdown);
+
             if (!popupContainer) return;
 
             if (!popupContainer.classList.contains(RESPAGER_SIZES_POPUP_CLASS)) {
@@ -276,8 +371,27 @@ const ResPager = ({
             }
 
             if (sizeDropdown.getAttribute('aria-expanded') === 'true') {
-                repositionSizePopup(sizeDropdown, popupContainer);
+                const needsRemeasure = repositionSizePopup(sizeDropdown, popupContainer);
+                if (needsRemeasure) {
+                    requestAnimationFrame(() => {
+                        repositionSizePopup(sizeDropdown, popupContainer);
+                    });
+                }
             }
+        };
+
+        const scheduleTagSizePopup = () => {
+            requestAnimationFrame(() => {
+                tagSizePopup();
+                requestAnimationFrame(tagSizePopup);
+                setTimeout(tagSizePopup, 0);
+            });
+        };
+
+        const scheduleOpenSizePopupSync = () => {
+            scheduleTagSizePopup();
+            setTimeout(tagSizePopup, 50);
+            setTimeout(tagSizePopup, 150);
         };
 
         const syncOpenSizePopup = () => {
@@ -292,18 +406,27 @@ const ResPager = ({
             syncBubble();
         };
 
-        const scheduleTagSizePopup = () => {
-            requestAnimationFrame(() => {
-                tagSizePopup();
-                requestAnimationFrame(tagSizePopup);
-                setTimeout(tagSizePopup, 0);
-            });
-        };
-
         const handlePagerInteraction = (event) => {
             if (event.target.closest('.k-pager-sizes .k-dropdownlist')) {
-                scheduleTagSizePopup();
+                scheduleOpenSizePopupSync();
             }
+        };
+
+        const handleDocumentClick = (event) => {
+            const clickTarget = event.target;
+
+            window.setTimeout(() => {
+                const sizeDropdown = getSizesDropdown();
+                if (!sizeDropdown || sizeDropdown.getAttribute('aria-expanded') !== 'true') return;
+
+                const popupContainer = findPagerSizePopupContainer(sizeDropdown);
+                const isInsideTrigger = sizeDropdown.contains(clickTarget);
+                const isInsidePopup = popupContainer?.contains(clickTarget);
+
+                if (!isInsideTrigger && !isInsidePopup) {
+                    closePagerSizeDropdown(sizeDropdown);
+                }
+            }, 0);
         };
 
         decoratePager();
@@ -327,6 +450,7 @@ const ResPager = ({
 
         rootEl.addEventListener('click', handlePagerInteraction);
         rootEl.addEventListener('keydown', handlePagerInteraction);
+        document.addEventListener('click', handleDocumentClick);
         window.addEventListener('scroll', syncOpenSizePopup, { capture: true, passive: true });
         window.addEventListener('resize', syncOpenSizePopup, { passive: true });
 
@@ -339,6 +463,7 @@ const ResPager = ({
             bodyObserver.disconnect();
             rootEl.removeEventListener('click', handlePagerInteraction);
             rootEl.removeEventListener('keydown', handlePagerInteraction);
+            document.removeEventListener('click', handleDocumentClick);
             window.removeEventListener('scroll', syncOpenSizePopup, { capture: true });
             window.removeEventListener('resize', syncOpenSizePopup);
         };
@@ -352,7 +477,7 @@ const ResPager = ({
             popupSettings: {
                 ...dropdownProps.popupSettings,
                 ...RESPAGER_SIZE_DROPDOWN_POPUP_SETTINGS,
-                appendTo: pagerRef.current || dropdownProps.popupSettings?.appendTo,
+                appendTo: document.body,
                 popupClass: [
                     dropdownProps.popupSettings?.popupClass,
                     RESPAGER_SIZES_POPUP_CLASS,

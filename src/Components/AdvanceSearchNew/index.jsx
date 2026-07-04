@@ -1,8 +1,9 @@
-import { advance_search_arrow_double_down_mini, advance_search_arrow_double_up_mini, advance_search_arrow_left_mini, advance_search_arrow_right_mini, advance_search_close_mini, advance_search_justify_dropdown_mini, circle_zoom_fill_edge_large, clear_mini, filter_circle_fill_edge_large } from 'Constants/GlobalConstant/Glyphicons';
+import { advance_search_arrow_double_down_mini, advance_search_arrow_double_up_mini, advance_search_arrow_left_mini, advance_search_arrow_right_mini, advance_search_close_mini, advance_search_justify_dropdown_mini, circle_zoom_fill_edge_large, clear_mini } from 'Constants/GlobalConstant/Glyphicons';
 import { memo, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
 import { useForm } from 'react-hook-form';
-import _get from 'lodash/get';
+import { AnimatePresence, motion } from 'framer-motion';
+import { get as _get } from 'Utils/modules/lodashReplacements';
 import RSBootstrapdown from 'Components/FormFields/RSBootstrapdown';
 import RSInput from 'Components/FormFields/RSInput';
 import RSMultiSelectNew from 'Components/FormFields/RSMultiSelect_Advance_Search';
@@ -119,6 +120,32 @@ function omitNonPersistedMainBarSearchKeysFromPersistSnapshot(obj, filterConfig)
 }
 
 const ADVANCE_SEARCH_PERSIST_FORMAT_V1 = 1;
+const ADVANCE_SEARCH_CLUSTER_GAP_PX = 15;
+const ADVANCE_PANEL_MOTION = {
+    initial: {
+        opacity: 0,
+        y: -10,
+        scaleY: 0.98,
+    },
+    animate: {
+        opacity: 1,
+        y: 0,
+        scaleY: 1,
+        transition: {
+            duration: 0.34,
+            ease: [0.22, 1, 0.36, 1],
+        },
+    },
+    exit: {
+        opacity: 0,
+        y: -8,
+        scaleY: 0.98,
+        transition: {
+            duration: 0.2,
+            ease: [0.22, 1, 0.36, 1],
+        },
+    },
+};
 
 /** Read v1 `{ v, filters, nameChipSource }` or legacy flat filter object. */
 function parsePersistedAdvanceSearchBlob(raw, initialActiveFilters, persistMergeOmitKeys, filterConfig) {
@@ -187,7 +214,7 @@ export {
 
 const RSAdvanceSearchNew = ({
     activeFilters: activeFiltersProp,
-    searchPlaceholder = DEFAULT_SEARCH_PLACEHOLDER,
+    searchPlaceholder: _searchPlaceholder = DEFAULT_SEARCH_PLACEHOLDER,
     onSearch = () => { },
     onSearchChange = () => { },
     onRefresh = () => { },
@@ -238,9 +265,9 @@ const RSAdvanceSearchNew = ({
     persistMergeOmitKeys = undefined,
     getTagDisplayOverride = null,
 
-    showActiveFilterTagsWhenCollapsed = false,
+    showActiveFilterTagsWhenCollapsed: _showActiveFilterTagsWhenCollapsed = false,
 
-    hideCollapsedSearchQuerySummary = false,
+    hideCollapsedSearchQuerySummary: _hideCollapsedSearchQuerySummary = false,
 
     lockMainBarWhenFilterChipsPresent = false,
 
@@ -299,6 +326,7 @@ const RSAdvanceSearchNew = ({
 
     const [isSearchExpanded, setIsSearchExpanded] = useState(false);
     const [isAdvancedPanelOpen, setIsAdvancedPanelOpen] = useState(false);
+    const [isAdvancedPanelExiting, setIsAdvancedPanelExiting] = useState(false);
     const [isFocused, setIsFocused] = useState(false);
     const blurTimeoutRef = useRef(null);
     const handleFocus = useCallback(() => {
@@ -327,8 +355,8 @@ const RSAdvanceSearchNew = ({
     const advanceCommNameFieldDirtyRef = useRef(false);
     const [canScrollExpandedLeft, setCanScrollExpandedLeft] = useState(false);
     const [canScrollExpandedRight, setCanScrollExpandedRight] = useState(false);
-    const [canScrollCollapsedLeft, setCanScrollCollapsedLeft] = useState(false);
-    const [canScrollCollapsedRight, setCanScrollCollapsedRight] = useState(false);
+    const [_canScrollCollapsedLeft, setCanScrollCollapsedLeft] = useState(false);
+    const [_canScrollCollapsedRight, setCanScrollCollapsedRight] = useState(false);
 
     const [expandedChipRowOverflow, setExpandedChipRowOverflow] = useState(false);
     const [collapsedChipRowOverflow, setCollapsedChipRowOverflow] = useState(false);
@@ -343,14 +371,21 @@ const RSAdvanceSearchNew = ({
     const collapsedChipsMeasureRef = useRef(null);
 
     const advanceSearchMountRef = useRef(null);
+    const searchTopRowRef = useRef(null);
+    const searchRightControlsRef = useRef(null);
+    const searchClusterRef = useRef(null);
+    const searchIconBoxRef = useRef(null);
+    const searchCreateButtonRef = useRef(null);
     const topSearchPickedRowRef = useRef(null);
     const advancedPanelBaselineRef = useRef(null);
     const prevAdvancedPanelOpenForBaselineRef = useRef(false);
+    const prevAdvancedPanelOpenForMotionRef = useRef(false);
     const initialActiveFiltersRef = useRef(initialActiveFilters);
     initialActiveFiltersRef.current = initialActiveFilters;
 
     const prevInitialActiveFiltersSeedKeyRef = useRef(undefined);
     const [searchType, setSearchType] = useState(advanceSearchOptions?.[0] || '')
+    const [searchBarWidthPx, setSearchBarWidthPx] = useState(0);
 
     const suggestionLabelOptions = useMemo(
         () => ({ getLabel: getSuggestionLabel, extraKeys: suggestionLabelKeys }),
@@ -843,7 +878,7 @@ const RSAdvanceSearchNew = ({
             sawAdvanceSuggestLoadingForQueryRef.current = false;
             const filtersForParent = mergeCommittedNameIntoActiveFiltersForSubmit(committedName);
             onSearch(committedName, { type: searchType });
-            if (isCommunicationNameSearchType && filterConfig.length > 0) {
+            if ((isCommunicationNameSearchType || wasAdvanced) && filterConfig.length > 0) {
                 onFiltersChange(filtersForParent, { forceSubmit: true });
             }
             applyAfterSearchSubmit(committedName, wasAdvanced);
@@ -874,7 +909,7 @@ const RSAdvanceSearchNew = ({
         sawAdvanceSuggestLoadingForQueryRef.current = false;
         const filtersForParent = mergeCommittedNameIntoActiveFiltersForSubmit(committedName);
         onSearch(committedName, { type: searchType });
-        if (isCommunicationNameSearchType && filterConfig.length > 0) {
+        if ((isCommunicationNameSearchType || wasAdvanced) && filterConfig.length > 0) {
             onFiltersChange(filtersForParent, { forceSubmit: true });
         }
         applyAfterSearchSubmit(committedName, wasAdvanced);
@@ -1154,7 +1189,7 @@ const RSAdvanceSearchNew = ({
         setIsSearchExpanded(true);
     };
 
-    const handleOpenAdvancedFromCollapsed = () => {
+    const _handleOpenAdvancedFromCollapsed = () => {
         if (disabled) return;
         handleSearchExpand();
         advanceCommNameFieldDirtyRef.current = false;
@@ -1210,6 +1245,69 @@ const RSAdvanceSearchNew = ({
     useEffect(() => {
         onSearchExpandedChange?.(isSearchExpanded);
     }, [isSearchExpanded, onSearchExpandedChange]);
+
+    useLayoutEffect(() => {
+        if (isAdvancedPanelOpen) {
+            setIsAdvancedPanelExiting(false);
+        } else if (prevAdvancedPanelOpenForMotionRef.current) {
+            setIsAdvancedPanelExiting(true);
+        }
+        prevAdvancedPanelOpenForMotionRef.current = isAdvancedPanelOpen;
+    }, [isAdvancedPanelOpen]);
+
+    useLayoutEffect(() => {
+        const updateSearchBarWidth = () => {
+            const topRowNode = searchTopRowRef.current;
+            const searchIconNode = searchIconBoxRef.current;
+            if (!topRowNode || !searchIconNode) return;
+
+            const topRowStyle = window.getComputedStyle(topRowNode);
+            const topRowGap = parseFloat(topRowStyle.columnGap || topRowStyle.gap || 0) || 0;
+            const visibleSiblingWidths = [
+                searchRightControlsRef.current,
+                searchCreateButtonRef.current,
+            ].reduce((totalWidth, node) => {
+                if (!node) return totalWidth;
+                const rect = node.getBoundingClientRect();
+                return rect.width > 1 ? totalWidth + rect.width + topRowGap : totalWidth;
+            }, 0);
+
+            const nextWidth = Math.max(
+                0,
+                Math.floor(
+                    topRowNode.getBoundingClientRect().width -
+                    visibleSiblingWidths -
+                    searchIconNode.getBoundingClientRect().width -
+                    ADVANCE_SEARCH_CLUSTER_GAP_PX,
+                ),
+            );
+
+            setSearchBarWidthPx((previousWidth) =>
+                Math.abs(previousWidth - nextWidth) > 1 ? nextWidth : previousWidth,
+            );
+        };
+
+        updateSearchBarWidth();
+
+        let resizeObserver;
+        if (typeof ResizeObserver !== 'undefined') {
+            resizeObserver = new ResizeObserver(updateSearchBarWidth);
+            if (searchTopRowRef.current) resizeObserver.observe(searchTopRowRef.current);
+            if (searchRightControlsRef.current) resizeObserver.observe(searchRightControlsRef.current);
+            if (searchClusterRef.current) resizeObserver.observe(searchClusterRef.current);
+            if (searchIconBoxRef.current) resizeObserver.observe(searchIconBoxRef.current);
+            if (searchCreateButtonRef.current) resizeObserver.observe(searchCreateButtonRef.current);
+        }
+
+        const rafId = requestAnimationFrame(updateSearchBarWidth);
+        window.addEventListener('resize', updateSearchBarWidth);
+
+        return () => {
+            cancelAnimationFrame(rafId);
+            resizeObserver?.disconnect();
+            window.removeEventListener('resize', updateSearchBarWidth);
+        };
+    }, [isSearchExpanded]);
 
     const persistStorageKey =
         persistActiveFilters && persistActiveFiltersStorageKey && typeof persistActiveFiltersStorageKey === 'string'
@@ -1628,14 +1726,13 @@ const RSAdvanceSearchNew = ({
         return !onlyNonBlocking;
     }, [lockMainBarWhenFilterChipsPresent, isAdvancedPanelOpen, hasMultiFilterChips, multiFilterChipTags]);
     const hideMainBarInputWhenChipsPresent = lockMainBarWhenFilterChipsPresent && hasActiveFilterTags;
-    const hasCollapsedSummary =
+    const _hasCollapsedSummary =
         hasActiveFilterTags || Boolean(String(mainSearchBarDisplayValue || '').trim()) || isFocused;
 
     const showExpandedChipScrollNav =
         hasActiveFilterTags && expandedChipRowOverflow;
 
-    const showCollapsedChipScrollNav = hasActiveFilterTags && collapsedChipRowOverflow;
-
+    const _showCollapsedChipScrollNav = hasActiveFilterTags && collapsedChipRowOverflow;
 
     const canSubmitAdvancedFooterSearch = useMemo(() => {
         const committedName = getEffectiveCommittedName();
@@ -1643,7 +1740,14 @@ const RSAdvanceSearchNew = ({
         const nameOk = hasSearchText && shouldSubmitSearch(committedName);
 
         const hasAnyFilter = Object.entries(activeFilters || {}).some(([key, val]) => {
-            if (key === 'sort_type') return false;
+            if (key === 'sort_type') {
+                const raw = val?.rawValue;
+                const id =
+                    raw != null && typeof raw === 'object' && !Array.isArray(raw)
+                        ? Number(raw.id)
+                        : Number(raw);
+                return Number.isFinite(id) && id !== DEFAULT_ADVANCE_SEARCH_SORT_BY_ID;
+            }
             if (!val) return false;
             const raw = val.rawValue;
             if (raw === undefined || raw === null) return false;
@@ -1758,7 +1862,7 @@ const RSAdvanceSearchNew = ({
     const renderCommunicationNameSuggestionList = () => {
         if (!showNameSuggestionList || isAdvancedPanelOpen) return null;
         return (
-            <ul className="rs-asn-name-suggest-list test css-scrollbar" role="listbox" aria-label="Search suggestions">
+            <ul className="SP-SuggestionEmpty rs-asn-name-suggest-list test css-scrollbar" role="listbox" aria-label="Search suggestions">
                 {showSuggestionsNoResults && (
                     <li className="rs-asn-name-suggest-item rs-asn-name-suggest-item--empty" role="status">
                         {SUGGESTION_LIST_EMPTY_LABEL}
@@ -1809,45 +1913,61 @@ const RSAdvanceSearchNew = ({
         );
     };
 
+    const searchBarInlineWidth = isSearchExpanded ? `${searchBarWidthPx}px` : '0px';
+    const isAdvancedPanelLayoutActive = isAdvancedPanelOpen || isAdvancedPanelExiting;
+
     return (
-        <div ref={advanceSearchMountRef} className={`rs-asn-wrapper ${isAdvancedPanelOpen ? 'is-expanded-full' : ''}`}>
-            <div
-                className={`rs-asn-top-row ${!isAdvancedPanelOpen && !isSearchExpanded ? 'rs-asn-top-row--toolbar' : ''}`}
-            >
-                {!isAdvancedPanelOpen ? (
-                    <div className="rs-asn-right-controls">
-                        {dateRangeComponent}
-                        {auxiliaryRightControls}
-                    </div>
-                ) : null}
-                {isSearchExpanded && (
+        <div
+            ref={advanceSearchMountRef}
+            className={`rs-asn-wrapper ${isAdvancedPanelOpen ? 'is-expanded-full' : ''} ${isAdvancedPanelLayoutActive ? 'is-advanced-panel-layout' : ''}`}
+        >
+            <div ref={searchTopRowRef} className={`rs-asn-top-row ${!isAdvancedPanelLayoutActive && !isSearchExpanded ? 'rs-asn-top-row--toolbar' : ''}`}>
+
+                {/* Date picker / Dropdown */}
+                <div ref={searchRightControlsRef} className={`SP-Menus rs-asn-right-controls ${!isAdvancedPanelLayoutActive ? '' : 'empty-width'}`}>
+                    {dateRangeComponent}
+                    {auxiliaryRightControls}
+                </div>
+
+                {/* Search full component expand */}
+                <div ref={searchClusterRef} className={`SP-SearchFull rs-asn-search-cluster ${isSearchExpanded || isAdvancedPanelExiting ? 'is-expanded' : ''}`}>
+
+                    {/* Expanding */}
                     <div
-                        className={`rs-asn-search-bar-wrap`}
+                        className="SP-Expanding rs-asn-search-bar-wrap"
+                        style={{
+                            flexGrow: 0,
+                            flexShrink: 0,
+                            flexBasis: searchBarInlineWidth,
+                            width: searchBarInlineWidth,
+                            maxWidth: searchBarInlineWidth,
+                            opacity: isSearchExpanded ? 1 : 0,
+                            pointerEvents: isSearchExpanded ? 'auto' : 'none',
+                        }}
                     >
                         <div className="rs-asn-search-bar">
 
-                            <div className="rs-asn-search-wrapper">
-                                {
-                                    (!isAdvancedPanelOpen && !hasActiveFilterTags) ? <div className='rs-asn-search-type-trigger'>
-                                        <RSBootstrapdown
-                                            containerClass={isAdvancedPanelOpen ? 'pe-none d-none' : ''}
-                                            data={advanceSearchOptions}
-                                            showUpdate={false}
-                                            disbleItems={disabledAdvanceOptions}
-                                            onSelect={handleSearchTypeSelect}
-                                            defaultItem={
-                                                <RSTooltip position="bottom" text={'More option'} className="lh0">
-                                                    <i
-                                                        className={`${advance_search_justify_dropdown_mini} icon-xs position-relative left4`}
-                                                    />
-                                                </RSTooltip>
-                                            }
-                                            className="no_caret"
-                                        />
-                                    </div> : null
-                                }
+                            {/* Left area */}
+                            <div className={`SP-LeftArea rs-asn-search-type-trigger ${(!isAdvancedPanelLayoutActive && !hasActiveFilterTags) ? '' : 'empty-width'}`}>
+                                <RSBootstrapdown
+                                    containerClass={isAdvancedPanelLayoutActive ? 'pe-none d-none' : ''}
+                                    data={advanceSearchOptions}
+                                    showUpdate={false}
+                                    disbleItems={disabledAdvanceOptions}
+                                    onSelect={handleSearchTypeSelect}
+                                    defaultItem={
+                                        <RSTooltip position="bottom" text={'More option'} className="lh0">
+                                            <i
+                                                className={`${advance_search_justify_dropdown_mini} icon-xs`}
+                                            />
+                                        </RSTooltip>
+                                    }
+                                    className="no_caret"
+                                />
+                            </div>
 
-                            <div className="rs-asn-scroll-area">
+                            {/* Center area */}
+                            <div className="SP-CenterArea rs-asn-scroll-area">
                                 <div
                                     className="rs-asn-search-bar-main"
                                     ref={expandedScrollRef}
@@ -1862,138 +1982,127 @@ const RSAdvanceSearchNew = ({
                                         });
                                     }}
                                 >
-                                    {hasActiveFilterTags && (
-                                        <div
-                                            ref={expandedChipsMeasureRef}
-                                            className={`rs-asn-chips-inline ${isAdvancedPanelOpen ? 'pl15' : 'pl5'}`}
-                                            aria-label="Active filters"
-                                        >
-                                            {renderActiveFilterChips()}
-                                        </div>
-                                    )}
-                                    {!hideMainBarInputWhenChipsPresent && (
-                                        <input
-                                            ref={inputRef}
-                                            type="text"
-                                            className={`rs-asn-search-input ${hasActiveFilterTags ? 'rs-asn-search-input--with-tags' : ''} ${lockMainBarText ? 'rs-asn-search-input--main-locked' : ''}`}
-                                            placeholder={
-                                                hasActiveFilterTags
-                                                    ? ''
-                                                    : isAdvancedPanelOpen
-                                                        ? searchNameInputPlaceholderWhenAdvancedOpen
-                                                        : 'By ' + (searchType || '').toLowerCase()
-                                            }
-                                            value={mainSearchBarDisplayValue}
-                                            onChange={handleInputChange}
-                                            onKeyDown={handleKeyDown}
-                                            onFocus={handleFocus}
-                                            onBlur={handleBlur}
-                                            readOnly={lockMainBarText}
-                                            tabIndex={disabled ? -1 : 0}
-                                            onPointerDown={(e) => {
-                                                if (disabled) return;
-                                                if (e.pointerType === 'mouse' && e.button !== 0) return;
-                                                const el = e.currentTarget;
-                                                requestAnimationFrame(() => {
-                                                    el.focus({ preventScroll: true });
-                                                });
-                                            }}
-                                            disabled={disabled}
-                                            autoComplete="off"
-                                        />
-                                    )}
+
+                                    {/* Multi select list */}
+                                    <div
+                                        ref={expandedChipsMeasureRef}
+                                        className={`rs-asn-chips-inline ${isAdvancedPanelLayoutActive ? 'pl10' : 'pl5'} ${hasActiveFilterTags ? '' : ''}`}
+                                        aria-label="Active filters"
+                                    >
+                                        {renderActiveFilterChips()}
+                                    </div>
+
+                                    {/* Input text */}
+                                    <input
+                                        ref={inputRef}
+                                        type="text"
+                                        className={`rs-asn-search-input ${hasActiveFilterTags ? 'rs-asn-search-input--with-tags' : ''} ${lockMainBarText ? 'rs-asn-search-input--main-locked' : ''} ${hideMainBarInputWhenChipsPresent ? '' : ''}`}
+                                        placeholder={
+                                            hasActiveFilterTags
+                                                ? ''
+                                                : isAdvancedPanelLayoutActive
+                                                    ? searchNameInputPlaceholderWhenAdvancedOpen
+                                                    : 'By ' + (searchType || '').toLowerCase()
+                                        }
+                                        value={mainSearchBarDisplayValue}
+                                        onChange={handleInputChange}
+                                        onKeyDown={handleKeyDown}
+                                        onFocus={handleFocus}
+                                        onBlur={handleBlur}
+                                        readOnly={lockMainBarText}
+                                        tabIndex={disabled ? -1 : 0}
+                                        onPointerDown={(e) => {
+                                            if (disabled) return;
+                                            if (e.pointerType === 'mouse' && e.button !== 0) return;
+                                            const el = e.currentTarget;
+                                            requestAnimationFrame(() => {
+                                                el.focus({ preventScroll: true });
+                                            });
+                                        }}
+                                        disabled={disabled}
+                                        autoComplete="off"
+                                    />
                                 </div>
                             </div>
-                            <ul className={`rs-asn-search-actions right-1 position-relative ${showMainBarSearchLoading ? 'pl0' : ''}`}>
-                                {showExpandedChipScrollNav && (
-                                    <li className="position-relative rs-asn-action-divider">
-                                        <RSTooltip text="Scroll left" position="top" className="lh0" innerContent={false}>
-                                            <i
-                                                className={`${advance_search_arrow_left_mini} icon-xs color-primary-blue ${!canScrollExpandedLeft ? 'click-off' : ''}`}
-                                                onClick={() => canScrollExpandedLeft && scrollHorizontal(expandedScrollRef, -1)}
-                                            />
-                                        </RSTooltip>
-                                        <RSTooltip text="Scroll right" position="top" className="lh0" innerContent={false}>
-                                            <i
-                                                className={`${advance_search_arrow_right_mini} icon-xs color-primary-blue ${!canScrollExpandedRight ? 'click-off' : ''}`}
-                                                onClick={() => canScrollExpandedRight && scrollHorizontal(expandedScrollRef, 1)}
-                                            />
-                                        </RSTooltip>
-                                    </li>
-                                )}
-                                {showMainBarSearchLoading ? (
-                                    <li className="rs-asn-search-field-loader position-relative" aria-hidden="true">
-                                        <span className="segment_loader" />
-                                    </li>
-                                ) : null}
-                                {showToolbarClear ? (
-                                    <li className="position-relative rs-asn-action-divider">
-                                        <RSTooltip
-                                            text={toolbarClearTooltip}
-                                            position="top"
-                                            className="lh0 position-relative"
-                                            innerContent={false}
-                                        >
-                                            <i
-                                                className={`${clear_mini} icon-xs color-primary-red`}
-                                                onClick={handleToolbarClear}
-                                            />
-                                        </RSTooltip>
-                                    </li>
-                                ) : null}
-                                {filterConfig.length > 0 && (
-                                    <li className="position-relative rs-asn-action-divider">
-                                        <RSTooltip
-                                            text={isAdvancedPanelOpen ? 'Collapse' : 'Expand'}
-                                            position="top"
-                                            className="lh0 position-relative"
-                                            innerContent={false}
-                                        >
-                                            <i
-                                                className={`${isAdvancedPanelOpen
-                                                    ? advance_search_arrow_double_up_mini
-                                                    : advance_search_arrow_double_down_mini
-                                                    } icon-xs color-primary-blue ${isAdvancedPanelOpen ? 'is-open' : ''}`}
-                                                onClick={isAdvancedPanelOpen ? handleAdvancedCancel : toggleAdvancedPanel}
-                                            />
-                                        </RSTooltip>
-                                    </li>
-                                )}
 
-                                    <li className="position-relative rs-asn-action-divider">
-                                        <RSTooltip text="Close" position="top" className="lh0 position-relative" innerContent={false}>
-                                            <i
-                                                className={`${advance_search_close_mini} icon-xs color-primary-blue`}
-                                                onClick={() => {
-                                                    if (disabled) return;
-                                                    handleSearchClose();
-                                                }}
-                                            />
-                                        </RSTooltip>
-                                    </li>
-                                </ul>
-                            </div>
-                            <div className="position-relative">
-                                <RSTooltip
-                                    text={'Search'
-                                    }
-                                    position="top"
-                                    className="lh0 position-relative"
-                                    innerContent={false}
-                                >
-                                    <i
-                                        className={`${circle_zoom_fill_edge_large} icon-lg color-primary-blue ${!canClickToolbarZoomSearch ? 'click-off' : ''}`}
-                                        onClick={() => canClickToolbarZoomSearch && handleSearchSubmit()}
-                                        aria-disabled={!canClickToolbarZoomSearch}
-                                    />
-                                </RSTooltip>
-                            </div>
+                            {/* Right area */}
+                            <ul className={`SP-RightArea rs-asn-search-actions right-1 position-relative ${showMainBarSearchLoading ? 'pl0' : ''}`}>
+
+                                {/* Slider arrow */}
+                                <li className={`SP-Arrow position-relative rs-asn-action-divider ${showExpandedChipScrollNav ? '' : 'empty-width'}`}>
+                                    <RSTooltip text="Scroll left" position="top" className="lh0" innerContent={false}>
+                                        <i
+                                            className={`${advance_search_arrow_left_mini} icon-xs color-primary-blue ${!canScrollExpandedLeft ? 'click-off' : ''}`}
+                                            onClick={() => canScrollExpandedLeft && scrollHorizontal(expandedScrollRef, -1)}
+                                        />
+                                    </RSTooltip>
+                                    <RSTooltip text="Scroll right" position="top" className="lh0" innerContent={false}>
+                                        <i
+                                            className={`${advance_search_arrow_right_mini} icon-xs color-primary-blue ${!canScrollExpandedRight ? 'click-off' : ''}`}
+                                            onClick={() => canScrollExpandedRight && scrollHorizontal(expandedScrollRef, 1)}
+                                        />
+                                    </RSTooltip>
+                                </li>
+
+                                {/* Loader */}
+                                <li className={`SP-Loader rs-asn-search-field-loader position-relative ${showMainBarSearchLoading ? '' : 'empty-width'}`} aria-hidden="true">
+                                    <span className="segment_loader" />
+                                </li>
+
+                                {/* Remove icon */}
+                                <li className={`SP-RemoveIcon position-relative rs-asn-action-divider ${showToolbarClear ? '' : 'empty-width'}`}>
+                                    <RSTooltip
+                                        text={toolbarClearTooltip}
+                                        position="top"
+                                        className="lh0 position-relative"
+                                        innerContent={false}
+                                    >
+                                        <i
+                                            className={`${clear_mini} icon-xs color-primary-red`}
+                                            onClick={handleToolbarClear}
+                                        />
+                                    </RSTooltip>
+                                </li>
+
+                                {/* Dropdown Open / Close */}
+                                <li className={`SP-DropdownOpen position-relative rs-asn-action-divider ${filterConfig.length > 0 ? '' : 'empty-width'}`}>
+                                    <RSTooltip
+                                        text={isAdvancedPanelOpen ? 'Collapse' : 'Expand'}
+                                        position="top"
+                                        className="lh0 position-relative"
+                                        innerContent={false}
+                                    >
+                                        <i
+                                            className={`${isAdvancedPanelOpen
+                                                ? advance_search_arrow_double_up_mini
+                                                : advance_search_arrow_double_down_mini
+                                                } icon-xs color-primary-blue ${isAdvancedPanelOpen ? 'is-open' : ''}`}
+                                            onClick={isAdvancedPanelOpen ? handleAdvancedCancel : toggleAdvancedPanel}
+                                        />
+                                    </RSTooltip>
+                                </li>
+
+                                {/* Close */}
+                                <li className="SP-Close position-relative rs-asn-action-divider">
+                                    <RSTooltip text="Close" position="top" className="lh0 position-relative" innerContent={false}>
+                                        <i
+                                            className={`${advance_search_close_mini} icon-xs color-primary-blue`}
+                                            onClick={() => {
+                                                if (disabled) return;
+                                                handleSearchClose();
+                                            }}
+                                        />
+                                    </RSTooltip>
+                                </li>
+                            </ul>
+
                         </div>
-                        
+
+                        {/* Suggestion */}
                         {renderCommunicationNameSuggestionList()}
                         {showSelectedFilterSuggestionList && (
                             <ul
-                                className="rs-asn-name-suggest-list test css-scrollbar"
+                                className="SP-Suggestion rs-asn-name-suggest-list test css-scrollbar"
                                 role="listbox"
                                 aria-label={`${searchType} suggestions`}
                             >
@@ -2036,297 +2145,199 @@ const RSAdvanceSearchNew = ({
                             </ul>
                         )}
 
-                        {filterConfig.length > 0 && isAdvancedPanelOpen && (
-                            <div className="rs-asn-advanced-panel">
-                                <div className="rs-asn-advanced-grid mt-15">
-                                    {sortedAdvanceFilterConfig.map((filter) => {
-                                        const inputText = String(activeFilters[filter.key]?.rawValue ?? '').trim();
-                                        const hasValue =
-                                            filter.type === 'input'
-                                                ? Boolean(inputText)
-                                                : Boolean(activeFilters[filter.key]?.displayValue);
+                        {/* Open advanced search panel */}
+                        <AnimatePresence
+                            initial={false}
+                            onExitComplete={() => setIsAdvancedPanelExiting(false)}
+                        >
+                            {filterConfig.length > 0 && isAdvancedPanelOpen && (
+                                <motion.div
+                                    key="rs-asn-advanced-panel"
+                                    className="SP-OpenAdvanced rs-asn-advanced-panel"
+                                    initial={ADVANCE_PANEL_MOTION.initial}
+                                    animate={ADVANCE_PANEL_MOTION.animate}
+                                    exit={ADVANCE_PANEL_MOTION.exit}
+                                >
+                                    <div className="rs-asn-advanced-grid mt-15">
+                                        {sortedAdvanceFilterConfig.map((filter) => {
+                                            const inputText = String(activeFilters[filter.key]?.rawValue ?? '').trim();
+                                            const hasValue =
+                                                filter.type === 'input'
+                                                    ? Boolean(inputText)
+                                                    : Boolean(activeFilters[filter.key]?.displayValue);
 
-                                        const showInputLabelRow =
-                                            filter.type === 'input' || hasValue || Boolean(filter.isMulti);
-                                        return (
-                                            <div
-                                                key={filter.key}
-                                                className={`rs-asn-filter-field ${showInputLabelRow ? 'has-value' : 'is-placeholder'} ${filter.type === 'input' ? 'rs-asn-filter-field--input' : ''}`}
-                                            >
-                                                <div className="rs-asn-filter-field-control">
-                                                    {filter.type === 'input' ? (
-                                                        <div className="rs-asn-advanced-input-wrap position-relative">
-                                                            <RSInput
-                                                                type="text"
-                                                                name={filter.key}
-                                                                control={advanceTextControl}
-                                                                label={filter.label || ''}
-                                                                disabled={disabled}
-                                                                isKeyDownUpPrevent={false}
-                                                                className="rs-asn-advanced-text-input"
-                                                                classWrapper="rs-asn-adv-input-field"
-                                                                handleOnchange={(e) =>
-                                                                    handleFilterTextChange(filter.key, e.target.value)
-                                                                }
-                                                                autoComplete="off"
-                                                                autoCorrect="off"
-                                                                autoCapitalize="off"
-                                                                spellCheck={false}
-                                                            />
-                                                            {showAdvanceInputLoading && filter.key === 'communication_name' && (
-                                                                <div
-                                                                    className="rs-inputIcon-wrapper rs-asn-advanced-input-loader"
-                                                                    aria-hidden="true"
-                                                                >
-                                                                    <span className="segment_loader" />
-                                                                </div>
-                                                            )}
-                                                            {filter.key === 'communication_name' &&
-                                                                showAdvanceCommNameSuggestList && (
-                                                                    <ul
-                                                                        className="rs-asn-name-suggest-list css-scrollbar"
-                                                                        role="listbox"
-                                                                        aria-label={`${nameInputFilterLabel} suggestions`}
+                                            const showInputLabelRow =
+                                                filter.type === 'input' || hasValue || Boolean(filter.isMulti);
+                                            return (
+                                                <div
+                                                    key={filter.key}
+                                                    className={`rs-asn-filter-field ${showInputLabelRow ? 'has-value' : 'is-placeholder'} ${filter.type === 'input' ? 'rs-asn-filter-field--input' : ''}`}
+                                                >
+                                                    <div className="rs-asn-filter-field-control">
+                                                        {filter.type === 'input' ? (
+                                                            <div className="rs-asn-advanced-input-wrap position-relative">
+                                                                <RSInput
+                                                                    type="text"
+                                                                    name={filter.key}
+                                                                    control={advanceTextControl}
+                                                                    label={filter.label || ''}
+                                                                    disabled={disabled}
+                                                                    isKeyDownUpPrevent={false}
+                                                                    className="rs-asn-advanced-text-input"
+                                                                    classWrapper="rs-asn-adv-input-field"
+                                                                    handleOnchange={(e) =>
+                                                                        handleFilterTextChange(filter.key, e.target.value)
+                                                                    }
+                                                                    autoComplete="off"
+                                                                    autoCorrect="off"
+                                                                    autoCapitalize="off"
+                                                                    spellCheck={false}
+                                                                />
+                                                                {showAdvanceInputLoading && filter.key === 'communication_name' && (
+                                                                    <div
+                                                                        className="rs-inputIcon-wrapper rs-asn-advanced-input-loader"
+                                                                        aria-hidden="true"
                                                                     >
-                                                                        {showAdvanceSuggestionsNoResults && (
-                                                                            <li
-                                                                                className="rs-asn-name-suggest-item rs-asn-name-suggest-item--empty"
-                                                                                role="status"
-                                                                            >
-                                                                                {SUGGESTION_LIST_EMPTY_LABEL}
-                                                                            </li>
-                                                                        )}
-                                                                        {!resolvedSuggestionsLoading &&
-                                                                            resolvedSuggestions.map((row, idx) => {
-                                                                                const label = resolveAutoSuggestLabel(
-                                                                                    row,
-                                                                                    suggestionLabelOptions,
-                                                                                );
-                                                                                if (!label) return null;
-                                                                                const stableId = STABLE_ROW_ID_KEYS.map(
-                                                                                    (k) => row?.[k],
-                                                                                ).find((v) => v != null && v !== '');
-                                                                                const rowKey =
-                                                                                    stableId != null
-                                                                                        ? `adv-id-${String(stableId)}`
-                                                                                        : `adv-${idx}-${label.slice(0, 64)}`;
-                                                                                return (
-                                                                                    <li
-                                                                                        key={rowKey}
-                                                                                        className="rs-asn-name-suggest-item"
-                                                                                    >
-                                                                                        <div
-                                                                                            className="rs-asn-name-suggest-btn"
-                                                                                            onMouseDown={(e) => {
-                                                                                                e.preventDefault();
-                                                                                                handleAdvanceCommunicationNameSuggestPick(
-                                                                                                    label,
-                                                                                                );
-                                                                                            }}
-                                                                                        >
-                                                                                            {label}
-                                                                                        </div>
-                                                                                    </li>
-                                                                                );
-                                                                            })}
-                                                                    </ul>
+                                                                        <span className="segment_loader" />
+                                                                    </div>
                                                                 )}
-                                                        </div>
-                                                    ) : filter.isMulti ? (
-                                                        <RSMultiSelectNew
-                                                            data={filter.data}
-                                                            isObject={filter.isObject}
-                                                            fieldKey={filter.fieldKey}
-                                                            itemKey={filter.itemKey}
-                                                            label={filter.label}
-                                                            value={activeFilters[filter.key]?.rawValue || []}
-                                                            onSelect={(items) => handleMultiFilterSelect(filter.key, items)}
-                                                            alignRight
-                                                            disabled={disabled}
-                                                            insertAfterSelectAll={filter.insertAfterSelectAll}
-                                                            selectAllLabel={filter.selectAllTagLabel ?? DEFAULT_SELECT_ALL_TAG_LABEL}
-                                                            hideSelectAllRow={Boolean(filter.hideSelectAllRow)}
-                                                            omitStaticLabelInToggle
-                                                        />
-                                                    ) : (
-                                                        <RSBootstrapdown
-                                                            data={filter.data}
-                                                            isObject={filter.isObject}
-                                                            fieldKey={filter.fieldKey}
-                                                            idKey={filter.idKey}
-                                                            defaultItem={getDropdownDefaultItem(filter, activeFilters)}
-                                                            showUpdate={false}
-                                                            toggleLabel={filter.label}
-                                                            alignRight
-                                                            className="rs-asn-filter-dropdown"
-                                                            onSelect={(value) => handleFilterSelect(filter.key, value)}
-                                                        />
-                                                    )}
+                                                                {filter.key === 'communication_name' &&
+                                                                    showAdvanceCommNameSuggestList && (
+                                                                        <ul
+                                                                            className="rs-asn-name-suggest-list css-scrollbar"
+                                                                            role="listbox"
+                                                                            aria-label={`${nameInputFilterLabel} suggestions`}
+                                                                        >
+                                                                            {showAdvanceSuggestionsNoResults && (
+                                                                                <li
+                                                                                    className="rs-asn-name-suggest-item rs-asn-name-suggest-item--empty"
+                                                                                    role="status"
+                                                                                >
+                                                                                    {SUGGESTION_LIST_EMPTY_LABEL}
+                                                                                </li>
+                                                                            )}
+                                                                            {!resolvedSuggestionsLoading &&
+                                                                                resolvedSuggestions.map((row, idx) => {
+                                                                                    const label = resolveAutoSuggestLabel(
+                                                                                        row,
+                                                                                        suggestionLabelOptions,
+                                                                                    );
+                                                                                    if (!label) return null;
+                                                                                    const stableId = STABLE_ROW_ID_KEYS.map(
+                                                                                        (k) => row?.[k],
+                                                                                    ).find((v) => v != null && v !== '');
+                                                                                    const rowKey =
+                                                                                        stableId != null
+                                                                                            ? `adv-id-${String(stableId)}`
+                                                                                            : `adv-${idx}-${label.slice(0, 64)}`;
+                                                                                    return (
+                                                                                        <li
+                                                                                            key={rowKey}
+                                                                                            className="rs-asn-name-suggest-item"
+                                                                                        >
+                                                                                            <div
+                                                                                                className="rs-asn-name-suggest-btn"
+                                                                                                onMouseDown={(e) => {
+                                                                                                    e.preventDefault();
+                                                                                                    handleAdvanceCommunicationNameSuggestPick(
+                                                                                                        label,
+                                                                                                    );
+                                                                                                }}
+                                                                                            >
+                                                                                                {label}
+                                                                                            </div>
+                                                                                        </li>
+                                                                                    );
+                                                                                })}
+                                                                        </ul>
+                                                                    )}
+                                                            </div>
+                                                        ) : filter.isMulti ? (
+                                                            <RSMultiSelectNew
+                                                                data={filter.data}
+                                                                isObject={filter.isObject}
+                                                                fieldKey={filter.fieldKey}
+                                                                itemKey={filter.itemKey}
+                                                                label={filter.label}
+                                                                value={activeFilters[filter.key]?.rawValue || []}
+                                                                onSelect={(items) => handleMultiFilterSelect(filter.key, items)}
+                                                                alignRight
+                                                                disabled={disabled}
+                                                                insertAfterSelectAll={filter.insertAfterSelectAll}
+                                                                selectAllLabel={filter.selectAllTagLabel ?? DEFAULT_SELECT_ALL_TAG_LABEL}
+                                                                hideSelectAllRow={Boolean(filter.hideSelectAllRow)}
+                                                                omitStaticLabelInToggle
+                                                            />
+                                                        ) : (
+                                                            <RSBootstrapdown
+                                                                data={filter.data}
+                                                                isObject={filter.isObject}
+                                                                fieldKey={filter.fieldKey}
+                                                                idKey={filter.idKey}
+                                                                defaultItem={getDropdownDefaultItem(filter, activeFilters)}
+                                                                showUpdate={false}
+                                                                toggleLabel={filter.label}
+                                                                alignRight
+                                                                className="rs-asn-filter-dropdown"
+                                                                onSelect={(value) => handleFilterSelect(filter.key, value)}
+                                                            />
+                                                        )}
+                                                    </div>
                                                 </div>
-                                            </div>
-                                        );
-                                    })}
-                                </div>
-                                <div className="rs-asn-advanced-footer">
-                                    <RSSecondaryButton type="button" onClick={handleAdvancedCancel}>
-                                        Cancel
-                                    </RSSecondaryButton>
-                                    <RSPrimaryButton
-                                        type="button"
-                                        onClick={handleSearchSubmit}
-                                        disabled={disabled || !canSubmitAdvancedFooterSearch}
-                                        disabledClass={disabled || !canSubmitAdvancedFooterSearch ? 'click-off' : ''}
-                                    >
-                                        Search
-                                    </RSPrimaryButton>
-                                </div>
-                            </div>
-                        )}
-                    </div>
-                )}
-
-                {!isSearchExpanded && (
-                    <div
-                        className={`rs-asn-toolbar-actions ${hasCollapsedSummary ? 'has-collapsed-bar' : ''}`}
-                    >
-                    <div className={`rs-asn-collapsed-wrap ${!hasCollapsedSummary ? 'is-initial' : ''}`}>
-                        {hasCollapsedSummary ? (
-                            <div className="rs-asn-collapsed-bar  position-relative">
-                                <div className="rs-asn-collapsed-bar-scroll" ref={collapsedScrollRef}>
-                                    {hasActiveFilterTags ? (
-                                        <div
-                                            ref={collapsedChipsMeasureRef}
-                                            className="rs-asn-chips-inline"
-                                            aria-label="Active filters"
-                                        >
-                                            {renderActiveFilterChips()}
-                                        </div>
-                                    ) : null}
-                                    {!hideCollapsedSearchQuerySummary &&
-                                        !hideMainBarInputWhenChipsPresent &&
-                                        (hasActiveFilterTags ||
-                                            Boolean(String(mainSearchBarDisplayValue || '').trim()) ||
-                                            isFocused) && (
-                                            <div className="rs-asn-collapsed-query-wrap">
-                                                <input
-                                                    ref={inputRef}
-                                                    type="text"
-                                                    className={`rs-asn-collapsed-query-input ${lockMainBarText ? 'rs-asn-collapsed-query-input--locked' : ''}`}
-                                                    title={mainSearchBarDisplayValue}
-                                                    placeholder={
-                                                        String(mainSearchBarDisplayValue || '').trim()
-                                                            ? ''
-                                                            : searchPlaceholder || DEFAULT_SEARCH_PLACEHOLDER
-                                                    }
-                                                    value={mainSearchBarDisplayValue}
-                                                    onChange={handleInputChange}
-                                                    onKeyDown={handleKeyDown}
-                                                    onFocus={handleFocus}
-                                                    onBlur={handleBlur}
-                                                    readOnly={lockMainBarText}
-                                                    tabIndex={disabled ? -1 : 0}
-                                                    onPointerDown={(e) => {
-                                                        if (disabled) return;
-                                                        if (e.pointerType === 'mouse' && e.button !== 0) return;
-                                                        const el = e.currentTarget;
-                                                        requestAnimationFrame(() => {
-                                                            el.focus({ preventScroll: true });
-                                                        });
-                                                    }}
-                                                    disabled={disabled}
-                                                    autoComplete="off"
-                                                    aria-label={
-                                                        searchPlaceholder ||
-                                                        searchNameInputPlaceholderWhenAdvancedOpen
-                                                    }
-                                                />
-                                            </div>
-                                        )}
-                                </div>
-                                {renderCommunicationNameSuggestionList()}
-                                {(showCollapsedChipScrollNav || showToolbarClear || showMainBarSearchLoading) && (
-                                    <div
-                                        className={`rs-asn-collapsed-nav ${showCollapsedChipScrollNav ? 'has-scroll-arrows' : ''}`}
-                                        role="group"
-                                        aria-label="Search navigation"
-                                    >
-                                        {showCollapsedChipScrollNav && (
-                                            <div className="rs-asn-chevron-nav-group">
-                                                <RSTooltip text="Scroll left" position="top" className="lh0">
-                                                    <i
-                                                        className={`${advance_search_arrow_left_mini} icon-xs color-primary-blue rs-asn-chevron-nav ${!canScrollCollapsedLeft ? 'is-muted' : ''}`}
-                                                        onClick={() => canScrollCollapsedLeft && scrollHorizontal(collapsedScrollRef, -1)}
-                                                    />
-                                                </RSTooltip>
-                                                <RSTooltip text="Scroll right" position="top" className="lh0">
-                                                    <i
-                                                        className={`${advance_search_arrow_right_mini} icon-xs color-primary-blue rs-asn-chevron-nav ${!canScrollCollapsedRight ? 'is-muted' : ''}`}
-                                                        onClick={() => canScrollCollapsedRight && scrollHorizontal(collapsedScrollRef, 1)}
-                                                    />
-                                                </RSTooltip>
-                                            </div>
-                                        )}
-                                        {showMainBarSearchLoading ? (
-                                            <div className="rs-asn-search-field-loader" aria-hidden="true">
-                                                <span className="segment_loader" />
-                                            </div>
-                                        ) : null}
-                                        {showToolbarClear ? (
-                                            <div className="rs-asn-action-divider">
-                                                <RSTooltip text={toolbarClearTooltip} position="top" className="lh0" innerContent={false}>
-                                                    <i
-                                                        className={`${clear_mini} icon-xs color-primary-red`}
-                                                        onClick={handleToolbarClear}
-                                                    />
-                                                </RSTooltip>
-                                            </div>
-                                        ) : null}
-                                        <div className="rs-asn-action-divider">
-                                            <RSTooltip text="Close" position="top" className="lh0" innerContent={false}>
-                                                <i
-                                                    className={`${advance_search_close_mini} icon-xs color-primary-blue`}
-                                                    onClick={handleSearchClose}
-                                                />
-                                            </RSTooltip>
-                                        </div>
+                                            );
+                                        })}
                                     </div>
-                                )}
-                            </div>
-                        ) : (
-                            <RSTooltip
-                                text={'Search'
-                                }
-                                position="top"
-                                className="lh0 position-relative h32"
-                                innerContent={false}
-                            >
-                                <span className={`d-inline-flex lh0${disabled ? ' pe-none click-off' : ''}`}>
-                                    <i
-                                        id="rs_RSAdvanceSearch_zoom" className={`${circle_zoom_fill_edge_large} icon-lg color-primary-blue`}
-                                        onClick={() => {
-                                            if (!disabled) handleSearchExpand();
-                                        }}
-                                    />
-                                </span>
-                            </RSTooltip>
+                                    <div className="rs-asn-advanced-footer">
+                                        <RSSecondaryButton type="button" onClick={handleAdvancedCancel}>
+                                            Cancel
+                                        </RSSecondaryButton>
+                                        <RSPrimaryButton
+                                            type="button"
+                                            onClick={handleSearchSubmit}
+                                            disabled={disabled || !canSubmitAdvancedFooterSearch}
+                                            disabledClass={disabled || !canSubmitAdvancedFooterSearch ? 'click-off' : ''}
+                                        >
+                                            Search
+                                        </RSPrimaryButton>
+                                    </div>
+                                </motion.div>
+                            )}
+                        </AnimatePresence>
+                    </div>
 
-                        )}
-                        {hasCollapsedSummary && (
-                            <RSTooltip text="Open advance search filters" position="top" className="lh0">
-                                <span className={`d-inline-flex lh0${disabled ? ' pe-none click-off' : ''}`}>
-                                    <i
-                                        className={`${filter_circle_fill_edge_large} icon-lg color-primary-blue`}
-                                        onClick={() => {
-                                            if (!disabled) handleOpenAdvancedFromCollapsed();
-                                        }}
-                                    />
-                                </span>
-                            </RSTooltip>
-                        )}
+                    {/* Main search icon */}
+                    <div ref={searchIconBoxRef} className="SP-MainSearch position-relative search-icon-box">
+                        <RSTooltip
+                            text={'Search'
+                            }
+                            position="top"
+                            className="lh0 position-relative"
+                            innerContent={false}
+                        >
+                            <div className={`${disabled || (isSearchExpanded && !canClickToolbarZoomSearch) ? 'pe-none click-off' : ''}`}>
+                                <i
+                                    id="rs_RSAdvanceSearch_zoom"
+                                    className={`${circle_zoom_fill_edge_large} icon-lg color-primary-blue`}
+                                    onClick={() => {
+                                        if (disabled) return;
+                                        if (!isSearchExpanded) {
+                                            handleSearchExpand();
+                                            return;
+                                        }
+                                        if (canClickToolbarZoomSearch) {
+                                            handleSearchSubmit();
+                                        }
+                                    }}
+                                    aria-disabled={isSearchExpanded && !canClickToolbarZoomSearch}
+                                />
+                            </div>
+                        </RSTooltip>
                     </div>
-                    </div>
-                )}
-                <div className={`d-flex align-items-center ${isSearchExpanded ? 'w-0' : ''}`}>{createButtonComponent}</div>
+
+                </div>
+                {createButtonComponent ? (
+                    <div ref={searchCreateButtonRef} className="d-flex align-items-center">{createButtonComponent}</div>
+                ) : null}
             </div>
         </div >
     );

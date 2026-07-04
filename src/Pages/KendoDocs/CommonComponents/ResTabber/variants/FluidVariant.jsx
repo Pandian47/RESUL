@@ -2,13 +2,12 @@ import { truncateTitle } from 'Utils/modules/displayCore';
 import { CustomSkeleton } from 'Components/Skeleton/Components/SkeletonOverall';
 import { justify_dropdown_mini } from 'Constants/GlobalConstant/Glyphicons';
 import { memo, useEffect, useLayoutEffect, useState } from 'react';
-import _findIndex from 'lodash/findIndex';
 import { Container, Row } from 'react-bootstrap';
 import { BootstrapDropdown } from 'Components/RSBootstrapDropDown';
 import RSTooltip from 'Components/RSTooltip';
 
 import { normalizeTabIndex } from '../hooks';
-import { TAB_LABEL_MAX_LENGTH, mapResTabberClasses } from '../utils';
+import { TAB_LABEL_MAX_LENGTH, mapResTabberClasses, renderTabPanel } from '../utils';
 import TabContentTransition from './TabContentTransition';
 
 const FluidVariant = ({
@@ -69,7 +68,7 @@ const FluidVariant = ({
     }, [tabs, selected]);
 
     const handleTabChange = ({ name }, index) => {
-        const findTabIndex = _findIndex(tabData, (tab) => tab.text === name);
+        const findTabIndex = tabData.findIndex((tab) => tab.text === name);
         const tempTabs = [...tabs];
         const remainOptions = [...options];
         remainOptions.splice(index, 1);
@@ -168,9 +167,7 @@ const FluidVariant = ({
             <Container className="px0">
                 <div className={componentClassName}>
                     <TabContentTransition selectedIdx={selected}>
-                        {tabs?.length && typeof tabs[selected]?.component === 'function'
-                            ? tabs[selected].component()
-                            : null}
+                        {tabs?.length ? renderTabPanel(tabs[selected]) : null}
                     </TabContentTransition>
                 </div>
             </Container>

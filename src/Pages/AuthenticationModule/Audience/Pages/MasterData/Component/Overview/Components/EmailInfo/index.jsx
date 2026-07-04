@@ -41,7 +41,7 @@ const EmailInfo = ({ show = false, handleClose = ()=>{}, chartData = {}, chartTy
             body={
                 <div className="master-recip-data-popup">
                     <Row>
-                        <Col md={6} className="">
+                        <Col md={6} className="d-flex justify-content-center align-items-center">
                             {shouldRenderChart ? (
                                 <RSHighchartsContainer options={pieChartOptions(data)} />
                             ) : (

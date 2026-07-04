@@ -95,12 +95,17 @@ const FormButtons = ({
     let data = watch();
     const [submitCheck, setSubmitCheck] = useState(false);
 
+    const getPreviewButtonHtml = (fieldValue, formStateValue, fallback) => {
+        if (typeof fieldValue === 'string' && fieldValue.trim()) return fieldValue;
+        if (typeof formStateValue === 'string' && formStateValue.trim()) return formStateValue;
+        if (formStateValue?.buttonText) return `<p>${formStateValue.buttonText}</p>`;
+        return `<p>${fallback}</p>`;
+    };
+
     useEffect(() => {
-        if (!data?.Submit?.includes('background-color')) {
-            setSubmitCheck(true);
-        } else {
-            setSubmitCheck(false);
-        }
+        const submitVal = data?.Submit;
+        const hasColor = typeof submitVal === 'string' ? submitVal.includes('background-color') : false;
+        setSubmitCheck(!hasColor);
     }, [data]);
 
     // Get the current form layout
@@ -146,25 +151,37 @@ const FormButtons = ({
                                                 '4px'
                                     }}
                                 >
-                                    <RSEditorPopup
-                                        name={`CancelView`}
-                                        control={control}
-                                        // initialValue={!!formState?.CancelView ? formState?.CancelView : 'Cancel'}
-                                        initialValue={!!formState?.CancelView ? data?.CancelView : 'Cancel'}
-                                        init={BODYCONFIG}
-                                        disabled={preview}
-                                        applyColorToLinksOnly
-                                        onNodeChange={({ target }) => {
-                                            handleColorButton(target, 'cancel');
-                                        }}
-                                        handleChange={(e) => {
-                                                                                        dispatchState({
-                                                type: 'UPDATE',
-                                                field: 'CancelView',
-                                                payload: e?.html,
-                                            });
-                                        }}
-                                    />
+                                    {preview ? (
+                                        <span
+                                            dangerouslySetInnerHTML={{
+                                                __html: getPreviewButtonHtml(
+                                                    data?.CancelView,
+                                                    formState?.CancelView,
+                                                    'Cancel',
+                                                ),
+                                            }}
+                                        />
+                                    ) : (
+                                        <RSEditorPopup
+                                            name={`CancelView`}
+                                            control={control}
+                                            // initialValue={!!formState?.CancelView ? formState?.CancelView : 'Cancel'}
+                                            initialValue={!!formState?.CancelView ? data?.CancelView : 'Cancel'}
+                                            init={BODYCONFIG}
+                                            disabled={preview}
+                                            applyColorToLinksOnly
+                                            onNodeChange={({ target }) => {
+                                                handleColorButton(target, 'cancel');
+                                            }}
+                                            handleChange={(e) => {
+                                                                                            dispatchState({
+                                                    type: 'UPDATE',
+                                                    field: 'CancelView',
+                                                    payload: e?.html,
+                                                });
+                                            }}
+                                        />
+                                    )}
                                 </button>
                             </li>
                             <li>
@@ -174,34 +191,49 @@ const FormButtons = ({
                                     className={`rs-form-button rsfb-submit ${submitCheck ? 'submitini' : ''}`}
                                     style={{
                                         backgroundColor: themeColors?.accent || `${color?.submitColor || '#005534'}`,
+                                        color: preview ? '#ffffff' : undefined,
+                                        padding: preview ? '10px 24px' : undefined,
                                         borderRadius: buttonRounding === 'full' ? '50px' :
                                             buttonRounding === 'none' ? '0px' :
                                                 '4px'
                                     }}
                                 >
-                                    <RSEditorPopup
-                                        name={`Submit`}
-                                        control={control}
-                                        // initialValue={!!formState?.Submit ? formState?.Submit : 'Submit'}
-                                        initialValue={!!formState?.Submit ? data?.Submit : 'Submit'}
-                                        init={BODYCONFIG}
-                                        disabled={preview}
-                                        applyColorToLinksOnly
-                                        minChars={2}
-                                        maxChars={30}
-                                        preventLineBreaks={true}
-                                        onNodeChange={({ target }) => {
-                                            handleColorButton(target, 'submit');
-                                        }}
-                                        handleChange={(e) => {
-                                            dispatchState({
-                                                type: 'UPDATE',
-                                                field: 'Submit',
-                                                payload: e?.html,
-                                            });
-                                        }}
-                                        hideLinkTools={tag === 'KYC' || tag === 'Survey' ? true : false}
-                                    />
+                                    {preview ? (
+                                        <span
+                                            className="rs-form-button-preview-label"
+                                            dangerouslySetInnerHTML={{
+                                                __html: getPreviewButtonHtml(
+                                                    data?.Submit,
+                                                    formState?.Submit,
+                                                    'Submit',
+                                                ),
+                                            }}
+                                        />
+                                    ) : (
+                                        <RSEditorPopup
+                                            name={`Submit`}
+                                            control={control}
+                                            // initialValue={!!formState?.Submit ? formState?.Submit : 'Submit'}
+                                            initialValue={!!formState?.Submit ? data?.Submit : 'Submit'}
+                                            init={BODYCONFIG}
+                                            disabled={preview}
+                                            applyColorToLinksOnly
+                                            minChars={2}
+                                            maxChars={30}
+                                            preventLineBreaks={true}
+                                            onNodeChange={({ target }) => {
+                                                handleColorButton(target, 'submit');
+                                            }}
+                                            handleChange={(e) => {
+                                                dispatchState({
+                                                    type: 'UPDATE',
+                                                    field: 'Submit',
+                                                    payload: e?.html,
+                                                });
+                                            }}
+                                            hideLinkTools={tag === 'KYC' || tag === 'Survey' ? true : false}
+                                        />
+                                    )}
                                 </button>
                             </li>
                             {(tag === 'KYC' || tag === 'Survey') && (

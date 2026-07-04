@@ -243,8 +243,8 @@ export const UPLOAD_PARENT_ATTRIBUTES_ADD_AUDIENCE = 'to upload your audience da
 export const NO_AUDIENCE_UPLOAD_FOUND = 'No audience upload found.'
 export const NO_DATA_ATTRIBUTES_AVAILABLE = 'No data attributes available for this Business unit';
 export const CATEGORY_NAME_ALREADY_EXISTS = 'Category name already exists';
-export const AUDIENCE_LIST = 'Audience list';
-export const AUDIENCE_TYPE = 'Audience type';
+export const AUDIENCE_LIST = 'Segment list';
+export const AUDIENCE_TYPE = 'Segment type';
 export const SEARCH_FILTERS_SAMPLE_RECORD = 'View the latest audience records. Filters and search only apply to the 200 most recent entries.';
 export const RESET = 'Reset';
 export const UPDATE_NEW_DATA = 'Update new data - if a match is found, overwrite the older record';
@@ -382,7 +382,7 @@ export const AUDIENCE_FILE_STORED = 'This refers to the path where audience data
 export const BRAND_ID_NOT_EXISTS  ='Brand ID does not exists';
 
 //Add import audience
-export const NEW_AUDIENCE_LIST = 'New audience list';
+export const NEW_AUDIENCE_LIST = 'New segment list';
 export const TO_MAP_THE_DATA = 'To map the data header with the available attributes, refer the first row.';
 export const MAP_DATA_ATTRIBUTES = 'Map data attributes';
 export const RESTART = 'Restart';
@@ -395,11 +395,11 @@ export const LIST_ANALYSIS = 'List analysis';
 export const NO_DATA_AVAILABEL = 'No data available';
 export const NOT_USED = 'Not used';
 export const USED = 'Used';
-export const ALL_AUDIENCE =  'All audience';
+export const ALL_AUDIENCE =  'All segments';
 export const SCHEDULED = 'Scheduled';
 export const IN_PROGRESS = 'In progress';
 export const COMPLETED = 'Completed';
-export const AUDIENCE_INFO = 'Audience info';
+export const AUDIENCE_INFO = 'Segment info';
 export const DOWNLOAD = 'Download';
 export const ARCHIVE = 'Archive';
 export const UNARCHIVE = 'Unarchive';
@@ -430,7 +430,7 @@ export const ATTRIBUTE_COUNT = 'Attribute count: '
 export const COMMUNICATION_LINKED = 'Communication linked';
 export const COMMUNICATIONS_LINKED = 'Communications linked';
 export const SEGMENT_COMMUNICATION_LINKED = 'Comms linked';
-export const LIST_ACQUISITON_INFO  = 'Displays the number of new, unique email IDs and mobile numbers added to the audience database each day.';
+export const LIST_ACQUISITON_INFO  = 'Displays the number of new, unique email IDs and mobile numbers added to the segment database each day.';
 export const MDM_OVERALL_PROFILE_COMPLETENESS_INFO = 'This score is based on the volume of data captured across predefined attributes. Configure them in  Data catalog → Classification.';
 export const ADD_FIRST_COMMUNICATION_1 = 'Click';
 export const ADD_FIRST_COMMUNICATION_2 = 'to create your first RESUL communication';
@@ -512,7 +512,7 @@ export const TIMEINTERVAL = 'Time interval';
 // offer management
 export const OFFER_TYPE = 'Offer type';
 export const OFFERS = 'Offers';
-export const OFFER_LIST_VOLUME_ERROR_MSG  = 'Offer count is lower than the audience list size. Please update the offer volume or audience list.'
+export const OFFER_LIST_VOLUME_ERROR_MSG  = 'Offer count is lower than the segment list size. Please update the offer volume or segment list.'
 export const CAF_NUMBER = 'Caf number';
 export const START_DATE = 'Start date';
 export const END_DATE = 'End date';
@@ -547,6 +547,9 @@ export const BENCHMARK_NAME = 'Benchmark name';
 
 // Dynamic list
 export const TRIGGER_SOURCE = 'Trigger source';
+
+// Custom event Name
+export const CUSTOM_EVENT_NAME = 'Custom event name';
 
 //Localization settings
 export const SMART_LINK = 'Custom branded smart link';
@@ -905,6 +908,7 @@ export const COMMUNICATION_EXECUTION =
 export const CREATE_SMART_LINK = 'Would you like to create a Smart Link?';
 export const GENERATE_SMART_LINK = 'Generate Smart Link'
 export const MANDATORY_SMARTLINK = 'To create push notifications, generate a Smart Link first.';
+export const MOBILE_SMARTLINK_MANDATORY = 'To continue, set up mobile Smart Link first.';
 export const PAID_MEDIA_SMARTLINK_MANDATORY = 'Generate a Smart Link to setup an ad.'
 export const NO_THANKS = 'No thanks';
 export const IGNORE = 'Ignore';
@@ -1344,9 +1348,9 @@ export const ARE_YOU_SURE_WANT_TO_CHANGE_CONTENT = 'Are you sure you want to cha
 export const MAX_150_CHARACTERS = 'Max. 150 characters';
 export const BRAND_ID_UNPQUE_IDENTIFIER =
     "Brand ID is a unique identifier for your business unit, used to import and match records accurately. Only one attribute can be set as the Brand ID, and this cannot be changed later.";
-export const AUDIENCE_LIST_WILL_BE_REMOVED = 'The selected audience list will be removed.';
+export const AUDIENCE_LIST_WILL_BE_REMOVED = 'The selected segment list will be removed.';
 export const CANVAS_WILL_BE_RESET = 'Canvas will be reset based on your channel deletion.';
-export const DELETE_AUDIENCE_SEGMENTS = 'Deleting audience lists';
+export const DELETE_AUDIENCE_SEGMENTS = 'Deleting segment lists';
 export const RESET_CANVAS_FLOW = 'Reset canvas flow';
 export const ISANNUALREMINDER = 'Annual Reminder';
 export const ISTIME = 'Time';
@@ -1594,8 +1598,8 @@ export const FORM_SETTINGS= `Form settings`;
 export const SELECT_LAYOUT= `Select layout`;
 export const CREATE_DATE= `Created date`;
 export const ONLY_SUBSEGMENT= `Only one list allowed for sub-segment`;
-export const ADD_AUDIENCE_LIST= `Add audience list`;
-export const EXISTING_DATE= `Are you sure you want to change the audience,this action will delete all your existing data`;
+export const ADD_AUDIENCE_LIST= `Add segment list`;
+export const EXISTING_DATE= `Are you sure you want to change the segment,this action will delete all your existing data`;
 export const GROUP_COMMUNICATIONS_PERSON= `Group communications so each person receives at most one message, even if eligible for multiple.`;
 export const TARGET_SPECIFIC= `Target specific groups within your main segment for tailored engagement.`;
 export const GROUP_COMMUNICATIONS= `Group communication`;
@@ -1704,6 +1708,12 @@ export const DOUBLE_OPT_IN_LIST= 'Double opt-in list';
 export const EMAIL_FOOTER= 'Email footer';
 export const FOOTER_LIST= 'Footer list';
 export const WEB_NOTIFICATIONS_SETTINGS= 'Web notification settings';
+//Custom events
+export const WEB_CUSTOM_EVENTS= 'Custom events';
+export const WEB_EVENT_NAME = 'Event name';
+export const WEB_EVENT_RANGE = 'Event Range';
+export const WEB_View = 'View';
+
 export const SDK_STATUS= 'SDK status';
 export const SDK_DETAILS= 'SDK details';
 export const MOBILE_NOTIFICATION_SETTINGS= 'Mobile notification settings';
@@ -1712,7 +1722,7 @@ export const USER_DEVICE_SUMMARY= 'User device summary';
 export const EDIT_DYNAMIC_LIST= 'Edit Dynamic List';
 export const COMMENTS= 'Comments';
 export const NEW_DYNAMIC_LIST= 'New Dynamic List';
-export const CREATE_NEW_DYNAMIC_LIST= 'Create new Dynamic List';
+export const CREATE_NEW_DYNAMIC_LIST= 'Create new dynamic list';
 export const ADD_RULE_GROUP= 'Add rule group';
 export const SELECT_TRIGGERS_AS_SPECIFIED= 'Select triggers as specified in the "Any" field.';
 export const UP_TO_5_MATCH= 'Up to 5 match types can be specified in "Any" field';
@@ -2055,7 +2065,7 @@ export const COLLAPSE= 'Collapse';
 export const EXPAND= 'Expand';
 // Geo fence
 export const GEOFENCE_LOCATION_CLUSTER= 'Location clusters';
-export const AUDIENCE_CHANGE_CONFIRMATION = 'Changing the audience list will update your personalization data based on the selected list type. Do you want to proceed?';
+export const AUDIENCE_CHANGE_CONFIRMATION = 'Changing the segment list will update your personalization data based on the selected list type. Do you want to proceed?';
 export const DYNAMIC_ANNUAL_REMINDER_CONTENT  = 'This attribute is set for an annual reminder. Only the day and month will be used for yearly campaigns; the year will be ignored';
 export const MAX_7_OPTIONS = 'You can add up to 7 options';
 export const MAX_12_OPTIONS = 'You can add up to 12 options';

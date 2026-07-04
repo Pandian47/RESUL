@@ -79,7 +79,7 @@ export const gridLoadingSkeletonCriticalCss = `
     background-color: ${GRID_SKELETON_ROW_BG};
     position: relative;
     isolation: isolate; 
-    border: 1px solid #a6c6e2;
+    border: 1px solid #c2cfe3;
 }
 .rs-grid-loading-skeleton table,
 .rs-grid-loading-skeleton .k-table,

@@ -3,8 +3,7 @@ import { close_mini, save_mini } from 'Constants/GlobalConstant/Glyphicons';
 import { Fragment, useRef, useState } from 'react';
 import { ListBox, ListBoxToolbar, processListBoxData } from '@progress/kendo-react-listbox';
 import { Col, Row } from 'react-bootstrap';
-import _map from 'lodash/map';
-import _findIndex from 'lodash/findIndex';
+import { map as _map, findIndex as _findIndex } from 'Utils/modules/lodashReplacements';
 import { useDispatch } from 'react-redux';
 
 import RSModal from 'Components/RSModal';

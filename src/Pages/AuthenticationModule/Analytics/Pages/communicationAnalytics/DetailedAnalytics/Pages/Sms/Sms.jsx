@@ -301,7 +301,7 @@ const DetailAnalyticsSms = ({ type, isDownloadUI }) => {
                                     <h3>{COMMUNICATION_PERFORMANCE}</h3>
                                 </div>
                                 {channelDetail?.campaignType === 'T' && (
-                                    <Row className="x-axis-labels-performance pr0 m0">
+                                    <Row className="x-axis-labels-performance m0">
                                         <Col md={12} className="pr0 portlet-container">
                                                 <h4>Target audience</h4>
                                                 <AreasPlineChart

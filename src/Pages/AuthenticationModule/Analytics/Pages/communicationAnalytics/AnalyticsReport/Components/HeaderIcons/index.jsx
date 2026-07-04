@@ -2,11 +2,8 @@ import { encodeUrl } from 'Utils/modules/crypto';
 import { addTabKey } from '../../constants';
 import { MAX_LENGTH75, MIN_LENGTH } from 'Constants/GlobalConstant/Regex';
 import { ENTER_SNAPSHOT_NAME } from 'Constants/GlobalConstant/ValidationMessage';
-import { download_medium, goals_benchmark_large, pdf_download_large, snapshot_large, star_fill_large, star_large } from 'Constants/GlobalConstant/Glyphicons';
+import { alert_large, download_medium, goals_benchmark_large, pdf_download_large, snapshot_large, star_fill_large, star_large, thumps_up_xlarge } from 'Constants/GlobalConstant/Glyphicons';
 import { useContext, useEffect, useMemo, useState } from 'react';
-import _get from 'lodash/get';
-import _map from 'lodash/map';
-import _filter from 'lodash/filter';
 import RSTooltip from 'Components/RSTooltip';
 import { BootstrapDropdown } from 'Components/RSBootstrapDropDown';
 import { ANALYSIS_PERFORMANCE_DATA } from '../../constants';
@@ -129,9 +126,9 @@ const HeaderIcons = ({
             return;
         }
 
-        let filterModals = _filter(Object.entries(_get(summary, 'factModel', {})), ([_, value]) => value !== null);
+        let filterModals = Object.entries(summary?.factModel ?? {}).filter(([_, value]) => value !== null);
         filterModals = addTabKey(Object.fromEntries(filterModals));
-        const ChannelDetailID = _map(Object.values(filterModals)?.flat(), (list) => list?.channelDetailid || 0);
+        const ChannelDetailID = (Object.values(filterModals)?.flat() ?? []).map((list) => list?.channelDetailid || 0);
         const channelDetailIds = ChannelDetailID.flat();
         const refMeta = lastUpdateMetaDataSnapshotRef?.current ?? {};
         const dateRange = refMeta.communicationAnalysisDateRange;
@@ -142,9 +139,9 @@ const HeaderIcons = ({
             return found?.id ?? displayName;
         };
 
-        const totalReachPercentage = _get(summary, 'channelReachInfo.reachPercentage');
-        const totalEngagementPercentage = _get(summary, 'channelEngagementInfo.engagementPercentage');
-        const totalConversionPercentage = _get(summary, 'channelConversionInfo.conversionPercentage');
+        const totalReachPercentage = summary?.channelReachInfo?.reachPercentage;
+        const totalEngagementPercentage = summary?.channelEngagementInfo?.engagementPercentage;
+        const totalConversionPercentage = summary?.channelConversionInfo?.conversionPercentage;
 
         const getGoalPercentageByMode = (mode) => {
             switch (mode) {
@@ -439,7 +436,22 @@ const HeaderIcons = ({
                     <RSConfirmationModal
                         show={snapshotStatus?.success}
                         header="Info"
-                        text={snapshotStatus?.status ? `Snapshot saved successfully` : 'Failed to save snapshot'}
+                        htmlContent={
+                            <div className="d-flex flex-column align-items-center">
+                                {snapshotStatus?.status ? (
+                                    <i
+                                        className={`${thumps_up_xlarge} fs75 cursor-normal color-primary-green`}
+                                    />
+                                ) : (
+                                    <i className={`${alert_large} color-primary-red fs75 cursor-normal`} />
+                                )}
+                                <div className="mt10">
+                                    {snapshotStatus?.status
+                                        ? 'Snapshot saved successfully'
+                                        : 'Failed to save snapshot'}
+                                </div>
+                            </div>
+                        }
                         primaryButtonText="OK"
                         handleClose={() => setSnapshotStatus((pre) => ({ ...pre, success: false }))}
                         handleConfirm={() => setSnapshotStatus((pre) => ({ ...pre, success: false }))}

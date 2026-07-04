@@ -20,7 +20,7 @@ import { Get_Preview_By_Channel } from 'Reducers/communication/listing/request';
 import EmailListPreview from 'Pages/AuthenticationModule/Communication/Component/EmailListPreview/EmailListPreview';
 import RSWebPreview from 'Pages/AuthenticationModule/Communication/Component/RSWebPreview';
 import RSMobileListPreview from 'Pages/AuthenticationModule/Communication/Component/RSMobileListPreview';
-import { includes } from 'lodash';
+import { includes } from 'Utils/modules/lodashReplacements';
 import { ChannelPreviewSkeleton } from 'Components/Skeleton/Skeleton';
 import KendoGrid from 'Components/RSKendoGrid';
 

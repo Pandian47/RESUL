@@ -148,20 +148,28 @@ const TemplateGridView = (type) => {
   };
 
   const handleSearch = (filterValue) => {
-    type?.setPayload((pre) => ({
-      ...pre,
-      isFilter: true,
-      filteration: {
-        templateName: filterValue,
-        startDate: pre?.filteration?.startDate,
-        endDate: pre?.filteration?.endDate,
-        templateCategoryId: pre?.filteration?.templateCategoryId
-      },
-      pagination: {
-        pageNo: 1,
-        recordLimit: 4
+    const trimmedSearch = (filterValue ?? '').trim();
+
+    type?.setPayload((pre) => {
+      if (!trimmedSearch && !pre?.filteration?.templateName) {
+        return pre;
       }
-    }));
+
+      return {
+        ...pre,
+        isFilter: Boolean(trimmedSearch),
+        filteration: {
+          templateName: trimmedSearch,
+          startDate: pre?.filteration?.startDate,
+          endDate: pre?.filteration?.endDate,
+          templateCategoryId: pre?.filteration?.templateCategoryId
+        },
+        pagination: {
+          pageNo: 1,
+          recordLimit: 4
+        }
+      };
+    });
     setPagerPageConfig((pre) => ({
       ...pre,
       skip: 0,
@@ -169,20 +177,32 @@ const TemplateGridView = (type) => {
     }));
   };
   const handleDatePickerChange = ({ startDate, endDate }) => {
-    type?.setPayload((pre) => ({
-      ...pre,
-      isFilter: true,
-      filteration: {
-        templateName: pre?.filteration?.templateName,
-        startDate: getYYMMDD(startDate),
-        endDate: getYYMMDD(endDate),
-        templateCategoryId: pre?.filteration?.templateCategoryId
-      },
-      pagination: {
-        pageNo: 1,
-        recordLimit: 4
+    const nextStartDate = getYYMMDD(startDate);
+    const nextEndDate = getYYMMDD(endDate);
+
+    type?.setPayload((pre) => {
+      if (
+        pre?.filteration?.startDate === nextStartDate &&
+        pre?.filteration?.endDate === nextEndDate
+      ) {
+        return pre;
       }
-    }));
+
+      return {
+        ...pre,
+        isFilter: true,
+        filteration: {
+          templateName: pre?.filteration?.templateName,
+          startDate: nextStartDate,
+          endDate: nextEndDate,
+          templateCategoryId: pre?.filteration?.templateCategoryId
+        },
+        pagination: {
+          pageNo: 1,
+          recordLimit: 4
+        }
+      };
+    });
     setPagerPageConfig((pre) => ({
       ...pre,
       skip: 0,

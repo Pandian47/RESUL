@@ -5,11 +5,9 @@ import { getYYMMDD, getUserCurrentFormat, getDateFormat } from 'Utils/modules/da
 import { ANALYSIS_PERFORMANCE_DATA, PAID_ADS_ANALYSIS_PERFORMANCE_DATA } from '../../constants';
 import { areasplineChartOptions, columnChartOptions, radarChartOptions } from 'Constants/Charts';
 import { CHANNEL_ANALYTICS } from 'Constants/GlobalConstant/Placeholders';
-import { analytics_medium, bookmark_medium, calendar_medium, channel_action_medium, circle_info_medium, compare_medium, user_network_medium } from 'Constants/GlobalConstant/Glyphicons';
-import { Fragment, memo, useCallback, useContext, useEffect, useMemo, useState } from 'react';
+import { analytics_medium, bookmark_medium, calendar_medium, channel_action_medium, circle_info_medium, collapse_medium, compare_medium, expand_medium, user_network_medium } from 'Constants/GlobalConstant/Glyphicons';
+import { Fragment, memo, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { Col, Row } from 'react-bootstrap';
-import _map from 'lodash/map';
-import _get from 'lodash/get';
 import moment from 'moment';
 
 
@@ -30,12 +28,12 @@ import useQueryParams from 'Hooks/useQueryParams';
 import RSBootstrapdown from 'Components/FormFields/RSBootstrapdown';
 import { updateSummarySubSegmentDetail } from 'Reducers/analytics/analyticsSummary/reducer';
 import { AnalyticsReportProvider } from '../..';
-import { every } from 'lodash';
 import RSSkeletonTable from 'Components/RSSkeleton/RSSkeletonTable';
 import {
     AnalyticsReportChannelAnalyticsSkeleton,
     AnalyticsReportCommAnalysisChartBodySkeleton,
 } from 'Components/Skeleton/pages/analytics';
+import RSTooltip from 'Components/RSTooltip';
 
 const NOTEDATA_INITIAL_STATE = {
     notesEnable: false,
@@ -49,7 +47,7 @@ const CommunicationAnalysis = ({ analyticsTab, date, isDownloadUI = false }) => 
     const state = useQueryParams('/analytics/analytics-report');
     const { createdDate } = getUserDetails();
     const summary = useSelector((state) => getSummaryList(state));
-    let isEmptyFactModel = every(Object.entries(_get(summary, 'factModel', {})), ([_, value]) => value === null);
+    let isEmptyFactModel = Object.entries(summary?.factModel ?? {}).every(([_, value]) => value === null);
     const analyticsReportReducer = useSelector(({ analyticsReportReducer }) => analyticsReportReducer);
     const trends = useSelector((state) => getTrends(state));
     const { trendsLoading, summaryLoading, retargetListLoading } = useSelector(
@@ -92,6 +90,8 @@ const CommunicationAnalysis = ({ analyticsTab, date, isDownloadUI = false }) => 
 
     const [note, setNote] = useState({ show: false, data: {} });
     const [show, setIsShow] = useState(NOTEDATA_INITIAL_STATE);
+    const [expandedState, setExpandedState] = useState(false);
+    const lineChartRef = useRef(null);
     const [selectedChart, setSelectedChart] = useState('line');
     const [updateSelectedDate, setUpdateSelectDate] = useState({
         start: new Date(state?.startDate),
@@ -199,7 +199,6 @@ const CommunicationAnalysis = ({ analyticsTab, date, isDownloadUI = false }) => 
         let tmpLine = { ...line };
         // console.log('tmpLine: ', tmpLine);
         tmpLine.series = tmpLine?.series?.map((res) => {
-            // console.log('res: ', res);
             return {
                 point: {
                     events: {
@@ -208,17 +207,10 @@ const CommunicationAnalysis = ({ analyticsTab, date, isDownloadUI = false }) => 
                         },
                     },
                 },
-                title: tmpLine?.categories,
-                data: res?.data?.map((data, index) => {
-                    data = Number(data);
-                    return data;
-                }),
+                data: res?.data,
                 name: res.name,
-                // tmp: res?.tmp,
-                // ...res,
             };
         });
-        // tmpLine.categories = ['Communication analysis'];
         return tmpLine;
     }, [line]);
 
@@ -240,27 +232,22 @@ const CommunicationAnalysis = ({ analyticsTab, date, isDownloadUI = false }) => 
         );
     }, [column, trendsLoading, summaryLoading]);
 
+    const isRadarChartEmpty = useMemo(() => {
+        if (trendsLoading || summaryLoading) return false;
+        const series = radar?.series;
+        if (!Array.isArray(series) || series.length === 0) return true;
+        return !series.some(
+            (item) => Array.isArray(item?.data) && item.data.some((value) => Number(value) > 0),
+        );
+    }, [radar, trendsLoading, summaryLoading]);
+
     const chartBarData = useMemo(() => {
-        let tmpBar = { ...column };
-        // console.log('map :::: ', tmpBar, trends, analyticsTab);
-        tmpBar.series = tmpBar?.series?.map((res) => {
-            return {
-                // point: {
-                //     events: {
-                //         click: (e) => {
-                //             return callBack(e?.point, res);
-                //         },
-                //     },
-                // },
-                data: res?.data?.map((data, index) => {
-                    data = Number(data);
-                    return data;
-                }),
-                name: res.name,
-                // tmp: res?.tmp,
-                // ...res,
-            };
-        });
+        const tmpBar = { ...column };
+        tmpBar.series = tmpBar?.series?.map((res) => ({
+            data: res?.data?.map((data) => Number(data)),
+            name: res.name,
+        }));
+
         if (tmpBar?.categories) {
             const { configuredFormat } = getDateFormat();
 
@@ -284,10 +271,11 @@ const CommunicationAnalysis = ({ analyticsTab, date, isDownloadUI = false }) => 
                 return category;
             });
         }
+
         return tmpBar;
     }, [column]);
 
-    const channels = _map(_get(summary, 'channelList', []), (id) => ({
+    const channels = (summary?.channelList ?? []).map((id) => ({
         id,
         name: id === 2 ? 'SMS' : getChannelId(id)?.label,
     }));
@@ -306,11 +294,14 @@ const CommunicationAnalysis = ({ analyticsTab, date, isDownloadUI = false }) => 
 
     const isCommChartLineLoading = isCommChartTypePending('line');
     const isCommChartColumnLoading = isCommChartTypePending('column');
+    const isCommChartRadarLoading = isCommChartTypePending('radar');
     const isLineChartNoData = !isCommChartLineLoading && isLineChartEmpty;
     const isColumnChartNoData = !isCommChartColumnLoading && isColumnChartEmpty;
+    const isRadarChartNoData = !isCommChartRadarLoading && isRadarChartEmpty;
 
     const isCommChartLineSkeleton = isCommChartLineLoading || isLineChartEmpty;
     const isCommChartColumnSkeleton = isCommChartColumnLoading || isColumnChartEmpty;
+    const isCommChartRadarSkeleton = isCommChartRadarLoading || isRadarChartEmpty;
     const isCommChartPortletSkeleton =
         isCommChartLineLoading ||
         isCommChartColumnLoading ||
@@ -335,11 +326,18 @@ const CommunicationAnalysis = ({ analyticsTab, date, isDownloadUI = false }) => 
                         />
                     ) : (
                         <RSHighchartsContainer
+                            ref={lineChartRef}
                             type="listAcquisitionCompact"
                             skeletonHeight={301}
                             isError={false}
                             pClassName="mt30"
-                            options={areasplineChartOptions({ formatdatelable: true, ...chartData })}
+                            options={areasplineChartOptions({
+                                formatdatelable: true,
+                                useDynamicDateLabels: true,
+                                enableXAxisZoom: true,
+                                height: expandedState ? window.innerHeight - 250 : undefined,
+                                ...chartData,
+                            })}
                         />
                     )}
                 </Fragment>
@@ -362,7 +360,12 @@ const CommunicationAnalysis = ({ analyticsTab, date, isDownloadUI = false }) => 
                             type="columnChartNew"
                             isError={false}
                             pClassName="mt30"
-                            options={columnChartOptions(chartBarData)}
+                            options={columnChartOptions({
+                                useDynamicDateLabels: true,
+                                enableXAxisZoom: true,
+                                height: expandedState ? window.innerHeight - 250 : undefined,
+                                ...chartBarData,
+                            })}
                         />
                     )}
                 </Fragment>
@@ -378,19 +381,27 @@ const CommunicationAnalysis = ({ analyticsTab, date, isDownloadUI = false }) => 
             // disable: true,
             component: () => (
                 <Fragment key={'radar_chart'}>
-                    <RSHighchartsContainer
-                        type="pie"
-                        isError={true}
-                        pClassName="mt30"
-                        options={radarChartOptions(radar)}
-                    />
+                    {isCommChartRadarSkeleton ? (
+                        <AnalyticsReportCommAnalysisChartBodySkeleton
+                            variant="line"
+                            stopAnimation={isRadarChartNoData}
+                            isError={isRadarChartNoData}
+                        />
+                    ) : (
+                        <RSHighchartsContainer
+                            type="pie"
+                            isError={false}
+                            pClassName="mt30 comm-analysis-radar-chart"
+                            options={radarChartOptions(radar)}
+                        />
+                    )}
                 </Fragment>
             ),
         });
     const defaultValueAnalysis = useMemo(() => {
         const data =
             channels[0]?.id === 10 ? PAID_ADS_ANALYSIS_PERFORMANCE_DATA : ANALYSIS_PERFORMANCE_DATA;
-        return find((item) =>
+        return data?.find((item) =>
             (item?.name === channels[0]?.id) === 10 ? 'Engagement' : communicationAnalysisPayload?.metricType,
         );
     }, [communicationAnalysisPayload, channels, summary]);
@@ -398,6 +409,11 @@ const CommunicationAnalysis = ({ analyticsTab, date, isDownloadUI = false }) => 
         () => allChannels?.find((item) => item?.name === communicationAnalysisPayload?.channelName),
         [communicationAnalysisPayload],
     );
+    
+    const hasData = useMemo(() => {
+        const currentData = selectedChart === 'line' ? chartData : chartBarData;
+        return currentData?.series?.some(s => s?.data?.length > 0);
+    }, [selectedChart, chartData, chartBarData]);
 
     return (
         <Row>
@@ -440,22 +456,22 @@ const CommunicationAnalysis = ({ analyticsTab, date, isDownloadUI = false }) => 
                                     })()
                                 ) : (
                                     <>
-                                        <RSDateRangePicker
+                                           <RSDateRangePicker
                                             mainClass="mr10"
                                             onDatePickerClosed={(dates) => {
                                                 setUpdateSelectDate({
-                                                    start: startDate,
-                                                    end: endDate,
+                                                    start: dates?.startDate,
+                                                    end: dates?.endDate,
                                                 });
                                                 setCommunicationAnalysisPayload((pre) => ({
                                                     ...pre,
-                                                    startDate: getYYMMDD(startDate),
-                                                    endDate: getYYMMDD(endDate),
+                                                    startDate: getYYMMDD(dates.startDate),
+                                                    endDate: getYYMMDD(dates.endDate),
                                                 }));
-                                                updateSnapshotMeta({
+                                                 updateSnapshotMeta({
                                                     communicationAnalysisDateRange: {
-                                                        startDate: getYYMMDD(startDate),
-                                                        endDate: getYYMMDD(endDate),
+                                                        startDate: getYYMMDD(dates.startDate),
+                                                        endDate: getYYMMDD(dates.endDate),
                                                     },
                                                 });
                                             }}
@@ -522,6 +538,21 @@ const CommunicationAnalysis = ({ analyticsTab, date, isDownloadUI = false }) => 
                                                 });
                                             }}
                                         />
+                                        <RSTooltip
+                                            text={expandedState ? 'Collapse' : 'Expand'}
+                                            position={expandedState ? 'bottom' : 'top'}
+                                            innerContent={ expandedState ? true : false}
+                                            className={`ml15 toolTipOverlayZindexCSS ${!hasData ? 'click-off pe-none' : ''}`}
+                                        >
+                                            <Icon
+                                                icon={expandedState ? collapse_medium : expand_medium}
+                                                color="color-primary-blue"
+                                                size="md"
+                                                callBack={(event) => {
+                                                    setExpandedState(!expandedState);
+                                                }}
+                                            />
+                                        </RSTooltip>
                                     </>
                                 ))}
                         </div>

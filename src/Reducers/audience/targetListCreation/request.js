@@ -359,7 +359,7 @@ export const approveTargetList =
             request.post({
                 url: RFA_TARGET_LIST_APPROVE,
                 payload,
-                loading: true,
+                loading: false,
                 ok: ({ data }) => {},
                 fail: (err) => {
                                     },
@@ -372,7 +372,7 @@ export const rejectTargetList =
             request.post({
                 url: RFA_TARGET_LIST_REJECT,
                 payload,
-                loading: true,
+                loading: false,
                 ok: ({ data }) => {},
                 fail: (err) => {
                                     },

@@ -1,4 +1,12 @@
-import { convertToUserTimezone, getDateWithDaynoFormat, getUserCurrentFormat, getYYMMDD } from 'Utils/modules/dateTime';
+import {
+    convertToUserTimezone,
+    getCurrentDateOfMonth,
+    getDateWithDaynoFormat,
+    getFirstDayOfMonth,
+    getUserCurrentFormatWithAbbreviation,
+    getYYMM,
+    getYYMMDD,
+} from 'Utils/modules/dateTime';
 import { csv_download_large } from 'Constants/GlobalConstant/Glyphicons';
 import RSSearchField from 'Components/RSSearchField';
 import RSTooltip from 'Components/RSTooltip';
@@ -13,7 +21,6 @@ import {
 import { LAST30DAYS_DATEFILTER } from 'Constants/GlobalConstant/Regex';
 import { globalStateSelector } from 'Utils/Selectors/app';
 import { getSessionId, getUtcTimeData } from 'Reducers/globalState/selector';
-
 const ConsumptionChannelHeader = ({
     setCustColumns,
     setConsumptionChannelList,
@@ -260,7 +267,12 @@ const ConsumptionChannelHeader = ({
                         {channelLabel}
                         <small className="color-primary-grey ml10 position-relative top1">
                             {/* (As on: {getUserDateTimeFormat(currentDate + ' UTC', 'formatDateTime')}) */}
-                            (As on: {getUserCurrentFormat(lastestUpdateJobTime,{isOffset:true})?.dateTimeFormat})
+                            (As on:{' '}
+                            {
+                                getUserCurrentFormatWithAbbreviation(lastestUpdateJobTime, { isOffset: true })
+                                    ?.dateTimeFormat
+                            }
+                            )
                         </small>
                     </h3>
                 </Col>

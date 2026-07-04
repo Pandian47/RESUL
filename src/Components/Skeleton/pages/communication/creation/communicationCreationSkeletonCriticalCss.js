@@ -415,6 +415,10 @@ export const communicationCreationSkeletonCriticalCss = `
     margin-top: 50px;
     margin-bottom: 41px;
 }
+.communication-creation-skeleton-scope .dm-skeleton__row--mt20,
+.communication-creation-skeleton-scope .delivery-method-skeleton__row.dm-skeleton__row--mt20 {
+    margin-top: 25px;
+}
 .communication-creation-skeleton-scope .dm-skeleton__row:last-child,
 .communication-creation-skeleton-scope .delivery-method-skeleton__panel > .dm-skeleton__row:last-child,
 .communication-creation-skeleton-scope .delivery-method-skeleton__panel > .delivery-method-skeleton__row:last-child {

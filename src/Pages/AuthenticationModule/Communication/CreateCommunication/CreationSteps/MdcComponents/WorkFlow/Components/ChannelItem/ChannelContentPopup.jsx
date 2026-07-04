@@ -1,4 +1,4 @@
-﻿import * as icons from 'Constants/GlobalConstant/Glyphicons';
+import * as icons from 'Constants/GlobalConstant/Glyphicons';
 import { listing_preview_medium, pencil_edit_medium } from 'Constants/GlobalConstant/Glyphicons';
 import { getUserDetails } from 'Utils/modules/crypto';
 import { getUserCurrentFormat } from 'Utils/modules/dateTime';
@@ -224,7 +224,7 @@ const DisplayContent = ({ ChannelId, ContentThumbnailPath, ScheduleDate, Content
                     content={Content?.ContentThumbnailPath}
                     senderName={senderName}
                     className="mx-auto float-none"
-                    scheduleDate={ScheduleDate}
+                    scheduleDate={blastScheduleDate}
                     isCarousel={Content?.isCarousel}
                     carouselJSON={Content?.carouselJSON}
                     header={Content?.header}

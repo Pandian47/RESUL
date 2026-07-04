@@ -2,12 +2,7 @@ import { addHoursToDate } from 'Utils/modules/dateTime';
 import { addDaysToDate } from 'Utils/modules/dateTime';
 import { NUMBER_REGEX } from 'Constants/GlobalConstant/Regex';
 import { ENTER_INPUT_VALUES, ENTER_VALID_NUMBER } from 'Constants/GlobalConstant/ValidationMessage';
-import _get from 'lodash/get';
-import _find from 'lodash/find';
-import _cloneDeep from 'lodash/cloneDeep';
-import _mapKeys from 'lodash/mapKeys';
-import _camelCase from 'lodash/camelCase';
-import _filter from 'lodash/filter';
+import { get as _get, find as _find, cloneDeep as _cloneDeep, mapKeys as _mapKeys, camelCase as _camelCase, filter as _filter } from 'Utils/modules/lodashReplacements';
 import { eachDeep, findDeep, mapDeep } from 'deepdash-es/standalone';
 
 import { getModule } from '../../constant';

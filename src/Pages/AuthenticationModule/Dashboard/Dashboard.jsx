@@ -83,6 +83,11 @@ const getVersionStateFromStorage = () => {
     }
 };
 
+const LIVE_DASHBOARD_TAB_TEXTS = new Set([
+    DASHBOARD_TAB_CONFIG[1].text,
+    DASHBOARD_TAB_CONFIG[2].text,
+]);
+
 const Dashboard = () => {
     // Selectors
     const navigate = useNavigate();
@@ -109,7 +114,9 @@ const Dashboard = () => {
 
     // State
     const [dashboardList] = useState(DASHBOARD_TAB_CONFIG);
-    const [currentRenderDashBoardTitle, setCurrentRenderDashBoardTitle] = useState('Communication dashboard');
+    const [currentRenderDashBoardTitle, setCurrentRenderDashBoardTitle] = useState(
+        () => DASHBOARD_TAB_CONFIG[Number(location?.index ?? 0)]?.text ?? 'Communication dashboard',
+    );
     const [confirmationModal, setConfimrationModal] = useState(false);
     const [duration, setDuration] = useState(30);
     const [BUtooltip, setBUtooltip] = useState(false);
@@ -436,6 +443,9 @@ const Dashboard = () => {
         communicationChartsRemountSeq,
     };
 
+    const isLiveDashboardTab = LIVE_DASHBOARD_TAB_TEXTS.has(currentRenderDashBoardTitle);
+    const dashboardTabDynamicClass = isLiveDashboardTab ? 'sp-mb-space-md mini' : 'sp-mb-space-sm mini';
+
     // JSX
     return (
         <DashboardContext.Provider value={values}>
@@ -455,7 +465,7 @@ const Dashboard = () => {
                     <div className="page-content container-del">
                         <RSTabbarFluid
                             defaultClass="col-md-4"
-                            dynamicTab="sp-mb-space-sm mini"
+                            dynamicTab={dashboardTabDynamicClass}
                             activeClass="active"
                             tabData={dashboardList}
                             className="rs-tabs row rst-left-space"

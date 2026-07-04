@@ -238,15 +238,6 @@ export const numericOrZeroOrFallback = (value, fallbackWhenUndefined) => {
     return Number.isFinite(n) ? n : fallbackWhenUndefined;
 };
 
-export const resolveROICost = ({ fixedCostAmount, variableCost, listPropensity }) => {
-    const fixedCost = toSafeNumber(fixedCostAmount);
-    const variable = toSafeNumber(variableCost);
-    const propensityFallback = toSafeNumber(listPropensity);
-    if (fixedCost > 0) return fixedCost;
-    if (variable > 0) return variable;
-    return propensityFallback;
-};
-
 export const isValidDecimalCurrencyInput = (value) => {
     if (value === '' || value == null) return false;
     const trimmed = String(value).trim();
@@ -271,12 +262,6 @@ export const buildRevenuePerAudienceRules = ({
     },
 });
 
-export const isRevenueTierNumericForBind = (value) => {
-    if (value === '' || value == null) return false;
-    if (typeof value === 'string' && value.trim() === '') return false;
-    const n = Number(value);
-    return Number.isFinite(n);
-};
 
 export const computePreserveApiExpectedRoiFlags = (normalized) => {
     const hasApiExpectedTierRoi = (tier) => {
@@ -782,4 +767,44 @@ export const bildPayload = (data, benchmarkVal, common) => {
             },
         ],
     };
+};
+
+const roiDetailsInflightRequests = new Map();
+const roiDetailsResponseCache = new Map();
+const ROI_DETAILS_CACHE_TTL_MS = 5 * 60 * 1000;
+
+export const buildRoiDetailsFetchKey = ({ campaignId, userId, clientId, departmentId }) =>
+    [String(campaignId ?? ''), String(userId ?? ''), String(clientId ?? ''), String(departmentId ?? '')].join(':');
+
+export const clearRoiDetailsCache = (key) => {
+    if (key) {
+        roiDetailsResponseCache.delete(key);
+        roiDetailsInflightRequests.delete(key);
+        return;
+    }
+    roiDetailsResponseCache.clear();
+    roiDetailsInflightRequests.clear();
+};
+
+export const fetchRoiDetailsDeduped = (key, fetcher) => {
+    const cached = roiDetailsResponseCache.get(key);
+    if (cached && Date.now() - cached.ts < ROI_DETAILS_CACHE_TTL_MS) {
+        return Promise.resolve(cached.result);
+    }
+
+    if (roiDetailsInflightRequests.has(key)) {
+        return roiDetailsInflightRequests.get(key);
+    }
+
+    const request = Promise.resolve(fetcher())
+        .then((result) => {
+            roiDetailsResponseCache.set(key, { result, ts: Date.now() });
+            return result;
+        })
+        .finally(() => {
+            roiDetailsInflightRequests.delete(key);
+        });
+
+    roiDetailsInflightRequests.set(key, request);
+    return request;
 };

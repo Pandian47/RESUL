@@ -3,8 +3,7 @@ import { getDateWithAddMinutes } from 'Utils/modules/dateTime';
 import { IN_PAGE_SPLIT_CONTENT_DEFAULTS, isInPageBannerSelected, refreshFieldsOnSplitAB } from '../../constant';
 import { ALERT_SOUND_NAME_ALREADY_EXISTS } from 'Constants/GlobalConstant/Placeholders';
 import { Fragment, useEffect, useMemo, useState } from 'react';
-import _get from 'lodash/get';
-import _cloneDeep from 'lodash/cloneDeep';
+import { get as _get, cloneDeep as _cloneDeep } from 'Utils/modules/lodashReplacements';
 import PropTypes from 'prop-types';
 import { Row, Col } from 'react-bootstrap';
 import { useFormContext, useWatch } from 'react-hook-form';
@@ -342,6 +341,7 @@ const SplitAB = ({ fieldName = '', isSplit = false, index, setDirtyReset }) => {
                     location?.mdcContentSetupDetails?.dataSource === 'TL')) &&
                 isContentSetupForSchedule &&
                 (!levelNumber || levelNumber < 2) && (
+                    <div className='form-group'>
                     <Scheduler
                         isSplitTabs={isSplit && layoutPosition?.id !== 4}
                         fieldName={fieldName}
@@ -350,8 +350,8 @@ const SplitAB = ({ fieldName = '', isSplit = false, index, setDirtyReset }) => {
                         isSendTimeRecommendation={false}
                         splitABminDate={getMinDateForScheduler}
                         isRfaEnabled={true}
-                        disabled={isSplit && fieldName !== 'splitA'}
                     />
+                    </div>
                 )}
 
             {/* DynamiczoneModal */}

@@ -2,9 +2,9 @@ import { getUserCurrentFormat } from 'Utils/modules/dateTime';
 import { formatName } from 'Utils/modules/formatters';
 import { onlyNumbers, onlyNumbersDecimalWithoutSpecialCharacters, onlyNumbersDecimalWithoutSpecialCharactersUpto3Digits } from 'Utils/modules/inputValidators';
 import { handleCustomNavigationDetails } from 'Utils/modules/navigation';
-import { AUDIENCE_BASE_TYPES, MULTIPLE_DROPDOWN_PLUSMINUS, comparisonTypeConfig } from './constant';
+import { AUDIENCE_BASE_TYPES, MULTIPLE_DROPDOWN_PLUSMINUS, comparisonTypeConfig, TRIGGER_ATTRIBUTE_VALUE_DROPDOWN_PROPS } from './constant';
 import { ALPHA_CHARACTERS_DYNAMIC, DYNAMICLIST_WEBURL_REGEX } from 'Constants/GlobalConstant/Regex';
-import { ENTER_ATTRIBUTE, ENTER_ATTRIBUTE_VALUE, ENTER_GREATER_VALUE, ENTER_LESSER_VALUE, ENTER_PAGE_NAME, ENTER_TIME, ENTER_VALUE, SELECT_ATTRIBUTE, SELECT_DATE, SELECT_FORM_NAME, SELECT_PROPER_VALUES, SELECT_Type, SELECT_VALUE } from 'Constants/GlobalConstant/ValidationMessage';
+import { ENTER_ATTRIBUTE, ENTER_ATTRIBUTE_VALUE, ENTER_GREATER_VALUE, ENTER_LESSER_VALUE, ENTER_PAGE_NAME, ENTER_TIME, ENTER_VALUE, SELECT_ATTRIBUTE, SELECT_ATTRIBUTE_Name, SELECT_DATE, SELECT_FORM_NAME, SELECT_FORM_STATUS, SELECT_PROPER_VALUES, SELECT_Type, SELECT_VALUE } from 'Constants/GlobalConstant/ValidationMessage';
 import { circle_plus_medium } from 'Constants/GlobalConstant/Glyphicons';
 import { Fragment, memo, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { Row, Col } from 'react-bootstrap';
@@ -16,8 +16,8 @@ import RSKendoDropDown from 'Components/FormFields/RSKendoDropdown';
 import RSMultiSelect from 'Components/FormFields/RSMultiSelect';
 import RSTimePicker from 'Components/FormFields/RSTimePicker';
 import { useNavigate } from 'react-router-dom';
-import _get from 'lodash/get';
-import { MatchTypeCheck, repeatedGroupValuesCheck, repeatedValuesCheck } from '../../constant';
+import { get as _get } from 'Utils/modules/lodashReplacements';
+import { MatchTypeCheck, repeatedGroupValuesCheck, repeatedValuesCheck, buildFieldTriggerValuesKey, buildCustomEventValuesCacheKey, normalizeCustomEventRuleTypeOptions, normalizeTriggerAttributeDropdownOptions, resolveTriggerDropdownPrimitiveValue, shouldSkipTriggerAttributeValuesApi, shouldFetchTriggerAttributeValuesForRule } from '../../constant';
 import {
     getCachedTriggerAttributeValues,
     getCustomEventsAttributesData,
@@ -48,10 +48,9 @@ const RenderField = ({
     index,
     fieldName,
     name,
-    setRuleIndex,
-    customAppend,
     isCustom,
     customState,
+    customEventColumnName = '',
     setCustomState,
     TriggerName,
     pages,
@@ -64,6 +63,8 @@ const RenderField = ({
     setErrorGroup,
     setErrorCustomGroup,
     currentRuleIndex,
+    getTriggerAttributeValuesForRuleType,
+    clearAttributeCustom,
 }) => {
     const navigate = useNavigate();
     const {
@@ -82,14 +83,74 @@ const RenderField = ({
     const dispatch = useDispatch();
     const store = useStore();
     const locationState = useQueryParams();
-    const [triggerValues, setTriggerValues] = useState([]);
+    const [localTriggerValues, setTriggerValues] = useState([]);
     const skipAttributeNameEffectRef = useRef(false);
     const skipAttributeNameEffectExpectedKeyRef = useRef('');
     const attributeEffectKeyRef = useRef('');
-    // Tracks the last geofence-reset signature so the reset block runs once per selection transition
-    const geofenceResetKeyRef = useRef('');
-    // const [formValues, setFormValues] = useState([])
     const { ListState, dispatchState } = useContext(DynamicListCreateContext);
+    const attributeFieldType = attribute?.attributeName?.fieldType ?? attribute?.attributeName?.fieldtype;
+    const isTwoDimensionalField = attributeFieldType === '2D';
+    const level1FieldTriggerState =
+        ListState?.fieldTriggerValues?.[buildFieldTriggerValuesKey(name, '2D', 1)];
+    const level2FieldTriggerState =
+        ListState?.fieldTriggerValues?.[buildFieldTriggerValuesKey(name, '2D', 2)];
+    const fieldTriggerState = isTwoDimensionalField
+        ? level1FieldTriggerState
+        : ListState?.fieldTriggerValues?.[name];
+    const triggerValues = useMemo(() => {
+        const mergeTriggerValueSources = (...sources) => {
+            let merged =
+                localTriggerValues && typeof localTriggerValues === 'object' && !Array.isArray(localTriggerValues)
+                    ? { ...localTriggerValues }
+                    : Array.isArray(localTriggerValues)
+                        ? localTriggerValues
+                        : {};
+
+            sources.forEach((source) => {
+                if (source === undefined) {
+                    return;
+                }
+                if (Array.isArray(source)) {
+                    merged = source;
+                    return;
+                }
+                if (typeof source === 'object') {
+                    merged =
+                        merged && typeof merged === 'object' && !Array.isArray(merged)
+                            ? { ...merged, ...source }
+                            : { ...source };
+                }
+            });
+
+            return merged;
+        };
+
+        if (isTwoDimensionalField) {
+            return mergeTriggerValueSources(
+                level1FieldTriggerState?.triggerValues,
+                level2FieldTriggerState?.triggerValues,
+            );
+        }
+
+        const fromListState = fieldTriggerState?.triggerValues;
+        if (fromListState === undefined) {
+            return localTriggerValues;
+        }
+        if (Array.isArray(fromListState)) {
+            return fromListState;
+        }
+        if (typeof fromListState === 'object' && Object.keys(fromListState).length === 0) {
+            return localTriggerValues;
+        }
+
+        return mergeTriggerValueSources(fromListState);
+    }, [
+        fieldTriggerState?.triggerValues,
+        isTwoDimensionalField,
+        level1FieldTriggerState?.triggerValues,
+        level2FieldTriggerState?.triggerValues,
+        localTriggerValues,
+    ]);
     const { formAttributeId = {}, formAttrDropdownChange, dataAttributeId = {}, filterLabels = {} } = ListState || {};
     const { departmentId, clientId, userId } = useSelector((state) => getSessionId(state));
     // Select only the editList slice so the reference stays stable across unrelated dynamic-list dispatches
@@ -106,7 +167,12 @@ const RenderField = ({
     });
     const isAttributeNameOptionsLoading = attributeNameOptionsAPI.isLoading;
     const isAttributeValuesLoading = attributeValueOptionsAPI.isLoading;
-    const isTriggerValuesLoading = isAttributeNameOptionsLoading || isAttributeValuesLoading;
+    const isLevel1FieldLoading = level1FieldTriggerState?.isLoading ?? false;
+    const isLevel2FieldLoading = level2FieldTriggerState?.isLoading ?? false;
+    const isTriggerValuesLoading =
+        (fieldTriggerState?.isLoading ?? false) || isAttributeNameOptionsLoading || isAttributeValuesLoading;
+    const isTwoDimensionalLevel1Loading = isLevel1FieldLoading || isAttributeNameOptionsLoading;
+    const isTwoDimensionalLevel2Loading = isLevel2FieldLoading || isAttributeValuesLoading;
 
     const getTriggerAttributeLoaderApi = useCallback(
         (payload) => {
@@ -120,6 +186,14 @@ const RenderField = ({
     );
 
     const dispatchTriggerAttributeValues = (payload) => {
+        const ruleMeta = { value: payload?.attributeName, fieldType: payload?.fieldType };
+        if (
+            shouldSkipTriggerAttributeValuesApi(payload?.triggerSourceId) ||
+            !shouldFetchTriggerAttributeValuesForRule(ruleMeta, payload?.triggerSourceId)
+        ) {
+            return Promise.resolve({ status: true, data: [] });
+        }
+
         const cached = getCachedTriggerAttributeValues(store.getState(), payload);
         if (cached !== undefined) {
             return resolveTriggerAttributeValues({
@@ -184,6 +258,73 @@ const RenderField = ({
     const attributeName = attribute?.attributeName?.value || '';
     const inputDropDownClassName = `${className || ''} ${isClickOff ? 'click-off pe-none' : ''}`.trim();
 
+    const customEventValuesFromCache = useMemo(() => {
+        if (!isCustom || !customEventColumnName || !attributeName) {
+            return null;
+        }
+
+        return ListState?.triggerDdlValues?.[
+            buildCustomEventValuesCacheKey(customEventColumnName, attributeName)
+        ];
+    }, [attributeName, customEventColumnName, isCustom, ListState?.triggerDdlValues]);
+
+    const level1DropdownData = useMemo(() => {
+        const rawValues = isTwoDimensionalField
+            ? triggerValues?.[attributeName]
+            : isCustom && (!Array.isArray(triggerValues) || triggerValues.length === 0) && customEventValuesFromCache
+                ? customEventValuesFromCache
+                : triggerValues;
+
+        return normalizeTriggerAttributeDropdownOptions(
+            Array.isArray(rawValues) ? rawValues : [],
+        );
+    }, [attributeName, customEventValuesFromCache, isCustom, isTwoDimensionalField, triggerValues]);
+
+    const level1MultiSelectData = useMemo(
+        () =>
+            level1DropdownData
+                .map((item) => resolveTriggerDropdownPrimitiveValue(item))
+                .filter((item) => item !== ''),
+        [level1DropdownData],
+    );
+
+    const level2DropdownData = useMemo(
+        () => normalizeTriggerAttributeDropdownOptions(triggerValues?.[`${attributeName}2`]),
+        [attributeName, triggerValues],
+    );
+
+    const shouldShowLevel2AsDropdown = useMemo(() => {
+        if (!isTwoDimensionalField) {
+            return false;
+        }
+
+        if (isTwoDimensionalLevel2Loading || level2DropdownData?.length) {
+            return true;
+        }
+
+        if (!attribute?.attributeComparison) {
+            return false;
+        }
+
+        const normalizedType = formatName(attributeName);
+        if (normalizedType === 'forms' || normalizedType === 'eventbrite') {
+            return true;
+        }
+
+        if (normalizedType === 'attributes') {
+            const columnType = formatName(attribute?.attributeComparison?.columntype);
+            return ['combobox', 'checkbox', 'radio'].includes(columnType);
+        }
+
+        return false;
+    }, [
+        isTwoDimensionalField,
+        isTwoDimensionalLevel2Loading,
+        level2DropdownData,
+        attributeName,
+        attribute?.attributeComparison,
+    ]);
+
     const isRecencyFrequency = !!attribute?.attributeName?.isRecencyFrequency;
 
     const recencyDateRangeLabel = useMemo(() => {
@@ -208,6 +349,7 @@ const RenderField = ({
         ) : null;
 
     const getCustomEventsValue = async (item) => {
+        const columnName = resolveTriggerDropdownPrimitiveValue(item);
         const payload = {
             triggerddlValue: pages?.id,
             attributeName: 'Custom events',
@@ -216,9 +358,9 @@ const RenderField = ({
             departmentId,
             clientId,
             userId,
-            levelNo: '',
+            levelNo: 1,
             formId: '',
-            columnName: item,
+            columnName,
             attributevalue: '',
         };
         const res = await attributeValueOptionsAPI.refetch({
@@ -229,7 +371,9 @@ const RenderField = ({
             params: { payload },
         });
         if (res?.status) {
-            setCustomState({ field: item, data: [...res?.data] });
+            setCustomState({ field: columnName, data: normalizeCustomEventRuleTypeOptions(res?.data) });
+        } else {
+            setCustomState({ field: columnName, data: [] });
         }
     };
 
@@ -248,177 +392,203 @@ const RenderField = ({
         return [TriggerName?.triggerId, attribute?.attributeName?.value ?? '', comparisonKey, resolvedFormId].join('|');
     };
 
-    const handleCallApiForm = () => {
-        if (TriggerName?.triggerId === 13 || TriggerName?.triggerId === 27) {
-            const isForm = TriggerName?.triggerId === 13;
-            const isEventBrite = TriggerName?.triggerId === 27;
-            if (isForm) {
-                if (ruleAttributes?.length === 1 && formatName(attribute?.attributeName?.value) === 'forms') {
-                    return true;
-                } else if (ruleAttributes?.length > 1 && formatName(attribute?.attributeName?.value) !== 'forms') {
-                    return true;
-                } else {
-                    return false;
-                }
-            } else if (isEventBrite) {
-                if (ruleAttributes?.length === 1 && formatName(attribute?.attributeName?.value) === 'eventbrite') {
-                    return true;
-                } else if (ruleAttributes?.length > 1 && formatName(attribute?.attributeName?.value) !== 'eventbrite') {
-                    return true;
-                } else {
-                    return false;
-                }
+    const clearTwoDimensionalTriggerValues = useCallback(
+        (attributeLabel, { includeLevel1 = false, additionalPaths = [] } = {}) => {
+            const keys = new Set(additionalPaths);
+
+            if (includeLevel1) {
+                keys.add(buildFieldTriggerValuesKey(name, '2D', 1));
             }
-        } else {
-            return true;
-        }
-    };
+            keys.add(buildFieldTriggerValuesKey(name, '2D', 2));
+
+            dispatchState({
+                type: 'CLEAR_FIELD_TRIGGER_VALUES_KEYS',
+                payload: { keys: [...keys] },
+            });
+
+            if (attributeLabel) {
+                setTriggerValues((prev) => {
+                    if (!prev || typeof prev !== 'object' || Array.isArray(prev)) {
+                        return { [`${attributeLabel}2`]: [] };
+                    }
+                    return { ...prev, [`${attributeLabel}2`]: [] };
+                });
+            }
+        },
+        [dispatchState, name],
+    );
+
+    // const handleCallApiForm = () => {
+    //     if (TriggerName?.triggerId === 13 || TriggerName?.triggerId === 27) {
+    //         const isForm = TriggerName?.triggerId === 13;
+    //         const isEventBrite = TriggerName?.triggerId === 27;
+    //         if (isForm) {
+    //             if (ruleAttributes?.length === 1 && formatName(attribute?.attributeName?.value) === 'forms') {
+    //                 return true;
+    //             } else if (ruleAttributes?.length > 1 && formatName(attribute?.attributeName?.value) !== 'forms') {
+    //                 return true;
+    //             } else {
+    //                 return false;
+    //             }
+    //         } else if (isEventBrite) {
+    //             if (ruleAttributes?.length === 1 && formatName(attribute?.attributeName?.value) === 'eventbrite') {
+    //                 return true;
+    //             } else if (ruleAttributes?.length > 1 && formatName(attribute?.attributeName?.value) !== 'eventbrite') {
+    //                 return true;
+    //             } else {
+    //                 return false;
+    //             }
+    //         }
+    //     } else {
+    //         return true;
+    //     }
+    // };
 
     // console.log('Fosdfasdfsdfsdfrm id :::: ', formAttributeId);
     const tempFormAttr = { ...formAttributeId };
-    const getTriggerAttributeValues = (id, type, value, isEditAttribute = false, attributeId) => {
-        if (attribute?.attributeName?.value !== '' && attribute !== undefined) {
-            if (isCustom) {
-                const payload = {
-                    triggerddlValue: pages?.id,
-                    attributeName: 'Custom events',
-                    triggerSourceId: TriggerName?.triggerId,
-                    fieldType: attribute?.attributeName?.fieldtype,
-                    departmentId,
-                    clientId,
-                    userId,
-                    levelNo: '',
-                    formId: tempFormAttr[TriggerName?.triggerId] || '',
-                    columnName: customState?.field,
-                    attributevalue: attribute?.attributeName?.value,
-                };
-                dispatchCustomEventsAttributes(payload);
-            } else {
-                if (type === 'Forms') {
-                    const payload = {
-                        triggerddlValue: pages?.id || '',
-                        attributeName:
-                            TriggerName?.triggerId === 14
-                                ? // ? attribute?.attributeName?.value + '_s'
-                                  attribute?.attributeName?.fieldName
-                                : attribute?.attributeName?.value,
-                        triggerSourceId: TriggerName?.triggerId,
-                        fieldType: attribute?.attributeName?.fieldType,
-                        departmentId,
-                        clientId,
-                        userId,
-                        levelNo: id ? 2 : 1,
-                        formId: id
-                            ? id
-                            : Object.keys(formAttributeId)?.length
-                            ? !!formAttributeId[TriggerName?.triggerId]
-                                ? formAttributeId[TriggerName?.triggerId]
-                                : formId || ''
-                            : '',
-                        columnName: '',
-                    };
-                    dispatchTriggerAttributeValues(payload);
-                } else if (type === 'Attributes') {
-                    const payload = {
-                        triggerddlValue: pages?.id || '',
-                        attributeName:
-                            TriggerName?.triggerId === 14
-                                ? // ? attribute?.attributeName?.value + '_s'
-                                  attribute?.attributeName?.fieldName
-                                : attribute?.attributeName?.value,
-                        triggerSourceId: TriggerName?.triggerId,
-                        fieldType: attribute?.attributeName?.fieldType,
-                        departmentId,
-                        clientId,
-                        userId,
-                        levelNo: isEditAttribute ? 1 : 2,
-                        formId: id
-                            ? id
-                            : Object.keys(formAttributeId)?.length
-                            ? !!formAttributeId[TriggerName?.triggerId]
-                                ? formAttributeId[TriggerName?.triggerId]
-                                : formId || ''
-                            : '',
-                        columnName: value,
-                        dataAttributeId: attributeId
-                            ? attributeId
-                            : Object.keys(dataAttributeId)?.length
-                            ? !!dataAttributeId[TriggerName?.triggerId]
-                            : 0,
-                    };
-                    dispatchTriggerAttributeValues(payload);
-                } else if (formatName(type) === 'eventbrite') {
-                    const payload = {
-                        triggerddlValue: pages?.id || '',
-                        attributeName:
-                            TriggerName?.triggerId === 14
-                                ? // ? attribute?.attributeName?.value + '_s'
-                                  attribute?.attributeName?.fieldName
-                                : attribute?.attributeName?.value,
-                        triggerSourceId: TriggerName?.triggerId,
-                        fieldType: attribute?.attributeName?.fieldType,
-                        departmentId,
-                        clientId,
-                        userId,
-                        levelNo: isEditAttribute ? 1 : 2,
-                        formId: id
-                            ? id
-                            : Object.keys(formAttributeId)?.length
-                            ? !!formAttributeId[TriggerName?.triggerId]
-                                ? formAttributeId[TriggerName?.triggerId]
-                                : formId || ''
-                            : '',
-                        columnName: value,
-                    };
-                    dispatchTriggerAttributeValues(payload);
-                } else {
-                    const payload = {
-                        triggerddlValue: TriggerName.triggerId === 15 ? pages.value : pages?.id || '',
-                        attributeName:
-                            TriggerName?.triggerId === 14
-                                ? // ? attribute?.attributeName?.value + '_s'
-                                  attribute?.attributeName?.fieldName
-                                : attribute?.attributeName?.value,
-                        triggerSourceId: TriggerName?.triggerId,
-                        fieldType: attribute?.attributeName?.fieldType,
-                        departmentId,
-                        clientId,
-                        userId,
-                        levelNo: id ? 2 : 1,
-                        formId: id
-                            ? id
-                            : Object.keys(formAttributeId)?.length
-                            ? !!formAttributeId[TriggerName?.triggerId]
-                                ? formAttributeId[TriggerName?.triggerId]
-                                : formId || ''
-                            : '',
-                        columnName: TriggerName?.triggerId === 13 && id ? attribute.attributeComparison.value : '',
-                    };
-                    if (TriggerName?.triggerId === 14) {
-                        let attributeValues = filterLabels?.[attribute?.attributeName?.fieldName];
-                        let finalData = getFilterValues(attributeValues);
-                        if (finalData?.length) {
-                            setTriggerValues(finalData);
-                            return;
-                        }
-                    }
-                    dispatchTriggerAttributeValues(payload);
-                }
-            }
-        }
-    };
+    // const getTriggerAttributeValues = (id, type, value, isEditAttribute = false, attributeId) => {
+    //     if (attribute?.attributeName?.value !== '' && attribute !== undefined) {
+    //         if (isCustom) {
+    //             const payload = {
+    //                 triggerddlValue: pages?.id,
+    //                 attributeName: 'Custom events',
+    //                 triggerSourceId: TriggerName?.triggerId,
+    //                 fieldType: attribute?.attributeName?.fieldtype,
+    //                 departmentId,
+    //                 clientId,
+    //                 userId,
+    //                 levelNo: '',
+    //                 formId: tempFormAttr[TriggerName?.triggerId] || '',
+    //                 columnName: customState?.field,
+    //                 attributevalue: attribute?.attributeName?.value,
+    //             };
+    //             dispatchCustomEventsAttributes(payload);
+    //         } else {
+    //             if (type === 'Forms') {
+    //                 const payload = {
+    //                     triggerddlValue: pages?.id || '',
+    //                     attributeName:
+    //                         TriggerName?.triggerId === 14
+    //                             ? // ? attribute?.attributeName?.value + '_s'
+    //                               attribute?.attributeName?.fieldName
+    //                             : attribute?.attributeName?.value,
+    //                     triggerSourceId: TriggerName?.triggerId,
+    //                     fieldType: attribute?.attributeName?.fieldType,
+    //                     departmentId,
+    //                     clientId,
+    //                     userId,
+    //                     levelNo: id ? 2 : 1,
+    //                     formId: id
+    //                         ? id
+    //                         : Object.keys(formAttributeId)?.length
+    //                         ? !!formAttributeId[TriggerName?.triggerId]
+    //                             ? formAttributeId[TriggerName?.triggerId]
+    //                             : formId || ''
+    //                         : '',
+    //                     columnName: '',
+    //                 };
+    //                 dispatchTriggerAttributeValues(payload);
+    //             } else if (type === 'Attributes') {
+    //                 const payload = {
+    //                     triggerddlValue: pages?.id || '',
+    //                     attributeName:
+    //                         TriggerName?.triggerId === 14
+    //                             ? // ? attribute?.attributeName?.value + '_s'
+    //                               attribute?.attributeName?.fieldName
+    //                             : attribute?.attributeName?.value,
+    //                     triggerSourceId: TriggerName?.triggerId,
+    //                     fieldType: attribute?.attributeName?.fieldType,
+    //                     departmentId,
+    //                     clientId,
+    //                     userId,
+    //                     levelNo: isEditAttribute ? 1 : 2,
+    //                     formId: id
+    //                         ? id
+    //                         : Object.keys(formAttributeId)?.length
+    //                         ? !!formAttributeId[TriggerName?.triggerId]
+    //                             ? formAttributeId[TriggerName?.triggerId]
+    //                             : formId || ''
+    //                         : '',
+    //                     columnName: value,
+    //                     dataAttributeId: attributeId
+    //                         ? attributeId
+    //                         : Object.keys(dataAttributeId)?.length
+    //                         ? !!dataAttributeId[TriggerName?.triggerId]
+    //                         : 0,
+    //                 };
+    //                 dispatchTriggerAttributeValues(payload);
+    //             } else if (formatName(type) === 'eventbrite') {
+    //                 const payload = {
+    //                     triggerddlValue: pages?.id || '',
+    //                     attributeName:
+    //                         TriggerName?.triggerId === 14
+    //                             ? // ? attribute?.attributeName?.value + '_s'
+    //                               attribute?.attributeName?.fieldName
+    //                             : attribute?.attributeName?.value,
+    //                     triggerSourceId: TriggerName?.triggerId,
+    //                     fieldType: attribute?.attributeName?.fieldType,
+    //                     departmentId,
+    //                     clientId,
+    //                     userId,
+    //                     levelNo: isEditAttribute ? 1 : 2,
+    //                     formId: id
+    //                         ? id
+    //                         : Object.keys(formAttributeId)?.length
+    //                         ? !!formAttributeId[TriggerName?.triggerId]
+    //                             ? formAttributeId[TriggerName?.triggerId]
+    //                             : formId || ''
+    //                         : '',
+    //                     columnName: value,
+    //                 };
+    //                 dispatchTriggerAttributeValues(payload);
+    //             } else {
+    //                 const payload = {
+    //                     triggerddlValue: TriggerName.triggerId === 15 ? pages.value : pages?.id || '',
+    //                     attributeName:
+    //                         TriggerName?.triggerId === 14
+    //                             ? // ? attribute?.attributeName?.value + '_s'
+    //                               attribute?.attributeName?.fieldName
+    //                             : attribute?.attributeName?.value,
+    //                     triggerSourceId: TriggerName?.triggerId,
+    //                     fieldType: attribute?.attributeName?.fieldType,
+    //                     departmentId,
+    //                     clientId,
+    //                     userId,
+    //                     levelNo: id ? 2 : 1,
+    //                     formId: id
+    //                         ? id
+    //                         : Object.keys(formAttributeId)?.length
+    //                         ? !!formAttributeId[TriggerName?.triggerId]
+    //                             ? formAttributeId[TriggerName?.triggerId]
+    //                             : formId || ''
+    //                         : '',
+    //                     columnName: TriggerName?.triggerId === 13 && id ? attribute.attributeComparison.value : '',
+    //                 };
+    //                 if (TriggerName?.triggerId === 14) {
+    //                     let attributeValues = filterLabels?.[attribute?.attributeName?.fieldName];
+    //                     let finalData = getFilterValues(attributeValues);
+    //                     if (finalData?.length) {
+    //                         setTriggerValues(finalData);
+    //                         return;
+    //                     }
+    //                 }
+    //                 dispatchTriggerAttributeValues(payload);
+    //             }
+    //         }
+    //     }
+    // };
 
-    const fetchTriggerValuesFromHandler = (...args) => {
-        const formIdArg = args[0];
-        const expectedKey = buildAttributeEffectKey({
-            comparisonId: formIdArg ?? undefined,
-            formId: formIdArg ?? undefined,
-        });
-        skipAttributeNameEffectExpectedKeyRef.current = expectedKey;
-        skipAttributeNameEffectRef.current = true;
-        attributeEffectKeyRef.current = expectedKey;
-        getTriggerAttributeValues(...args);
-    };
+    // const fetchTriggerValuesFromHandler = (...args) => {
+    //     const formIdArg = args[0];
+    //     const expectedKey = buildAttributeEffectKey({
+    //         comparisonId: formIdArg ?? undefined,
+    //         formId: formIdArg ?? undefined,
+    //     });
+    //     skipAttributeNameEffectExpectedKeyRef.current = expectedKey;
+    //     skipAttributeNameEffectRef.current = true;
+    //     attributeEffectKeyRef.current = expectedKey;
+    //     getTriggerAttributeValues(...args);
+    // };
 
     const getFilterValues = (attributeValues = []) => {
         const finalData = attributeValues?.map((item, index) => {
@@ -444,7 +614,7 @@ const RenderField = ({
             setTriggerValues(finalData);
             return;
         }
-        const response = await dispatch(getAttributeValues(payload, () => {}, '', 0, true));
+        const response = await dispatch(getAttributeValues(payload, () => { }, '', 0, true));
 
         if (response?.status) {
             try {
@@ -461,232 +631,234 @@ const RenderField = ({
         }
     };
 
-    const handleFirstLevelDDAttributeValue = () => {
-        switch (formatName(attribute?.attributeName?.value)) {
-            case 'forms':
-                return getTriggerAttributeValues();
-            case 'beacon':
-            case 'city/area':
-            case 'latitude&longitude-radius':
-                return getTriggerAttributeValues();
-            default:
-                getTriggerAttributeValues(
-                    formId,
-                    attribute?.attributeName?.value,
-                    attribute?.attributeComparison?.value,
-                    true,
-                );
-        }
-    };
-    const handleSecondLevelDDAttributeValue = () => {
-        getTriggerAttributeValues(formId, attribute?.attributeName?.value, attribute?.attributeComparison?.value);
-    };
+    // const handleFirstLevelDDAttributeValue = () => {
+    //     switch (formatName(attribute?.attributeName?.value)) {
+    //         case 'forms':
+    //             return getTriggerAttributeValues();
+    //         case 'beacon':
+    //         case 'city/area':
+    //         case 'latitude&longitude-radius':
+    //             return getTriggerAttributeValues();
+    //         default:
+    //             getTriggerAttributeValues(
+    //                 formId,
+    //                 attribute?.attributeName?.value,
+    //                 attribute?.attributeComparison?.value,
+    //                 true,
+    //             );
+    //     }
+    // };
+    // const handleSecondLevelDDAttributeValue = () => {
+    //     getTriggerAttributeValues(formId, attribute?.attributeName?.value, attribute?.attributeComparison?.value);
+    // };
 
-    const handleLevelWiseAttributeValue = () => {
-        const availableTriggerValues = getValues('triggerValues');
-        const attribueValue = formatName(attribute?.attributeName?.value);
-        setTriggerValues((pre) => ({
-            ...pre,
-            ...availableTriggerValues,
-        }));
-        if (!availableTriggerValues?.[attribute?.attributeName?.value]?.length) {
-            if (TriggerName?.triggerId === 18 || TriggerName?.triggerId === 5) {
-                if (attribueValue !== 'locationurl' && attribueValue !== 'geofence') {
-                    handleFirstLevelDDAttributeValue();
-                }
-            } else {
-                handleFirstLevelDDAttributeValue();
-            }
-        }
-        if (!availableTriggerValues?.[`${attribute?.attributeName?.value + 2}`]?.length) {
-            if (TriggerName?.triggerId === 18 || TriggerName?.triggerId === 5) {
-                if (
-                    attribueValue !== 'locationurl' &&
-                    attribueValue !== 'latitude&longitude-radius' &&
-                    attribueValue !== 'geofence'
-                ) {
-                    handleSecondLevelDDAttributeValue();
-                }
-            } else {
-                handleSecondLevelDDAttributeValue();
-            }
-        }
-    };
+    // const handleLevelWiseAttributeValue = () => {
+    //     debugger
+    //     const availableTriggerValues = getValues('triggerValues');
+    //     const attribueValue = formatName(attribute?.attributeName?.value);
+    //     setTriggerValues((pre) => ({
+    //         ...pre,
+    //         ...availableTriggerValues,
+    //     }));
+    //     if (!availableTriggerValues?.[attribute?.attributeName?.value]?.length) {
+    //         if (TriggerName?.triggerId === 18 || TriggerName?.triggerId === 5) {
+    //             if (attribueValue !== 'locationurl' && attribueValue !== 'geofence') {
+    //                 handleFirstLevelDDAttributeValue();
+    //             }
+    //         } else {
+    //             handleFirstLevelDDAttributeValue();
+    //         }
+    //     }
+    //     if (!availableTriggerValues?.[`${attribute?.attributeName?.value + 2}`]?.length) {
+    //         if (TriggerName?.triggerId === 18 || TriggerName?.triggerId === 5) {
+    //             if (
+    //                 attribueValue !== 'locationurl' &&
+    //                 attribueValue !== 'latitude&longitude-radius' &&
+    //                 attribueValue !== 'geofence'
+    //             ) {
+    //                 handleSecondLevelDDAttributeValue();
+    //             }
+    //         } else {
+    //             handleSecondLevelDDAttributeValue();
+    //         }
+    //     }
+    // };
 
-    useEffect(() => {
-        if (attribute?.attributeName) {
-            // Reset cluster list when Geofence is selected
-            const isGeofence =
-                formatName(attribute?.attributeName?.value) === 'geofence' &&
-                attribute?.attributeName?.fieldType === '2D';
-            // Run the geofence reset once per selection transition, not on every comparison change
-            const geofenceResetKey = isGeofence ? `${name}|${currentRuleIndex}|${index}` : '';
-            const shouldRunGeofenceReset = isGeofence && geofenceResetKeyRef.current !== geofenceResetKey;
-            if (!isGeofence) {
-                geofenceResetKeyRef.current = '';
-            }
-            if (shouldRunGeofenceReset) {
-                geofenceResetKeyRef.current = geofenceResetKey;
-                if (controllEditModeApiCall) {
-                } else {
-                    // Reset attributeComparison field to clear cluster selection
-                    resetField(`${name}.attributeComparison`);
-                    // Reset attributeValue field as well
-                    resetField(`${name}.attributeValue`);
+    // useEffect(() => {
+    //     if (attribute?.attributeName) {
+    //         debugger
+    //         // Reset cluster list when Geofence is selected
+    //         const isGeofence =
+    //             formatName(attribute?.attributeName?.value) === 'geofence' &&
+    //             attribute?.attributeName?.fieldType === '2D';
+    //         // Run the geofence reset once per selection transition, not on every comparison change
+    //         const geofenceResetKey = isGeofence ? `${name}|${currentRuleIndex}|${index}` : '';
+    //         const shouldRunGeofenceReset = isGeofence && geofenceResetKeyRef.current !== geofenceResetKey;
+    //         if (!isGeofence) {
+    //             geofenceResetKeyRef.current = '';
+    //         }
+    //         if (shouldRunGeofenceReset) {
+    //             geofenceResetKeyRef.current = geofenceResetKey;
+    //             if (controllEditModeApiCall) {
+    //             } else {
+    //                 // Reset attributeComparison field to clear cluster selection
+    //                 resetField(`${name}.attributeComparison`);
+    //                 // Reset attributeValue field as well
+    //                 resetField(`${name}.attributeValue`);
 
-                    // Reset geofence-related values in editList from dynamicListReducer
-                    if (
-                        editList?.dynamiclist &&
-                        Array.isArray(editList.dynamiclist) &&
-                        editList.dynamiclist.length > 0
-                    ) {
-                        const updatedEditList = { ...editList };
-                        const ruleGroupKey = `RuleGroup${(currentRuleIndex ?? 0) + 1}`;
-                        let hasGeofenceFieldsRemoved = false;
+    //                 // Reset geofence-related values in editList from dynamicListReducer
+    //                 if (
+    //                     editList?.dynamiclist &&
+    //                     Array.isArray(editList.dynamiclist) &&
+    //                     editList.dynamiclist.length > 0
+    //                 ) {
+    //                     const updatedEditList = { ...editList };
+    //                     const ruleGroupKey = `RuleGroup${(currentRuleIndex ?? 0) + 1}`;
+    //                     let hasGeofenceFieldsRemoved = false;
 
-                        updatedEditList.dynamiclist = editList.dynamiclist.map((item) => {
-                            if (item?.ruleJSON) {
-                                try {
-                                    const parsed = JSON.parse(item.ruleJSON);
-                                    const ruleGroup = parsed[ruleGroupKey];
+    //                     updatedEditList.dynamiclist = editList.dynamiclist.map((item) => {
+    //                         if (item?.ruleJSON) {
+    //                             try {
+    //                                 const parsed = JSON.parse(item.ruleJSON);
+    //                                 const ruleGroup = parsed[ruleGroupKey];
 
-                                    if (
-                                        ruleGroup &&
-                                        ruleGroup.RuleAttributes &&
-                                        Array.isArray(ruleGroup.RuleAttributes)
-                                    ) {
-                                        // Reset geofence-related fields in the current attribute (index is the attribute index)
-                                        const updatedRuleAttributes = ruleGroup.RuleAttributes.map(
-                                            (attr, attrIndex) => {
-                                                if (attrIndex === index) {
-                                                    // Remove geofence-specific fields: GeofenceId, AttributeValue, AttributeName
-                                                    const { GeofenceId, AttributeValue, AttributeName, ...rest } = attr;
-                                                    if (
-                                                        GeofenceId !== undefined ||
-                                                        AttributeValue !== undefined ||
-                                                        AttributeName !== undefined
-                                                    ) {
-                                                        hasGeofenceFieldsRemoved = true;
-                                                    }
-                                                    return rest;
-                                                }
-                                                return attr;
-                                            },
-                                        );
+    //                                 if (
+    //                                     ruleGroup &&
+    //                                     ruleGroup.RuleAttributes &&
+    //                                     Array.isArray(ruleGroup.RuleAttributes)
+    //                                 ) {
+    //                                     // Reset geofence-related fields in the current attribute (index is the attribute index)
+    //                                     const updatedRuleAttributes = ruleGroup.RuleAttributes.map(
+    //                                         (attr, attrIndex) => {
+    //                                             if (attrIndex === index) {
+    //                                                 // Remove geofence-specific fields: GeofenceId, AttributeValue, AttributeName
+    //                                                 const { GeofenceId, AttributeValue, AttributeName, ...rest } = attr;
+    //                                                 if (
+    //                                                     GeofenceId !== undefined ||
+    //                                                     AttributeValue !== undefined ||
+    //                                                     AttributeName !== undefined
+    //                                                 ) {
+    //                                                     hasGeofenceFieldsRemoved = true;
+    //                                                 }
+    //                                                 return rest;
+    //                                             }
+    //                                             return attr;
+    //                                         },
+    //                                     );
 
-                                        const updatedRuleGroup = {
-                                            ...ruleGroup,
-                                            RuleAttributes: updatedRuleAttributes,
-                                        };
+    //                                     const updatedRuleGroup = {
+    //                                         ...ruleGroup,
+    //                                         RuleAttributes: updatedRuleAttributes,
+    //                                     };
 
-                                        const updatedParsed = {
-                                            ...parsed,
-                                            [ruleGroupKey]: updatedRuleGroup,
-                                        };
+    //                                     const updatedParsed = {
+    //                                         ...parsed,
+    //                                         [ruleGroupKey]: updatedRuleGroup,
+    //                                     };
 
-                                        return {
-                                            ...item,
-                                            ruleJSON: JSON.stringify(updatedParsed),
-                                        };
-                                    }
-                                } catch (error) {}
-                            }
-                            return item;
-                        });
+    //                                     return {
+    //                                         ...item,
+    //                                         ruleJSON: JSON.stringify(updatedParsed),
+    //                                     };
+    //                                 }
+    //                             } catch (error) {}
+    //                         }
+    //                         return item;
+    //                     });
 
-                        // Update the reducer only when something actually changed, to avoid emitting a new
-                        // identical editList reference that would re-trigger dependent effects.
-                        if (hasGeofenceFieldsRemoved) {
-                            dispatch(get_dynamic_list({ field: 'editList', data: updatedEditList }));
-                        }
-                    }
-                }
-            }
+    //                     // Update the reducer only when something actually changed, to avoid emitting a new
+    //                     // identical editList reference that would re-trigger dependent effects.
+    //                     if (hasGeofenceFieldsRemoved) {
+    //                         dispatch(get_dynamic_list({ field: 'editList', data: updatedEditList }));
+    //                     }
+    //                 }
+    //             }
+    //         }
 
-            const effectKey = buildAttributeEffectKey();
+    //         const effectKey = buildAttributeEffectKey();
 
-            if (skipAttributeNameEffectRef.current) {
-                attributeEffectKeyRef.current = effectKey;
-                if (
-                    skipAttributeNameEffectExpectedKeyRef.current &&
-                    effectKey === skipAttributeNameEffectExpectedKeyRef.current
-                ) {
-                    skipAttributeNameEffectRef.current = false;
-                    skipAttributeNameEffectExpectedKeyRef.current = '';
-                }
-                return;
-            }
+    //         if (skipAttributeNameEffectRef.current) {
+    //             attributeEffectKeyRef.current = effectKey;
+    //             if (
+    //                 skipAttributeNameEffectExpectedKeyRef.current &&
+    //                 effectKey === skipAttributeNameEffectExpectedKeyRef.current
+    //             ) {
+    //                 skipAttributeNameEffectRef.current = false;
+    //                 skipAttributeNameEffectExpectedKeyRef.current = '';
+    //             }
+    //             return;
+    //         }
 
-            if (attributeEffectKeyRef.current === effectKey) {
-                return;
-            }
+    //         if (attributeEffectKeyRef.current === effectKey) {
+    //             return;
+    //         }
 
-            attributeEffectKeyRef.current = effectKey;
+    //         attributeEffectKeyRef.current = effectKey;
 
-            const selectedFormId =
-                attribute?.attributeComparison?.id ??
-                attribute?.attributeComparison?.formId ??
-                attribute?.attributeComparison?.formID ??
-                attribute?.attributeComparison?.FormId ??
-                attribute?.attributeComparison?.recipientFormId ??
-                attribute?.attributeComparison?.RecipientFormID ??
-                '';
+    //         const selectedFormId =
+    //             attribute?.attributeComparison?.id ??
+    //             attribute?.attributeComparison?.formId ??
+    //             attribute?.attributeComparison?.formID ??
+    //             attribute?.attributeComparison?.FormId ??
+    //             attribute?.attributeComparison?.recipientFormId ??
+    //             attribute?.attributeComparison?.RecipientFormID ??
+    //             '';
 
-            if (controllEditModeApiCall || selectedFormId) {
-                if (attribute?.attributeName?.fieldType === '2D') {
-                    handleLevelWiseAttributeValue();
-                    dispatchState({
-                        type: 'UPDATE_FORM',
-                        payload: selectedFormId || formId,
-                        field: TriggerName?.triggerId,
-                    });
-                } else if (
-                    attribute?.attributeName?.fieldType !== 'T' ||
-                    attribute?.attributeName?.fieldType !== 'AN'
-                ) {
-                    if (TriggerName?.triggerId !== 18 && TriggerName?.triggerId !== 5) {
-                        getTriggerAttributeValues();
-                    }
-                }
-            } else if (formAttrDropdownChange) {
-                const resolvedFormId = Object.keys(formAttributeId)?.length
-                    ? formAttributeId[TriggerName?.triggerId] || formId || ''
-                    : formId || '';
-                getTriggerAttributeValues(
-                    resolvedFormId,
-                    attribute?.attributeName?.value,
-                    attribute?.attributeComparison?.value,
-                );
-                dispatchState({ type: 'UPDATE_FORM_DROP_DOWN', payload: false });
-            } else {
-                if (
-                    attribute?.attributeName?.fieldType === 'D' ||
-                    attribute?.attributeName?.fieldType === 'SD' ||
-                    attribute?.attributeName?.fieldType === '2D' ||
-                    (TriggerName?.triggerId === 14 && attribute?.attributeName?.fieldType === 'T') || // Audience base
-                    (TriggerName?.triggerId === 15 && attribute?.attributeName?.fieldType === 'T') // Rudimentary
-                ) {
-                    if (TriggerName?.triggerId !== 14) {
-                        const isForms = formatName(attribute?.attributeName?.value) === 'forms';
-                        const isGeofence = formatName(attribute?.attributeName?.value) === 'geofence';
-                        const isLevel1Loaded = !!triggerValues?.[attribute?.attributeName?.value]?.length;
-                        if (!(isForms && isLevel1Loaded) && !isGeofence) {
-                            handleCallApiForm() && getTriggerAttributeValues();
-                        }
-                    } else {
-                        handleAudienceBaseApi(attribute);
-                    }
-                }
-            }
-        }
-    }, [
-        attribute?.attributeName?.value,
-        attribute?.attributeComparison?.id ??
-            attribute?.attributeComparison?.formId ??
-            attribute?.attributeComparison?.recipientFormId,
-        attribute?.attributeComparison?.value,
-        formAttributeId?.[TriggerName?.triggerId],
-    ]);
+    //         if (controllEditModeApiCall || selectedFormId) {
+    //             if (attribute?.attributeName?.fieldType === '2D') {
+    //                 handleLevelWiseAttributeValue();
+    //                 dispatchState({
+    //                     type: 'UPDATE_FORM',
+    //                     payload: selectedFormId || formId,
+    //                     field: TriggerName?.triggerId,
+    //                 });
+    //             } else if (
+    //                 attribute?.attributeName?.fieldType !== 'T' ||
+    //                 attribute?.attributeName?.fieldType !== 'AN'
+    //             ) {
+    //                 if (TriggerName?.triggerId !== 18 && TriggerName?.triggerId !== 5) {
+    //                     getTriggerAttributeValues();
+    //                 }
+    //             }
+    //         } else if (formAttrDropdownChange) {
+    //             const resolvedFormId = Object.keys(formAttributeId)?.length
+    //                 ? formAttributeId[TriggerName?.triggerId] || formId || ''
+    //                 : formId || '';
+    //             getTriggerAttributeValues(
+    //                 resolvedFormId,
+    //                 attribute?.attributeName?.value,
+    //                 attribute?.attributeComparison?.value,
+    //             );
+    //             dispatchState({ type: 'UPDATE_FORM_DROP_DOWN', payload: false });
+    //         } else {
+    //             if (
+    //                 attribute?.attributeName?.fieldType === 'D' ||
+    //                 attribute?.attributeName?.fieldType === 'SD' ||
+    //                 attribute?.attributeName?.fieldType === '2D' ||
+    //                 (TriggerName?.triggerId === 14 && attribute?.attributeName?.fieldType === 'T') || // Audience base
+    //                 (TriggerName?.triggerId === 15 && attribute?.attributeName?.fieldType === 'T') // Rudimentary
+    //             ) {
+    //                 if (TriggerName?.triggerId !== 14) {
+    //                     const isForms = formatName(attribute?.attributeName?.value) === 'forms';
+    //                     const isGeofence = formatName(attribute?.attributeName?.value) === 'geofence';
+    //                     const isLevel1Loaded = !!triggerValues?.[attribute?.attributeName?.value]?.length;
+    //                     if (!(isForms && isLevel1Loaded) && !isGeofence) {
+    //                         handleCallApiForm() && getTriggerAttributeValues();
+    //                     }
+    //                 } else {
+    //                     handleAudienceBaseApi(attribute);
+    //                 }
+    //             }
+    //         }
+    //     }
+    // }, [
+    //     attribute?.attributeName?.value,
+    //     attribute?.attributeComparison?.id ??
+    //         attribute?.attributeComparison?.formId ??
+    //         attribute?.attributeComparison?.recipientFormId,
+    //     attribute?.attributeComparison?.value,
+    //     formAttributeId?.[TriggerName?.triggerId],
+    // ]);
 
     useEffect(() => {
         if (attribute?.attributeName?.fieldType === 'AN') {
@@ -731,11 +903,7 @@ const RenderField = ({
                     attributeCustom: [
                         ...currentAttributeRule.attributeCustom,
                         {
-                            attributeName: {
-                                value: '',
-                                fieldtype: '',
-                                id: '',
-                            },
+                            attributeName: '',
                             attributeValue: '',
                             attributeType: '',
                             attributeMultipleValues: [],
@@ -776,9 +944,10 @@ const RenderField = ({
 
     const handleDuplicateCheck = () => {
         const getAllRule = getValues('rule');
+        const ruleAttributesPath = `rule[${currentRuleIndex}].RuleAttributes`;
         const duplicateStatus = repeatedGroupValuesCheck(
             getAllRule,
-            `rule[${index}].RuleAttributes`,
+            ruleAttributesPath,
             TriggerName?.triggerId,
         );
         setErrorGroup(title);
@@ -794,23 +963,26 @@ const RenderField = ({
             });
         }
 
+        const ruleAttributes = getValues(`rule.${currentRuleIndex}.RuleAttributes`);
         let check = repeatedValuesCheck(
-            rule?.RuleAttributes,
-            `rule[${index}].RuleAttributes`,
+            ruleAttributes,
+            ruleAttributesPath,
             TriggerName?.triggerId,
             false,
             true,
         );
-        let matchTypeCheck = MatchTypeCheck(rule?.RuleAttributes, rule?.MatchType, rule?.MatchCount);
+        let matchTypeCheck = MatchTypeCheck(
+            ruleAttributes,
+            rule?.MatchType,
+            rule?.MatchCount,
+        );
         if (duplicateStatus?.duplicateIndex < 0) {
-            if (matchTypeCheck) {
-                if (check?.length > 1) {
-                    setDuplicateRule({
-                        show: true,
-                        index: check[3],
-                    });
-                    setErrorGroup(title);
-                }
+            if (matchTypeCheck && !check[0]) {
+                setDuplicateRule({
+                    show: true,
+                    index: check[3],
+                });
+                setErrorGroup(title);
             }
         }
     };
@@ -976,9 +1148,13 @@ const RenderField = ({
     };
 
     const checkTriggerStatus = (value = [], triggerValues = []) => {
+        const optionValues = normalizeTriggerAttributeDropdownOptions(
+            Array.isArray(triggerValues) ? triggerValues : [],
+        ).map((item) => resolveTriggerDropdownPrimitiveValue(item));
         let res = false;
         for (let i = 0; i < value?.length; i++) {
-            if (triggerValues?.includes(value[i])) {
+            const selectedValue = resolveTriggerDropdownPrimitiveValue(value[i]);
+            if (optionValues.includes(selectedValue) || triggerValues?.includes?.(selectedValue)) {
                 res = true;
             } else {
                 res = false;
@@ -1009,6 +1185,28 @@ const RenderField = ({
         }
     };
 
+    const handleDropDownRequiredMessage = (type, level) => {
+        const requiredMessageFirstDropDown = {
+            forms: SELECT_FORM_NAME,
+            attributes: SELECT_ATTRIBUTE,
+            eventbrite: 'Select event name',
+            location: SELECT_ATTRIBUTE_Name,
+        };
+
+        const requiredMessageSecondDropDown = {
+            forms: SELECT_FORM_STATUS,
+            attributes: SELECT_ATTRIBUTE,
+            eventbrite: 'Select event value',
+            location: SELECT_ATTRIBUTE,
+        };
+
+        if (level === 1) {
+            return requiredMessageFirstDropDown[type] || SELECT_ATTRIBUTE;
+        }
+
+        return requiredMessageSecondDropDown[type] || SELECT_ATTRIBUTE;
+    };
+
     // const getFormStatusFormat = (data) => {
     //     const finalFormatData =
     //         !!data &&
@@ -1030,12 +1228,11 @@ const RenderField = ({
             return attribute.attributeName.value === 'Custom events' ? (
                 <Col
                     sm={8}
-                    className={`${
-                        attribute?.attributeComparison === 'Contains' &&
-                        attribute?.attributeName?.value === 'Custom events'
+                    className={`${attribute?.attributeComparison === 'Contains' &&
+                            attribute?.attributeName?.value === 'Custom events'
                             ? 'customEventColoum8'
                             : ''
-                    }${className}`}
+                        }${className}`}
                 >
                     <Row>
                         <Col sm={5}>
@@ -1049,9 +1246,7 @@ const RenderField = ({
                                 required={checkValidCondition()}
                                 rules={checkValidCondition() ? { required: SELECT_Type } : {}}
                                 handleChange={(e) => {
-                                    setRuleIndex(index);
-                                    resetField(`${name}.attributeCustom`);
-                                    setValue(`${name}.attributeCustom`, []);
+                                    clearAttributeCustom?.();
                                     handleOperatorChange(e.value, {
                                         includeAttributeMultipleValues: true,
                                     });
@@ -1070,21 +1265,20 @@ const RenderField = ({
                                         control={control}
                                         name={`${name}.attributeValue`}
                                         required={checkValidCondition()}
-                                        data={triggerValues}
-                                            isLoading={isTriggerValuesLoading}
+                                        data={level1DropdownData}
+                                        {...TRIGGER_ATTRIBUTE_VALUE_DROPDOWN_PROPS}
+                                        isLoading={isTriggerValuesLoading}
                                         label={'Values'}
                                         rules={
                                             checkValidCondition()
                                                 ? {
-                                                      required: SELECT_PROPER_VALUES,
-                                                  }
+                                                    required: SELECT_PROPER_VALUES,
+                                                }
                                                 : {}
                                         }
                                         handleChange={(e) => {
-                                            getCustomEventsValue(e.value);
-
-                                            resetField(`${name}.attributeCustom`);
-                                            setValue(`${name}.attributeCustom`, []);
+                                            clearAttributeCustom?.();
+                                            getCustomEventsValue(resolveTriggerDropdownPrimitiveValue(e.value));
                                             setDuplicateRule({
                                                 index: 0,
                                                 show: false,
@@ -1122,28 +1316,28 @@ const RenderField = ({
                                         rules={
                                             checkValidCondition()
                                                 ? {
-                                                      required: SELECT_PROPER_VALUES,
-                                                      validate: (value) => {
-                                                          const errorPath = `${name}.attributeMultipleValues`.replace(
-                                                              /\[(\d+)\]/g,
-                                                              '.$1',
-                                                          );
-                                                          const existingErrorMsg = _get(errors, errorPath)?.message;
-                                                          if (existingErrorMsg && value?.length > 25)
-                                                              return existingErrorMsg;
-                                                          let pattern = ALPHA_CHARACTERS_DYNAMIC;
-                                                          let selectedValue = value[value?.length - 1];
-                                                          if (!pattern.test(selectedValue)) {
-                                                              return 'No special characters';
-                                                          } else if (selectedValue?.trim() === '') {
-                                                              return 'Empty spaces not accepted';
-                                                          } else if (value?.length > 25) {
-                                                              return 'Max. 25 attributes';
-                                                          } else if (value.some((item) => item.trim() === '')) {
-                                                              return 'Values contains empty or whitespace-only';
-                                                          } else return true;
-                                                      },
-                                                  }
+                                                    required: SELECT_PROPER_VALUES,
+                                                    validate: (value) => {
+                                                        const errorPath = `${name}.attributeMultipleValues`.replace(
+                                                            /\[(\d+)\]/g,
+                                                            '.$1',
+                                                        );
+                                                        const existingErrorMsg = _get(errors, errorPath)?.message;
+                                                        if (existingErrorMsg && value?.length > 25)
+                                                            return existingErrorMsg;
+                                                        let pattern = ALPHA_CHARACTERS_DYNAMIC;
+                                                        let selectedValue = value[value?.length - 1];
+                                                        if (!pattern.test(selectedValue)) {
+                                                            return 'No special characters';
+                                                        } else if (selectedValue?.trim() === '') {
+                                                            return 'Empty spaces not accepted';
+                                                        } else if (value?.length > 25) {
+                                                            return 'Max. 25 attributes';
+                                                        } else if (value.some((item) => item.trim() === '')) {
+                                                            return 'Values contains empty or whitespace-only';
+                                                        } else return true;
+                                                    },
+                                                }
                                                 : {}
                                         }
                                         handleOnBlur={() => {
@@ -1174,36 +1368,36 @@ const RenderField = ({
                                         }
                                     }}
                                     control={control}
-                                    data={triggerValues}
-                                        isLoading={isTriggerValuesLoading}
+                                    data={level1MultiSelectData}
+                                    isLoading={isTriggerValuesLoading}
                                     allowCustom
                                     label={'Values'}
                                     required={checkValidCondition() && !isHasValueOperator(attributeComp)}
                                     rules={
                                         checkValidCondition() && !isHasValueOperator(attributeComp)
                                             ? {
-                                                  required: SELECT_PROPER_VALUES,
-                                                  validate: (value) => {
-                                                      const errorPath = `${name}.attributeMultipleValues`.replace(
-                                                          /\[(\d+)\]/g,
-                                                          '.$1',
-                                                      );
-                                                      const existingErrorMsg = _get(errors, errorPath)?.message;
-                                                      if (existingErrorMsg && value?.length > 25)
-                                                          return existingErrorMsg;
-                                                      let pattern = ALPHA_CHARACTERS_DYNAMIC;
-                                                      let selectedValue = value[value?.length - 1];
-                                                      if (selectedValue?.trim() === '') {
-                                                          return 'Empty spaces not accepted';
-                                                      } else if (value?.length > 25) {
-                                                          return 'Max. 25 attributes';
-                                                      } else if (value.some((item) => item.trim() === '')) {
-                                                          return 'Values contains empty or whitespace-only';
-                                                      } else if (!pattern.test(selectedValue)) {
-                                                          return 'No special characters';
-                                                      } else return true;
-                                                  },
-                                              }
+                                                required: SELECT_PROPER_VALUES,
+                                                validate: (value) => {
+                                                    const errorPath = `${name}.attributeMultipleValues`.replace(
+                                                        /\[(\d+)\]/g,
+                                                        '.$1',
+                                                    );
+                                                    const existingErrorMsg = _get(errors, errorPath)?.message;
+                                                    if (existingErrorMsg && value?.length > 25)
+                                                        return existingErrorMsg;
+                                                    let pattern = ALPHA_CHARACTERS_DYNAMIC;
+                                                    let selectedValue = value[value?.length - 1];
+                                                    if (selectedValue?.trim() === '') {
+                                                        return 'Empty spaces not accepted';
+                                                    } else if (value?.length > 25) {
+                                                        return 'Max. 25 attributes';
+                                                    } else if (value.some((item) => item.trim() === '')) {
+                                                        return 'Values contains empty or whitespace-only';
+                                                    } else if (!pattern.test(selectedValue)) {
+                                                        return 'No special characters';
+                                                    } else return true;
+                                                },
+                                            }
                                             : {}
                                     }
                                     handleOnBlur={() => {
@@ -1211,20 +1405,25 @@ const RenderField = ({
                                     }}
                                 />
                             )}
-                            {attributeComp === 'Contains' && triggerValues?.length !== 0 && (
-                                <div className="addCustomEventRow">
+                            <div
+                                className="addCustomEventRow"
+                                style={{
+                                    whiteSpace: 'nowrap',
+                                    right: (attributeComp === 'Contains' && triggerValues?.length !== 0 && TriggerName?.triggerName === 'Website' && attribute?.attributeName?.value === 'Custom events') ? '-45px' : '-22px'
+                                }}
+                            >
+                                {attributeComp === 'Contains' && triggerValues?.length !== 0 && (
                                     <RSTooltip text="Add">
                                         <i
-                                            className={`${circle_plus_medium} icon-md color-primary-blue ${
-                                                attributeCustom?.length > 7 ? 'click-off' : ''
-                                            }`}
+                                            className={`${circle_plus_medium} icon-md color-primary-blue ${attributeCustom?.length > 7 ? 'click-off' : ''
+                                                }`}
                                             onClick={() => {
                                                 addCustomAttributeCheck(index, title);
                                             }}
                                         />
                                     </RSTooltip>
-                                </div>
-                            )}
+                                )}
+                            </div>
                         </Col>
                     </Row>
                     {renderRecencyDateRangeRow()}
@@ -1239,6 +1438,7 @@ const RenderField = ({
                                 handleOperatorChange(e.value, {
                                     includeAttributeMultipleValues: true,
                                 });
+                                queueMicrotask(() => handleDuplicateCheck());
                             }}
                             label="Type"
                             data={Object.values(comparisonTypeConfig?.stringMain)}
@@ -1248,8 +1448,8 @@ const RenderField = ({
                             rules={
                                 checkValidCondition()
                                     ? {
-                                          required: SELECT_Type,
-                                      }
+                                        required: SELECT_Type,
+                                    }
                                     : {}
                             }
                             handleOnBlur={() => {
@@ -1269,12 +1469,13 @@ const RenderField = ({
                                 required={checkValidCondition()}
                                 handleChange={() => {
                                     setValue(`${name}.attributeActionValues`, '');
+                                    queueMicrotask(() => handleDuplicateCheck());
                                 }}
                                 rules={
                                     checkValidCondition()
                                         ? {
-                                              required: SELECT_Type,
-                                          }
+                                            required: SELECT_Type,
+                                        }
                                         : {}
                                 }
                                 handleOnBlur={() => {
@@ -1294,11 +1495,14 @@ const RenderField = ({
                                 data={channelStatusOptions}
                                 key={attributeChannelValue?.type || 'no-channel'}
                                 required={checkValidCondition()}
+                                handleChange={() => {
+                                    queueMicrotask(() => handleDuplicateCheck());
+                                }}
                                 rules={
                                     checkValidCondition()
                                         ? {
-                                              required: SELECT_Type,
-                                          }
+                                            required: SELECT_Type,
+                                        }
                                         : {}
                                 }
                                 handleOnBlur={() => {
@@ -1361,24 +1565,24 @@ const RenderField = ({
                                             }, 0);
                                         }
                                     }}
-                                    data={triggerValues}
+                                    data={level1MultiSelectData}
                                     isLoading={isTriggerValuesLoading}
                                     allowCustom
                                     label={'Values'}
-                                        required={checkValidCondition() && !isHasValueOperator(attributeComp)}
-                                        rules={
-                                            checkValidCondition() && !isHasValueOperator(attributeComp)
-                                                ? {
-                                                    required: SELECT_PROPER_VALUES,
-                                                    validate: (value) => {
+                                    required={checkValidCondition() && !isHasValueOperator(attributeComp)}
+                                    rules={
+                                        checkValidCondition() && !isHasValueOperator(attributeComp)
+                                            ? {
+                                                required: SELECT_PROPER_VALUES,
+                                                validate: (value) => {
                                                     const errorPath = `${name}.attributeMultipleValues`.replace(
-                                                          /\[(\d+)\]/g,
-                                                          '.$1',
-                                                      );
+                                                        /\[(\d+)\]/g,
+                                                        '.$1',
+                                                    );
                                                     const existingErrorMsg = _get(errors, errorPath)?.message;
                                                     if (existingErrorMsg && value?.length > 25) {
-                                                          return existingErrorMsg;
-                                                      }
+                                                        return existingErrorMsg;
+                                                    }
                                                     let pattern = ALPHA_CHARACTERS_DYNAMIC;
                                                     let selectedValue = value[value?.length - 1];
                                                     let checkStatus = checkTriggerStatus(value, triggerValues);
@@ -1426,8 +1630,8 @@ const RenderField = ({
                             rules={
                                 checkValidCondition()
                                     ? {
-                                          required: SELECT_Type,
-                                      }
+                                        required: SELECT_Type,
+                                    }
                                     : {}
                             }
                             handleOnBlur={() => {
@@ -1486,8 +1690,8 @@ const RenderField = ({
                             rules={
                                 checkValidCondition()
                                     ? {
-                                          required: SELECT_Type,
-                                      }
+                                        required: SELECT_Type,
+                                    }
                                     : {}
                             }
                             handleOnBlur={() => {
@@ -1508,7 +1712,8 @@ const RenderField = ({
                                         show: false,
                                     })
                                 }
-                                data={triggerValues}
+                                data={level1DropdownData}
+                                {...TRIGGER_ATTRIBUTE_VALUE_DROPDOWN_PROPS}
                                 isLoading={isTriggerValuesLoading}
                                 required={checkValidCondition()}
                                 label="Value"
@@ -1516,8 +1721,8 @@ const RenderField = ({
                                 rules={
                                     checkValidCondition()
                                         ? {
-                                              required: SELECT_PROPER_VALUES,
-                                          }
+                                            required: SELECT_PROPER_VALUES,
+                                        }
                                         : {}
                                 }
                                 handleOnBlur={() => {
@@ -1542,8 +1747,8 @@ const RenderField = ({
                                 rules={
                                     checkValidCondition()
                                         ? {
-                                              required: ENTER_VALUE,
-                                          }
+                                            required: ENTER_VALUE,
+                                        }
                                         : {}
                                 }
                                 handleOnBlur={(e) => {
@@ -1592,8 +1797,8 @@ const RenderField = ({
                                 rules={
                                     checkValidCondition()
                                         ? {
-                                              required: SELECT_Type,
-                                          }
+                                            required: SELECT_Type,
+                                        }
                                         : {}
                                 }
                                 handleOnBlur={() => {
@@ -1617,19 +1822,19 @@ const RenderField = ({
                                         customRules:
                                             checkValidCondition() && !isHasValueOperator(attributeComp)
                                                 ? {
-                                                      required:
-                                                          attributeName === 'Last session last visited page'
-                                                              ? ENTER_PAGE_NAME
-                                                              : ENTER_ATTRIBUTE,
-                                                      pattern: {
-                                                          value: attributeName.includes('visits')
-                                                              ? DYNAMICLIST_WEBURL_REGEX
-                                                              : '',
-                                                          message: attributeName.includes('visits')
-                                                              ? 'Enter a proper url'
-                                                              : '',
-                                                      },
-                                                  }
+                                                    required:
+                                                        attributeName === 'Last session last visited page'
+                                                            ? ENTER_PAGE_NAME
+                                                            : ENTER_ATTRIBUTE,
+                                                    pattern: {
+                                                        value: attributeName.includes('visits')
+                                                            ? DYNAMICLIST_WEBURL_REGEX
+                                                            : '',
+                                                        message: attributeName.includes('visits')
+                                                            ? 'Enter a proper url'
+                                                            : '',
+                                                    },
+                                                }
                                                 : {},
                                         handleOnBlur: () => {
                                             setDuplicateRule({
@@ -1652,27 +1857,26 @@ const RenderField = ({
                                         });
                                         handleDuplicateCheck();
                                     }}
-                                    label={`${
-                                        attributeName === 'Last session last visited page' ? 'Page name' : 'Value'
-                                    }`}
+                                    label={`${attributeName === 'Last session last visited page' ? 'Page name' : 'Value'
+                                        }`}
                                     placeholder={''}
                                     required={checkValidCondition() && !isHasValueOperator(attributeComp)}
                                     rules={
                                         checkValidCondition() && !isHasValueOperator(attributeComp)
                                             ? {
-                                                  required:
-                                                      attributeName === 'Last session last visited page'
-                                                          ? ENTER_PAGE_NAME
-                                                          : ENTER_ATTRIBUTE,
-                                                  pattern: {
-                                                      value: attributeName.includes('visits')
-                                                          ? DYNAMICLIST_WEBURL_REGEX
-                                                          : '',
-                                                      message: attributeName.includes('visits')
-                                                          ? 'Enter a proper url'
-                                                          : '',
-                                                  },
-                                              }
+                                                required:
+                                                    attributeName === 'Last session last visited page'
+                                                        ? ENTER_PAGE_NAME
+                                                        : ENTER_ATTRIBUTE,
+                                                pattern: {
+                                                    value: attributeName.includes('visits')
+                                                        ? DYNAMICLIST_WEBURL_REGEX
+                                                        : '',
+                                                    message: attributeName.includes('visits')
+                                                        ? 'Enter a proper url'
+                                                        : '',
+                                                },
+                                            }
                                             : {}
                                     }
                                 />
@@ -1699,8 +1903,8 @@ const RenderField = ({
                         rules={
                             checkValidCondition()
                                 ? {
-                                      required: SELECT_ATTRIBUTE,
-                                  }
+                                    required: SELECT_ATTRIBUTE,
+                                }
                                 : {}
                         }
                         handleOnBlur={() => {
@@ -1724,7 +1928,7 @@ const RenderField = ({
                     currentRuleIndex={currentRuleIndex}
                 />
             ) : (TriggerName?.triggerId === 18 || TriggerName?.triggerId === 5) &&
-              attributeName === 'Latitude & Longitude - Radius' ? (
+                attributeName === 'Latitude & Longitude - Radius' ? (
                 <>
                     <Row className={inputDropDownClassName}>
                         <>
@@ -1739,8 +1943,8 @@ const RenderField = ({
                                     rules={
                                         checkValidCondition()
                                             ? {
-                                                  required: ENTER_VALUE,
-                                              }
+                                                required: ENTER_VALUE,
+                                            }
                                             : {}
                                     }
                                     handleOnBlur={() => {
@@ -1763,8 +1967,8 @@ const RenderField = ({
                                 rules={
                                     checkValidCondition()
                                         ? {
-                                              required: ENTER_VALUE,
-                                          }
+                                            required: ENTER_VALUE,
+                                        }
                                         : {}
                                 }
                                 handleOnBlur={(e) => {
@@ -1788,12 +1992,12 @@ const RenderField = ({
                                 rules={
                                     checkValidCondition()
                                         ? {
-                                              required: ENTER_VALUE,
-                                              pattern: {
-                                                  value: /^[0-9]+(\.[0-9]+)?$/,
-                                                  message: 'Enter valid range',
-                                              },
-                                          }
+                                            required: ENTER_VALUE,
+                                            pattern: {
+                                                value: /^[0-9]+(\.[0-9]+)?$/,
+                                                message: 'Enter valid range',
+                                            },
+                                        }
                                         : {}
                                 }
                                 handleOnBlur={() => {
@@ -1812,14 +2016,15 @@ const RenderField = ({
                                     })
                                 }
                                 label="Attribute rule"
-                                data={triggerValues[attributeName]}
+                                data={level1DropdownData}
+                                {...TRIGGER_ATTRIBUTE_VALUE_DROPDOWN_PROPS}
                                 isLoading={isTriggerValuesLoading}
                                 required={checkValidCondition()}
                                 rules={
                                     checkValidCondition()
                                         ? {
-                                              required: SELECT_ATTRIBUTE,
-                                          }
+                                            required: SELECT_ATTRIBUTE,
+                                        }
                                         : {}
                                 }
                                 handleOnBlur={() => {
@@ -1838,17 +2043,19 @@ const RenderField = ({
                                 control={control}
                                 required={checkValidCondition()}
                                 label={handleDropDownLabelName(formatName(attributeName), 1)}
-                                data={triggerValues[attributeName]}
-                                isLoading={isAttributeNameOptionsLoading}
+                                data={level1DropdownData}
+                                isLoading={isTwoDimensionalLevel1Loading}
                                 dataItemKey="id"
-                                textField={`${
-                                    formatName(attributeName) === 'attributes' ? 'UIPrintableName' : 'value'
-                                }`}
+                                textField={`${formatName(attributeName) === 'attributes' ? 'UIPrintableName' : 'value'
+                                    }`}
                                 rules={
                                     checkValidCondition()
                                         ? {
-                                              required: SELECT_FORM_NAME,
-                                          }
+                                            required: handleDropDownRequiredMessage(
+                                                formatName(attributeName),
+                                                1,
+                                            ),
+                                        }
                                         : {}
                                 }
                                 handleChange={(e) => {
@@ -1863,6 +2070,24 @@ const RenderField = ({
                                         selectedItem?.RecipientFormID ??
                                         '';
                                     const updateColumnType = formatName(columntype);
+                                    const ruleTypeMeta = attribute?.attributeName;
+
+                                    clearTwoDimensionalTriggerValues(attributeName, {
+                                        additionalPaths:
+                                            attributeName === 'Forms' && ruleAttributes?.length > 1
+                                                ? ruleAttributes.flatMap((_, attrIdx) => {
+                                                    if (attrIdx === 0) {
+                                                        return [];
+                                                    }
+                                                    const attrPath = `${fieldName}.RuleAttributes[${attrIdx}]`;
+                                                    return [
+                                                        buildFieldTriggerValuesKey(attrPath, '2D', 1),
+                                                        buildFieldTriggerValuesKey(attrPath, '2D', 2),
+                                                    ];
+                                                })
+                                                : [],
+                                    });
+
                                     if (attributeName === 'Forms') {
                                         const expectedKey = buildAttributeEffectKey({
                                             comparisonId: selectedId,
@@ -1887,7 +2112,10 @@ const RenderField = ({
                                             field: TriggerName?.triggerId,
                                         });
 
-                                        fetchTriggerValuesFromHandler(selectedId, attributeName);
+                                        getTriggerAttributeValuesForRuleType?.(ruleTypeMeta, name, {
+                                            levelNo: 2,
+                                            formId: selectedId,
+                                        });
                                     } else if (attributeName === 'Attributes') {
                                         const eligibleColumnType = ['combobox', 'checkbox', 'radio'];
                                         const isEligibleColumnType = eligibleColumnType?.includes(updateColumnType);
@@ -1897,23 +2125,25 @@ const RenderField = ({
                                                 payload: e.value.DataattributeID,
                                                 field: TriggerName?.triggerId,
                                             });
-                                            fetchTriggerValuesFromHandler(
-                                                '',
-                                                attributeName,
-                                                value,
-                                                false,
-                                                e.value.DataattributeID,
-                                            );
+                                            getTriggerAttributeValuesForRuleType?.(ruleTypeMeta, name, {
+                                                levelNo: 2,
+                                                columnName: value,
+                                                dataAttributeId: e.value.DataattributeID,
+                                            });
                                         } else {
-                                            setTriggerValues((prev) => ({
-                                                ...prev,
-                                                [attributeName + 2]: [],
-                                            }));
+                                            clearTwoDimensionalTriggerValues(attributeName);
                                         }
                                     } else if (formatName(attributeName) === 'eventbrite') {
-                                        fetchTriggerValuesFromHandler('', attributeName, value);
+                                        getTriggerAttributeValuesForRuleType?.(ruleTypeMeta, name, {
+                                            levelNo: 2,
+                                            columnName: value,
+                                        });
                                     } else if (TriggerName?.triggerId === 18 || TriggerName?.triggerId === 5) {
-                                        fetchTriggerValuesFromHandler(selectedId, attributeName, value);
+                                        getTriggerAttributeValuesForRuleType?.(ruleTypeMeta, name, {
+                                            levelNo: 2,
+                                            formId: selectedId,
+                                            columnName: value,
+                                        });
                                     } else {
                                         dispatchState({
                                             type: 'UPDATE_FORM',
@@ -1952,7 +2182,7 @@ const RenderField = ({
                             />
                         </Col>
                         <Col sm={7}>
-                            {triggerValues?.[attributeName + 2]?.length ? (
+                            {shouldShowLevel2AsDropdown ? (
                                 <>
                                     <RSKendoDropDown
                                         name={`${name}.attributeValue`}
@@ -1964,14 +2194,21 @@ const RenderField = ({
                                         }
                                         control={control}
                                         label={handleDropDownLabelName(formatName(attributeName), 2)}
-                                        data={triggerValues?.[attributeName + 2]}
-                                        isLoading={isTriggerValuesLoading}
+                                        data={level2DropdownData}
+                                        dataItemKey="id"
+                                        textField={
+                                            formatName(attributeName) === 'attributes' ? 'UIPrintableName' : 'value'
+                                        }
+                                        isLoading={isTwoDimensionalLevel2Loading}
                                         required={checkValidCondition()}
                                         rules={
                                             checkValidCondition()
                                                 ? {
-                                                      required: SELECT_ATTRIBUTE,
-                                                  }
+                                                    required: handleDropDownRequiredMessage(
+                                                        formatName(attributeName),
+                                                        2,
+                                                    ),
+                                                }
                                                 : {}
                                         }
                                         handleOnBlur={() => {
@@ -1983,7 +2220,6 @@ const RenderField = ({
                                 <RSInput
                                     control={control}
                                     name={`${name}.attributeValue`}
-                                    className={isTriggerValuesLoading ? 'click-off' : ''}
                                     handleOnBlur={() => {
                                         setDuplicateRule({
                                             index: 0,
@@ -1997,8 +2233,8 @@ const RenderField = ({
                                     rules={
                                         checkValidCondition()
                                             ? {
-                                                  required: ENTER_ATTRIBUTE_VALUE,
-                                              }
+                                                required: ENTER_ATTRIBUTE_VALUE,
+                                            }
                                             : {}
                                     }
                                 />
@@ -2027,8 +2263,8 @@ const RenderField = ({
                             rules={
                                 checkValidCondition()
                                     ? {
-                                          required: SELECT_Type,
-                                      }
+                                        required: SELECT_Type,
+                                    }
                                     : {}
                             }
                             handleOnBlur={() => {
@@ -2052,8 +2288,8 @@ const RenderField = ({
                             rules={
                                 checkValidCondition()
                                     ? {
-                                          required: SELECT_ATTRIBUTE,
-                                      }
+                                        required: SELECT_ATTRIBUTE,
+                                    }
                                     : {}
                             }
                             handleOnBlur={() => {
@@ -2082,8 +2318,8 @@ const RenderField = ({
                         rules={
                             checkValidCondition()
                                 ? {
-                                      required: SELECT_ATTRIBUTE,
-                                  }
+                                    required: SELECT_ATTRIBUTE,
+                                }
                                 : {}
                         }
                         handleOnBlur={() => {
@@ -2182,11 +2418,11 @@ const RenderField = ({
                             rules={
                                 checkValidCondition()
                                     ? {
-                                          required: ENTER_VALUE,
-                                          validate: (data) => {
-                                              //   return Number(data) === 0 ? 'Enter valid value' : true;
-                                          },
-                                      }
+                                        required: ENTER_VALUE,
+                                        validate: (data) => {
+                                            //   return Number(data) === 0 ? 'Enter valid value' : true;
+                                        },
+                                    }
                                     : {}
                             }
                             maxLength={4}
@@ -2217,8 +2453,8 @@ const RenderField = ({
                             rules={
                                 checkValidCondition()
                                     ? {
-                                          required: SELECT_Type,
-                                      }
+                                        required: SELECT_Type,
+                                    }
                                     : {}
                             }
                             handleOnBlur={() => {
@@ -2238,16 +2474,16 @@ const RenderField = ({
                                     rules={
                                         checkValidCondition()
                                             ? {
-                                                  required: ENTER_VALUE,
-                                                  validate: (value) => {
-                                                      let val = value?.replace(/,/g, '');
-                                                      clearErrors(`${name}.attributeValue`);
-                                                      if (isBet)
-                                                          return parseFloat(val, 10) > parseInt(attributeTo, 10)
-                                                              ? ENTER_LESSER_VALUE
-                                                              : true;
-                                                  },
-                                              }
+                                                required: ENTER_VALUE,
+                                                validate: (value) => {
+                                                    let val = value?.replace(/,/g, '');
+                                                    clearErrors(`${name}.attributeValue`);
+                                                    if (isBet)
+                                                        return parseFloat(val, 10) > parseInt(attributeTo, 10)
+                                                            ? ENTER_LESSER_VALUE
+                                                            : true;
+                                                },
+                                            }
                                             : {}
                                     }
                                     handleOnBlur={(e) => {
@@ -2277,17 +2513,17 @@ const RenderField = ({
                                 rules={
                                     checkValidCondition()
                                         ? {
-                                              required: ENTER_VALUE,
-                                              validate: (value) => {
-                                                  clearErrors(`${name}.attributeTo`);
-                                                  if (isBet) {
-                                                      let val = value?.replace(/,/g, '');
-                                                      return parseFloat(attributeFrom, 10) > parseInt(val, 10)
-                                                          ? ENTER_GREATER_VALUE
-                                                          : true;
-                                                  }
-                                              },
-                                          }
+                                            required: ENTER_VALUE,
+                                            validate: (value) => {
+                                                clearErrors(`${name}.attributeTo`);
+                                                if (isBet) {
+                                                    let val = value?.replace(/,/g, '');
+                                                    return parseFloat(attributeFrom, 10) > parseInt(val, 10)
+                                                        ? ENTER_GREATER_VALUE
+                                                        : true;
+                                                }
+                                            },
+                                        }
                                         : {}
                                 }
                                 handleOnBlur={(e) => {
@@ -2324,8 +2560,8 @@ const RenderField = ({
                             rules={
                                 checkValidCondition()
                                     ? {
-                                          required: SELECT_Type,
-                                      }
+                                        required: SELECT_Type,
+                                    }
                                     : {}
                             }
                             handleOnBlur={() => {
@@ -2345,16 +2581,16 @@ const RenderField = ({
                                     rules={
                                         checkValidCondition()
                                             ? {
-                                                  required: ENTER_VALUE,
-                                                  validate: (value) => {
-                                                      let val = value?.replace(/,/g, '');
-                                                      clearErrors(`${name}.attributeValue`);
-                                                      if (isBet)
-                                                          return parseInt(val, 10) > parseInt(attributeTo, 10)
-                                                              ? ENTER_LESSER_VALUE
-                                                              : true;
-                                                  },
-                                              }
+                                                required: ENTER_VALUE,
+                                                validate: (value) => {
+                                                    let val = value?.replace(/,/g, '');
+                                                    clearErrors(`${name}.attributeValue`);
+                                                    if (isBet)
+                                                        return parseInt(val, 10) > parseInt(attributeTo, 10)
+                                                            ? ENTER_LESSER_VALUE
+                                                            : true;
+                                                },
+                                            }
                                             : {}
                                     }
                                     handleOnBlur={(e) => {
@@ -2385,17 +2621,17 @@ const RenderField = ({
                                 rules={
                                     !isHasValueOperator(attributeComp) && checkValidCondition()
                                         ? {
-                                              required: ENTER_VALUE,
-                                              validate: (value) => {
-                                                  clearErrors(`${name}.attributeTo`);
-                                                  if (isBet) {
-                                                      let val = value?.replace(/,/g, '');
-                                                      return parseInt(attributeFrom, 10) > parseInt(val, 10)
-                                                          ? ENTER_GREATER_VALUE
-                                                          : true;
-                                                  }
-                                              },
-                                          }
+                                            required: ENTER_VALUE,
+                                            validate: (value) => {
+                                                clearErrors(`${name}.attributeTo`);
+                                                if (isBet) {
+                                                    let val = value?.replace(/,/g, '');
+                                                    return parseInt(attributeFrom, 10) > parseInt(val, 10)
+                                                        ? ENTER_GREATER_VALUE
+                                                        : true;
+                                                }
+                                            },
+                                        }
                                         : {}
                                 }
                                 handleOnBlur={(e) => {
@@ -2432,8 +2668,8 @@ const RenderField = ({
                             rules={
                                 checkValidCondition()
                                     ? {
-                                          required: SELECT_Type,
-                                      }
+                                        required: SELECT_Type,
+                                    }
                                     : {}
                             }
                             handleOnBlur={() => {
@@ -2453,8 +2689,8 @@ const RenderField = ({
                                     rules={
                                         checkValidCondition()
                                             ? {
-                                                  required: ENTER_TIME,
-                                              }
+                                                required: ENTER_TIME,
+                                            }
                                             : {}
                                     }
                                 />
@@ -2483,10 +2719,10 @@ const RenderField = ({
                                 rules={
                                     checkValidCondition()
                                         ? {
-                                              required: ENTER_TIME,
-                                              validate: (data) =>
-                                                  attributeFrom - attributeTo > 0 ? ENTER_TIME : true,
-                                          }
+                                            required: ENTER_TIME,
+                                            validate: (data) =>
+                                                attributeFrom - attributeTo > 0 ? ENTER_TIME : true,
+                                        }
                                         : {}
                                 }
                             />

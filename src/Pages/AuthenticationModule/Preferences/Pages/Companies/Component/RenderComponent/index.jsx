@@ -20,6 +20,7 @@ const RenderComponent = ({
     accountBootstrap = null,
     fromCompanies = false,
     setCurrentUserPage,
+    onAssignRoleInlineLoadingChange,
     fromLicenseUpgrade = false,
     upgradedLicenseId = null
 }) => {
@@ -51,6 +52,7 @@ const RenderComponent = ({
                     isAgencyValue={isAgencyValue}
                     currentLicenseTypeId={currentLicenseTypeId}
                     setCurrentUserPage={setCurrentUserPage}
+                    onAssignRoleInlineLoadingChange={onAssignRoleInlineLoadingChange}
                 >
                     Assign role
                 </AssignRole>

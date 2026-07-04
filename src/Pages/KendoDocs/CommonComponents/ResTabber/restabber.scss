@@ -623,7 +623,7 @@ ul.res-chart-tab.rs-chart-tab2.addtab {
         border-top-left-radius: var(--globalBorderRadius);
         border-top-right-radius: var(--globalBorderRadius);
         background-color: $tertiary-grey;
-        border: 0;
+       border-left: 1px solid $white;
         color: $secondary-black;
         font-size: $font-xsm;
         transition:
@@ -921,8 +921,31 @@ ul.res-chart-tab.rs-chart-tab2.addtab {
                 transition-delay: $res-tab-active-delay;
             }
         }
-        &:last-child {
+        &:last-of-type {
             margin-right: 0;
+        }
+    }
+}
+
+// Right-aligned sub-tabs — compact width; col-* + row must not reserve grid gutter on the last tab
+.tabs-right-align.pageSub_tab,
+.res-tabs-right-align.pageSub_tab {
+    .rs-tabs,
+    .res-tabs {
+        justify-content: flex-end;
+
+        &.row {
+            --bs-gutter-x: 0;
+            margin-left: 0;
+            margin-right: 0;
+        }
+
+        > li[class*='col-'] {
+            flex: 0 0 auto;
+            width: auto;
+            max-width: none;
+            padding-left: 0;
+            padding-right: 0;
         }
     }
 }
@@ -1136,7 +1159,8 @@ ul.res-chart-tab.rs-chart-tab2.addtab {
     font-weight: normal;
 }
 */
-.res-tabs .res-tab-transparent::after {
+.res-tabs .res-tab-transparent::after,
+.rs-tabs .tabTransparent::after {
     content: '';
     position: absolute;
     right: -17px;
@@ -1146,8 +1170,18 @@ ul.res-chart-tab.rs-chart-tab2.addtab {
     top: 50%;
     transform: translateY(-50%);
 }
-.res-tabs .res-tab-transparent:last-child::after {
-    content: inherit !important;
+
+// Last tab only — use :last-of-type (not :last-child); sliding indicator motion.div follows tab lis in the ul
+.res-tabs > li.res-tab-transparent:last-of-type::after,
+.res-tabs > li.res-tab-default:last-of-type::after,
+.rs-tabs > li.tabTransparent:last-of-type::after,
+.rs-tabs > li.tabDefault:last-of-type::after {
+    content: none !important;
+    display: none !important;
+    background: none !important;
+    border: none !important;
+    width: 0 !important;
+    height: 0 !important;
 }
 
 // .rs-list-group-horizontal,
@@ -1935,19 +1969,24 @@ ul.res-chart-tab.rs-chart-tab2.addtab {
 // ============================================================================
 
 .res-tabber {
-    .res-tabs-2.email-rs-tab.res-tabs-auto-width {
+    .res-tabs-2.email-rs-tab.res-tabs-auto-width,
+    .res-tabs.email-rs-tab.res-tabs-auto-width {
         .res-tab-default,
-        .tabDefault {
+        .res-tab-transparent,
+        .tabDefault,
+        .tabTransparent {
             background-color: transparent;
             padding: 0;
             margin-right: 19px;
+            position: relative;
 
             &.active {
                 background-color: transparent;
             }
 
-            &:last-child::after {
-                content: inherit;
+            &:last-of-type::after {
+                content: none !important;
+                display: none !important;
             }
 
             &::after,
@@ -2148,6 +2187,13 @@ ul.res-chart-tab.rs-chart-tab2.addtab {
         margin-right: 0;
     }
 
+    .res-tabs.email-rs-tab.res-tabs-auto-width .res-tab-transparent,
+    .res-tabs.email-rs-tab.res-tabs-auto-width .tabTransparent,
+    .res-tabs-2.email-rs-tab.res-tabs-auto-width .res-tab-transparent,
+    .res-tabs-2.email-rs-tab.res-tabs-auto-width .tabTransparent {
+        margin-right: 19px;
+    }
+
     .res-flat-tabs .res-content-tabs-flat li.res-tab-default:first-child,
     .rs-flat-tabs .rs-content-tabs-flat li.tabDefault:first-child {
         margin-left: 25px;
@@ -2295,9 +2341,19 @@ ul.res-chart-tab.rs-chart-tab2.addtab {
   }
 }
 
-.res-tabber .res-tabs-2.email-rs-tab.ai-email-tab-tab .res-tab-default.active span.res-tab-label{
-        color: $primary-blue !important;
+.res-tabber .res-tabs.email-rs-tab.ai-email-tab-tab .res-tab-default.active span.res-tab-label,
+.res-tabber .res-tabs-2.email-rs-tab.ai-email-tab-tab .res-tab-default.active span.res-tab-label {
+    color: $primary-blue !important;
+}
+
+.res-tabber .res-tabs.email-rs-tab.ai-email-tab-tab.res-tab-sliding-enabled {
+    .res-tab-default,
+    .res-tab-transparent {
+        &.active {
+            background-color: transparent !important;
+        }
     }
+}
 //smart link start
 .smartLinkModal-CSS .res-content-tabs-split.model_smartlink {
 	padding: 10px 10px 0;

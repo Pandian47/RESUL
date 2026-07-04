@@ -1,4 +1,4 @@
-import { ch_all_audience, ch_androidColor, ch_android_tv, ch_color1, ch_color2, ch_color3, ch_color4, ch_color5, ch_color6, ch_color7, ch_color8, ch_color9, ch_convertedColor, ch_dark_blue, ch_direct_mail, ch_email, ch_facebook, ch_fire_os, ch_friday, ch_identifiedColor, ch_inprogress, ch_insta, ch_iosColor, ch_knownColor, ch_light_blue, ch_linkedIn, ch_medium_blue, ch_medium_green, ch_medium_orange, ch_mobile_push, ch_monday, ch_negative, ch_neutral, ch_notifications, ch_others, ch_pinterest, ch_positive, ch_primary_blue, ch_primary_green, ch_primary_orange, ch_primary_red, ch_qR_code, ch_rcs, ch_saturday, ch_secondary_blue, ch_secondary_green, ch_sms, ch_social_media, ch_sunday, ch_tertiary_grey, ch_thursday, ch_tuesday, ch_tv_os, ch_twitter, ch_unKnownColor, ch_vms, ch_web_push, ch_wednesday, ch_whatsapp } from 'Constants/GlobalConstant/Colors/colorsVariable';
+import { ch_all_audience, ch_androidColor, ch_android_tv, ch_color1, ch_color2, ch_color3, ch_color4, ch_color5, ch_color6, ch_color7, ch_color8, ch_color9, ch_convertedColor, ch_dark_blue, ch_direct_mail, ch_email, ch_facebook, ch_facebook_ads, ch_fire_os, ch_friday, ch_google_ads, ch_identifiedColor, ch_inprogress, ch_insta, ch_iosColor, ch_knownColor, ch_light_blue, ch_linkedIn, ch_linkedin_ads, ch_medium_blue, ch_medium_green, ch_medium_orange, ch_mobile_push, ch_monday, ch_negative, ch_neutral, ch_notifications, ch_others, ch_pinterest, ch_positive, ch_primary_blue, ch_primary_green, ch_primary_orange, ch_primary_red, ch_qR_code, ch_rcs, ch_saturday, ch_secondary_blue, ch_secondary_green, ch_sms, ch_social_media, ch_sunday, ch_tertiary_grey, ch_thursday, ch_tuesday, ch_tv_os, ch_twitter, ch_twitter_ads, ch_unKnownColor, ch_vms, ch_web_push, ch_wednesday, ch_whatsapp } from 'Constants/GlobalConstant/Colors/colorsVariable';
 import moment from 'moment';
 /** Defer colorsVariable reads until first access — avoids prod bundle TDZ in heavy chunks. */
 const createLazyArray = (getArray) =>
@@ -30,16 +30,6 @@ export const daysCount = (props) => {
         .map((_, index) => getDateWithDay(index))
         .reverse();
 };
-export const dateOffsetByMonths = (months, dateStr, format) => {
-    //  dateStr = moment().subtract(1, 'months');
-    var startDate = moment(dateStr, format);
-    return Array.from(Array(months + 1).keys()).reduce(function (res, n, i) {
-        var date = startDate.clone();
-        date.subtract(i, 'months');
-        res.push(date.format('MMM'));
-        return res;
-    }, []);
-};
 export const MonthCount = (props) => {
     return Array(props)
         .fill(props)
@@ -47,33 +37,6 @@ export const MonthCount = (props) => {
 };
 
 // console.log("MonthCount::", MonthCount(15));
-export const hoursCount = (props) => {
-    const hrs = [
-        '3rd hr',
-        '4th hr',
-        '5th hr',
-        '6th hr',
-        '7th hr',
-        '8th hr',
-        '9th hr',
-        '10th hr',
-        '11th hr',
-        '12th hr',
-        '1st hr',
-        '2nd hr',
-        '3rd hr',
-        '4th hr',
-        '5th hr',
-        '6th hr',
-        '7th hr',
-        '8th hr',
-        '9th hr',
-        '10th hr',
-        '11th hr',
-        '12th hr',
-    ];
-    return hrs;
-};
 
 let defaultColorsCache;
 const getDefaultColorsArray = () => {
@@ -143,6 +106,7 @@ const seriesNameFieldMap = {
     knownUsersCount: 'Known',
     unKnownCount: 'Unknown',
     Whatsapp: 'WhatsApp',
+    QRCode: 'QR code',
     android: 'Android',
     'Android Phone': 'Android phone',
 };
@@ -169,11 +133,19 @@ const getColorCommonCodeMap = () => {
     socialmedia: ch_social_media,
     'social media': ch_social_media,
     'qr code': ch_qR_code,
-    'qr': ch_qR_code,
+    qrcode: ch_qR_code,
+    qr: ch_qR_code,
     x: ch_twitter,
-    'x ads': ch_twitter,
+    'x ads': ch_twitter_ads,
+    xads: ch_twitter_ads,
     facebook: ch_facebook,
-    'facebook ads': ch_facebook,
+    'facebook ads': ch_facebook_ads,
+    facebookads: ch_facebook_ads,
+    'google ads': ch_google_ads,
+    googleads: ch_google_ads,
+    linkedin: ch_linkedIn,
+    'linkedin ads': ch_linkedin_ads,
+    linkedinads: ch_linkedin_ads,
     notification: ch_notifications,
     notifications: ch_notifications,
     pinterest: ch_pinterest,
@@ -246,7 +218,6 @@ const getColorCommonCodeMap = () => {
     interaction: ch_color1,
     'total users': ch_primary_orange,
     'total sessions': ch_primary_orange,
-    linkedin: ch_linkedIn,
     'vision industry': ch_primary_orange,
     'competitor brand': ch_secondary_green,
     men: ch_light_blue,
@@ -263,9 +234,16 @@ const getColorCommonCodeMap = () => {
 
 export const colorCommonCode = createLazyObject(getColorCommonCodeMap);
 export const colorCommonCodeFunc = (props) => {
-    const key = props?.name?.toLowerCase();
-    return colorCommonCode[key];
+    const rawName = props?.name;
+    if (rawName == null || rawName === '') return undefined;
+
+    const normalizedName = seriesNameField(String(rawName).trim());
+    const lowered = normalizedName.toLowerCase();
+    const compact = lowered.replace(/\s+/g, '');
+
+    return colorCommonCode[lowered] ?? colorCommonCode[compact];
 };
+
 export const commonColorCode = (data) => {
     // 6 length
     const tempColors = [],

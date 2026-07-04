@@ -17,6 +17,10 @@ import {
     get_LadderSentimentKeys,
     save_AudienceLaddering,
 } from 'Reducers/preferences/audienceScore/request';
+import {
+    asAudienceScoreList,
+    getAudienceScoreListFromResponse,
+} from '../Components/constants';
 
 
 
@@ -40,10 +44,10 @@ const AudienceLaddering = () => {
     const isSaveLoading = saveApi.isFetching;
 
     const handleSave = async (data) => {
-        if (isSaveLoading) return;
+        if (isSaveLoading || !data) return;
 
         let tempLadderKeys = Object.keys(data);
-        tempLadderKeys = tempLadderKeys?.filter((e) => e !== 'undefined');
+        tempLadderKeys = tempLadderKeys?.filter((e) => e && e !== 'undefined');
 
         let tempPayload = [];
 
@@ -119,15 +123,14 @@ const AudienceLaddering = () => {
                 return { audienceLaddering, ladderKeys, sentimentKeys };
             },
             onSuccess: ({ audienceLaddering, ladderKeys, sentimentKeys }) => {
-                if (audienceLaddering?.status) {
-                    setAudienceLadderingData(audienceLaddering.data ?? []);
-                }
-                if (ladderKeys?.status) {
-                    setladderKeysData(ladderKeys?.data ?? []);
-                }
-                if (sentimentKeys?.status) {
-                    setsentimentKeysData(sentimentKeys?.data ?? []);
-                }
+                setAudienceLadderingData(getAudienceScoreListFromResponse(audienceLaddering));
+                setladderKeysData(getAudienceScoreListFromResponse(ladderKeys));
+                setsentimentKeysData(getAudienceScoreListFromResponse(sentimentKeys));
+            },
+            onError: () => {
+                setAudienceLadderingData([]);
+                setladderKeysData([]);
+                setsentimentKeysData([]);
             },
         });
     }, [clientId, departmentId, userId, dispatch, pageLoadApi.refetch]);
@@ -154,28 +157,28 @@ const AudienceLaddering = () => {
                             status={'above'}
                             dropdownlist={sentimentKeysData}
                             ladderKeys={ladderKeysData}
-                            constants={audienceLadderingData[0]?.ladderingRule}
+                            constants={asAudienceScoreList(audienceLadderingData[0]?.ladderingRule)}
                         />
                         <LadderingCard
                             name={audienceLadderingData[1]?.ladderingType}
                             status={'below'}
                             dropdownlist={sentimentKeysData}
                             ladderKeys={ladderKeysData}
-                            constants={audienceLadderingData[1]?.ladderingRule}
+                            constants={asAudienceScoreList(audienceLadderingData[1]?.ladderingRule)}
                         />
                         <LadderingCard
                             name={audienceLadderingData[2]?.ladderingType}
                             status={CRITICS}
                             dropdownlist={sentimentKeysData}
                             ladderKeys={ladderKeysData}
-                            constants={audienceLadderingData[2]?.ladderingRule}
+                            constants={asAudienceScoreList(audienceLadderingData[2]?.ladderingRule)}
                         />
                         <LadderingCard
                             name={audienceLadderingData[3]?.ladderingType}
                             status={SPECTATOR}
                             dropdownlist={sentimentKeysData}
                             ladderKeys={ladderKeysData}
-                            constants={audienceLadderingData[3]?.ladderingRule}
+                            constants={asAudienceScoreList(audienceLadderingData[3]?.ladderingRule)}
                         />
                     </Row>
                 </div>

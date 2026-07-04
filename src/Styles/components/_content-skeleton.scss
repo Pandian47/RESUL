@@ -13,6 +13,19 @@ $white: #ffffff; //Main Heading, icons, save btn*/
          top: 55% ;
     }
     }
+
+    &:has(.nodata-bar),
+    &--static {
+        .skeleton-report-overview-column > ul > li .attri-progress-set::after {
+            animation: none;
+            display: none;
+        }
+
+        .react-loading-skeleton::after,
+        .skeleton-shimmer::after {
+            animation: none !important;
+        }
+    }
    
     span {
         border-radius: 5px;
@@ -269,6 +282,13 @@ $white: #ffffff; //Main Heading, icons, save btn*/
 }
 .no-data-container {
     position: relative;
+
+    &:has(.nodata-bar) {
+        .rs-skeleton-table__bar.skeleton-shimmer::after,
+        .skeleton-shimmer::after {
+            animation: none !important;
+        }
+    }
 
     .rs-skeleton-table__bars {
         display: flex;

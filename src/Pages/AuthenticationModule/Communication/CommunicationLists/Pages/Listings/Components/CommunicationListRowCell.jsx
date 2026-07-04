@@ -8,7 +8,7 @@ import { numberWithCommas } from 'Utils/modules/formatters';
 import { ACTIONS, ANALYTICS, ARE_YOU_SURE_ARCHIVE, COMMUNICATION_EXECUTION, DUPLICATE, EDIT, OK, TOTAL_AUDIENCE, VIEW } from 'Constants/GlobalConstant/Placeholders';
 import { analytics_medium, circle_arrow_down_medium, duplicate_medium, listing_preview_medium, pencil_edit_medium } from 'Constants/GlobalConstant/Glyphicons';
 import { useEffect, useMemo, useState } from 'react';
-import _get from 'lodash/get';
+import { get as _get } from 'Utils/modules/lodashReplacements';
 import { useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 

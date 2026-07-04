@@ -2,7 +2,6 @@ import { getDateWithAddMinutes } from 'Utils/modules/dateTime';
 import { SELECT_TEMPLATE_LANGUAGE, SELECT_TEMPLATE_NAME, SELECT_TEMPLATE_TYPE } from 'Constants/GlobalConstant/ValidationMessage';
 import { LANGUAGE, TEMPLATE_LANGUAGE, TEMPLATE_NAME, TEMPLATE_TYPE } from 'Constants/GlobalConstant/Placeholders';
 import { Fragment, useCallback, useContext, useEffect, useMemo, useState } from 'react';
-import _get from 'lodash/get';
 import { useSelector } from 'react-redux';
 import { Row, Col } from 'react-bootstrap';
 import { useFormContext } from 'react-hook-form';
@@ -44,8 +43,8 @@ const SplitAB = ({ fieldName, isSplitTabs = false }) => {
 
     const campaign = useMemo(
         () => ({
-            campaignId: _get(location, 'campaignId', 0),
-            campaignType: _get(location, 'campaignType', 'S'),
+            campaignId: location?.campaignId ?? 0,
+            campaignType: location?.campaignType ?? 'S',
         }),
         [location],
     );
@@ -55,11 +54,11 @@ const SplitAB = ({ fieldName, isSplitTabs = false }) => {
     }, [hsmTemplateList, isSplitTabs, fieldName, templateType]);
 
     useEffect(() => {
-        const campaignType = _get(location, 'campaignType', 'S');
-        const mdcContentSetupDetails = _get(location, 'mdcContentSetupDetails', {});
-        const levelNumber = _get(mdcContentSetupDetails, 'levelNumber', 1);
-        const dataSource = _get(mdcContentSetupDetails, 'dataSource', 'TL');
-        const mdcAudience = _get(mdcContentSetupDetails, 'audience', []);
+        const campaignType = location?.campaignType ?? 'S';
+        const mdcContentSetupDetails = location?.mdcContentSetupDetails ?? {};
+        const levelNumber = mdcContentSetupDetails?.levelNumber ?? 1;
+        const dataSource = mdcContentSetupDetails?.dataSource ?? 'TL';
+        const mdcAudience = mdcContentSetupDetails?.audience ?? [];
 
         setCampaignType(campaignType);
         setLevelNumber(levelNumber);
@@ -68,7 +67,7 @@ const SplitAB = ({ fieldName, isSplitTabs = false }) => {
         if (campaign.campaignType === 'M') {
             setValue(audienceName, mdcAudience);
             if (levelNumber > 1) {
-                setMdcSchedule(_get(mdcContentSetupDetails, 'scheduleDate', ''));
+                setMdcSchedule(mdcContentSetupDetails?.scheduleDate ?? '');
             }
         }
     }, [location]);
@@ -167,8 +166,8 @@ const SplitAB = ({ fieldName, isSplitTabs = false }) => {
                                     }}
                                     handleChange={({ value }) => {
                                         context?.fetchTemplate(
-                                            _get(value, 'languageCode', 'en'),
-                                            _get(getValues('senderName'), 'clientWASenderId', 0),
+                                            value?.languageCode ?? 'en',
+                                            getValues('senderName')?.clientWASenderId ?? 0,
                                         );
                                         applyRefreshPatchAndClearCarousels(refreshContent);
                                     }}
@@ -240,6 +239,7 @@ const SplitAB = ({ fieldName, isSplitTabs = false }) => {
                 {(!levelNumber || levelNumber < 2) && (
                     <>
                         {campaignType === 'S' || (campaignType === 'M' && dataSource === 'TL') ? (
+                            <div className='form-group'>
                             <Scheduler
                                 isSplitTabs={isSplitTabs}
                                 fieldName={fieldName}
@@ -250,6 +250,7 @@ const SplitAB = ({ fieldName, isSplitTabs = false }) => {
                                 splitABminDate={getMinDateForScheduler}
                                 isRfaEnabled={true}
                             />
+                            </div>
                         ) : null}
                     </>
                 )}

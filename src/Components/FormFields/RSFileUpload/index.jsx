@@ -3,7 +3,7 @@ import { ALLOWED_FORMATS, FILE_NAME_EXTENSIONS_JPG_PNG, FILE_NAME_EXTENSIONS_JPG
 import { restart_medium } from 'Constants/GlobalConstant/Glyphicons';
 import { memo, useEffect, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
-import _get from 'lodash/get';
+import { get as _get } from 'Utils/modules/lodashReplacements';
 import { Controller } from 'react-hook-form';
 import { RSPrimaryButton } from 'Components/Buttons';
 import { formatMaxFileSizeDisplay } from 'Utils/modules/formatters';
@@ -279,6 +279,7 @@ const RSFileUpload = ({
                                                     if (!isLoading) handleFileUploadChange();
                                                 }}
                                                 disabled={isLoading}
+                                                isLoading={isLoading}
                                                 className={` text-nowrap ${
                                                     reportUpload
                                                         ? ''

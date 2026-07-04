@@ -2,7 +2,6 @@ import { getDateWithAddMinutes } from 'Utils/modules/dateTime';
 import { SELECT_TEMPLATE_NAME } from 'Constants/GlobalConstant/ValidationMessage';
 import { TEMPLATE_NAME } from 'Constants/GlobalConstant/Placeholders';
 import { Fragment, useContext, useEffect, useMemo, useState } from 'react';
-import _get from 'lodash/get';
 import { useDispatch, useSelector } from 'react-redux';
 import { Row, Col } from 'react-bootstrap';
 import { useFormContext } from 'react-hook-form';
@@ -61,25 +60,25 @@ const SplitAB = ({ fieldName, isSplitTabs = false }) => {
     ]);
     
     const campaign = {
-        campaignId: _get(location, 'campaignId', 0),
-        campaignType: _get(location, 'campaignType', 'S'),
+        campaignId: location?.campaignId ?? 0,
+        campaignType: location?.campaignType ?? 'S',
     };
 
     useEffect(() => {
-        const campaignType = _get(location, 'campaignType', 'S');
-        const mdcContentSetupDetails = _get(location, 'mdcContentSetupDetails', {});
-        const levelNumber = _get(mdcContentSetupDetails, 'levelNumber', 1);
-        const dataSource = _get(mdcContentSetupDetails, 'dataSource', 'TL');
-        const mdcAudience = _get(mdcContentSetupDetails, 'audience', []);
-        
+        const campaignType = location?.campaignType ?? 'S';
+        const mdcContentSetupDetails = location?.mdcContentSetupDetails ?? {};
+        const levelNumber = mdcContentSetupDetails?.levelNumber ?? 1;
+        const dataSource = mdcContentSetupDetails?.dataSource ?? 'TL';
+        const mdcAudience = mdcContentSetupDetails?.audience ?? [];
+
         setCampaignType(campaignType);
         setLevelNumber(levelNumber);
         setDataSource(campaignType === 'T' ? 'DL' : dataSource);
-        
+
         if (campaign.campaignType === 'M') {
             setValue(audienceName, mdcAudience);
             if (levelNumber > 1) {
-                setMdcSchedule(_get(mdcContentSetupDetails, 'scheduleDate', ''));
+                setMdcSchedule(mdcContentSetupDetails?.scheduleDate ?? '');
             }
         }
     }, [location]);
@@ -159,6 +158,7 @@ const SplitAB = ({ fieldName, isSplitTabs = false }) => {
                 {(!levelNumber || levelNumber < 2) && (
                     <>
                         {campaignType === 'S' || (campaignType === 'M' && dataSource === 'TL') ? (
+                            <div className='form-group'>
                             <Scheduler
                                 isSplitTabs={isSplitTabs}
                                 fieldName={fieldName}
@@ -168,6 +168,7 @@ const SplitAB = ({ fieldName, isSplitTabs = false }) => {
                                 splitABminDate={getMinDateForScheduler}
                                 isRfaEnabled={true}
                             />
+                            </div>
                         ) : null}
                     </>
                 )}

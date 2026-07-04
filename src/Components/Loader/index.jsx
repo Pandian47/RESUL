@@ -21,6 +21,20 @@ RSLoaderOverlay.propTypes = {
     className: PropTypes.string,
 };
 
+/** Spinner only — use when parent already provides `login-bg-img` (e.g. MainRoutes Suspense). */
+export const LoginRouteSpinner = memo(() => (
+    <RSLoaderOverlay className="rsloading--login-route" />
+));
+
+/** Full-screen login boot — background + centered spinner (main.jsx / PersistGate). */
+export const LoginRouteLoading = memo(() => (
+    <section className="rs-page-content-wrapper-container login-route-loading">
+        <section className="rs-page-content-wrapper login-bg-img">
+            <LoginRouteSpinner />
+        </section>
+    </section>
+));
+
 const RSLoaderConnected = memo(({ className = '' }) => {
     const { loading } = useSelector((state) => globalStateSelector(state));
     if (!loading) return null;

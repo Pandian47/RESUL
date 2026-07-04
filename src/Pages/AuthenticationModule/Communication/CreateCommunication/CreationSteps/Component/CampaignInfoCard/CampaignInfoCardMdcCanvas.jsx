@@ -4,7 +4,6 @@ import { getUserCurrentFormat } from 'Utils/modules/dateTime';
 
 import { collapse_large, expand_large, restart_large } from 'Constants/GlobalConstant/Glyphicons';
 import { Fragment, useContext, useEffect, useState } from 'react';
-import _get from 'lodash/get';
 import { useNavigate } from 'react-router-dom';
 
 import Icon from 'Components/Icon/Icon';
@@ -95,12 +94,12 @@ const CampaignInfoCardMdcCanvas = ({ TemplateList, PotentialAudienceList, canvas
     };
 
     const { campaignName, startDate, endDate, communicationType, primaryGoal, campaignType } = {
-        campaignName: _get(state, 'campaignName'),
-        startDate: _get(state, 'startDate'),
-        endDate: _get(state, 'endDate'),
-        communicationType: _get(state, 'communicationType'),
-        primaryGoal: _get(state, 'primaryGoal'),
-        campaignType: _get(state, 'campaignType'),
+        campaignName: state?.campaignName,
+        startDate: state?.startDate,
+        endDate: state?.endDate,
+        communicationType: state?.communicationType,
+        primaryGoal: state?.primaryGoal,
+        campaignType: state?.campaignType,
     };
 
     // const period = `${getDateWithDay(startDate)} - ${getDateWithDay(endDate)}`;

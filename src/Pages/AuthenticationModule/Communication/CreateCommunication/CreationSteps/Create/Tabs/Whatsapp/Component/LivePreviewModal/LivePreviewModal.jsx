@@ -2,7 +2,7 @@ import { charNumatdotUnderScore, onlyNumbers } from 'Utils/modules/inputValidato
 import { link_mini } from 'Constants/GlobalConstant/Glyphicons';
 import { Fragment, useContext, useEffect, useState } from 'react';
 import { useFormContext } from 'react-hook-form';
-import _map from 'lodash/map';
+import { map as _map } from 'Utils/modules/lodashReplacements';
 import RSModal from 'Components/RSModal';
 import AdvanceSearch from 'Components/AdvanceSearch';
 import { RSPrimaryButton, RSSecondaryButton } from 'Components/Buttons';
@@ -16,6 +16,8 @@ import { BRAND_ID } from 'Constants/GlobalConstant/Placeholders';
 import { RSMobilePreview, PREVIEW_SOURCE } from 'Components/Previews';
 import { Carousel } from 'react-bootstrap';
 import { locationPreview } from '../../constant';
+import MessagingContext from '../../context';
+
 const LivePreviewModal = ({
     show,
     content = '',

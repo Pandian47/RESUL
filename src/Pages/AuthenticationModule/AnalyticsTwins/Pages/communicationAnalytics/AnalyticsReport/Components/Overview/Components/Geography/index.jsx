@@ -2,7 +2,7 @@ import { getUserCurrentFormat } from 'Utils/modules/dateTime';
 import { ReachChannelSkeleton } from 'Components/Skeleton/Skeleton';
 import { mapChartOptions } from 'Constants/Charts';
 import { Col } from 'react-bootstrap';
-import _map from 'lodash/map';
+import { map as _map } from 'Utils/modules/lodashReplacements';
 
 import RSHighchartsContainer from 'Components/Highcharts';
 import { useSelector } from 'react-redux';

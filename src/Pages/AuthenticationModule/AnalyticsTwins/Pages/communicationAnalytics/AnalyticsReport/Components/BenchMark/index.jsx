@@ -6,12 +6,11 @@ import { columnChartOptions } from 'Constants/Charts';
 import { arrow_down_medium, arrow_up_medium, goals_benchmark_large, user_goals_benchmark_large } from 'Constants/GlobalConstant/Glyphicons';
 import { useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { Col, Row } from 'react-bootstrap';
-import _map from 'lodash/map';
+import { map as _map,get as _get } from 'Utils/modules/lodashReplacements';
 
 import { BootstrapDropdown } from 'Components/RSBootstrapDropDown';
 import RSHighchartsContainer from 'Components/Highcharts';
 import RSCard from 'Components/RSCard/RSCard';
-import _get from 'lodash/get';
 
 import { ANALYSIS_PERFORMANCE_DATA, INDUSTRY_BENCHMARK, MY_BENCHMARKS, PAID_ADS_ANALYSIS_PERFORMANCE_DATA, getBenchmarkModeLabel, getMyBenchmarkTypeLabel, getIndustryBenchmarkTypeLabel } from '../../constants';
 import { getBenchmarkList, getSummaryList } from 'Reducers/analyticsTwins/analyticsSummary/selector';
