@@ -20,8 +20,7 @@ export const mdmOverviewSkeletonCriticalCss = `
     align-items: center;
     justify-content: space-between;
     width: 100%;
-    margin-top: var(--pageButtonTopSpace, 21px);
-    margin-bottom: 21px;
+    margin: var(--sp-space-sm) 0;
 }
 .mdm-page-skeleton .mdm-sk-overview-title {
     flex: 1 1 auto;

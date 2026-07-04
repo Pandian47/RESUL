@@ -36,8 +36,8 @@ ${scoped('.resgrid--skeleton-list-card--analytics')} {
     align-items: center;
     width: 100%;
     height: 104px;
-    min-height: 104px;
-    max-height: 104px;
+    min-height: 104.9px;
+    max-height: 104.9px;
     padding: 8px 10px;
     background: #ffffff;
     border: 1px solid ${RESGRID_BORDER_COLOR};
@@ -50,7 +50,7 @@ ${scoped('.resgrid--skeleton-accent')} {
     flex-shrink: 0;
     width: 5px;
     align-self: stretch;
-    min-height: 100px;
+    min-height: 87px;
     margin-left: -8px;
     margin-top: -7px;
     border-radius: 3px;

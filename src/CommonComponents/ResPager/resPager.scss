@@ -3,6 +3,20 @@
 .respager {
     position: relative;
     overflow: visible;
+    margin: 0 auto;
+    display: block;
+
+    // Framer Motion sliding active-bubble — overlays the active page button
+    // Framer Motion drives x/y/width/height via spring animation
+    .respager-active-bubble {
+        position: absolute;
+        top: 0;
+        left: 0;
+        border-radius: 5px;
+        background-color: $primary-blue;
+        pointer-events: none;
+        z-index: 1;
+    }
 }
 
 // Pagination — hover/focus: icon/text color only, no Kendo theme fill
@@ -135,12 +149,16 @@
             margin: 0 10px;
             display: flex;
             align-items: center;
+            // Needed so the absolutely-positioned sliding bubble is offset relative to this
+            position: relative;
 
             .k-link,
             .k-button {
                 color: $primary-black;
                 font-size: $font-xs;
+                // z-index above the sliding bubble so text is readable
                 position: relative;
+                z-index: 2;
                 top: 0;
                 padding: 0 5px;
                 display: inline-flex;
@@ -148,6 +166,7 @@
                 justify-content: center;
                 background-color: transparent;
                 background-image: none;
+                border-radius: 5px;
 
                 &:hover:not(.k-selected),
                 &.k-hover:not(.k-selected),
@@ -160,19 +179,40 @@
                     color: $secondary-blue;
                 }
 
+                // Remove static background — the Framer Motion sliding bubble provides the highlight
                 &.k-selected {
                     font-family: $rs-font-regular;
                     border-radius: 5px;
-                    background-color: $primary-blue !important;
+                    background-color: transparent !important;
+                    background-image: none !important;
                     color: $white !important;
-                    min-width: 24px;
                     min-height: 24px;
+                    position: relative;
+                    z-index: 2;
 
                     &:hover {
                         text-decoration: none;
-                        background-color: $primary-blue;
+                        background-color: transparent;
                         color: $white;
                     }
+                }
+            }
+
+            // Fallback for case where Kendo renders active item as a direct child without .k-link/.k-button
+            .k-selected {
+                font-family: $rs-font-regular;
+                border-radius: 5px;
+                background-color: transparent !important;
+                background-image: none !important;
+                color: $white !important;
+                min-height: 24px;
+                position: relative;
+                z-index: 2;
+
+                &:hover {
+                    text-decoration: none;
+                    background-color: transparent;
+                    color: $white;
                 }
             }
         }
@@ -265,6 +305,7 @@
                 padding-right: 2px;
                 color: $primary-black;
                 padding-top: 0;
+                text-align: center;
             }
         }
     }
@@ -279,6 +320,8 @@
         padding: 0 10px;
         border-left: 1px solid $quaternary-blue;
         min-height: 30px;
+        min-width: 140px;
+        justify-content: center;
     }
 }
 

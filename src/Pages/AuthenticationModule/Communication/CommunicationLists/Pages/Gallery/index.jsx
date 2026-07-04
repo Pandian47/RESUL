@@ -946,6 +946,7 @@ const CommunicationGallery = () => {
     );
 
     useEffect(() => {
+        dispatch(updateGallery({ field: 'galleryData', data: {} }));
         return () => {
             if (nameSuggestDebounceRef.current) {
                 clearTimeout(nameSuggestDebounceRef.current);
@@ -954,6 +955,8 @@ const CommunicationGallery = () => {
             dispatch(updateGallery({ field: 'galleryData', data: {} }));
         };
     }, []);
+
+
 
     return (
         <Fragment>
@@ -1041,7 +1044,7 @@ const CommunicationGallery = () => {
                         skipGallerySkeletonRef.current ? (
                             <GalleryTabSkeleton showToolbar={false} />
                         ) : (
-                            <Row className="mt15 mb15">
+                            <Row className="mt5 mb15">
                                 {Array.from({ length: 4 }).map((_, idx) => (
                                     <SkeletonGalleryCard key={`loading-skeleton-${idx}`} isLoading={isLoading} />
                                 ))}
@@ -1102,8 +1105,8 @@ const CommunicationGallery = () => {
                         </Row>
                     )}
 
-                    {galleryData?.totalRecords > 4 && !isLoading && (
-                        <Row>
+                    {galleryData?.totalRecords > 4 && (
+                        <Row style={{ opacity: isLoading ? 0.6 : 1, pointerEvents: isLoading ? 'none' : 'auto', transition: 'opacity 0.2s ease-in-out' }}>
                             <RSPager
                                 isGallery={true}
                                 data={galleryData?.items ?? []}

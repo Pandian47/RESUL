@@ -179,7 +179,7 @@ const ResTemplateCard = ({
                 resolvedInfoOpen ? 'res-template-card--info-open galleryCarouselActive' : '',
                 statusClass,
                 className,
-                'mb19'
+                'mb15'
             ]
                 .filter(Boolean)
                 .join(' '),

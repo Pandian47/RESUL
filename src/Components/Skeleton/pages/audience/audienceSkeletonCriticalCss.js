@@ -291,7 +291,7 @@ body:has(.mdm-page-skeleton) .breadcrumbs:not(.page-breadcrumb-skeleton) {
 }
 .audience-skeleton-scope .audience-tab-panel-skeleton {
     margin-top: 0;
-    padding-top: 10px;
+    padding-top: 0;
 }
 /* RSPageHeader skeleton — title + BU/department dropdowns above tabs */
 .audience-skeleton-scope .audience-page-header-skeleton {

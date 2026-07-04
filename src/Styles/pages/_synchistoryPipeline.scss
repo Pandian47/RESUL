@@ -1,3 +1,59 @@
+// Sync History — Import/Export tab inside top-sub-heading
+// The tab nav <ul class="res-tabs"> is placed inside an <li> in .rs-list-group-horizontal.
+// Ensure overflow:visible so the active ::before tip-arrow (positioned top:100%) and
+// the ::after vertical divider (right:-17px) are not clipped by the flex li/ul containers.
+@import 'Styles/abstarct/variables';
+
+.top-sub-heading {
+    // Allow the ::before triangle (top:100%) to overflow out of flex li containers
+    overflow: visible;
+
+    .rs-list-group-horizontal {
+        overflow: visible;
+
+        > li {
+            overflow: visible;
+        }
+    }
+
+    ul.res-tabs {
+        overflow: visible;
+        li {
+            cursor: pointer;
+        }
+        // Active bottom-line for transparent tabs
+        .res-tab-transparent.active {
+            border-bottom: solid 1px $secondary-blue;
+
+            span,
+            .res-tab-label {
+                color: $secondary-blue;
+            }
+        }
+
+        // Force the downward triangle tip to show below the active tab
+        .res-tab-default.active::before {
+            content: '';
+            position: absolute;
+            opacity: 1 !important;
+            transform: translate(-50%, 0) scale(1) !important;
+            z-index: 10;
+            bottom: -7px;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-left: 6px solid transparent;
+            border-right: 6px solid transparent;
+            border-top: 7px solid $secondary-blue;
+        }
+
+        // Ensure the ::after vertical separator divider renders
+        .res-tab-transparent::after {
+            overflow: visible;
+        }
+    }
+}
+
 // Data pipeline CSS starts
 
 .res-pipeline-blk {

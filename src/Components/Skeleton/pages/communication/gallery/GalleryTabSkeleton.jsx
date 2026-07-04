@@ -18,7 +18,7 @@ const GalleryTabSkeleton = ({ cardCount = 4, showToolbar = true }) => (
             </div>
         </div>
         ) : null}
-        <Row className="mt15 mb15">
+        <Row className="mt5 mb15">
             {Array.from({ length: cardCount }, (_, idx) => (
                 <SkeletonGalleryCard key={idx} isLoading col={3} />
             ))}

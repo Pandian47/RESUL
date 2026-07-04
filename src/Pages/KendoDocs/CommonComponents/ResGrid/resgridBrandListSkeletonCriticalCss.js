@@ -30,8 +30,8 @@ ${scope('.resgrid--skeleton-list-card--brand')} {
     align-items: center;
     width: 100%;
     height: 104px;
-    min-height: 104px;
-    max-height: 104px;
+    min-height: 104.9px;
+    max-height: 104.9px;
     padding: 8px 0 8px 10px;
     background: #ffffff;
     border: 1px solid ${BORDER_COLOR};

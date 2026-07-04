@@ -44,7 +44,7 @@ const AudienceAnalytics = () => {
     };
     return (
         // Contend holder starts
-        <div className="page-content-holder audienceAnalytics360PageCSS pt21">
+        <div className="page-content-holder audienceAnalytics360PageCSS sp-pt-space-sm">
             <style>{audienceAnalytics360LiveSkeletonCriticalCss}</style>
             {/* Main page heading block starts */}
             {/* <RSPageHeader title=" Audience analytics 360" isBack backPath="/analytics" isHeaderLine rightCommonMenus /> */}

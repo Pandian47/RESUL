@@ -243,7 +243,7 @@ const ResGrid = ({
     );
 
     const pageableSettings = useMemo(() => {
-        if (!pageable || loading || isEmpty) return false;
+        if (!pageable || isEmpty) return false;
         if (typeof pageable === 'object') {
             return {
                 ...PAGER_CONFIG,
@@ -520,6 +520,17 @@ const ResGrid = ({
                     animated
                     showHeader={false}
                 />
+                {showExternalPager && pagerConfig && (
+                    <div className={layoutClass('pager')}>
+                        <ResPager
+                            isServerSide
+                            total={displayTotal}
+                            config={pagerConfig}
+                            onPageChange={handlePagerChange}
+                            className={pagerClassName}
+                        />
+                    </div>
+                )}
             </div>
         );
     }
@@ -535,6 +546,17 @@ const ResGrid = ({
                     listVariant={resolvedSkeletonVariant}
                     showHeader={layout === 'table' && columns?.length > 0}
                 />
+                {showExternalPager && pagerConfig && (
+                    <div className={layoutClass('pager')}>
+                        <ResPager
+                            isServerSide
+                            total={displayTotal}
+                            config={pagerConfig}
+                            onPageChange={handlePagerChange}
+                            className={pagerClassName}
+                        />
+                    </div>
+                )}
             </div>
         );
     }

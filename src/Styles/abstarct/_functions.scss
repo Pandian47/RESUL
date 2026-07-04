@@ -157,6 +157,11 @@
         border-bottom-right-radius: #{$i}px !important;
     }
 }
+@for $i from 0 through 50 {
+    .gap#{$i} {
+        gap: #{$i}px !important;
+    }
+}
 
 // =============================================================================
 // String Replace

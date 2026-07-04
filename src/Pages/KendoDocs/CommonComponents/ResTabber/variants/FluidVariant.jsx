@@ -9,6 +9,7 @@ import RSTooltip from 'Components/RSTooltip';
 
 import { normalizeTabIndex } from '../hooks';
 import { TAB_LABEL_MAX_LENGTH, mapResTabberClasses } from '../utils';
+import TabContentTransition from './TabContentTransition';
 
 const FluidVariant = ({
     defaultTab = 0,
@@ -166,9 +167,11 @@ const FluidVariant = ({
             </div>
             <Container className="px0">
                 <div className={componentClassName}>
-                    {tabs?.length && typeof tabs[selected]?.component === 'function'
-                        ? tabs[selected].component()
-                        : null}
+                    <TabContentTransition selectedIdx={selected}>
+                        {tabs?.length && typeof tabs[selected]?.component === 'function'
+                            ? tabs[selected].component()
+                            : null}
+                    </TabContentTransition>
                 </div>
             </Container>
         </>

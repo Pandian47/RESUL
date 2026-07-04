@@ -22,7 +22,7 @@
         display: flex;
         align-items: center;
         justify-content: space-between;
-        margin-bottom: 21px;
+        margin-bottom: var(--sp-space-sm);
         .rs-list-group-horizontal {
             & > li {
                 margin-left: 15px;

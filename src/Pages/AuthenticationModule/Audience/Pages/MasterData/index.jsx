@@ -149,7 +149,7 @@ const MasterData = () => {
     return (
         <Fragment>
             {/* Title Band */}
-            <div className="flex-row top-sub-heading">
+            <div className="flex-row top-sub-heading sp-mt-space-sm sp-mb-space-sm">
                 <div className="fr flex-left">
                     <h3>{translation('Overview')}</h3>
                 </div>

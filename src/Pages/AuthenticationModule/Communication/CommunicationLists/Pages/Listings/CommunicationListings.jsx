@@ -386,7 +386,7 @@ const CommunicationListings = () => {
                                     }
                                 />
                             </div>
-                        ) : loading ? (
+                        ) : loading && communicationsList?.length === 0 ? (
                             <div className="rs-grid-listing mt15">
                                 <SkeletonCommunicationList isError={isFailure} isLoading={isLoading} />
                             </div>
@@ -395,7 +395,7 @@ const CommunicationListings = () => {
                                 <SkeletonCommunicationList isError={true} isLoading={isLoading} />
                             </div>
                         ) : (
-                            <>
+                            <div style={{ opacity: loading ? 0.6 : 1, pointerEvents: loading ? 'none' : 'auto', transition: 'opacity 0.2s ease-in-out' }}>
                                 <ResGrid
                                     layout="list"
                                     listPreset="communication"
@@ -420,6 +420,7 @@ const CommunicationListings = () => {
                                     total={totalCampaigns}
                                     isServerSide
                                     className="custom-rspager"
+                                    loading={isLoading}
                                 />
                                 {/* <ul className="rs-legend mt20">
                                     <li>
@@ -463,7 +464,7 @@ const CommunicationListings = () => {
                                         {REJECT}
                                     </li>
                                 </ul> */}
-                            </>
+                            </div>
                         )}
                     </div>
                 </>

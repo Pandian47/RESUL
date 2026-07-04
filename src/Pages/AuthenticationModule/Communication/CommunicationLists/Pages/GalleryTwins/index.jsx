@@ -844,10 +844,13 @@ const CommunicationGallery = () => {
     );
 
     useEffect(() => {
+        dispatch(updateGallery({ field: 'galleryData', data: {} }));
         return () => {
             dispatch(updateGallery({ field: 'galleryData', data: {} }));
         };
     }, []);
+
+
 
     return (
         <Fragment>
@@ -998,12 +1001,12 @@ const CommunicationGallery = () => {
                         </Row>
                     )}
 
-                    {galleryData?.totalRecords > 4 && !isLoading && (
-                        <Row>
+                    {galleryData?.totalRecords > 4 && (
+                        <Row style={{ opacity: isLoading ? 0.6 : 1, pointerEvents: isLoading ? 'none' : 'auto', transition: 'opacity 0.2s ease-in-out' }}>
                             <RSPager
                                 isGallery={true}
                                 data={galleryData.items}
-                                totalRow={galleryData.totalRecords}
+                                totalRow={galleryData.totalRecords ?? 0}
                                 className="mt0"
                                 change={(data, skip, take) => {
                                     setGetPaginationData(take);

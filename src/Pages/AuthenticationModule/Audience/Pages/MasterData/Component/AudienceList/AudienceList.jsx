@@ -1,6 +1,6 @@
 
 import { AUDIENCE_LIST, CHOOSE_ATTRIBUTES_TO_DISPLAY_IN_TABLE, CSV_DOWNLOAD, DOWNLOAD_CSV, DOWNLOAD_LINK_DATA_SHORTLY, FAILED, REQUEST_PROCESSING, SEARCH_FILTERS_SAMPLE_RECORD, SEELCTED_DISPLAY_FIELDS, THANK_YOU_YOUR_REQUEST } from 'Constants/GlobalConstant/Placeholders';
-import { csv_download_medium, field_selector_large, in_progress_medium } from 'Constants/GlobalConstant/Glyphicons';
+import { csv_download_medium, field_selector_large, field_selector_medium, in_progress_medium } from 'Constants/GlobalConstant/Glyphicons';
 import { Fragment, memo, useEffect, useMemo, useState } from 'react';
 import { Col, Row } from 'react-bootstrap';
 import _map from 'lodash/map';
@@ -312,7 +312,7 @@ const AudienceList = ({ show = {}, setIsShow }) => {
                                         >
                                             <i
                                                 id="rs_data_field_selector"
-                                                className={`icon-lg color-primary-blue ${field_selector_large}`}
+                                                className={`icon-md color-primary-blue ${field_selector_medium}`}
                                             ></i>
                                         </RSTooltip>
                                     </li>
@@ -328,7 +328,7 @@ const AudienceList = ({ show = {}, setIsShow }) => {
                                         <RSTooltip className="lh0" text={CSV_DOWNLOAD} position="top">
                                             <i
                                                 id="rs_data_field_selector"
-                                                className={`icon-lg color-primary-blue ${csv_download_medium}`}
+                                                className={`icon-md color-primary-blue ${csv_download_medium}`}
                                             ></i>
                                         </RSTooltip>
                                     </li>

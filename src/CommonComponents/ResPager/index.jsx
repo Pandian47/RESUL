@@ -2,6 +2,7 @@ import { memo, useCallback, useEffect, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
 import { Pager } from '@progress/kendo-react-data-tools';
 import { DropDownListPropsContext } from '@progress/kendo-react-dropdowns';
+import { motion } from 'framer-motion';
 
 import {
     INITIAL_PAGE_CONFIG,
@@ -29,6 +30,54 @@ const resolvePageState = (isGalleryMode, pagerConfig) => ({
     ...pagerConfig,
 });
 
+/**
+ * Returns the active page button's position relative to rootEl.
+ * Returns null if no active page button is visible in the numbers list.
+ */
+const getActiveBubbleRect = (rootEl) => {
+    if (!rootEl) return null;
+    
+    // Find all active elements inside .k-pager-numbers container
+    const activeElements = rootEl.querySelectorAll('.k-pager-numbers .k-selected');
+    
+    // Filter to find the active element that represents a numeric page number,
+    // and is NOT a dropdown trigger/popup.
+    let activeBtn = null;
+    for (const el of activeElements) {
+        // Discard any dropdown component wrappers
+        if (el.closest('.k-dropdownlist, .k-picker, .k-dropdown, .k-list-container, .respager-sizes-popup')) {
+            continue;
+        }
+        
+        // Dropdown triggers always have aria-haspopup or role="combobox"/"listbox"
+        if (
+            el.hasAttribute('aria-haspopup') ||
+            el.getAttribute('role') === 'combobox' ||
+            el.getAttribute('role') === 'listbox'
+        ) {
+            continue;
+        }
+
+        const text = (el.textContent || el.innerText || '').trim();
+        const isNumeric = text !== '' && !isNaN(Number(text));
+        
+        if (isNumeric) {
+            activeBtn = el;
+            break;
+        }
+    }
+    
+    if (!activeBtn) return null;
+    const parentRect = rootEl.getBoundingClientRect();
+    const btnRect = activeBtn.getBoundingClientRect();
+    return {
+        left: btnRect.left - parentRect.left,
+        top: btnRect.top - parentRect.top,
+        width: btnRect.width,
+        height: btnRect.height,
+    };
+};
+
 const ResPager = ({
     data = [],
     change = () => {},
@@ -39,15 +88,24 @@ const ResPager = ({
     isServerSide = false,
     config = INITIAL_PAGE_CONFIG,
     className = '',
-    noBoxShadow = true,
+    noBoxShadow = false,
     ...props
 }) => {
     const pagerRef = useRef(null);
+    const hasExplicitTotal = total !== undefined;
+    const [pagerWidth, setPagerWidth] = useState(0);
+    const [bubbleRect, setBubbleRect] = useState(null);
+
     const [pageState, setPageState] = useState(() => resolvePageState(isGallery, config));
 
-    const { skip, take } = pageState;
-    const hasExplicitTotal = total != null || totalRow != null;
-    const usesRemotePaging = isServerSide || (hasExplicitTotal && !isGallery);
+    useEffect(() => {
+        if (!config) return;
+        setPageState((prev) => {
+            const next = resolvePageState(isGallery, config);
+            if (prev.skip === next.skip && prev.take === next.take) return prev;
+            return next;
+        });
+    }, [config, isGallery]);
 
     const handlePageChange = (event) => {
         const nextSkip = event.skip;
@@ -72,17 +130,53 @@ const ResPager = ({
         change([...data.slice(nextSkip, nextSkip + nextTake)], nextSkip, nextTake);
     };
 
-    useEffect(() => {
-        if (!config) return;
+    const usesRemotePaging = isServerSide || (hasExplicitTotal && !isGallery);
 
-        setPageState((prev) => {
-            const next = resolvePageState(isGallery, config);
-            if (prev.skip === next.skip && prev.take === next.take) {
-                return prev;
-            }
-            return next;
+    const resolvedTotal = isServerSide
+        ? (total ?? totalRow ?? 0)
+        : isGallery
+            ? totalRow
+            : hasExplicitTotal
+                ? (total ?? totalRow)
+                : data?.length;
+
+    const { skip, take } = pageState;
+
+    /**
+     * syncBubble — reads the current active button rect and updates state.
+     */
+    const syncBubble = useCallback(() => {
+        // Wait one rAF so Kendo has fully committed the k-selected class change
+        requestAnimationFrame(() => {
+            const rect = getActiveBubbleRect(pagerRef.current);
+            setBubbleRect(rect);
         });
-    }, [config, isGallery]);
+    }, []);
+
+    // Smooth width: watch .k-pager size via ResizeObserver (same pattern as Login page)
+    useEffect(() => {
+        const el = pagerRef.current?.querySelector('.k-pager');
+        if (!el) return;
+
+        const ro = new ResizeObserver((entries) => {
+            for (const entry of entries) {
+                const w = Math.ceil(entry.contentRect.width);
+                if (w > 0) {
+                    setPagerWidth(w);
+                    // Re-measure bubble coordinates on layout size change/paint
+                    syncBubble();
+                }
+            }
+        });
+
+        ro.observe(el);
+
+        // Initial read
+        const w = Math.ceil(el.getBoundingClientRect().width);
+        if (w > 0) setPagerWidth(w);
+
+        return () => ro.disconnect();
+    }, [pageState]);
 
     useEffect(() => {
         const rootEl = pagerRef.current;
@@ -92,7 +186,6 @@ const ResPager = ({
 
         const resolveListId = (sizeDropdown) => {
             if (!sizeDropdown) return null;
-
             return (
                 sizeDropdown.getAttribute('aria-controls')
                 || sizeDropdown.getAttribute('aria-owns')
@@ -103,7 +196,6 @@ const ResPager = ({
 
         const findListElement = (listId) => {
             if (!listId) return null;
-
             return (
                 document.getElementById(listId)
                 ?? document.querySelector(`[id="${CSS.escape(listId)}"]`)
@@ -167,11 +259,14 @@ const ResPager = ({
             let popupContainer = findListElement(listId)?.closest('.k-animation-container');
 
             if (!popupContainer && sizeDropdown.getAttribute('aria-expanded') === 'true') {
-                popupContainer = [...document.querySelectorAll('.k-animation-container')]
-                    .find((container) => {
-                        const listUl = container.querySelector('.k-popup.k-dropdownlist-popup .k-list-ul');
+                popupContainer = [...document.querySelectorAll('.k-animation-container')].find(
+                    (container) => {
+                        const listUl = container.querySelector(
+                            '.k-popup.k-dropdownlist-popup .k-list-ul',
+                        );
                         return listUl && (!listId || listUl.id === listId);
-                    });
+                    },
+                );
             }
 
             if (!popupContainer) return;
@@ -188,13 +283,13 @@ const ResPager = ({
         const syncOpenSizePopup = () => {
             const sizeDropdown = getSizesDropdown();
             if (sizeDropdown?.getAttribute('aria-expanded') !== 'true') return;
-
             tagSizePopup();
         };
 
         const decoratePager = () => {
             replaceIcons();
             tagSizePopup();
+            syncBubble();
         };
 
         const scheduleTagSizePopup = () => {
@@ -212,17 +307,21 @@ const ResPager = ({
         };
 
         decoratePager();
-        const timeoutId = setTimeout(decoratePager, 100);
+        
+        // Schedule staggered timeouts to ensure coordinates sync after layout reflows
+        const t1 = setTimeout(decoratePager, 50);
+        const t2 = setTimeout(decoratePager, 150);
+        const t3 = setTimeout(decoratePager, 300);
+        const t4 = setTimeout(decoratePager, 600);
 
         const pagerObserver = new MutationObserver(decoratePager);
         pagerObserver.observe(rootEl, {
             childList: true,
             subtree: true,
             attributes: true,
-            attributeFilter: ['aria-controls', 'aria-expanded', 'aria-owns'],
+            attributeFilter: ['aria-controls', 'aria-expanded', 'aria-owns', 'class'],
         });
 
-        // Page-size popup is portaled to <body> — root observer alone never sees it open.
         const bodyObserver = new MutationObserver(tagSizePopup);
         bodyObserver.observe(document.body, { childList: true, subtree: true });
 
@@ -232,7 +331,10 @@ const ResPager = ({
         window.addEventListener('resize', syncOpenSizePopup, { passive: true });
 
         return () => {
-            clearTimeout(timeoutId);
+            clearTimeout(t1);
+            clearTimeout(t2);
+            clearTimeout(t3);
+            clearTimeout(t4);
             pagerObserver.disconnect();
             bodyObserver.disconnect();
             rootEl.removeEventListener('click', handlePagerInteraction);
@@ -240,15 +342,9 @@ const ResPager = ({
             window.removeEventListener('scroll', syncOpenSizePopup, { capture: true });
             window.removeEventListener('resize', syncOpenSizePopup);
         };
-    }, [data, pageState, isServerSide]);
+    }, [data, pageState, isServerSide, syncBubble]);
 
-    const resolvedTotal = isServerSide
-        ? (total ?? totalRow ?? 0)
-        : isGallery
-            ? totalRow
-            : hasExplicitTotal
-                ? (total ?? totalRow)
-                : data?.length;
+
 
     const mergePagerSizeDropdownProps = useCallback(
         (dropdownProps) => ({
@@ -260,29 +356,65 @@ const ResPager = ({
                 popupClass: [
                     dropdownProps.popupSettings?.popupClass,
                     RESPAGER_SIZES_POPUP_CLASS,
-                ].filter(Boolean).join(' '),
+                ]
+                    .filter(Boolean)
+                    .join(' '),
             },
         }),
         [],
     );
 
     return (
-        <div ref={pagerRef} className={`respager ${className} ${!noBoxShadow ? '':'no-box-shadow'}`.trim()}>
-            <DropDownListPropsContext.Provider value={mergePagerSizeDropdownProps}>
-                <Pager
-                    skip={skip}
-                    take={take}
-                    total={resolvedTotal}
-                    buttonCount={pageState.buttonCount}
-                    info={pageState?.info}
-                    type={pageState.type}
-                    pageSizes={pageState.pageSizes}
-                    previousNext={pageState.previousNext}
-                    onPageChange={handlePageChange}
-                    {...props}
-                />
-            </DropDownListPropsContext.Provider>
-        </div>
+        <motion.div
+            className={`respager ${className} ${!noBoxShadow ? '' : 'no-box-shadow'}`.trim()}
+            animate={pagerWidth ? { width: pagerWidth } : {}}
+            transition={{ duration: 0.35, ease: [0.4, 0, 0.2, 1] }}
+            style={{ width: pagerWidth ? undefined : 'fit-content' }}
+        >
+            <div ref={pagerRef} style={{ position: 'relative' }}>
+                <DropDownListPropsContext.Provider value={mergePagerSizeDropdownProps}>
+                    <Pager
+                        skip={skip}
+                        take={take}
+                        total={resolvedTotal}
+                        buttonCount={pageState.buttonCount}
+                        info={pageState?.info}
+                        type={pageState.type}
+                        pageSizes={pageState.pageSizes}
+                        previousNext={pageState.previousNext}
+                        onPageChange={handlePageChange}
+                        {...props}
+                    />
+                </DropDownListPropsContext.Provider>
+
+                {/* Framer Motion sliding bubble — smoothly moves between active page numbers */}
+                {bubbleRect && (
+                    <motion.span
+                        className="respager-active-bubble"
+                        initial={{
+                            opacity: 0,
+                            x: bubbleRect.left,
+                            y: bubbleRect.top,
+                            width: bubbleRect.width,
+                            height: bubbleRect.height,
+                        }}
+                        animate={{
+                            opacity: 1,
+                            x: bubbleRect.left,
+                            y: bubbleRect.top,
+                            width: bubbleRect.width,
+                            height: bubbleRect.height,
+                        }}
+                        transition={{
+                            type: 'spring',
+                            stiffness: 400,
+                            damping: 32,
+                            mass: 0.75,
+                        }}
+                    />
+                )}
+            </div>
+        </motion.div>
     );
 };
 

@@ -55,7 +55,7 @@ const BreadcrumbSkeleton = ({
     if (!moduleLabel) return null;
 
     return (
-        <div className={`breadcrumbs page-breadcrumb-skeleton ${className}`.trim()} aria-hidden="true">
+        <div className={`breadcrumbs page-breadcrumb-skeleton d-none ${className}`.trim()} aria-hidden="true">
             <div className="section-padding-x">
                 <Container className="p0">
                     <ul className="breadcrumb">

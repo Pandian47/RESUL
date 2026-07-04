@@ -14,7 +14,8 @@ import { useDispatch, useSelector } from 'react-redux';
 import { Container } from 'react-bootstrap';
 import RSBootstrapdown from 'Components/FormFields/RSBootstrapdown';
 
-import RSTabber from 'Components/RSTabber';
+import RsTab from 'Components/RSTabber/Component/RSTab';
+import { useTabState } from 'Pages/KendoDocs/CommonComponents/ResTabber/hooks';
 import RSPageHeader from 'Components/RSPageHeader';
 import RSDateRangePicker from 'Components/RSDateRangePicker';
 import { getSyncHistoryList } from 'Reducers/audience/syncHistory/request';
@@ -42,6 +43,31 @@ const SyncHistory = () => {
     const currentUTCdateTime = safeToDate(utcTimeData?.utcTime, { resetTime: false, fallback: new Date() });
     const locationState = useQueryParams('/audience');
     const [currTab, setCurrTab] = useState(locationState?.connectionMode === 2 ? 1 : 0);
+
+    const { selectedIdx, tabconfig, setSelectedIndex } = useTabState({
+        defaultTab: locationState?.connectionMode === 2 ? 1 : 0,
+        tabData: TAB_CONFIG,
+        callBack: (tab = {}, tabIdx) => {
+            const { id } = tab;
+            if (!id) return;
+            dispatch(updateLoading({ field: 'syncLoading', payload: true }));
+            setPayload((prev) => ({
+                ...prev,
+                requestMode: id,
+                pageNumber: 1,
+                itemsPerPage: pageSize,
+            }));
+            setConfig(true);
+            setCurrTab(tabIdx ?? 0);
+            dispatch(
+                updateSynchistory({
+                    syncHistory: [],
+                    totalAudience: 0,
+                    mode: id,
+                }),
+            );
+        },
+    });
     const { failureApiErrors } = useSelector(({ globalstate = {} }) => globalstate ?? {});
 
     useEffect(() => {
@@ -105,7 +131,9 @@ const SyncHistory = () => {
     }, [graphToggle, payload, clientId, departmentId, userId]);
 
     useEffect(() => {
-        setCurrTab(locationState?.connectionMode === 2 ? 1 : 0);
+        const tabIdx = locationState?.connectionMode === 2 ? 1 : 0;
+        setCurrTab(tabIdx);
+        setSelectedIndex(tabIdx);
     }, [locationState?.connectionMode]);
 
     useSkipFirstRender(() => {
@@ -231,7 +259,7 @@ const SyncHistory = () => {
                                             (As on: {getCurrentTimeInUserTimezoneWithAbbreviation()})
                                         </small>
                                     </span>
-                                    <ul className={`rs-list-group-horizontal ${graphToggle && 'mr150 pr15'} mt-1`}>
+                                    <ul className={`rs-list-group-horizontal ${graphToggle && 'mr150-del pr15-del'} mt-1`}>
                                         {showPipelineHeaderFilters && (
                                             <li>
                                                 <RSDateRangePicker
@@ -316,40 +344,25 @@ const SyncHistory = () => {
                                                 />
                                             </RSTooltip>
                                         </li>
+                                        {graphToggle && (
+                                            <li>
+                                                <ul className="res-tabs mb0 mini d-flex gap15">
+                                                    <RsTab
+                                                        activeClass="active"
+                                                        tabconfig={tabconfig}
+                                                        selectedIdx={selectedIdx}
+                                                        setSelectedIndex={setSelectedIndex}
+                                                        defaultClass="tabTransparent"
+                                                    />
+                                                </ul>
+                                            </li>
+                                        )}
                                     </ul>
                                 </div>
 
                                 <div className={graphToggle ? undefined : 'd-none'}>
-                                    <div className="rs-tabs-align-top">
-                                        <RSTabber
-                                            defaultTab={currTab}
-                                            defaultClass="col-md-2 tabTransparent"
-                                            activeClass="active"
-                                            dynamicTab="mb0 mini"
-                                            tabData={TAB_CONFIG}
-                                            className="rs-tabs row"
-                                            componentClassName="mb20 pb70"
-                                            callBack={(tab = {}, tabIdx) => {
-                                                const { id } = tab;
-                                                if (!id) return;
-                                                dispatch(updateLoading({ field: 'syncLoading', payload: true }));
-                                                setPayload((prev) => ({
-                                                    ...prev,
-                                                    requestMode: id,
-                                                    pageNumber: 1,
-                                                    itemsPerPage: pageSize,
-                                                }));
-                                                setConfig(true);
-                                                setCurrTab(tabIdx ?? 0);
-                                                dispatch(
-                                                    updateSynchistory({
-                                                        syncHistory: [],
-                                                        totalAudience: 0,
-                                                        mode: id,
-                                                    }),
-                                                );
-                                            }}
-                                        />
+                                    <div className="tabs-content mb20 pb70">
+                                        {tabconfig?.[selectedIdx]?.component?.()}
                                     </div>
                                 </div>
 

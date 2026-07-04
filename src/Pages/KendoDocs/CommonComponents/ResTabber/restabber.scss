@@ -2375,3 +2375,69 @@ ul.res-chart-tab.rs-chart-tab2.addtab {
 	}
 }
 //smart link end
+
+// Custom Sliding Tab Active Indicator CSS
+.res-tabs.res-tab-sliding-enabled,
+.res-tabs-2.res-tab-sliding-enabled,
+.rs-chart-tab.res-tab-sliding-enabled {
+    position: relative; // Establish relative stacking context for child absolute indicator
+    overflow: visible;
+
+    // Layer active tab text and elements on top of the sliding indicator
+    li.res-tab-default,
+    li.tabDefault {
+        position: relative;
+        z-index: 2;
+
+        // Hide static active backgrounds/borders since the sliding indicator replaces them
+        &.active {
+            background-color: transparent !important;
+            border-bottom-color: transparent !important;
+            transition: none !important;
+
+            // Hide the default static caret arrow tip
+            &::before {
+                display: none !important;
+            }
+        }
+    }
+
+    // Sliding indicator styling
+    .res-tab-active-indicator {
+        position: absolute;
+        pointer-events: none;
+        z-index: 1; // Sits behind the text (which has z-index: 2)
+        left: 0;
+        bottom: 0;
+        transition: border-radius 0.25s ease;
+
+        // Caret triangle tip arrow pointing down
+        &::after {
+            content: '';
+            display: block;
+            position: absolute;
+            left: 50%;
+            top: 100%;
+            transform: translateX(-50%);
+            border-left: 7px solid transparent;
+            border-right: 7px solid transparent;
+            border-top: 10px solid $secondary-blue;
+            pointer-events: none;
+            z-index: 10;
+        }
+
+        // Solid Active Tab indicator variant (fills background like a pill)
+        &.res-tab-indicator-solid {
+            background-color: $secondary-blue;
+            border-radius: var(--globalBorderRadius, 5px);
+        }
+
+        // Transparent Active Tab indicator variant (bottom blue line)
+        &.res-tab-indicator-transparent {
+            background-color: $secondary-blue;
+            border-radius: 0;
+            // Height is controlled inline via Framer Motion as 1px
+        }
+    }
+}
+

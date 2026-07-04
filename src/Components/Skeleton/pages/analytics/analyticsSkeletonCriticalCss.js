@@ -625,7 +625,6 @@ body:has(.analytics-suspense-fallback) .breadcrumbs:not(.page-breadcrumb-skeleto
 .an-sk-tabs-wrap {
     width: 100%;
     background: ${SKELETON_PAGE_BG};
-    margin-bottom: 21px;
 }
 .an-sk-tabs {
     display: flex;
@@ -671,7 +670,7 @@ body:has(.analytics-suspense-fallback) .breadcrumbs:not(.page-breadcrumb-skeleto
     align-items: center;
     justify-content: flex-end;
     width: 100%;
-    margin: var(--pageButtonTopSpace, 21px) 0;
+    margin: var(--sp-space-sm) 0;
     box-sizing: border-box;
 }
 .an-sk-list-toolbar-actions {
@@ -684,7 +683,7 @@ body:has(.analytics-suspense-fallback) .breadcrumbs:not(.page-breadcrumb-skeleto
 }
 .an-sk-list-rows-wrap {
     width: 100%;
-    padding: 8px 3px 0;
+    padding: 0 3px 0;
     box-sizing: border-box;
 }
 .an-sk-audit-tab {
@@ -712,7 +711,7 @@ body:has(.analytics-suspense-fallback) .breadcrumbs:not(.page-breadcrumb-skeleto
     align-items: center;
     justify-content: space-between;
     width: 100%;
-    margin-bottom: 21px;
+    margin: var(--sp-space-sm) 0;
     box-sizing: border-box;
 }
 .an-sk-a360-header-actions {
@@ -949,7 +948,6 @@ export const audienceAnalytics360LiveSkeletonCriticalCss = `
     display: flex;
     align-items: center;
     justify-content: space-between;
-    margin-bottom: 21px;
     width: 100%;
 }
 .audienceAnalytics360PageCSS .an-sk-a360-channels,
