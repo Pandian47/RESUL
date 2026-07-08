@@ -1210,7 +1210,7 @@ ul.res-chart-tab.rs-chart-tab2.addtab {
         display: flex;
         justify-content: center;
         align-items: center;
-        @include sizing($h: calc(100vh - 236px));
+        min-height: calc(100vh - 236px);
         .rs-camp-tabs-big,
         .res-camp-tabs-big {
             .ctabs-big-label {
@@ -1254,6 +1254,10 @@ ul.res-chart-tab.rs-chart-tab2.addtab {
                 }
             }
         }
+    }
+
+    .res-tabs-opened-wrapper {
+        min-height: 0;
     }
 }
 

@@ -2079,6 +2079,43 @@ $otp-band-alert-height: 48px;
     }
 }
 
+// Keyframes for progress step animations
+@keyframes rs-step-pop-in {
+    0% {
+        opacity: 0;
+        transform: scale(0.4);
+    }
+    70% {
+        transform: scale(1.15);
+    }
+    100% {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+@keyframes rs-step-title-in {
+    0% {
+        opacity: 0;
+        transform: translateY(8px);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes rs-step-line-grow {
+    0% {
+        width: 0%;
+        opacity: 0;
+    }
+    100% {
+        width: 100%;
+        opacity: 1;
+    }
+}
+
 // List group (Progress step bars)
 .list-group {
     &.list-group-steps {
@@ -2104,6 +2141,8 @@ $otp-band-alert-height: 48px;
                 @include abs-position($position: relative, $zindex: 2);
                 @include space($mb: 5px);
                 @include bor($width: 8px, $color: $body-bg-color);
+                // Step circle pop-in animation
+                animation: rs-step-pop-in 0.45s cubic-bezier(0.34, 1.56, 0.64, 1) both;
             }
 
             .title {
@@ -2112,6 +2151,8 @@ $otp-band-alert-height: 48px;
                 @include color($color: $primary-grey);
                 @include abs-position($position: relative, $top: -8px, $zindex: 4);
                 @include sizing($fs: 16px);
+                // Title fade-in animation
+                animation: rs-step-title-in 0.35s ease both;
             }
 
             &:before {
@@ -2120,10 +2161,39 @@ $otp-band-alert-height: 48px;
                 @include abs-position($contentcommon: '', $position: relative, $top: 24px, $zindex: 1, $left: 50%);
                 @include sizing($w: 100%, $fs: 0);
                 @include bor($width: 1px, $borderStyle: solid, $color: $secondary-grey);
+                // Connector line grow animation
+                animation: rs-step-line-grow 0.4s ease both;
             }
 
             &:last-child:before {
                 @include abs-position($contentcommon: inherit);
+            }
+
+            // Staggered delays: step 1
+            &:nth-child(1) {
+                .step  { animation-delay: 0.05s; }
+                .title { animation-delay: 0.20s; }
+                &:before { animation-delay: 0.30s; }
+            }
+
+            // Staggered delays: step 2
+            &:nth-child(2) {
+                .step  { animation-delay: 0.40s; }
+                .title { animation-delay: 0.55s; }
+                &:before { animation-delay: 0.65s; }
+            }
+
+            // Staggered delays: step 3
+            &:nth-child(3) {
+                .step  { animation-delay: 0.75s; }
+                .title { animation-delay: 0.90s; }
+                &:before { animation-delay: 1.00s; }
+            }
+
+            // Staggered delays: step 4 (ROI variant)
+            &:nth-child(4) {
+                .step  { animation-delay: 1.10s; }
+                .title { animation-delay: 1.25s; }
             }
         }
 
@@ -12069,13 +12139,14 @@ $sfont-xxs: 12px;
 .infoContent {
     display: grid;
     width: 635px;
-    margin: 20px auto 0;
+    margin: 0 auto 0;
     grid-template-columns: repeat(3, 1fr);
     gap: 30px;
 
     li {
         font-size: $font-xs;
         line-height: 22px;
+        padding-top: 20px;
 
         &:nth-child(2) {
             padding-left: 3px;

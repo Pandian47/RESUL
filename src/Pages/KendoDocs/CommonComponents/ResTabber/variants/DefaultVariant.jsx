@@ -1,6 +1,6 @@
-import { memo, useRef, useState, useEffect, useCallback } from 'react';
+import { memo, useRef, useState, useEffect } from 'react';
 import { Col } from 'react-bootstrap';
-import { motion } from 'framer-motion';
+import { AnimatePresence, motion } from 'framer-motion';
 import RsTab from 'Components/RSTabber/Component/RSTab';
 import { useTabState } from '../hooks';
 import { mapResTabberClasses, renderTabPanel, shouldEnableSlidingIndicator } from '../utils';
@@ -180,17 +180,34 @@ const DefaultVariant = ({
                             }`,
                         )}
                     >
-                        {selectedIdx == null && isHeadingBlock ? (
-                            <Col sm={12}>
-                                <div className="ctabs-big-label mb30">
-                                    <h3>{heading}</h3>
-                                </div>
-                            </Col>
-                        ) : (
-                            <Col sm={3} className={`tstwh-label ${leftspace ? '' : 'pr0'} ${noHeader ? 'd-none' : ''}`}>
-                                <div className={`font-sm mt10 ${deliverytext_center ? 'mt38' : ''}`}>{heading}</div>
-                            </Col>
-                        )}
+                        <AnimatePresence initial={false}>
+                            {selectedIdx == null && isHeadingBlock ? (
+                                <motion.div
+                                    key="big-heading"
+                                    initial={{ height: 0, opacity: 0 }}
+                                    animate={{ height: 'auto', opacity: 1 }}
+                                    exit={{ height: 0, opacity: 0 }}
+                                    transition={{ duration: 0.28, ease: [0.4, 0, 0.2, 1] }}
+                                    style={{ overflow: 'hidden', minHeight: 0 }}
+                                    className="col-sm-12"
+                                >
+                                    <div className="ctabs-big-label mb30">
+                                        <h3>{heading}</h3>
+                                    </div>
+                                </motion.div>
+                            ) : (
+                                <motion.div
+                                    key="small-heading"
+                                    initial={{ opacity: 0 }}
+                                    animate={{ opacity: 1 }}
+                                    exit={{ opacity: 0, position: 'absolute' }}
+                                    transition={{ duration: 0.28 }}
+                                    className={`col-sm-3 tstwh-label ${leftspace ? '' : 'pr0'} ${noHeader ? 'd-none' : ''}`}
+                                >
+                                    <div className={`font-sm mt10 ${deliverytext_center ? 'mt38' : ''}`}>{heading}</div>
+                                </motion.div>
+                            )}
+                        </AnimatePresence>
 
                         <ul
                             ref={ulRef1}
@@ -204,7 +221,7 @@ const DefaultVariant = ({
                             )}
                         >
                             <RsTab {...tabProps} />
-                            
+
                             {isSlidingEnabled && style1 && (
                                 <motion.div
                                     className={`res-tab-active-indicator ${
@@ -230,17 +247,42 @@ const DefaultVariant = ({
                                 />
                             )}
                         </ul>
-                        {isCreateCommunication && selectedIdx == null ? (
-                            <ul className="infoContent">
-                                {tabData?.map((tab, ind) => (
-                                    <li key={ind}>{tab?.infocontent}</li>
-                                ))}
-                            </ul>
-                        ) : null}
+
+                        {/*
+                         * Description text below the delivery-method cards.
+                         * Animates height + opacity so the space it occupies collapses
+                         * smoothly when a tab is selected, preventing the abrupt position
+                         * jump of content below it.
+                         */}
+                        <AnimatePresence initial={false}>
+                            {isCreateCommunication && selectedIdx == null && (
+                                <motion.ul
+                                    key="infoContent"
+                                    className="infoContent"
+                                    initial={{ height: 0, opacity: 0 }}
+                                    animate={{ height: 'auto', opacity: 1 }}
+                                    exit={{ height: 0, opacity: 0 }}
+                                    transition={{ duration: 0.28, ease: [0.4, 0, 0.2, 1] }}
+                                    style={{ overflow: 'hidden' }}
+                                >
+                                    {tabData?.map((tab, ind) => (
+                                        <li key={ind}>{tab?.infocontent}</li>
+                                    ))}
+                                </motion.ul>
+                            )}
+                        </AnimatePresence>
+                        
+                        <TabContentTransition selectedIdx={selectedIdx}>
+                            {renderTabPanel(tabconfig?.[selectedIdx])}
+                        </TabContentTransition>
                     </div>
-                    <TabContentTransition selectedIdx={selectedIdx}>
-                        {renderTabPanel(tabconfig?.[selectedIdx])}
-                    </TabContentTransition>
+
+                    {/*
+                     * Tab panel content area.
+                     * TabContentTransition fades content in/out when the selected tab
+                     * changes. When selectedIdx is null nothing is rendered so the space
+                     * it would have occupied is fully released.
+                     */}
                 </div>
             ) : (
                 <>

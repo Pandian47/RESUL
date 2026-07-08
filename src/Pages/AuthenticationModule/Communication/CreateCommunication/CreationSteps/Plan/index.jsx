@@ -12,6 +12,7 @@ import {
 import useComponentWillUnmount from 'Hooks/useComponentWillUnMount';
 import useQueryParams from 'Hooks/useQueryParams';
 import { useEffect, useState } from 'react';
+import { AnimatePresence, motion } from 'framer-motion';
 import { Container } from 'react-bootstrap';
 import { useDispatch, useSelector } from 'react-redux';
 import { useLocation, useNavigate } from 'react-router-dom';
@@ -157,7 +158,27 @@ const Planning = ({ permissions }) => {
                 <div className="page-content">
                     <Container className="px0 d-grid">
                         <div className="planning-layout">
-                            {handleProgress() ? <div className="d-flex justify-content-center"><RSProgressSteps stepsData={planningSteps} /></div> : null}
+                            {/*
+                             * RSProgressSteps: animate height + opacity so the space it
+                             * occupies expands/collapses smoothly instead of the element
+                             * being removed from the DOM instantly (which caused the jerk).
+                             */}
+                            <AnimatePresence initial={false}>
+                                {handleProgress() && (
+                                    <motion.div
+                                        key="progress-steps"
+                                        initial={{ height: 0, opacity: 0 }}
+                                        animate={{ height: 'auto', opacity: 1 }}
+                                        exit={{ height: 0, opacity: 0 }}
+                                        transition={{ duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
+                                        style={{ overflow: 'hidden' }}
+                                    >
+                                        <div className="d-flex justify-content-center">
+                                            <RSProgressSteps stepsData={planningSteps} />
+                                        </div>
+                                    </motion.div>
+                                )}
+                            </AnimatePresence>
                             <div className="communication-create clearfix">
                                 {showEditPlanSkeleton ? (
                                     <CommunicationCreationPlanLoadingBlock

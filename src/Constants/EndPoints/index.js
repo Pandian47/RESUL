@@ -10,7 +10,7 @@ export const WEBLIVESOCKETURL = 'https://websoc.resu.io';
 export const MOBILELIVESOCKETURL = 'https://soc.resu.io';
 export const PREVIOUSVERSIONURL = 'https://run.resulticks.com/v48/';
 
-export const baseURL = window.location.host === 'reacuix.resul.io' || window.location.host === 'localhost:4000' ? BASEURLTEAM : BASEDEVWIZURL;
+export const baseURL = BASEURLRUN;
 export const GET_MASTER_DATA = 'AccountSetup/GetMasterData';
 export const GET_IP_ADDRESS_DATA = 'AccountSetup/GetIPData';
 export const GET_BU_DATA = 'User/GetDepartmentList';
