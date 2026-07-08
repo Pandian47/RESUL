@@ -117,9 +117,10 @@ const RSHeader = ({ isNoAuth }) => {
     const getParentPageName = splitPathName[1];
     const getCurrentPageName = splitPathName?.[splitPathName?.length - 1] || splitPathName?.[1] || '';
     
-    // Check if we're on add-form-generator with a tab selected
-    const isFormGeneratorWithTab = getCurrentPageName === 'add-form-generator' && 
-                                   new URLSearchParams(window.location.search).get('tabSelected') === 'true';
+    // Hide top nav only after a form type is selected (form builder), not on "Select the form type".
+    const isFormGeneratorWithTab =
+        getCurrentPageName === 'add-form-generator' &&
+        new URLSearchParams(window.location.search).get('tabSelected') === 'true';
     const shouldHideHeader =
         hideHeader.includes(getCurrentPageName) ||
         isFormGeneratorWithTab ||

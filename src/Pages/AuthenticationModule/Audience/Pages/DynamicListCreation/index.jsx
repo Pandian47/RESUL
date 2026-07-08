@@ -4,7 +4,7 @@ import { encodeUrl, getUserDetails } from 'Utils/modules/crypto';
 import { safeObjectKeys } from 'Utils/modules/misc';
 import { formatName } from 'Utils/modules/formatters';
 import { getWarningPopupMessage } from 'Utils/modules/warningPopup';
-import { checkRequestApproval, FORM_INITIAL_STATE, INITIAL_STATE, MatchTypeCheck, repeatedGroupValuesCheck, repeatedValuesCheck, STATE_REDUCER, buildFieldTriggerValuesKey, buildTriggerDdlCacheKey, buildCustomEventValuesCacheKey, formatFieldTriggerValuesData, shouldSkipTriggerAttributeValuesApi, shouldFetchTriggerAttributeValuesForRule, extractTriggerAttributeValuesList, normalizeCustomEventRuleTypeOptions } from './constant';
+import { checkRequestApproval, FORM_INITIAL_STATE, INITIAL_STATE, MatchTypeCheck, repeatedGroupValuesCheck, repeatedValuesCheck, STATE_REDUCER, buildFieldTriggerValuesKey, buildTriggerDdlCacheKey, buildCustomEventValuesCacheKey, formatFieldTriggerValuesData, getAudienceBaseFilterValues, getAudienceBaseValuesFromFullJson, applyFullAttributeJSONToDynamicListState, resolveAudienceBaseFieldName, shouldSkipTriggerAttributeValuesApi, shouldFetchTriggerAttributeValuesForRule, extractTriggerAttributeValuesList, normalizeCustomEventRuleTypeOptions } from './constant';
 import { MAX_LENGTH200 } from 'Constants/GlobalConstant/Regex';
 import { ENTER_COMMENTS, ENTER_LIST_NAME as ENTER_LIST_NAME_MSG, NAME_CANNOT_BE_EMPTY } from 'Constants/GlobalConstant/ValidationMessage';
 import { ADD_RULE_GROUP, APPROVE, CANCEL, COMMENTS, CREATE_RULE, DYNAMIC_CROSS_DEVICE, DYNAMICLIST_NAME, EDIT_DYNAMIC_LIST, ENTER_LIST_NAME, MAXIMUM_LIMIT_REACHED, NEW_DYNAMIC_LIST, OK, REJECT, RENAME, SAVE, SELECT_TRIGGERS_AS_SPECIFIED, TRIGGERS, UP_TO_5_MATCH, UPDATE_RULE, USED_LIST_TEXT, YOU_ARE_NOT_APPROVER } from 'Constants/GlobalConstant/Placeholders';
@@ -41,7 +41,7 @@ import { getSessionId, getRequestApprovalList } from 'Reducers/globalState/selec
 
 import useQueryParams from 'Hooks/useQueryParams';
 
-import { parseRuleJSON, parseAudienceJsonArray } from 'Pages/AuthenticationModule/Audience/audienceDefaults';
+import { parseRuleJSON, parseAudienceJson, parseAudienceJsonArray } from 'Pages/AuthenticationModule/Audience/audienceDefaults';
 import { getRequestApprovalUserDetails } from 'Reducers/globalState/request';
 import WarningPopup from 'Pages/AuthenticationModule/Components/WarningPopup/WarningPopup';
 import RSTextarea from 'Components/FormFields/RSTextarea';
@@ -49,7 +49,8 @@ import { update_Dashboard, update_isMobileAppId, update_isWebAppId } from 'Reduc
 import RSCheckbox from 'Components/FormFields/RSCheckbox';
 import { get_trigger_source_data, resetDynamicListState } from 'Reducers/audience/dynamicList/reducer';
 import dynamicListInitialState from 'Reducers/audience/dynamicList/initialState';
-import { getFullAttributeJSONValues } from 'Reducers/audience/targetListCreation/request';
+import { getAttributeValues } from 'Reducers/audience/targetListCreation/request';
+import { getDynamicListFullAttributeJSONValues } from 'Reducers/audience/dynamicList/request';
 import DynamicListCreationSkeleton from 'Components/Skeleton/Components/DynamicListCreationSkeleton';
 
 import useApiLoader, { resetAbortableRequests } from 'Hooks/useApiLoader';
@@ -60,6 +61,7 @@ import useComponentWillUnmount from 'Hooks/useComponentWillUnMount';
 import RuleGrouping from './Component/ruleGrouping';
 import RequestApproval from 'Pages/AuthenticationModule/Components/RequestApproval/RequestApproval';
 import { loadGeoFencesFullList, clearGeoFencesListSessionCache, buildGeofenceComparisonFromEditRule } from './Component/GeoFencing/DynamicListGeoFencing';
+import { loadBeaconsFullList, clearBeaconsListSessionCache, buildBeaconFromEditRule } from './Component/Beacon/constant';
 export const DynamicListCreateContext = createContext({
     ListState: {},
     dispatchState: () => {},
@@ -73,6 +75,8 @@ export const DynamicListCreateContext = createContext({
     setControllEditModeApiCall: () => {},
     errorCustomGroup: null,
     setErrorCustomGroup: () => {},
+    errorGroup: null,
+    setErrorGroup: () => {},
     ensureTimeZoneDetail: async () => {},
     dispatchTriggerAttributeValues: async () => {},
 });
@@ -129,6 +133,7 @@ const DynamicListCreation = () => {
         getValues,
         formState: { isValid, isDirty },
     } = methods;
+    console.log('isValid: ', isValid);
 
     const dispatch = useDispatch();
     const store = useStore();
@@ -318,17 +323,17 @@ const DynamicListCreation = () => {
         }
 
         if (triggerId === 14 && !fullAttributeJSONValues?.length && isMounted.current) {
-            dispatch(
-                getFullAttributeJSONValues({
+            const fullJsonResponse = await dispatch(
+                getDynamicListFullAttributeJSONValues({
                     payload: {
                         clientId,
                         userId,
                         departmentId,
                     },
-                    dispatchState,
-                    from: 'dynamicList',
+                    loading: false,
                 })
             );
+            applyFullAttributeJSONToDynamicListState(fullJsonResponse, dispatchState);
         }
 
         return res?.data || [];
@@ -423,6 +428,8 @@ const DynamicListCreation = () => {
                         : undefined;
                 const isGeofence =
                     formatName(payload?.attributeName ?? selectedRuleType?.value) === 'geofence';
+                const isBeacon =
+                    formatName(payload?.attributeName ?? selectedRuleType?.value) === 'beacon';
                 let responseData = [];
 
                 if (Array.isArray(cached) && cached.length > 0) {
@@ -435,6 +442,10 @@ const DynamicListCreation = () => {
                         departmentId: payload?.departmentId,
                         clientId: payload?.clientId,
                         userId: payload?.userId,
+                    });
+                } else if (isBeacon) {
+                    responseData = await loadBeaconsFullList(dispatch, {
+                        departmentId: payload?.departmentId,
                     });
                 } else {
                     const result = await dispatch(
@@ -482,6 +493,7 @@ const DynamicListCreation = () => {
     const resetEditListHydrationState = useCallback(() => {
         clearDynamicListApiCaches();
         clearGeoFencesListSessionCache();
+        clearBeaconsListSessionCache();
         triggerDdlValuesRef.current = {};
         dispatch(resetDynamicListState());
         dispatchState({ type: 'RESET_DROPDOWN_STATE' });
@@ -539,10 +551,10 @@ const DynamicListCreation = () => {
         const sourceName = ruleAttribute?.SourceName;
 
         if (
+            fieldType === '2D' &&
             (triggerId === 13 ||
                 triggerId === 27 ||
-                ((triggerId === 18 || triggerId === 5) && sourceName === 'Latitude & Longitude - Radius')) &&
-            fieldType === '2D'
+                sourceName === 'Latitude & Longitude - Radius')
         ) {
             return {
                 ...(selectedRuleType ?? {}),
@@ -607,13 +619,25 @@ const DynamicListCreation = () => {
                 });
             }
 
+            // Website Lat/Long uses Attribute name (level1) + free-text value — no level2.
+            // Mobile (18/5) uses level1 for Attribute rule on attributeValue.
+            const isLatLongRadius = formatName(attributeNameLabel) === 'latitude&longitude-radius';
+            if (isLatLongRadius) {
+                return {
+                    level1: Array.isArray(level1Data) ? level1Data : [],
+                    level2: [],
+                };
+            }
+
+            // Forms level-2 must use the selected form Id (same as create flow), not formId.
+            const level2FormId = isForms ? ruleAttribute?.Id : ruleAttribute?.formId;
             const level2Payload = buildRuleTypeTriggerPayload({
                 selectedRuleType: { ...selectedRuleType, value: attributeNameLabel },
                 triggerSource,
                 pagesItem,
                 levelNo: 2,
                 overrides: {
-                    formId: ruleAttribute?.formId,
+                    formId: level2FormId,
                     columnName: ruleAttribute?.Name,
                     dataAttributeId: ruleAttribute?.dataAttributeId,
                 },
@@ -641,6 +665,153 @@ const DynamicListCreation = () => {
         [buildRuleTypeTriggerPayload, dispatchState, dispatchTriggerAttributeValues, resolveEditAttributeNameLabel],
     );
 
+    const resolveAudienceBaseAttributeOptions = useCallback(
+        async (fieldNameKey, liveFullAttributeJSONValues) => {
+            if (!fieldNameKey) {
+                return [];
+            }
+
+            const fromFilterLabels = getAudienceBaseFilterValues(ListState?.filterLabels?.[fieldNameKey]);
+            if (fromFilterLabels.length) {
+                return fromFilterLabels;
+            }
+
+            const fromLiveArgument = getAudienceBaseValuesFromFullJson(
+                liveFullAttributeJSONValues,
+                fieldNameKey,
+            );
+            if (fromLiveArgument.length) {
+                return fromLiveArgument;
+            }
+
+            const fromStoredFullJson = getAudienceBaseValuesFromFullJson(
+                ListState?.fullAttributeJSONValues,
+                fieldNameKey,
+            );
+            if (fromStoredFullJson.length) {
+                return fromStoredFullJson;
+            }
+
+            const fullJsonResponse = await dispatch(
+                getDynamicListFullAttributeJSONValues({
+                    payload: {
+                        clientId,
+                        userId,
+                        departmentId,
+                    },
+                    loading: false,
+                }),
+            );
+
+            const liveFullJsonValues = applyFullAttributeJSONToDynamicListState(
+                fullJsonResponse,
+                dispatchState,
+            );
+            const fromLiveFullJson = getAudienceBaseValuesFromFullJson(
+                liveFullJsonValues,
+                fieldNameKey,
+            );
+            if (fromLiveFullJson.length) {
+                return fromLiveFullJson;
+            }
+
+            const response = await dispatch(
+                getAttributeValues(
+                    {
+                        attributeName: fieldNameKey,
+                        departmentId,
+                        clientId,
+                        userId,
+                        partnerID: 0,
+                    },
+                    dispatchState,
+                    fieldNameKey,
+                    null,
+                    false,
+                ),
+            );
+
+            if (!response?.status) {
+                return [];
+            }
+
+            try {
+                const parsedAudienceBaseData = parseAudienceJson(response?.data, {});
+                const nextLevelParseAudienceBaseData = parseAudienceJson(parsedAudienceBaseData, {});
+                return Object.keys(nextLevelParseAudienceBaseData);
+            } catch {
+                const attrsValue = parseAudienceJson(response?.data, {});
+                return Object.keys(parseAudienceJson(attrsValue, {}));
+            }
+        },
+        [
+            ListState?.filterLabels,
+            ListState?.fullAttributeJSONValues,
+            clientId,
+            departmentId,
+            dispatch,
+            dispatchState,
+            userId,
+        ],
+    );
+
+    const hydrateAudienceBaseAttributeValues = useCallback(
+        async ({ fieldPath, selectedRuleType, ruleAttribute, liveFullAttributeJSONValues }) => {
+            const fieldNameKey = resolveAudienceBaseFieldName(selectedRuleType, ruleAttribute);
+            const fieldType =
+                selectedRuleType?.fieldType ??
+                selectedRuleType?.fieldtype ??
+                ruleAttribute?.FieldType ??
+                'T';
+            if (!fieldPath || !fieldNameKey) {
+                return { level1: [], level2: [] };
+            }
+
+            const payload = {
+                attributeName: fieldNameKey,
+                fieldType,
+                departmentId,
+                clientId,
+                userId,
+                partnerID: 0,
+                levelNo: 1,
+            };
+            const storageKey = buildFieldTriggerValuesKey(fieldPath, fieldType, 1);
+
+            dispatchState({
+                type: 'UPDATE_FIELD_TRIGGER_VALUES',
+                payload: { fieldName: storageKey, isLoading: true },
+            });
+
+            try {
+                const options = await resolveAudienceBaseAttributeOptions(
+                    fieldNameKey,
+                    liveFullAttributeJSONValues,
+                );
+                dispatchState({
+                    type: 'UPDATE_FIELD_TRIGGER_VALUES',
+                    payload: {
+                        fieldName: storageKey,
+                        isLoading: false,
+                        triggerValues: formatFieldTriggerValuesData(payload, options),
+                    },
+                });
+                return { level1: options, level2: [] };
+            } catch {
+                dispatchState({
+                    type: 'UPDATE_FIELD_TRIGGER_VALUES',
+                    payload: {
+                        fieldName: storageKey,
+                        isLoading: false,
+                        triggerValues: formatFieldTriggerValuesData(payload, []),
+                    },
+                });
+                return { level1: [], level2: [] };
+            }
+        },
+        [clientId, departmentId, dispatchState, resolveAudienceBaseAttributeOptions, userId],
+    );
+
     const hydrateEditRuleAttributeDropdowns = useCallback(
         async ({
             fieldPath,
@@ -648,6 +819,7 @@ const DynamicListCreation = () => {
             triggerSource,
             pagesItem,
             ruleAttribute,
+            liveFullAttributeJSONValues,
         }) => {
             if (!fieldPath || !selectedRuleType?.value) {
                 return { level1: [], level2: [] };
@@ -657,6 +829,15 @@ const DynamicListCreation = () => {
             const normalizedValue = formatName(selectedRuleType?.value);
             const triggerId = triggerSource?.triggerId;
             const sourceNorm = formatName(ruleAttribute?.SourceName);
+
+            if (Number(triggerId) === 14) {
+                return hydrateAudienceBaseAttributeValues({
+                    fieldPath,
+                    selectedRuleType,
+                    ruleAttribute,
+                    liveFullAttributeJSONValues,
+                });
+            }
 
             if (shouldSkipTriggerAttributeValuesApi(triggerId)) {
                 return { level1: [], level2: [] };
@@ -677,6 +858,24 @@ const DynamicListCreation = () => {
                     level1: [],
                     level2: [],
                     geofenceList: Array.isArray(geofenceList) ? geofenceList : [],
+                };
+            }
+
+            if (normalizedValue === 'beacon') {
+                const beaconList = await dispatchTriggerAttributeValues(
+                    buildRuleTypeTriggerPayload({
+                        selectedRuleType,
+                        triggerSource,
+                        pagesItem,
+                        levelNo: 1,
+                    }),
+                    fieldPath,
+                    selectedRuleType,
+                );
+                return {
+                    level1: [],
+                    level2: [],
+                    beaconList: Array.isArray(beaconList) ? beaconList : [],
                 };
             }
 
@@ -732,6 +931,7 @@ const DynamicListCreation = () => {
             buildRuleTypeTriggerPayload,
             buildCustomEventsTriggerPayload,
             dispatchTriggerAttributeValues,
+            hydrateAudienceBaseAttributeValues,
             hydrateEditTwoDimensionalAttribute,
             resolveEditAttributeNameLabel,
         ],
@@ -751,6 +951,7 @@ const DynamicListCreation = () => {
                 extractAttributeValuesInEditFlow,
                 handleAttributeComparison,
                 handleAttributeName: resolveAttributeName,
+                coerceValueToTriggerDropdownOption,
             } = await import('./constant');
             editListControllRef.current = false;
         const fromDashboard = data?.from === 'dashboard';
@@ -880,8 +1081,7 @@ const DynamicListCreation = () => {
                 exclusionCondition: false,
                 approvalList: {
                     name: [],
-                    // requestApproval: list?.isRequestApproval === 1,
-                    requestApproval: true,
+                    requestApproval: list?.isRequestApproval === 1 || list?.isRequestApproval === true,
                     approvalFrom: 'All',
                     approvalCount: '2',
                     followHierarchy: false,
@@ -916,7 +1116,11 @@ const DynamicListCreation = () => {
             level2: {},
         };
 
-        const getAttributeValue = (formId, value, ruletype, level) => {
+        // level 1: formId key, match on Name (Form/Attribute name)
+        // level 2: formId_Name key, match on Value (Form status / Attribute value)
+        // matchValue is only for level 2 — handleAttributeComparison always passes CompareValue
+        // as the 5th arg ("="), which must not override Name for level 1.
+        const getAttributeValue = (formId, value, ruletype, level, matchValue) => {
             if (
                 formatName(ruletype) === 'attributes' ||
                 formatName(ruletype) === 'eventbrite' ||
@@ -925,10 +1129,13 @@ const DynamicListCreation = () => {
                 const currentAttributeData = level === 1
                     ? formAgainstAttributeData.level1[formId]
                     : formAgainstAttributeData.level2[formId + '_' + value];
+                const lookupValue = level === 2 ? (matchValue ?? value) : value;
                 const currDropDownValue = currentAttributeData?.filter(
-                    (item) => formatName(item?.value) === formatName(value),
+                    (item) =>
+                        formatName(item?.value) === formatName(lookupValue) ||
+                        formatName(item?.UIPrintableName) === formatName(lookupValue),
                 );
-                return currDropDownValue ? currDropDownValue[0] : {};
+                return currDropDownValue?.[0] ?? {};
             } else {
                 return {
                     id: j + 1,
@@ -947,8 +1154,22 @@ const DynamicListCreation = () => {
             tempArrRule.push(ruleData.RuleGroup3);
         }
         let triggerAttrArr = {};
-        if(tempArrRule?.some((item) => Number(item.TriggerName) === 14)){
-            await dispatch(getFullAttributeJSONValues({ payload, dispatchState, from: 'dynamicList', loading: false }));
+        let liveFullAttributeJSONValues = [];
+        if (tempArrRule?.some((item) => Number(item.TriggerName) === 14)) {
+            const fullJsonResponse = await dispatch(
+                getDynamicListFullAttributeJSONValues({
+                    payload: {
+                        clientId,
+                        userId,
+                        departmentId,
+                    },
+                    loading: false,
+                }),
+            );
+            liveFullAttributeJSONValues = applyFullAttributeJSONToDynamicListState(
+                fullJsonResponse,
+                dispatchState,
+            );
         }
         const editTitles = [];
         const editGroups = [];
@@ -1067,20 +1288,30 @@ const DynamicListCreation = () => {
                             formatName(RuleAttributes[j]?.Name) === 'city/area'));
 
                 let geofenceComparisonFromEdit = null;
+                let beaconFromEdit = null;
+                let attributeData = { level1: [], level2: [] };
 
                 if (selectedRuleType) {
-                    const attributeData = await hydrateEditRuleAttributeDropdowns({
+                    attributeData = await hydrateEditRuleAttributeDropdowns({
                         fieldPath,
                         selectedRuleType,
                         triggerSource: findTriggerSource?.[0],
                         pagesItem,
                         ruleAttribute: RuleAttributes[j],
+                        liveFullAttributeJSONValues,
                     });
 
                     if (formatName(selectedRuleType?.value) === 'geofence' && RuleAttributes[j]?.GeofenceId) {
                         geofenceComparisonFromEdit = buildGeofenceComparisonFromEditRule(
                             RuleAttributes[j],
                             attributeData?.geofenceList,
+                        );
+                    }
+
+                    if (formatName(selectedRuleType?.value) === 'beacon' && RuleAttributes[j]?.BeaconId) {
+                        beaconFromEdit = buildBeaconFromEditRule(
+                            RuleAttributes[j],
+                            attributeData?.beaconList,
                         );
                     }
 
@@ -1181,13 +1412,68 @@ const DynamicListCreation = () => {
                 );
 
                 // Get the attributeComparison first to check if it's "Has value" or "Has no value"
-                const attributeComparison = checkTriggerType
+                let attributeComparison = checkTriggerType
                     ? ''
                     : handleAttributeComparison(RuleAttributes[j], findTriggerSource, getAttributeValue);
                 
                 // For "Has value" and "Has no value", always set attributeValue to empty string
                 const isHasValueOperator = attributeComparison === 'Has no value' || attributeComparison === 'Has value';
-                const finalAttributeValue = isHasValueOperator ? '' : (attributeValue || '');
+                // 2D Forms/Attributes dropdowns need the option object (dataItemKey=id), not a bare string
+                let finalAttributeValue = isHasValueOperator ? '' : (attributeValue || '');
+                if (
+                    isFormAgainstAttributeRule &&
+                    !isHasValueOperator &&
+                    RuleAttributes[j]?.Value
+                ) {
+                    const level2Option = getAttributeValue(
+                        RuleAttributes[j].formId,
+                        RuleAttributes[j].Name,
+                        RuleAttributes[j].SourceName,
+                        2,
+                        RuleAttributes[j].Value,
+                    );
+                    if (level2Option?.id != null || level2Option?.value != null) {
+                        finalAttributeValue = level2Option;
+                    }
+                }
+
+                // Latitude & Longitude - Radius:
+                // Website: Attribute name (level1) + free-text value
+                // Mobile (18/5): From/To/Range + Attribute rule (level1 on attributeValue)
+                const isLatLongRadius =
+                    formatName(RuleAttributes[j]?.SourceName) === 'latitude&longitude-radius' ||
+                    formatName(selectedRuleType?.value) === 'latitude&longitude-radius';
+                const isMobileLatLongUi =
+                    isLatLongRadius &&
+                    (findTriggerSource?.[0]?.triggerId === 18 ||
+                        findTriggerSource?.[0]?.triggerId === 5);
+                if (isLatLongRadius && !isHasValueOperator) {
+                    const level1Options = attributeData?.level1 ?? [];
+                    if (isMobileLatLongUi) {
+                        const ruleOption = coerceValueToTriggerDropdownOption(
+                            RuleAttributes[j]?.Value,
+                            level1Options,
+                        );
+                        if (ruleOption && typeof ruleOption === 'object') {
+                            finalAttributeValue = ruleOption;
+                        }
+                    } else {
+                        const nameKey = RuleAttributes[j]?.Name;
+                        if (nameKey && nameKey !== ':') {
+                            const nameOption = coerceValueToTriggerDropdownOption(
+                                nameKey,
+                                level1Options,
+                            );
+                            if (nameOption && typeof nameOption === 'object') {
+                                attributeComparison = nameOption;
+                            }
+                        } else {
+                            // Broken legacy saves used Name ":" — clear invalid "=" comparison
+                            attributeComparison = '';
+                        }
+                        finalAttributeValue = RuleAttributes[j]?.Value || '';
+                    }
+                }
 
                 let ruleAttrTemp = {
                     attributeName:
@@ -1238,12 +1524,19 @@ const DynamicListCreation = () => {
                 if (geofenceComparisonFromEdit) {
                     ruleAttrTemp.attributeComparison = geofenceComparisonFromEdit;
                 }
+                if (beaconFromEdit) {
+                    ruleAttrTemp.attributeFrom = beaconFromEdit;
+                }
                 // Geofence Action is multi-select: bind saved Value (e.g. "In" or "In,Out") as array of objects
                 if (ruleAttrTemp.attributeName?.value === 'Geofence' && RuleAttributes[j].Value != null) {
                     const actionStr = String(RuleAttributes[j].Value).trim();
                     ruleAttrTemp.attributeValue = actionStr
                         ? actionStr.split(',').map((s) => s.trim()).filter(Boolean).map((v) => ({ value: v }))
                         : [];
+                }
+                if (ruleAttrTemp.attributeName?.value === 'Beacon' && RuleAttributes[j].Value != null) {
+                    const actionValue = String(RuleAttributes[j].Value).trim();
+                    ruleAttrTemp.attributeValue = actionValue ? { value: actionValue } : '';
                 }
                 tempRule.RuleAttributes.push(ruleAttrTemp);
             }
@@ -1587,7 +1880,7 @@ const DynamicListCreation = () => {
             }
         }
         
-        if (isDirty && approvalList?.name?.length === 0) {
+        if (approvalList?.requestApproval && isDirty && approvalList?.name?.length === 0) {
             setError('approvalList.requestApproval', {
                 type: 'custom',
                 message: 'Please add at least one approval rule',
@@ -2302,19 +2595,17 @@ const DynamicListCreation = () => {
                                                     isLoading={isActionLoading}
                                                     blockBodyPointerEvents={isActionLoading}
                                                     disabledClass={
-                                                        new URLSearchParams(window.location.search).get('view') === 'true'? 'pe-none click-off '
-                                                        : !offClick ? '' :
-                                                        isUpdate? '' :
-                                                        queryParamDetails?.fromCampaign === 'M' && isValid
-                                                            ? ''
-                                                            : isValid && approvalList?.name?.length === 0
-                                                            ? ''
-                                                            : isValid &&
-                                                            approvalList?.requestApproval &&
-                                                            !warningListCount.disable
-                                                            ? duplicateRule?.show ? 'pe-none click-off' : ''
-                                                        : 'pe-none click-off'
-                                                    }
+                                                         new URLSearchParams(window.location.search).get('view') === 'true'? 'pe-none click-off '
+                                                         : !offClick ? '' :
+                                                         isUpdate? '' :
+                                                         queryParamDetails?.fromCampaign === 'M' && isValid
+                                                             ? ''
+                                                             : isValid && approvalList?.name?.length === 0
+                                                             ? ''
+                                                             : isValid && !warningListCount.disable
+                                                             ? duplicateRule?.show ? 'pe-none click-off' : ''
+                                                         : 'pe-none click-off'
+                                                     }
                                                     id="rs_DynamicListCreation_primarysubmit"
                                                 >
                                                     {isUpdate ? UPDATE_RULE : CREATE_RULE}

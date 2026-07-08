@@ -27,7 +27,6 @@ const MODULE_ROOTS = {
     communication: path.join(__dirname, '../src/Pages/AuthenticationModule/Communication'),
     analytics: path.join(__dirname, '../src/Pages/AuthenticationModule/Analytics'),
     analyticstwins: path.join(__dirname, '../src/Pages/AuthenticationModule/AnalyticsTwins'),
-    analyticsssr: path.join(__dirname, '../src/Pages/AuthenticationModule/AnalyticsSSR'),
     preferences: path.join(__dirname, '../src/Pages/AuthenticationModule/Preferences'),
     components: path.join(__dirname, '../src/Components'),
     reducers: path.join(__dirname, '../src/Reducers'),
@@ -44,7 +43,7 @@ const MODULE_ROOTS = {
     utils: path.join(__dirname, '../src/Utils'),
     commoncomponents: path.join(__dirname, '../src/CommonComponents'),
 };
-const ANALYTICS_TARGETS = ['analytics', 'analyticstwins', 'analyticsssr'];
+const ANALYTICS_TARGETS = ['analytics', 'analyticstwins' ];
 
 /** ValidationMessage namespace aliases — `.message` / string methods / form field paths are not VM exports */
 const VM_NAMESPACE_PREFIXES = new Set(['error', 'errors', 'errorMessage', 'message', 'messages']);
@@ -2038,7 +2037,7 @@ const targets =
             : null;
 
 if (!targets) {
-    console.error(`Unknown target "${targetArg}". Use: audience | communication | analytics | analyticsTwins | analyticsSSR | analyticsAll | preferences | components | reducers | dashboard | dashboardtwins | constants | registration | documentation | utils | commoncomponents | all`);
+    console.error(`Unknown target "${targetArg}". Use: audience | communication | analytics | analyticsTwins | analyticsAll | preferences | components | reducers | dashboard | dashboardtwins | constants | registration | documentation | utils | commoncomponents | all`);
     process.exit(1);
 }
 

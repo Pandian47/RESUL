@@ -7,6 +7,8 @@ import { redirect } from 'react-router-dom';
 import RSTooltip from 'Components/RSTooltip';
 
 import { PoweredBy } from 'Assets/Images';
+import { captureRuntimeError } from 'Utils/RSPLogger/RSPLogger';
+
 class ErrorBoundary extends Component {
     constructor(props) {
         super(props);
@@ -20,7 +22,15 @@ class ErrorBoundary extends Component {
     }
 
     componentDidCatch(error, errorInfo) {
-                        document.body.className = 'pageNotFoundBody';
+        document.body.className = 'pageNotFoundBody';
+
+        captureRuntimeError({
+            type: 'react-boundary',
+            message: error?.message || String(error),
+            stack: error?.stack,
+            componentStack: errorInfo?.componentStack,
+        });
+
         if (window.ReWebSDK && window.ReWebSDK.customEvent) {
             window.ReWebSDK.customEvent({
                 eventName: 'Page crash',

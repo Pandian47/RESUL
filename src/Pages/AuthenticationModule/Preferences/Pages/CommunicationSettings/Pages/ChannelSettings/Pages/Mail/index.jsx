@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import RSTabbar from 'Components/RSTabber';
-import { MAIL_TABBER_CONFIG, resolveMailTabState } from '../../constant';
+import { MAIL_TABBER_CONFIG, resolveMailTabState, syncMailChannelTabQuery } from '../../constant';
 import { useLocation } from 'react-router-dom';
 import { update_isBUEnableSub } from 'Reducers/preferences/CommunicationSettings/reducer';
 import { useDispatch } from 'react-redux';
@@ -21,9 +21,9 @@ const Mail = () => {
             dynamicTab={`rs-sub-tabs rs-cc-sub-tabs`}
             activeClass={`active`}
             defaultTab={tabState}
-            // defaultTab={0}
             tabData={MAIL_TABBER_CONFIG}
             callBack={(_, index) => {
+                syncMailChannelTabQuery(index);
                 dispatch(update_isBUEnableSub(index));
             }}
         />

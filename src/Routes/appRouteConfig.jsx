@@ -234,6 +234,7 @@ export const PROTECTED_APP_ROUTE_TREE = [
     },
     { path: 'launch-pad', app: 'LaunchPad' },
     { path: 'kendoDocs', app: 'KendoDocs' },
+    { path: 'errorLog', app: 'RuntimeErrorLog' },
 ];
 
 /** Login / registration — rendered inside `PublicLayout` from `Hoc/NonProtectedRoute.jsx`. */

@@ -671,8 +671,8 @@ export const getContentTargetGridData = (contentTarget) => {
                 const engagement = getContentTargetMetricValue(metrics, 'is_Click');
                 rows.push({
                     targetGroup,
-                    targetAttributeName,
-                    targetName: targetAttributeName,
+                    targetAttributeName: targetName,
+                    targetName,
                     audience: getContentTargetMetricValue(metrics, 'is_Blast'),
                     is_Open: reach,
                     is_Click: engagement,

@@ -1,6 +1,5 @@
 import { encodeUrl } from 'Utils/modules/crypto';
 import { getUserCurrentFormat, getYYMM, getYYMMDD } from 'Utils/modules/dateTime';
-import { truncateTitle } from 'Utils/modules/displayCore';
 import { downloadCSVcommasFile } from 'Utils/modules/download';
 import { numberWithCommas } from 'Utils/modules/formatters';
 import { csv_download_large, trophy_medium } from 'Constants/GlobalConstant/Glyphicons';
@@ -10,6 +9,7 @@ import KendoGrid from 'Components/RSKendoGrid';
 
 
 import RSTooltip from 'Components/RSTooltip';
+import TruncateCell from 'Components/RSKendoGrid/TruncateCell';
 import { globalStateSelector } from 'Utils/Selectors/app';
 import {getFirstDayOfMonth, getCurrentDateOfMonth} from 'Utils/modules/dateTime.jsx'
 import { getSessionId } from 'Reducers/globalState/selector';
@@ -118,63 +118,46 @@ const ConsumptionEmail = () => {
                         : dataItem?.channelFriendlyName || dataItem?.[field];
                     const communicationName = sanitizeText(rawCommunicationName);
                     return (
-                        <td>
-                            <div className="d-flex justify-content-between">
-                                <span
-                                    className={`cursor-pointer link-underline-hover color-primary-black ${
-                                        isBold ? 'font-semi-bold' : ''
-                                    }`}
-                                    onClick={() => {
-                                        dispatch(
-                                            updateAnalyticsDetail({
-                                                channelName: consumptionChannel?.lable,
-                                                campaignId: dataItem?.campaignID,
-                                                from: 'analytics',
-                                                blastId:
-                                                    dataItem?.iswinnerB2 && dataItem?.iswinnerSplit
-                                                        ? dataItem?.iswinnerB2
-                                                        : dataItem?.blastShortCode,
-                                                channelId: 1,
-                                                currIndex:
-                                                    dataItem?.deliveryMethod === 'Multi dimension'
-                                                        ? dataItem?.mdcLevel - 1
-                                                        : 0,
-                                            }),
-                                        );
-                                        const state = {
-                                            channelName: consumptionChannel?.lable,
-                                            campaignId: dataItem?.campaignID,
-                                            channelId: 1,
-                                            iswinnerSplit: dataItem?.iswinnerSplit,
-                                            iswinnerSplitType: dataItem?.iswinnerSplitType,
-                                            isSplitAB: dataItem?.isSplitAB,
-                                            iswinnerBlastId:
-                                                dataItem?.iswinnerSplit && dataItem?.iswinnerB2
-                                                    ? dataItem?.iswinnerB2
-                                                    : '',
-                                        };
-                                        const encryptState = encodeUrl(state);
-                                        navigate(`/analytics/detail-analytics?q=${encryptState}`, {
-                                            state,
-                                        });
-                                    }}
-                                >
-                                    {communicationName?.length > 25 ? (
-                                        <RSTooltip
-                                            text={`${communicationName}`}
-                                            position="top"
-                                            className="color-primary-black"
-                                            innerContent={false}
-                                        >
-                                            <span className="color-primary-black">
-                                                {truncateTitle(communicationName, 25)}
-                                            </span>
-                                        </RSTooltip>
-                                    ) : (
-                                        <span className="m0">{communicationName}</span>
-                                    )}
-                                </span>
-                            </div>
+                        <td
+                            className={`cursor-pointer link-underline-hover color-primary-black ${
+                                isBold ? 'font-semi-bold' : ''
+                            }`}
+                            onClick={() => {
+                                dispatch(
+                                    updateAnalyticsDetail({
+                                        channelName: consumptionChannel?.lable,
+                                        campaignId: dataItem?.campaignID,
+                                        from: 'analytics',
+                                        blastId:
+                                            dataItem?.iswinnerB2 && dataItem?.iswinnerSplit
+                                                ? dataItem?.iswinnerB2
+                                                : dataItem?.blastShortCode,
+                                        channelId: 1,
+                                        currIndex:
+                                            dataItem?.deliveryMethod === 'Multi dimension'
+                                                ? dataItem?.mdcLevel - 1
+                                                : 0,
+                                    }),
+                                );
+                                const state = {
+                                    channelName: consumptionChannel?.lable,
+                                    campaignId: dataItem?.campaignID,
+                                    channelId: 1,
+                                    iswinnerSplit: dataItem?.iswinnerSplit,
+                                    iswinnerSplitType: dataItem?.iswinnerSplitType,
+                                    isSplitAB: dataItem?.isSplitAB,
+                                    iswinnerBlastId:
+                                        dataItem?.iswinnerSplit && dataItem?.iswinnerB2
+                                            ? dataItem?.iswinnerB2
+                                            : '',
+                                };
+                                const encryptState = encodeUrl(state);
+                                navigate(`/analytics/detail-analytics?q=${encryptState}`, {
+                                    state,
+                                });
+                            }}
+                        >
+                            <TruncateCell value={communicationName ?? ''} noTable={true} wrapperClassName="m0" />
                         </td>
                     );
                 },
@@ -275,13 +258,7 @@ const ConsumptionEmail = () => {
 
                     return (
                         <td>
-                            {value.length > 20 ? (
-                                <RSTooltip text={value} position="top" className="d-inline-block" innerContent={false}>
-                                    <span className="m0">{truncateTitle(value, 20)}</span>
-                                </RSTooltip>
-                            ) : (
-                                <span className="m0">{value}</span>
-                            )}
+                            <TruncateCell value={value ?? ''} noTable={true} wrapperClassName="m0" />
                         </td>
                     );
                 },
@@ -327,13 +304,7 @@ const ConsumptionEmail = () => {
 
                     return (
                         <td>
-                            {value?.length > 15 ? (
-                                <RSTooltip text={value} position="top" innerContent={false}>
-                                    <span className="m0">{truncateTitle(value, 15)}</span>
-                                </RSTooltip>
-                            ) : (
-                                <span className="m0">{value}</span>
-                            )}
+                            <TruncateCell value={value ?? ''} noTable={true} wrapperClassName="m0" />
                         </td>
                     );
                 },
@@ -411,12 +382,8 @@ const ConsumptionEmail = () => {
                         <td>
                             {isParentRow(dataItem) ? (
                                 ''
-                            ) : cleanedSubjectLine?.length > 35 ? (
-                                <RSTooltip text={cleanedSubjectLine} position="top" innerContent={false}>
-                                    <span className="m0">{truncateTitle(cleanedSubjectLine, 35)}</span>
-                                </RSTooltip>
                             ) : (
-                                <span className="m0">{cleanedSubjectLine}</span>
+                                <TruncateCell value={cleanedSubjectLine ?? ''} noTable={true} wrapperClassName="m0" />
                             )}
                         </td>
                     );
@@ -581,63 +548,46 @@ const ConsumptionEmail = () => {
                         const displayValue = sanitizeText(rawDisplayValue);
 
                         return (
-                            <td>
-                                <div className="d-flex justify-content-between">
-                                    <span
-                                        className="cursor-pointer link-underline-hover color-primary-black"
-                                        onClick={() => {
-                                            // Winner row pre-selects "Actual communication"; others pre-select their split letter
-                                            const splitName = dataItem?.iswinnerSplit
-                                                ? 'Actual communication'
-                                                : baseSplitType ? `Split ${baseSplitType}` : '';
-                                            dispatch(
-                                                updateAnalyticsDetail({
-                                                    channelName: consumptionChannel?.lable,
-                                                    campaignId: dataItem?.campaignID,
-                                                    from: 'analytics',
-                                                    blastId: dataItem?.blastShortCode,
-                                                    channelId: 1,
-                                                    currIndex:
-                                                        dataItem?.deliveryMethod === 'Multi dimension'
-                                                            ? dataItem?.mdcLevel - 1
-                                                            : 0,
-                                                }),
-                                            );
-                                            const state = {
-                                                channelName: consumptionChannel?.lable,
-                                                campaignId: dataItem?.campaignID,
-                                                channelId: 1,
-                                                iswinnerSplit: dataItem?.iswinnerSplit,
-                                                iswinnerSplitType: dataItem?.iswinnerSplitType,
-                                                isSplitAB: true,
-                                                splitName,
-                                                iswinnerBlastId: dataItem?.iswinnerSplit
-                                                    ? dataItem?.blastShortCode
-                                                    : '',
-                                                groupWinnerSplitType: dataItem?.groupWinnerSplitType || '',
-                                            };
-                                            const encryptState = encodeUrl(state);
-                                            navigate(`/analytics/detail-analytics?q=${encryptState}`, {
-                                                state,
-                                            });
-                                        }}
-                                    >
-                                        {displayValue?.length > 25 ? (
-                                            <RSTooltip
-                                                text={`${displayValue}`}
-                                                position="top"
-                                                className="color-primary-black"
-                                                innerContent={false}
-                                            >
-                                                <span className="color-primary-black">
-                                                    {truncateTitle(displayValue, 25)}
-                                                </span>
-                                            </RSTooltip>
-                                        ) : (
-                                            <span className="m0">{displayValue}</span>
-                                        )}
-                                    </span>
-                                </div>
+                            <td
+                                className="cursor-pointer link-underline-hover color-primary-black"
+                                onClick={() => {
+                                    // Winner row pre-selects "Actual communication"; others pre-select their split letter
+                                    const splitName = dataItem?.iswinnerSplit
+                                        ? 'Actual communication'
+                                        : baseSplitType ? `Split ${baseSplitType}` : '';
+                                    dispatch(
+                                        updateAnalyticsDetail({
+                                            channelName: consumptionChannel?.lable,
+                                            campaignId: dataItem?.campaignID,
+                                            from: 'analytics',
+                                            blastId: dataItem?.blastShortCode,
+                                            channelId: 1,
+                                            currIndex:
+                                                dataItem?.deliveryMethod === 'Multi dimension'
+                                                    ? dataItem?.mdcLevel - 1
+                                                    : 0,
+                                        }),
+                                    );
+                                    const state = {
+                                        channelName: consumptionChannel?.lable,
+                                        campaignId: dataItem?.campaignID,
+                                        channelId: 1,
+                                        iswinnerSplit: dataItem?.iswinnerSplit,
+                                        iswinnerSplitType: dataItem?.iswinnerSplitType,
+                                        isSplitAB: true,
+                                        splitName,
+                                        iswinnerBlastId: dataItem?.iswinnerSplit
+                                            ? dataItem?.blastShortCode
+                                            : '',
+                                        groupWinnerSplitType: dataItem?.groupWinnerSplitType || '',
+                                    };
+                                    const encryptState = encodeUrl(state);
+                                    navigate(`/analytics/detail-analytics?q=${encryptState}`, {
+                                        state,
+                                    });
+                                }}
+                            >
+                                <TruncateCell value={displayValue ?? ''} noTable={true} wrapperClassName="m0" />
                             </td>
                         );
                     },

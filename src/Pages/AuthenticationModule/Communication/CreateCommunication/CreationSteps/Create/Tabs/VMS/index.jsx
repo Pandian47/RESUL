@@ -1,3 +1,4 @@
+import { checkRFAApproved, checkTrigger, statusIdCheck } from 'Utils/modules/campaignUtils';
 import { getmasterData } from 'Utils/modules/masterData';
 import { createCommunicationSettingsNavState, MESSAGING_TAB_ID } from 'Utils/modules/navigation';
 import { encodeUrl } from 'Utils/modules/crypto';
@@ -33,7 +34,7 @@ import AuthoringChannelEditSkeletonGate, {
 
 import { RSPrimaryButton, RSSecondaryButton } from 'Components/Buttons';
 import { resetCreateCommunication, updateDirtyState, updateTab, updateVerticalTab, updateVmsList, updateAudience, updateFilterAudience, updateTotalAudienceCount } from 'Reducers/communication/createCommunication/Create/reducer';
-import { availableTabs, communicationChannels, handleAutoRefreshClickOff, handlePersonalizationFetchApiCall, AudienceFieldRenderComponent, audienceTypeList, handleMDCQueryParamsUpdate, handleCheckCTGT, validateAudienceCount, mergeChannelAudiences, handleUpdateEditAudienceCount,handleTotalAudienceCount, handleCGTGModalCheck, getPastPlanDurationBlockedState, validatePastPlanDurationOnSubmit, PAST_PLAN_DURATION_CLICK_OFF_CLASS } from '../../constant';
+import { availableTabs, communicationChannels, handleAutoRefreshClickOff, handlePersonalizationFetchApiCall, AudienceFieldRenderComponent, audienceTypeList, handleMDCQueryParamsUpdate, handleCheckCTGT, validateAudienceCount, mergeChannelAudiences, handleUpdateEditAudienceCount,handleTotalAudienceCount, handleCGTGModalCheck, getPastPlanDurationBlockedState, validatePastPlanDurationOnSubmit, PAST_PLAN_DURATION_CLICK_OFF_CLASS , shouldPromptSkipChannelConfirmation} from '../../constant';
 import {
     ensureArray,
     ensureObject,
@@ -41,6 +42,7 @@ import {
     ensureSegmentationListIds,
     sumAudienceCountByField,
     hasCampaignDetails,
+    getCampaignStatusId,
 } from 'Pages/AuthenticationModule/Communication/CreateCommunication/communicationDefaults';
 import { getSessionId, getUtcTimeData } from 'Reducers/globalState/selector';
 import { getUtcTimeNow } from 'Reducers/globalState/request';
@@ -90,6 +92,7 @@ const VMS = ({ mCampType, channelId }) => {
     const [dataSource, setDataSource] = useState('TL');
     const { timeZoneList } = getmasterData();
     const [isEditVMSFail, setIsEditVMSFail] = useState(false);
+    const [isClickOff, setIsClickOff] = useState(false);
 
     const [mask, setMask] = useState(COUNTRY_MASK);
     const [country, setCountry] = useState('');
@@ -105,10 +108,6 @@ const VMS = ({ mCampType, channelId }) => {
     const { clientId, userId, departmentId } = useSelector((state) => getSessionId(state));
     const { parentClientId, ...user } = useSelector((state) => getSessionId(state));
     const utcTimeData = useSelector(getUtcTimeData);
-
-    useEffect(() => {
-        dispatch(getUtcTimeNow());
-    }, [dispatch]);
 
     const { senderName, campaignDetails, template, language } = useSelector((state) => getVmsDetails(state));
     const {
@@ -826,6 +825,21 @@ const VMS = ({ mCampType, channelId }) => {
         }
     }, [audience]);
 
+    useEffect(() => {
+        if (
+            checkTrigger(location?.campaignType, location?.endDate) ||
+            !statusIdCheck(getCampaignStatusId(campaignDetails), location?.campaignType, campaignDetails) ||
+            checkRFAApproved(
+                getCampaignStatusId(campaignDetails),
+                campaignDetails?.requestForApproval?.approvarList,
+            )
+        ) {
+            setIsClickOff(true);
+        } else {
+            setIsClickOff(false);
+        }
+    }, [location?.campaignType, location?.endDate, campaignDetails?.content?.[0]?.statusId]);
+
     const vmsContextValue = useMemo(
         () => ({
             isTemplateLoading: templateLoader.isLoading,
@@ -843,7 +857,7 @@ const VMS = ({ mCampType, channelId }) => {
                 isSavedChannel={isSavedChannel}
             >
             <form className="rsv-tabs-content position-relative">
-                <div className="box-design bd-top-border ">
+                <div className={`box-design bd-top-border ${isClickOff ? 'pe-none click-off' : ''}`}>
                     <div className="form-group mt30">
                         <Row>
                             <Col sm={{ offset: 1, span: 2 }}>
@@ -867,18 +881,25 @@ const VMS = ({ mCampType, channelId }) => {
                                         <span id="rs_Messaging_Setting">
                                             <RSDropdownFooterBtn
                                                 title="New sender ID"
-                                                handleClick={() =>
-                                                    navigate('/preferences/communication-settings', {
-                                                        state: createCommunicationSettingsNavState('messaging', {
+                                                handleClick={() => {
+                                                    const navState = createCommunicationSettingsNavState(
+                                                        'messaging',
+                                                        {
                                                             mode: 'add',
-                                                            subfrom: 'MP',
+                                                            from: 'CreateCommunication',
+                                                            campaignType: location?.campaignType,
                                                             messagingTabId: MESSAGING_TAB_ID.VMS,
                                                             backAction: window.location.search,
                                                             tabValueName: 'messaging',
                                                             tabValue: 'vms',
-                                                        }, location, getValues),
-                                                    })
-                                                }
+                                                        },
+                                                        location,
+                                                    );
+                                                    navigate(
+                                                        `/preferences/communication-settings?q=${encodeUrl(navState)}`,
+                                                        { state: {} },
+                                                    );
+                                                }}
                                             />
                                         </span>
                                     }
@@ -1094,9 +1115,9 @@ const VMS = ({ mCampType, channelId }) => {
                     </RSSecondaryButton>
                     <RSSecondaryButton
                         color="blue"
-                        className={`${editorText?.length > 500 ? 'click-off' : ''} ${isPastPlanDurationBlocked ? PAST_PLAN_DURATION_CLICK_OFF_CLASS : ''}`}
+                        className={`${editorText?.length > 500 ? 'click-off' : ''} ${isPastPlanDurationBlocked || isClickOff ? PAST_PLAN_DURATION_CLICK_OFF_CLASS : ''}`}
                         onClick={() => {
-                            if (isPastPlanDurationBlocked) return;
+                            if (isPastPlanDurationBlocked || isClickOff) return;
                             clearErrors('phoneNumber');
                             const formData = getValues();
                             const isCTGTConfirm = handleCheckCTGT(formData.audience);
@@ -1126,7 +1147,12 @@ const VMS = ({ mCampType, channelId }) => {
                         disabledClass={isSubmitting ? 'pe-none click-off' : ''}
                         onClick={() => {
                             if (isPastPlanDurationBlocked) return;
+                            if (isClickOff && isDirty) return;
                             if (!isDirty && !isValid && mCampType !== 'M') {
+                                if (!shouldPromptSkipChannelConfirmation()) {
+                                    handleNavigation();
+                                    return;
+                                }
                                 setNavigate_confirm(true);
                             } else {
                                 const formData = getValues();

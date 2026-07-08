@@ -51,7 +51,15 @@ import useQueryParams from 'Hooks/useQueryParams';
 import useApiLoader from 'Hooks/useApiLoader';
 import { updateName } from 'Pages/AuthenticationModule/Preferences/Pages/AudienceScore/Pages/ProfileData/constant';
 import { AUTHORING_FIELD_LOADER_CONFIG, AUTHORING_SAVE_LOADER_CONFIG } from 'Components/Skeleton/pages/communication/authoring';
-const GenerateSmartLink = ({ fieldName, isEdit, tab, statusId, canEditExistingSmartLink = true, canAddnewSmartLink = true }) => {
+const GenerateSmartLink = ({
+    fieldName,
+    isEdit,
+    tab,
+    statusId,
+    canEditExistingSmartLink = true,
+    canAddnewSmartLink = true,
+    isCampaignCompleted = false,
+}) => {
     const {
         tabs,
         allTabs,
@@ -90,9 +98,13 @@ const GenerateSmartLink = ({ fieldName, isEdit, tab, statusId, canEditExistingSm
         ({ smartLinkReducer }) => smartLinkReducer,
     );
     const { exisingLinks } = useSelector(({ communicationPlanReducer }) => communicationPlanReducer);
-    // console.log('isAppEventTrack: ', isAppEventTrack);
-    // console.log('mobileChangeConfirm: ', mobileChangeConfirm);
-    const isEditable = canEditExistingSmartLink && canAddnewSmartLink || !canEditExistingSmartLink && exisingLinks?.[fieldName]?.isNew || canAddnewSmartLink && !isEdit
+    // Existing saved Smart Link content is locked when status blocks edit (or campaign completed).
+    // Missing platforms can still be added in-progress via canAddMissingPlatform.
+    const isNewSmartLinkTab = Boolean(exisingLinks?.[fieldName]?.isNew) || !isEdit;
+    const canEditSavedContent =
+        !isCampaignCompleted && (canEditExistingSmartLink || isNewSmartLinkTab);
+    const canAddMissingPlatform = !isCampaignCompleted && canAddnewSmartLink;
+    const isEditable = canEditSavedContent;
     const edit = useSelector((state) => smartlinkEdit(state));
     const { personalization } = useSelector(({ createCommunicationReducer }) => createCommunicationReducer);
     // console.log('eventTrackData: ', eventTrackData);
@@ -130,6 +142,29 @@ const GenerateSmartLink = ({ fieldName, isEdit, tab, statusId, canEditExistingSm
     const [isMobileAdaptive, setMobileAdaptive] = useState(false);
     const isSmartLinkReadOnly =
         isSmartLinkViewOnlyFromContext ?? isSmartLinkViewOnly(LocationPath?.pathname);
+
+    const persistedChannelCountRef = useRef(null);
+    useEffect(() => {
+        if (persistedChannelCountRef.current != null) return;
+        const savedCount = Array.isArray(edit?.[fieldName]) ? edit[fieldName].length : 0;
+        const formCount = Array.isArray(watchLink) ? watchLink.length : 0;
+        // Snapshot how many channel sections were already saved when this tab mounted.
+        persistedChannelCountRef.current = Math.max(savedCount, isEdit ? formCount : 0);
+    }, [edit, fieldName, isEdit, watchLink]);
+
+    const isChannelSectionLocked = (idx) => {
+        if (isCampaignCompleted || isSmartLinkReadOnly) return true;
+        if (canEditSavedContent) return false;
+        const persistedCount = persistedChannelCountRef.current ?? 0;
+        // Lock already-saved Web/Mobile; allow editing platforms appended in this session.
+        return idx < persistedCount;
+    };
+
+    const canShowAddPlatform =
+        canAddMissingPlatform &&
+        !isSmartLinkReadOnly &&
+        !isCampaignCompleted &&
+        fields?.length < 5;
     // const [isGenerateLink, setIsGenerateLink] = useState(false);
     const [isCopied, setCopied] = useState(false);
     const [isConfirm, setConfirm] = useState({
@@ -390,6 +425,7 @@ const GenerateSmartLink = ({ fieldName, isEdit, tab, statusId, canEditExistingSm
     };
 
     const addPlaform = (idx) => {
+        if (!canShowAddPlatform) return;
         const getIndex = _findIndex(errors[fieldName], (link) => typeof link !== 'undefined' && link !== null);
         if (getIndex !== -1 && (getIndex !== activeIndex || activeIndex === null)) {
             setActiveIndex(getIndex);
@@ -766,8 +802,9 @@ const GenerateSmartLink = ({ fieldName, isEdit, tab, statusId, canEditExistingSm
     );
     const hasDomainValue = Boolean(String(domain ?? '').trim());
     const isGenerateDisabled =
-        !isEditable ||
+        (!isEditable && !canAddMissingPlatform) ||
         isSmartLinkReadOnly ||
+        isCampaignCompleted ||
         !hasDomainValue ||
         !isValid ||
         Boolean(isDomainValid) ||
@@ -1067,7 +1104,7 @@ const GenerateSmartLink = ({ fieldName, isEdit, tab, statusId, canEditExistingSm
         <Fragment>
             <div className="form-group pl30 my35 smartlink-name-field">
                 <Row>
-                    <Col sm={6} className={`pr40 ${isSmartLinkReadOnly ? 'pe-none click-off' : ''}`}>
+                    <Col sm={6} className={`pr40 ${isSmartLinkReadOnly || isCampaignCompleted || !canEditSavedContent ? 'pe-none click-off' : ''}`}>
  <RSInput
                     name={smartLinkNameField}
                     control={control}
@@ -1180,9 +1217,8 @@ const GenerateSmartLink = ({ fieldName, isEdit, tab, statusId, canEditExistingSm
                                                 className="position-absolute right15 lh0 z-1"
                                             >
                                                 <div className={`${
-                                                            !isEditable ||
-                                                            (isAppEventTrack && idx === 1) ||
-                                                            isSmartLinkReadOnly
+                                                            isChannelSectionLocked(idx) ||
+                                                            (isAppEventTrack && idx === 1)
                                                                 ? 'pe-none click-off'
                                                                 : ''
                                                         }`}>
@@ -1192,6 +1228,7 @@ const GenerateSmartLink = ({ fieldName, isEdit, tab, statusId, canEditExistingSm
                                                         `${circle_minus_fill_medium}  icon-md color-primary-red`
                                                     }`}
                                                     onClick={() => {
+                                                        if (isChannelSectionLocked(idx)) return;
                                                         if (
                                                             !mobileChangeConfirm?.isConfirmNotSaved &&
                                                             idx === 1 &&
@@ -1224,9 +1261,8 @@ const GenerateSmartLink = ({ fieldName, isEdit, tab, statusId, canEditExistingSm
                                         >
                                             <Container
                                                 className={`${
-                                                    !isEditable ||
-                                                    (isAppEventTrack && idx === 1) ||
-                                                    isSmartLinkReadOnly
+                                                    isChannelSectionLocked(idx) ||
+                                                    (isAppEventTrack && idx === 1)
                                                         ? 'pe-none click-off'
                                                         : ''
                                                 }`}
@@ -2327,26 +2363,11 @@ const GenerateSmartLink = ({ fieldName, isEdit, tab, statusId, canEditExistingSm
                                                                                             SUB_APP_SCREEN
                                                                                         }
                                                                                         isLoading={subScreenListLoader.isLoading}
-                                                                                        // isCustomRender
-                                                                                        // itemRender={(props) => {
-                                                                                        //     renderItemAppSubScreen(
-                                                                                        //         props,
-                                                                                        //         () => {},
-                                                                                        //     );
-                                                                                        // }}
-                                                                                        data={_get(
+                                                                                           data={_get(
                                                                                             subScreenList,
                                                                                             appScreen,
                                                                                             [],
                                                                                         )}
-                                                                                        // data={subScreenList}
-                                                                                        // textField={'subScreenName'}
-                                                                                        //dataItemKey={'deepLinkURL'}
-                                                                                        // required
-                                                                                        // rules={{
-                                                                                        //     required:
-                                                                                        //         SELECT_SUB_APP_SCREEN,
-                                                                                        // }}
                                                                                     />
                                                                                 </Col>
                                                                             )}
@@ -2368,7 +2389,7 @@ const GenerateSmartLink = ({ fieldName, isEdit, tab, statusId, canEditExistingSm
                                         <RSTooltip text={ADD_MOBILE_DEVICE} position="top">
                                             <div
                                                 className={`${
-                                                    !isEditable || isSmartLinkReadOnly ? 'pe-none click-off' : ''
+                                                    !canShowAddPlatform ? 'pe-none click-off' : ''
                                                 }`}
                                             >
                                                 <i

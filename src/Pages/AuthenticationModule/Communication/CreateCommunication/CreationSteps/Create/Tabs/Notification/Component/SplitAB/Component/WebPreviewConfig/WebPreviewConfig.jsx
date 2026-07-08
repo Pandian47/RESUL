@@ -125,7 +125,10 @@ const WebPreviewConfig = ({ fieldName = '', isSplit = false, variant = 'splitAB'
 
     const showMiddleBlock = isImport
         ? currentPage !== null && !showInPageBlock
-        : currentPage !== null && contentInput !== 'import' && !showInPageBlock;
+        : currentPage !== null &&
+          contentInput !== 'import' &&
+          contentInput !== 'template' &&
+          !showInPageBlock;
 
     const showCarouselBlock = isImport
         ? layoutPosition?.id === 4
@@ -262,7 +265,7 @@ const WebPreviewConfig = ({ fieldName = '', isSplit = false, variant = 'splitAB'
                                     }}
                                     initColor={bgOverlayColor}
                                     colorValue={bgOverlayColor?.color ?? bgOverlayColor}
-                                    wrapperClass="d-inline-block"
+                                    wrapperClass="d-inline-block bg-overlay-colorpicker"
                                 />
                             </Col>
                         )}

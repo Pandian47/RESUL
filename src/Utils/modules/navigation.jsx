@@ -25,7 +25,14 @@ export function navigateBackToCommunicationCreation({
     const selectedArray = availableTabs[tabValueName];
     const tabIndex = selectedArray?.indexOf(tabValue);
 
-    if (dispatch && tabValueName && tabValue && tabIndex >= 0 && verticalIndex >= 0) {
+    if (
+        dispatch &&
+        navigationState?.campaignType !== 'M' &&
+        tabValueName &&
+        tabValue &&
+        tabIndex >= 0 &&
+        verticalIndex >= 0
+    ) {
         dispatch(
             updateTab({
                 field: tabValueName,
@@ -65,9 +72,27 @@ export function handleAdvanceSearchDataFormat(data) {
     });
     return finalDataFormat;
 }
-export function validateIsCustomNavigate(location, defaultlocationState, navigate, nextLevelCallBack) {
+export function validateIsCustomNavigate(location, defaultlocationState, navigate, nextLevelCallBack, options = {}) {
+    const { dispatch } = options;
+    const safeLocation = isPlainObject(location) ? location : {};
+    const safeDefaultState = isPlainObject(defaultlocationState) ? defaultlocationState : {};
+    const mergedNavState = { ...safeLocation, ...safeDefaultState };
     const navigateDetails = defaultlocationState?.backNavigationDetails || location?.backNavigationDetails;
+
     if (navigateDetails?.isCustomNavigate) {
+        if (
+            mergedNavState?.from === 'CreateCommunication' &&
+            mergedNavState?.campaignType !== 'M' &&
+            mergedNavState?.backAction !== undefined &&
+            dispatch
+        ) {
+            return navigateBackToCommunicationCreation({
+                dispatch,
+                navigate,
+                navigationState: mergedNavState,
+            });
+        }
+
         const backPath = navigateDetails?.backPathName;
 
         if (navigateDetails?.locationState) {
@@ -76,14 +101,14 @@ export function validateIsCustomNavigate(location, defaultlocationState, navigat
             return navigate(`${backPath}?q=${encryptState}`, {
                 state: navigateDetails.locationState,
             });
-        } else {
-            return navigate(backPath, {
-                state: {},
-            });
         }
-    } else {
-        return nextLevelCallBack();
+
+        return navigate(backPath, {
+            state: {},
+        });
     }
+
+    return nextLevelCallBack();
 }
 const isPlainObject = (value) => value !== null && typeof value === 'object' && !Array.isArray(value);
 

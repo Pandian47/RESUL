@@ -1,13 +1,12 @@
 import { encodeUrl } from 'Utils/modules/crypto';
 import { getDateWithDaynoFormat, getUserCurrentFormat, getYYMMDD } from 'Utils/modules/dateTime';
-import { truncateTitle } from 'Utils/modules/displayCore';
 import { numberWithCommas } from 'Utils/modules/formatters';
 import { HorizontalSkeleton } from 'Components/Skeleton/Skeleton';
 import { Fragment, useEffect, useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import KendoGrid from 'Components/RSKendoGrid';
 
-import RSTooltip from 'Components/RSTooltip';
+import TruncateCell from 'Components/RSKendoGrid/TruncateCell';
 
 import { map as _map } from 'Utils/modules/lodashReplacements';
 import { getSessionId } from 'Reducers/globalState/selector';
@@ -206,63 +205,50 @@ const ConsumptionQr = () => {
                                         width: 250,
                                         filter: 'text',
                                         cell: ({ dataItem }) => (
-                                            <td>
-                                                <span
-                                                    className="cursor-pointer link-underline-hover color-primary-black"
-                                                    onClick={() => {
-                                                        dispatch(
-                                                            updateAnalyticsDetail({
-                                                                channelName: consumptionChannel?.lable,
-                                                                campaignId: dataItem?.campaignID,
-                                                                from: 'analytics',
-                                                                blastId: dataItem?.iswinnerB2 && dataItem?.iswinnerSplit ? dataItem?.iswinnerB2 : dataItem?.blastShortCode,
-                                                                channelId: 3,
-                                                                currIndex:
-                                                                    dataItem?.deliveryMethod === 'Multi dimension'
-                                                                        ? dataItem?.mdcLevel > 0
-                                                                            ? dataItem?.mdcLevel - 1
-                                                                            : 0
-                                                                        : 0,
-                                                            }),
-                                                        );
-                                                        const state = {
+                                            <td
+                                                className="cursor-pointer link-underline-hover color-primary-black"
+                                                onClick={() => {
+                                                    dispatch(
+                                                        updateAnalyticsDetail({
                                                             channelName: consumptionChannel?.lable,
                                                             campaignId: dataItem?.campaignID,
+                                                            from: 'analytics',
+                                                            blastId:
+                                                                dataItem?.iswinnerB2 && dataItem?.iswinnerSplit
+                                                                    ? dataItem?.iswinnerB2
+                                                                    : dataItem?.blastShortCode,
                                                             channelId: 3,
-                                                            iswinnerSplit: dataItem?.iswinnerSplit,
-                                                            iswinnerSplitType: dataItem?.iswinnerSplitType,
-                                                            isSplitAB: dataItem?.isSplitAB,
-                                                            iswinnerBlastId: dataItem?.iswinnerSplit && dataItem?.iswinnerB2 ? dataItem?.iswinnerB2 : '',
-                                                        };
-                                                        const encryptState = encodeUrl(state);
-                                                        navigate(`/analytics/detail-analytics?q=${encryptState}`, {
-                                                            state,
-                                                        });
-                                                        // navigate(`/analytics/detail-analytics`, {
-                                                        //     state: {
-                                                        //         channelName: consumptionChannel?.lable,
-                                                        //         campaignId: dataItem?.campaignID,
-                                                        //     },
-                                                        // });
-                                                    }}
-                                                >
-                                                    {/* <td> */}
-                                                        {dataItem?.campaignName?.length> 20 ? (
-                                                            <RSTooltip
-                                                                text={`${dataItem?.campaignName}`}
-                                                                position="top"
-                                                                className="color-primary-black"
-                                                                innerContent={false}
-                                                            >
-                                                                <span className="color-primary-black">
-                                                                    {truncateTitle(dataItem?.campaignName, 20)}
-                                                                </span>
-                                                            </RSTooltip>
-                                                        ) : (
-                                                            <span className="m0">{dataItem?.campaignName}</span>
-                                                        )}
-                                                    {/* </td> */}
-                                                </span>
+                                                            currIndex:
+                                                                dataItem?.deliveryMethod === 'Multi dimension'
+                                                                    ? dataItem?.mdcLevel > 0
+                                                                        ? dataItem?.mdcLevel - 1
+                                                                        : 0
+                                                                    : 0,
+                                                        }),
+                                                    );
+                                                    const state = {
+                                                        channelName: consumptionChannel?.lable,
+                                                        campaignId: dataItem?.campaignID,
+                                                        channelId: 3,
+                                                        iswinnerSplit: dataItem?.iswinnerSplit,
+                                                        iswinnerSplitType: dataItem?.iswinnerSplitType,
+                                                        isSplitAB: dataItem?.isSplitAB,
+                                                        iswinnerBlastId:
+                                                            dataItem?.iswinnerSplit && dataItem?.iswinnerB2
+                                                                ? dataItem?.iswinnerB2
+                                                                : '',
+                                                    };
+                                                    const encryptState = encodeUrl(state);
+                                                    navigate(`/analytics/detail-analytics?q=${encryptState}`, {
+                                                        state,
+                                                    });
+                                                }}
+                                            >
+                                                <TruncateCell
+                                                    value={dataItem?.campaignName ?? ''}
+                                                    noTable={true}
+                                                    wrapperClassName="m0"
+                                                />
                                             </td>
                                         ),
                                     },
@@ -302,20 +288,11 @@ const ConsumptionQr = () => {
                                     { field: 'productCategory', title: 'Product category', width: 170 , filter: 'text',
                                         cell: ({ dataItem }) => (
                                             <td>
-                                                {dataItem?.productCategory?.length > 15 ? (
-                                                    <RSTooltip
-                                                        text={dataItem?.productCategory}
-                                                        position="top"
-                                                        className="d-inline-block"
-                                                        innerContent={false}
-                                                    >
-                                                        <span className="m0">
-                                                        {truncateTitle(dataItem?.productCategory, 15)}
-                                                        </span>
-                                                    </RSTooltip>
-                                                ) : (
-                                                    <span className="m0">{(dataItem?.productCategory)}</span>
-                                                )}
+                                                <TruncateCell
+                                                    value={dataItem?.productCategory ?? ''}
+                                                    noTable={true}
+                                                    wrapperClassName="m0"
+                                                />
                                             </td>
                                         ),
                                     },

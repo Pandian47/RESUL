@@ -50,6 +50,7 @@ import offerMangementReducer from './preferences/OfferManagements/reducer';
 import formGeneratorReducers from './preferences/FormGenerator/reducer';
 import emailBuilderReducer from './preferences/EmailBuilder/reducer';
 import geofenceReducer from './preferences/CommunicationSettings/Geofencing/reducer';
+import beaconReducer from './preferences/CommunicationSettings/Beacons/reducer';
 import genieReducer from './genie';
 import analyticsListingTwinsReducer from './analyticsTwins/communicationAnalytics/reducer';
 import analyticsReportTwinsReducer from './analyticsTwins/analyticsSummary/reducer';
@@ -125,6 +126,7 @@ export default function createAppReducer() {
         emailBuilderReducer,
         TemplateReducer,
         geofenceReducer,
+        beaconReducer,
         genieReducer,
     });
 }

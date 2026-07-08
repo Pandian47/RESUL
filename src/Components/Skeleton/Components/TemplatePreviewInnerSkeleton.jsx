@@ -38,17 +38,74 @@ const TemplatePreviewNoDataCanvas = () => (
     </>
 );
 
+const WebNotificationToggleRowSkeleton = () => (
+    <div className="form-group template-preview-inner-skeleton__toggle-row">
+        <Row>
+            <Col sm={3}>
+                <Shimmer className="template-preview-inner-skeleton__toggle-label" />
+            </Col>
+            <Col sm={9}>
+                <Shimmer className="template-preview-inner-skeleton__toggle" />
+            </Col>
+        </Row>
+    </div>
+);
+
+const WebNotificationTemplatePreviewSkeleton = ({ showNoData = false }) => (
+    <Row>
+        <Col sm={7} className="pr50">
+            <WebNotificationToggleRowSkeleton />
+            <WebNotificationToggleRowSkeleton />
+            <WebNotificationToggleRowSkeleton />
+            <div className="form-group template-preview-inner-skeleton__hashtag-row">
+                <Row>
+                    <Col sm={3}>
+                        <Shimmer className="template-preview-inner-skeleton__toggle-label" />
+                    </Col>
+                    <Col sm={9}>
+                        <Shimmer className="template-preview-inner-skeleton__hashtag-input" />
+                        <Shimmer className="template-preview-inner-skeleton__hashtag-hint" />
+                    </Col>
+                </Row>
+            </div>
+        </Col>
+        <Col sm={5} className="position-relative">
+            <div className="template-preview-inner-skeleton__import-preview">
+                {showNoData ? (
+                    <div
+                        className="template-preview-inner-skeleton__no-data-panel template-preview-inner-skeleton__no-data-panel--import"
+                        role="status"
+                        aria-live="polite"
+                    >
+                        <NoDataAvailableRender className="nodata-skeleton-con template-preview-inner-skeleton__no-data" />
+                    </div>
+                ) : (
+                    <Shimmer className="template-preview-inner-skeleton__import-preview-frame" />
+                )}
+            </div>
+        </Col>
+    </Row>
+);
+
 /** Matches Email → Template preview: inbox row, toolbar, and inner EDM canvas while FetchTemplateById loads. */
-const TemplatePreviewInnerSkeleton = ({ showBrowserToolbar = true, showNoData = false }) => (
+const TemplatePreviewInnerSkeleton = ({
+    showBrowserToolbar = true,
+    showNoData = false,
+    variant = 'email',
+}) => (
     <>
         <style>{templatePreviewInnerSkeletonCriticalCss}</style>
         <div
             className={`template-preview-inner-skeleton-scope${
                 showNoData ? ' template-preview-inner-skeleton-scope--no-data' : ''
-            }`}
+            }${variant === 'webNotification' ? ' template-preview-inner-skeleton-scope--web-notification' : ''}`}
             aria-busy={!showNoData}
             aria-label={showNoData ? 'Template preview unavailable' : 'Loading template preview'}
         >
+            {variant === 'webNotification' ? (
+                <WebNotificationTemplatePreviewSkeleton showNoData={showNoData} />
+            ) : (
+                <>
             {showBrowserToolbar && !showNoData && (
                 <>
                     <div className="form-group mt30 template-preview-inner-skeleton__inbox-row">
@@ -77,6 +134,8 @@ const TemplatePreviewInnerSkeleton = ({ showBrowserToolbar = true, showNoData = 
                     {showNoData ? <TemplatePreviewNoDataCanvas /> : <TemplatePreviewLoadingCanvas />}
                 </div>
             </div>
+                </>
+            )}
         </div>
     </>
 );

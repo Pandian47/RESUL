@@ -2,7 +2,7 @@ import { useEffect, useLayoutEffect, useRef, useState, lazy, Suspense } from 're
 
 import { useLocation, useNavigate } from 'react-router-dom';
 import { shallowEqual, useDispatch, useSelector } from 'react-redux';
-import { ToastContainer } from 'react-toastify';
+import { ToastContainer, Bounce } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { ToastifyNotificationIcon } from 'Utils/ToastifyNotificationIcon';
 import MainPageSkeleton from 'Components/Skeleton/Components/MainPageSkeleton';
@@ -15,7 +15,7 @@ import NetworkLostAlert from 'Components/NetworkLostAlert';
 import CaSupport from './Pages/RegistrationModule/Login/Component/CASupport/index';
 import { ToasterContainer } from 'Components/CustomToast/CustomToast';
 
-import { getMasterData, repairPersistedGlobalListsIfNeeded } from 'Reducers/globalState/request';
+import {repairPersistedGlobalListsIfNeeded } from 'Reducers/globalState/request';
 import { setTabforEdit, updateTab } from 'Reducers/communication/createCommunication/Create/reducer';
 import {
     reset_failures_API_Errors,
@@ -47,7 +47,6 @@ import { mountFullAppReducer, isFullReducerMounted } from 'Store/mountFullAppRed
 import RSLoader, { LoginRouteLoading } from 'Components/Loader';
 import { isPublicAuthPath } from './Routes/appRouteConfig';
 import { navigateToLoginAfterSessionClear } from 'Reducers/login/existingUser/request';
-import '@progress/kendo-theme-default/dist/all.css';
 
 const resolveInitialAppStylesLoaded = () => {
     if (typeof window !== 'undefined' && isPublicAuthPath(window.location.pathname)) {
@@ -265,25 +264,10 @@ function App() {
 
     useEffect(() => {
         if (isPublicAuthRoute || !hasToken) return;
-        if (!isMasterDataCacheMissing()) return;
-        dispatch(getMasterData(false));
     }, [dispatch, isPublicAuthRoute, hasToken, pathname]);
 
     useEffect(() => {
-        if (isPublicAuthRoute || !hasToken) return;
-
-        const refetchMasterDataIfMissing = () => {
-            if (document.visibilityState === 'hidden') return;
-            if (!isMasterDataCacheMissing()) return;
-            dispatch(getMasterData(false));
-        };
-
-        window.addEventListener('focus', refetchMasterDataIfMissing);
-        document.addEventListener('visibilitychange', refetchMasterDataIfMissing);
-        return () => {
-            window.removeEventListener('focus', refetchMasterDataIfMissing);
-            document.removeEventListener('visibilitychange', refetchMasterDataIfMissing);
-        };
+        if (isPublicAuthRoute || !hasToken) return; 
     }, [dispatch, isPublicAuthRoute, hasToken]);
     useLayoutEffect(() => {
         if (isLoginPage || isPublicAuthRoute) return;
@@ -400,7 +384,7 @@ function App() {
                 }
 
                 if (!cancelled) {
-                    handleCSSLoad('/aiemailbuildercss.css?v2.0.5');
+                    handleCSSLoad('/aiemailbuildercss.css?v2.0.8');
                 }
             };
 
@@ -470,11 +454,19 @@ function App() {
     return (
         <ErrorBoundary>
             <ToastContainer
-                hideProgressBar={false}
-                pauseOnFocusLoss={false}
+                position="top-right"
+                transition={Bounce}
                 autoClose={false}
+                hideProgressBar={false}
                 newestOnTop
                 closeOnClick
+                rtl={false}
+                pauseOnFocusLoss={false}
+                pauseOnHover
+                draggable
+                draggablePercent={80}
+                draggableDirection="x"
+                theme="light"
                 style={{ zIndex: 100000000 }}
                 icon={({ type }) => <ToastifyNotificationIcon type={type} />}
             />

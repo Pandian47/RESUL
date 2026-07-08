@@ -30,8 +30,8 @@ import { DynamicListCreateContext } from '../..';
 
 import RSBootstrapdown from 'Components/FormFields/RSBootstrapdown';
 import RSTooltip from 'Components/RSTooltip';
-import { getAttributeValues } from 'Reducers/audience/targetListCreation/request';
 import DynamicListGeoFencing from '../GeoFencing/DynamicListGeoFencing';
+import DynamicListBeacon from '../Beacon/DynamicListBeacon';
 import { get_dynamic_list } from 'Reducers/audience/dynamicList/reducer';
 import useApiLoader from 'Hooks/useApiLoader';
 
@@ -87,7 +87,14 @@ const RenderField = ({
     const skipAttributeNameEffectRef = useRef(false);
     const skipAttributeNameEffectExpectedKeyRef = useRef('');
     const attributeEffectKeyRef = useRef('');
-    const { ListState, dispatchState } = useContext(DynamicListCreateContext);
+    const {
+        ListState,
+        dispatchState,
+        setErrorGroup: contextSetErrorGroup,
+        setErrorCustomGroup: contextSetErrorCustomGroup,
+    } = useContext(DynamicListCreateContext);
+    const updateErrorGroup = setErrorGroup ?? contextSetErrorGroup;
+    const updateErrorCustomGroup = setErrorCustomGroup ?? contextSetErrorCustomGroup;
     const attributeFieldType = attribute?.attributeName?.fieldType ?? attribute?.attributeName?.fieldtype;
     const isTwoDimensionalField = attributeFieldType === '2D';
     const level1FieldTriggerState =
@@ -151,7 +158,7 @@ const RenderField = ({
         level2FieldTriggerState?.triggerValues,
         localTriggerValues,
     ]);
-    const { formAttributeId = {}, formAttrDropdownChange, dataAttributeId = {}, filterLabels = {} } = ListState || {};
+    const { formAttributeId = {}, formAttrDropdownChange, dataAttributeId = {} } = ListState || {};
     const { departmentId, clientId, userId } = useSelector((state) => getSessionId(state));
     // Select only the editList slice so the reference stays stable across unrelated dynamic-list dispatches
     const editList = useSelector(({ dynamicListReducer }) => dynamicListReducer?.editList);
@@ -254,6 +261,7 @@ const RenderField = ({
         }
         return communicationStatus[channelType] || [];
     }, [attributeChannelValue?.type]);
+    const channelDropdownOptions = ListState?.communicationChannelOptions ?? channelOptions;
     const isBet = attributeComp === 'Between';
     const attributeName = attribute?.attributeName?.value || '';
     const inputDropDownClassName = `${className || ''} ${isClickOff ? 'click-off pe-none' : ''}`.trim();
@@ -590,47 +598,6 @@ const RenderField = ({
     //     getTriggerAttributeValues(...args);
     // };
 
-    const getFilterValues = (attributeValues = []) => {
-        const finalData = attributeValues?.map((item, index) => {
-            const splitValue = item?.split(':@');
-            const value = splitValue[0] ?? '';
-            const count = splitValue[1]?.split('@;')[1] ?? 0;
-            return value;
-        });
-        return finalData;
-    };
-    const handleAudienceBaseApi = async () => {
-        let payload = {
-            attributeName: attribute?.attributeName?.fieldName,
-            departmentId,
-            clientId,
-            userId,
-            partnerID: 0,
-        };
-        let attributeValues = filterLabels?.[attribute?.attributeName?.fieldName];
-        let finalData = getFilterValues(attributeValues);
-
-        if (finalData?.length) {
-            setTriggerValues(finalData);
-            return;
-        }
-        const response = await dispatch(getAttributeValues(payload, () => { }, '', 0, true));
-
-        if (response?.status) {
-            try {
-                const audienceBaseData = response?.data;
-                const parsedAudienceBaseData = audienceBaseData ? JSON.parse(audienceBaseData) : {};
-                const nextLevelParseAudienceBaseData = parsedAudienceBaseData ? JSON.parse(parsedAudienceBaseData) : {};
-                const dataKeys = Object.keys(nextLevelParseAudienceBaseData);
-                setTriggerValues(dataKeys);
-            } catch (err) {
-                setTriggerValues([]);
-            }
-        } else {
-            setTriggerValues([]);
-        }
-    };
-
     // const handleFirstLevelDDAttributeValue = () => {
     //     switch (formatName(attribute?.attributeName?.value)) {
     //         case 'forms':
@@ -916,7 +883,7 @@ const RenderField = ({
                     index: 0,
                     isCustomDuplicateError: isCustomEventDuplicate,
                 });
-                setErrorGroup(title);
+                updateErrorGroup?.(title);
             } else {
                 if (check?.length === 1) {
                     trigger(`${fieldName}.RuleAttributes[${customEventIndex}]`);
@@ -929,7 +896,7 @@ const RenderField = ({
                         index: check[3],
                         isCustomDuplicateError: isCustomEventDuplicate,
                     });
-                    setErrorCustomGroup(currentAttributeRule?.attributeValue);
+                    updateErrorCustomGroup?.(currentAttributeRule?.attributeValue);
                 }
             }
         } else {
@@ -938,7 +905,7 @@ const RenderField = ({
                 index: ruleCheck[3],
                 isCustomDuplicateError: isCustomEventDuplicate,
             });
-            setErrorGroup(title);
+            updateErrorGroup?.(title);
         }
     };
 
@@ -950,7 +917,7 @@ const RenderField = ({
             ruleAttributesPath,
             TriggerName?.triggerId,
         );
-        setErrorGroup(title);
+        updateErrorGroup?.(title);
         if (duplicateStatus?.duplicateIndex >= 0) {
             setDuplicateRule({
                 show: true,
@@ -982,7 +949,7 @@ const RenderField = ({
                     show: true,
                     index: check[3],
                 });
-                setErrorGroup(title);
+                updateErrorGroup?.(title);
             }
         }
     };
@@ -1221,6 +1188,21 @@ const RenderField = ({
 
     // console.log('Valid func ::: ', triggerValues);
     // console.log('Valid func ::: ', TriggerName, attribute);
+    if (formatName(attributeName) === 'beacon') {
+        return (
+            <DynamicListBeacon
+                attribute={attribute}
+                className={inputDropDownClassName}
+                index={index}
+                name={name}
+                setDuplicateRule={setDuplicateRule}
+                handleDuplicateCheck={handleDuplicateCheck}
+                checkValidCondition={checkValidCondition}
+                currentRuleIndex={currentRuleIndex}
+            />
+        );
+    }
+
     switch (attribute?.attributeName?.fieldType || attribute?.attributeName?.fieldtype) {
         case 'D':
         case TriggerName?.triggerId === 14 && 'T':
@@ -1465,7 +1447,7 @@ const RenderField = ({
                                 label="Channel"
                                 textField="label"
                                 dataItemKey="id"
-                                data={channelOptions}
+                                data={channelDropdownOptions}
                                 required={checkValidCondition()}
                                 handleChange={() => {
                                     setValue(`${name}.attributeActionValues`, '');
@@ -2730,6 +2712,19 @@ const RenderField = ({
                     </Col>
                 </Row>
             );
+        case '4D':
+            return formatName(attributeName) === 'beacon' ? (
+                <DynamicListBeacon
+                    attribute={attribute}
+                    className={inputDropDownClassName}
+                    index={index}
+                    name={name}
+                    setDuplicateRule={setDuplicateRule}
+                    handleDuplicateCheck={handleDuplicateCheck}
+                    checkValidCondition={checkValidCondition}
+                    currentRuleIndex={currentRuleIndex}
+                />
+            ) : null;
         default:
             return (
                 <Fragment>

@@ -1,7 +1,7 @@
 import { useDispatch, useSelector } from 'react-redux';
 import RSTabbar from 'Components/RSTabber';
 
-import { VOICE_TAB_CONFIG } from '../../constant';
+import { VOICE_TAB_CONFIG, shouldShowAuthoringTabChangeConfirmation } from '../../constant';
 import { updateTab } from 'Reducers/communication/createCommunication/Create/reducer';
 
 const Voice = () => {
@@ -18,7 +18,7 @@ const Voice = () => {
             activeClass={`active`}
             defaultTab={currentIndex}
             tabData={VOICE_TAB_CONFIG}
-            isTabChangeConfirmation={isDirty}
+            isTabChangeConfirmation={shouldShowAuthoringTabChangeConfirmation(isDirty)}
             callBack={(tabs, index) => {
                 if (currentIndex !== index) {
                     dispatch(

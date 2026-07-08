@@ -4,7 +4,7 @@ import { get as _get,findIndex as _findIndex } from 'Utils/modules/lodashReplace
 
 import RSTabbar from 'Components/RSTabber';
 
-import { NOTIFICATION_TAB_CONFIG, resolveNotificationSubTabIndexFromSharedState } from '../../constant';
+import { NOTIFICATION_TAB_CONFIG, resolveNotificationSubTabIndexFromSharedState, shouldShowAuthoringTabChangeConfirmation } from '../../constant';
 import { updateTab } from 'Reducers/communication/createCommunication/Create/reducer';
 import useQueryParams from 'Hooks/useQueryParams';
 
@@ -34,7 +34,7 @@ const Notification = () => {
         const resolved = resolveNotificationSubTabIndexFromSharedState({
             location,
             tabsState,
-            notificationReduxIndex: !_get(location, 'channels', [])?.includes(8) ? null : currentIndex,
+            notificationReduxIndex: currentIndex,
             verticalTabType: 'notification',
         });
         const fromIndex = userPickedSubTabRef.current ? currentIndex : resolved.fromIndex;
@@ -59,6 +59,17 @@ const Notification = () => {
             else defaultTab = fromIndex;
         }
         defaultTab = Math.max(0, Math.min(defaultTab, notifyTabs.length - 1));
+
+        const enabledTabIndexes = notifyTabs.reduce((acc, tab, idx) => {
+            if (!tab.disable) acc.push(idx);
+            return acc;
+        }, []);
+
+        if (enabledTabIndexes.length === 1) {
+            defaultTab = enabledTabIndexes[0];
+        } else if (notifyTabs[defaultTab]?.disable && enabledTabIndexes.length > 0) {
+            defaultTab = enabledTabIndexes[0];
+        }
 
         let nextIndex = defaultTab;
         let nextTabName = notifyTabs[defaultTab]?.id;
@@ -117,7 +128,7 @@ const Notification = () => {
             activeClass={`active`}
             defaultTab={currentIndex}
             tabData={tabState}
-            isTabChangeConfirmation={isDirty}
+            isTabChangeConfirmation={shouldShowAuthoringTabChangeConfirmation(isDirty)}
             callBack={(tabs, index) => {
                 if (currentIndex !== index) {
                     userPickedSubTabRef.current = true;

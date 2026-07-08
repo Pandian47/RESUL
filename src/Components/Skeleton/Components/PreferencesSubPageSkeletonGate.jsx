@@ -25,6 +25,10 @@ import {
     TemplateGalleryInnerTabbedSkeleton,
     TemplateGalleryLandingInnerSkeleton,
     TemplateGalleryFormGeneratorSkeleton,
+    FormGeneratorListSkeleton,
+    FormGeneratorEditorSkeleton,
+    FormGeneratorAddSkeleton,
+    BrandOwnedFormSkeleton,
     TemplateGalleryAdsSkeleton,
     TemplateGalleryWhatsappSkeleton,
     DataCatalogueRouteSkeleton,
@@ -95,6 +99,10 @@ const PreferencesSubPageFormSkeleton = ({ variant, showNoData = false }) => {
     if (variant === PREFERENCES_SUBPAGE_VARIANT.TG_TABBED_GALLERY) return <TemplateGalleryInnerTabbedSkeleton />;
     if (variant === PREFERENCES_SUBPAGE_VARIANT.TG_LANDING_GALLERY) return <TemplateGalleryLandingInnerSkeleton />;
     if (variant === PREFERENCES_SUBPAGE_VARIANT.TG_FORM_GENERATOR) return <TemplateGalleryFormGeneratorSkeleton />;
+    if (variant === PREFERENCES_SUBPAGE_VARIANT.FORM_GENERATOR) return <FormGeneratorListSkeleton />;
+    if (variant === PREFERENCES_SUBPAGE_VARIANT.FORM_GENERATOR_EDITOR) return <FormGeneratorEditorSkeleton />;
+    if (variant === PREFERENCES_SUBPAGE_VARIANT.FORM_GENERATOR_ADD) return <FormGeneratorAddSkeleton />;
+    if (variant === PREFERENCES_SUBPAGE_VARIANT.BRAND_OWNED_FORM) return <BrandOwnedFormSkeleton />;
     if (variant === PREFERENCES_SUBPAGE_VARIANT.TG_ADS) return <TemplateGalleryAdsSkeleton />;
     if (variant === PREFERENCES_SUBPAGE_VARIANT.TG_WHATSAPP) return <TemplateGalleryWhatsappSkeleton />;
     if (variant === PREFERENCES_SUBPAGE_VARIANT.DATA_CATALOGUE) return <DataCatalogueRouteSkeleton />;
@@ -134,8 +142,8 @@ export const PreferencesSubPageSkeletonGate = ({
     className = '',
     ariaLabel = 'Loading',
 }) => {
-    const { pathname } = useLocation();
-    const variant = variantProp ?? resolvePreferencesSubPageVariant(pathname);
+    const { pathname, search } = useLocation();
+    const variant = variantProp ?? resolvePreferencesSubPageVariant(pathname, search);
 
     if (!isLoading) {
         return children;

@@ -571,10 +571,25 @@ export const getMessagingCampaignByIdNew = ({ payload, type, campaignType, isEna
 };
 //Email Channel:
 
+const buildEmailFooterListSignature = (payload = {}) =>
+    JSON.stringify({
+        clientId: payload?.clientId ?? '',
+        userId: payload?.userId ?? '',
+        departmentId: payload?.departmentId ?? '',
+    });
+
+let unSubscriptionListInFlight = null;
+
 export const getUnSubscriptionList =
     ({ payload, loading = false }) =>
-    async (dispatch) =>
-        dispatch(
+    async (dispatch) => {
+        const signature = buildEmailFooterListSignature(payload);
+
+        if (unSubscriptionListInFlight?.signature === signature) {
+            return unSubscriptionListInFlight.promise;
+        }
+
+        const requestPromise = dispatch(
             request.post({
                 url: GET_UNSUBSCRIPTION,
                 payload,
@@ -588,14 +603,15 @@ export const getUnSubscriptionList =
             }),
         );
 
-let emailFooterListInFlight = null;
+        unSubscriptionListInFlight = { signature, promise: requestPromise };
+        return requestPromise.finally(() => {
+            if (unSubscriptionListInFlight?.promise === requestPromise) {
+                unSubscriptionListInFlight = null;
+            }
+        });
+    };
 
-const buildEmailFooterListSignature = (payload = {}) =>
-    JSON.stringify({
-        clientId: payload?.clientId ?? '',
-        userId: payload?.userId ?? '',
-        departmentId: payload?.departmentId ?? '',
-    });
+let emailFooterListInFlight = null;
 
 export const getEmailFooterList =
     ({ payload, loading = true }) =>
@@ -1422,7 +1438,7 @@ export const uploadImageQR =
                 loading: false,
                 ok: ({ data }) => {
                     const { data: res, status } = data;
-                    const response = toSafeObject(res, status);
+                    const response = status ? res : '';
                     dispatch(
                         updateQr({
                             data: response,

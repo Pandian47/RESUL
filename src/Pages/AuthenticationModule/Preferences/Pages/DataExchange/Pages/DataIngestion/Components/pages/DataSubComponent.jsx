@@ -591,8 +591,10 @@ const DataSubComponent = ({ subTab, type, isAudience }) => {
             remotesettingId: id,
         };
         const { data, status } = await dispatch(get_ConnectorDetails(payload, loading));
-        if (status) {
+        if (status) {      
             let connectorDetails = connectorList?.find((item) => item.remoteDataSourceID === ele?.remoteDataSourceID);
+            const isOneTime =
+                ele?.scheduleFrequency?.toString()?.toLowerCase() === 'one time';
             const state = {
                 isAudience: pathName === 'add-audience',
                 from: 'data_exchange',
@@ -600,12 +602,14 @@ const DataSubComponent = ({ subTab, type, isAudience }) => {
                 data: {
                     ...data,
                     ...connectorDetails,
+                    remoteSettingId: id || 0,
                     sourceGroupName: ele?.sourceGroupName,
                     sourceName: ele?.sourceName,
                     webinar: ele?.schemaName,
                     selectedConnection: data?.connectionType,
                 },
                 mode: 'edit',
+                isOneTime: isOneTime,
             };
             const encryptState = encodeUrl(state);
             navigate(`/audience/add-audience?q=${encryptState}`, {
@@ -619,9 +623,11 @@ const DataSubComponent = ({ subTab, type, isAudience }) => {
     const handleIntegratedSystemConnectionEdit = async (ele) => {
         if (ele?.remoteDataSourceID === 40) {
             setIntegratedSystemsModal((m) => ({ ...m, show: false, editingRowKey: null }));
+            const isOneTime = ele?.scheduleFrequency?.toString()?.toLowerCase() === 'one time';
             const stateversim = {
                 from: 'targetlist',
                 mode: 'edit',
+                isOneTime: isOneTime,
                 type: 'versium',
                 id: {
                     remoteSettingId: ele?.remoteSettingId,

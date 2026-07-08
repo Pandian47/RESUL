@@ -9,7 +9,7 @@ import { viteCommonjs } from '@originjs/vite-plugin-commonjs';
 import viteCompression from 'vite-plugin-compression';
 import { visualizer } from 'rollup-plugin-visualizer';
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-
+ 
 /** Hunspell for Genie Typo.js: copy from resul-genie-ui dist into public before dev/build. */
 function copyGenieDictionariesPlugin() {
     return {
@@ -31,25 +31,6 @@ function copyGenieDictionariesPlugin() {
     };
 }
 
-/** Genie logos, preview frames, etc.: copy from resul-genie-ui into public before dev/build. */
-function copyGenieAssetsPlugin() {
-    return {
-        name: 'copy-genie-assets',
-        buildStart() {
-            const pkgRoot = path.resolve(__dirname, 'node_modules/resul-genie-ui');
-            const distSrc = path.join(pkgRoot, 'dist/genie-assets');
-            const pubSrc = path.join(pkgRoot, 'public/genie-assets');
-            const src = existsSync(distSrc) ? distSrc : pubSrc;
-            const dest = path.resolve(__dirname, 'public/genie-assets');
-            if (!existsSync(src)) {
-                return;
-            }
-            mkdirSync(path.resolve(__dirname, 'public'), { recursive: true });
-            cpSync(src, dest, { recursive: true });
-        },
-    };
-}
-
 export default defineConfig(({ mode }) => {
     const isProduction =
         mode === 'production' || mode === 'prod' || process.env.NODE_ENV === 'production';
@@ -63,20 +44,12 @@ export default defineConfig(({ mode }) => {
         modulePreload: {
             polyfill: false,
         },
-        
+       
         rollupOptions: {
             output: {
                 manualChunks(id) {
                     const normalizedId = id.replace(/\\/g, '/');
                     if (normalizedId.includes('node_modules')) {
-                        if (
-                            id.includes('/react-dom/') ||
-                            id.includes('/react-router-dom/') ||
-                            id.includes('/react-router/') ||
-                            /[/\\]node_modules[/\\]react[/\\]/.test(id)
-                        ) {
-                            return 'react-vendor';
-                        }
                         // Group large libraries into separate chunks
                         if (normalizedId.includes('@progress/kendo')) return 'kendo-ui';
                         if (normalizedId.includes('highcharts')) return 'highcharts';
@@ -84,7 +57,6 @@ export default defineConfig(({ mode }) => {
                         if (normalizedId.includes('d3') || normalizedId.includes('reactflow')) return 'visualization';
                         if (normalizedId.includes('@dnd-kit')) return 'dnd-kit';
                         if (normalizedId.includes('moment')) return 'moment';
-                        if (normalizedId.includes('lodash')) return 'lodash';
                         // Other vendor chunks
                         return normalizedId.split('node_modules/')[1].split('/')[0].toString();
                     }
@@ -102,18 +74,14 @@ export default defineConfig(({ mode }) => {
                     name: 'remove-console-arrow-functions',
                     transform(code, id) {
                         if (!id.includes('node_modules')) {
-                            // Replace arrow functions that only contain console.log/debugger with empty functions
-                            // Pattern: (key:)? (params) => console.method(args)
                             code = code.replace(
                                 /([a-zA-Z_$][a-zA-Z0-9_$]*:\s*)?\([^)]*\)\s*=>\s*console\.(log|debug|info|trace)\([^)]*\)/g,
                                 (match, prefix) => {
-                                    // Extract the parameter list from the match
                                     const paramMatch = match.match(/\(([^)]*)\)/);
                                     const params = paramMatch ? paramMatch[1] : '';
                                     return prefix ? `${prefix}(${params}) => {}` : `(${params}) => {}`;
                                 }
                             );
-                            // Replace arrow functions with debugger
                             code = code.replace(
                                 /([a-zA-Z_$][a-zA-Z0-9_$]*:\s*)?\([^)]*\)\s*=>\s*debugger/g,
                                 (match, prefix) => {
@@ -151,10 +119,10 @@ export default defineConfig(({ mode }) => {
             '@progress/kendo-react-common',
             '@progress/kendo-react-buttons',
             '@progress/kendo-data-query',
-            'react',
-            'react-dom',
             'react-router',
             'react-router-dom',
+            'react/jsx-runtime',
+            'react/jsx-dev-runtime'
         ],
         alias: {
             '@progress/kendo-react-grid': path.resolve(__dirname, 'node_modules/@progress/kendo-react-grid'),
@@ -187,14 +155,7 @@ export default defineConfig(({ mode }) => {
             'react',
             'react-dom',
             '@progress/kendo-react-grid',
-            'react-router',
-            'react-router-dom',
-            'react-redux',
-            'recharts',
-            'use-sync-external-store/shim/with-selector',
-            'use-sync-external-store/shim/with-selector.js',
         ],
-        exclude: ['resul-genie-ui'],
         esbuildOptions: {
             loader: {
                 '.js': 'jsx',
@@ -202,10 +163,9 @@ export default defineConfig(({ mode }) => {
         },
     },
     publicDir: './public',
-
+ 
     plugins: [
         copyGenieDictionariesPlugin(),
-        copyGenieAssetsPlugin(),
         createHtmlPlugin({
             // inject: {
             //     data: {

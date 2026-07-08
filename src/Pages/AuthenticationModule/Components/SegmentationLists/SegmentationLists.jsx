@@ -1909,7 +1909,7 @@ const SegmentationLists = (
                                 <h4 className={fields?.length === 0 ? 'pt5' : 'mb0'}>
                                     {groupTitle(filterGroups.groups, fieldName)}
                                 </h4>
-                                {!isPersona && fields?.length ? (
+                                {!isPersona && fields?.length > 1 ? (
                                     <>
                                         {fieldName === 'zeroDayLists' ? (
                                             <></>

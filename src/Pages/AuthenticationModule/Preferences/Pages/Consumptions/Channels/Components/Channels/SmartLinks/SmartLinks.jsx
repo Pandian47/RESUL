@@ -1,14 +1,12 @@
 import { download_medium } from 'Constants/GlobalConstant/Glyphicons';
 import { encodeUrl } from 'Utils/modules/crypto';
 import { getUserCurrentFormat, getYYMMDD } from 'Utils/modules/dateTime';
-import { truncateTitle } from 'Utils/modules/displayCore';
 import { numberWithCommas } from 'Utils/modules/formatters';
 import { HorizontalSkeleton } from 'Components/Skeleton/Skeleton';
 import { Fragment, useCallback, useEffect, useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import KendoGrid from 'Components/RSKendoGrid';
-
-import RSTooltip from 'Components/RSTooltip';
+import TruncateCell from 'Components/RSKendoGrid/TruncateCell';
 
 import { getSessionId } from 'Reducers/globalState/selector';
 import { getConsumptionChannelDetails } from 'Reducers/preferences/consumptions/request';
@@ -167,57 +165,45 @@ const ConsumptionSmartLinks = () => {
                                     filter: 'text',
                                     cell: ({ dataItem, field }) => {
                                         return (
-                                            <td>
-                                                <div className="d-flex justify-content-between">
-                                                    <span
-                                                        className="cursor-pointer link-underline-hover color-primary-black"
-                                                        onClick={() => {
-                                                            dispatch(
-                                                                updateAnalyticsDetail({
-                                                                    channelName: consumptionChannel?.lable,
-                                                                    campaignId: dataItem?.campaignID,
-                                                                    from: 'analytics',
-                                                                    blastId: dataItem?.blastShortCode,
-                                                                    channelId: 21,
-                                                                    currIndex:
-                                                                        dataItem?.deliveryMethod ===
-                                                                        'Multi dimension'
-                                                                            ? dataItem?.mdcLevel - 1
-                                                                            : 0,
-                                                                }),
-                                                            );
-                                                            const state = {
-                                                                channelName: consumptionChannel?.lable,
-                                                                campaignId: dataItem?.campaignID,
-                                                                channelId: 21,
-                                                                iswinnerSplit: dataItem?.iswinnerSplit,  
-                                                                iswinnerSplitType: dataItem?.iswinnerSplitType,
-                                                                isSplitAB: dataItem?.isSplitAB
-                                                            };
-                                                            const encryptState = encodeUrl(state);
-                                                            navigate(
-                                                                `/analytics/detail-analytics?q=${encryptState}`,
-                                                                {
-                                                                    state,
-                                                                },
-                                                            );
-                                                        }}
-                                                    >
-                                                        {dataItem?.[field]?.length > 28 ? (
-                                                            <RSTooltip
-                                                                text={`${dataItem?.[field]}`}
-                                                                position="top"
-                                                                innerContent={false}
-                                                            >
-                                                                <span className="m0">
-                                                                    {truncateTitle(dataItem?.[field], 28)}
-                                                                </span>
-                                                            </RSTooltip>
-                                                        ) : (
-                                                            <span className="m0">{dataItem?.[field]}</span>
-                                                        )}
-                                                    </span>
-                                                </div>
+                                            <td
+                                                className="cursor-pointer link-underline-hover color-primary-black"
+                                                onClick={() => {
+                                                    dispatch(
+                                                        updateAnalyticsDetail({
+                                                            channelName: consumptionChannel?.lable,
+                                                            campaignId: dataItem?.campaignID,
+                                                            from: 'analytics',
+                                                            blastId: dataItem?.blastShortCode,
+                                                            channelId: 21,
+                                                            currIndex:
+                                                                dataItem?.deliveryMethod ===
+                                                                'Multi dimension'
+                                                                    ? dataItem?.mdcLevel - 1
+                                                                    : 0,
+                                                        }),
+                                                    );
+                                                    const state = {
+                                                        channelName: consumptionChannel?.lable,
+                                                        campaignId: dataItem?.campaignID,
+                                                        channelId: 21,
+                                                        iswinnerSplit: dataItem?.iswinnerSplit,
+                                                        iswinnerSplitType: dataItem?.iswinnerSplitType,
+                                                        isSplitAB: dataItem?.isSplitAB,
+                                                    };
+                                                    const encryptState = encodeUrl(state);
+                                                    navigate(
+                                                        `/analytics/detail-analytics?q=${encryptState}`,
+                                                        {
+                                                            state,
+                                                        },
+                                                    );
+                                                }}
+                                            >
+                                                <TruncateCell
+                                                    value={dataItem?.[field] ?? ''}
+                                                    noTable={true}
+                                                    wrapperClassName="m0"
+                                                />
                                             </td>
                                         );
                                     },
@@ -236,20 +222,11 @@ const ConsumptionSmartLinks = () => {
                                 { field: 'deliveryMethod', title: 'Delivery method', width: 180 ,filter: 'text',},
                                 { field: 'smartUrl', title: 'Smartlink', width: 200,filter: 'text',cell: ({ dataItem }) => (
                                     <td>
-                                        {dataItem?.smartUrl?.length > 30 ? (
-                                            <RSTooltip
-                                                text={dataItem?.smartUrl}
-                                                position="top"
-                                                // className="d-inline-block"
-                                                innerContent={false}
-                                            >
-                                                <span className="m0">
-                                                    {truncateTitle(dataItem?.smartUrl, 30)}
-                                                </span>
-                                            </RSTooltip>
-                                        ) : (
-                                            <span className="m0">{dataItem?.smartUrl}</span>
-                                        )}
+                                        <TruncateCell
+                                            value={dataItem?.smartUrl ?? ''}
+                                            noTable={true}
+                                            wrapperClassName="m0"
+                                        />
                                     </td>
                                 ), },
                                 {

@@ -7,7 +7,7 @@ import { link_mini } from 'Constants/GlobalConstant/Glyphicons';
 import { Carousel } from 'react-bootstrap';
 
 import { locationPreview } from 'Pages/AuthenticationModule/Communication/CreateCommunication/CreationSteps/Create/Tabs/Whatsapp/constant';
-import { toEmbedUrl, getMediaFormatFromUrl, getCarouselUrlFormat, PREVIEW_SOURCE } from './utils';
+import { toEmbedUrl, getMediaFormatFromUrl, getCarouselUrlFormat, getUrlFormatForMedia, PREVIEW_SOURCE } from './utils';
 import MediaPreview from './components/MediaPreview';
 
 // ─── SMS ────────────────────────────────────────────────────────────────────
@@ -394,8 +394,9 @@ export const handlePreviewWhatsapp = (ctx) => {
         return null;
     }
 
-    let finalPreviewImage =  previewImage || header || imagePath || whatsAppContent?.bannerValue;
-    const finalUrlFormat = urlFormat || getMediaFormatFromUrl(finalPreviewImage);
+    let finalPreviewImage = previewImage || header || imagePath || whatsAppContent?.bannerValue;
+    const finalUrlFormat =
+        urlFormat || getMediaFormatFromUrl(finalPreviewImage) || getUrlFormatForMedia(finalPreviewImage, mediaType);
 
     return (
         <>

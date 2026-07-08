@@ -1,5 +1,5 @@
 import { numberWithCommas } from 'Utils/modules/formatters';
-import { BLOCKED, DELIVERED, NOT_READ, REJECTED, REPORTED, RESPONDED, SEEN, UNDELIVERED, UNIQUE_CLICKS } from 'Constants/GlobalConstant/Placeholders';
+import { BLOCKED, DELIVERED, NOT_READ, REJECTED, REPORTED, RESPONDED, SEEN, UNDELIVERED, UNIQUE_CLICKS ,SENT_COUNT,AWAITING_VENDOR_RESPONSE} from 'Constants/GlobalConstant/Placeholders';
 import { Col, Row, Table } from 'react-bootstrap';
 import './Tabs.scss';
 
@@ -97,7 +97,7 @@ const Whatsapp = (data) => {
                             <td className="text-end">{numberWithCommas(data.notRead || 0)}</td>
                         </tr>
                           <tr>
-                                <td>Awaiting vendor response </td>
+                                <td>{AWAITING_VENDOR_RESPONSE}</td>
                                 <td className="text-end">{numberWithCommas(data.submittedToCarrier || 0)}</td>
                             </tr>
                     </tbody>
@@ -106,6 +106,10 @@ const Whatsapp = (data) => {
             <Col md={6}>
                 <Table striped className="theme-space-mt rs-table-plain">
                     <tbody>
+                         <tr>
+                            <td>{SENT_COUNT}</td>
+                            <td className="text-end">{numberWithCommas(data.sentCount || 0)}</td>
+                        </tr>
                         <tr>
                             <div className="d-flex align-items-center tabsMouseHover">
                                 <td>{UNIQUE_CLICKS}</td>

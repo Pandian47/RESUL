@@ -1,4 +1,4 @@
-import { CREATE_DYNAMIC_LIST, DUPLICATE_DYNAMIC_LIST, DYNAMIC_LIST_DOWNLOAD, DYNAMIC_LIST_DOWNLOAD_FILE, DYNAMIC_LIST_GET_CUSTOM_EVENTS_VALUE, DYNAMIC_LIST_GET_TRIGGER_ATTRIBUTES, DYNAMIC_LIST_GET_TRIGGER_ATTRIBUTES_VALUES, DYNAMIC_LIST_GET_TRIGGER_BASE_DDL, DYNAMIC_LIST_GET_TRIGGER_SOURCE, DYNAMIC_LIST_MORE_INFO, DYNAMIC_LIST_SEARCH_COUNT, DYNAMIC_LIST_SEARCH_NAME, DYNAMIC_TIME_ZONE_DETAILS, GET_DYNAMIC_LISTS, GET_DYNAMIC_LISTS_BY_ID, GET_DYNAMIC_LIST_SCHEDULE, GET_GEOFENCES_LISTS, IS_LIST_NAME_EXIST, RFA_DYNAMIC_LIST_APPROVE, RFA_DYNAMIC_LIST_REJECT, STOP_DYNAMIC_LIST_SCHEDULE } from 'Constants/EndPoints';
+import { CREATE_DYNAMIC_LIST, DUPLICATE_DYNAMIC_LIST, DYNAMIC_LIST_DOWNLOAD,GET_COMMUNICATION_BYCHANNEL, DYNAMIC_LIST_DOWNLOAD_FILE, DYNAMIC_LIST_GET_CUSTOM_EVENTS_VALUE, DYNAMIC_LIST_GET_TRIGGER_ATTRIBUTES, DYNAMIC_LIST_GET_TRIGGER_ATTRIBUTES_VALUES, DYNAMIC_LIST_GET_TRIGGER_BASE_DDL, DYNAMIC_LIST_GET_TRIGGER_SOURCE, DYNAMIC_LIST_MORE_INFO, DYNAMIC_LIST_SEARCH_COUNT, DYNAMIC_LIST_SEARCH_NAME, DYNAMIC_TIME_ZONE_DETAILS, GET_DYNAMIC_LISTS, GET_DYNAMIC_LISTS_BY_ID, GET_DYNAMIC_LIST_SCHEDULE, GET_FULL_JSON_ATTRIBUTE_VALUES, GET_GEOFENCES_LISTS, IS_LIST_NAME_EXIST, RFA_DYNAMIC_LIST_APPROVE, RFA_DYNAMIC_LIST_REJECT, STOP_DYNAMIC_LIST_SCHEDULE } from 'Constants/EndPoints';
 import request from 'Utils/Http';
 
 import {
@@ -787,3 +787,36 @@ export const getTimezoneDetails = (payload) => async (dispatch) => {
         }),
     );
 };
+
+export const getTrrComm_ChannelValues =
+    ({ payload, loading = false }) =>
+    async (dispatch) =>
+        dispatch(
+            request.post({
+                url: GET_COMMUNICATION_BYCHANNEL,
+                payload,
+                loading,
+                ok: ({ data }) => {
+                    if (data.status) {
+                    } else {
+
+                    }
+                    return { status: data.status, data: data.data ?? [] };
+                },
+                fail: () => {
+                    return { status: false, data: [] };
+                },
+            }),
+        );
+
+
+export const getDynamicListFullAttributeJSONValues =
+    ({ payload, loading = false }) =>
+    async (dispatch) =>
+        dispatch(
+            request.post({
+                url: GET_FULL_JSON_ATTRIBUTE_VALUES,
+                payload,
+                loading,
+            }),
+        );

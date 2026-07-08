@@ -30,7 +30,7 @@ import {
 } from 'Reducers/audience/addAudience/request';
 import usePermission from 'Hooks/usePersmission';
 import RSRadioButton from 'Components/FormFields/RSRadioButton';
-import { resetCsvFiles } from 'Reducers/audience/addAudience/reducer';
+import { resetCsvFiles, setChildCategoryList } from 'Reducers/audience/addAudience/reducer';
 import { getSessionId } from 'Reducers/globalState/selector';
 import RSTooltip from 'Components/RSTooltip';
 import RSPPophover from 'Components/RSPPophover';
@@ -565,10 +565,11 @@ const AddAudience = () => {
             password,
             folderPath,
             portNumber,
-            catType,
             categoryType,
             updatedCycle,
         } = FTP;
+        const catType = categoryType ? 'child' : 'parent';
+        const catTypeName = categoryType?.catTypeName ?? '';
         let payload = {
             iPAddress: ipAddress,
             userName: userName?.trim(),
@@ -582,8 +583,8 @@ const AddAudience = () => {
             ...(getCsvListType(listType) === 5
                 ? {
                       scheduleFrequency: updatedCycle?.typeId,
-                      catType: catType.toLowerCase(),
-                      catTypeName: categoryType?.catTypeName,
+                      catType,
+                      catTypeName,
                       port: parseInt(portNumber, 10),
                   }
                 : { port: portNumber }),
@@ -622,7 +623,7 @@ const AddAudience = () => {
                         audienceData: { ...data, dedupeSettingId: payload?.dedupeSettingId || 0 },
                         listType,
                         catType,
-                        catTypeName: categoryType?.catTypeName,
+                        catTypeName,
                     },
                     isAudience: state?.isDataExchange ? false : pathName === 'add-audience',
                 };
@@ -886,6 +887,7 @@ const AddAudience = () => {
                         backPath={state?.isDataExchange ? '/preferences/data-exchange' : '/audience'}
                         backAction={() => {
                             navigateToAudienceTab(resolveAudienceBackTabIndex());
+                            dispatch(setChildCategoryList([]));
                         }}
                         />
                     </Suspense>
@@ -1114,6 +1116,7 @@ const AddAudience = () => {
                                                         setCurrentComponent('');
                                                         dispatch(resetCsvFiles());
                                                         reset(resetColumnFields);
+                                                        dispatch(setChildCategoryList([]));
                                                     }}
                                                     id="rs_AddAudience_secondary"
                                                 >

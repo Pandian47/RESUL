@@ -56,10 +56,185 @@ import { updateMDCEditMode } from 'Reducers/communication/createCommunication/Cr
 import useApiLoader from 'Hooks/useApiLoader';
 import { AUTHORING_FIELD_LOADER_CONFIG } from 'Components/Skeleton/pages/communication/authoring';
 import { TemplatePreviewInnerSkeleton } from 'Components/Skeleton/Skeleton';
+import WebPreviewConfig from 'Pages/AuthenticationModule/Communication/CreateCommunication/CreationSteps/Create/Tabs/Notification/Component/SplitAB/Component/WebPreviewConfig/WebPreviewConfig';
+import RSWebPreview from 'Pages/AuthenticationModule/Communication/Component/RSWebPreview';
+
+const IFRAME_PREVIEW_SCALE = 0.4;
+
+const PUSH_PREVIEW_IFRAME_RESET_CSS = `
+html, body {
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: hidden !important;
+    box-sizing: border-box;
+}
+body, body > table, body > div {
+    height: auto !important;
+    min-height: 0 !important;
+}
+`;
+
+const injectPushPreviewIframeResetStyles = (doc) => {
+    if (!doc?.head || doc.head.querySelector('[data-push-preview-height-reset]')) return;
+
+    const style = doc.createElement('style');
+    style.setAttribute('data-push-preview-height-reset', '');
+    style.textContent = PUSH_PREVIEW_IFRAME_RESET_CSS;
+    doc.head.appendChild(style);
+};
+
+const measurePushNotificationIframeHeight = (iframe, setDimension) => {
+    if (!iframe?.contentDocument?.body) return;
+
+    try {
+        const doc = iframe.contentDocument;
+        const currentBody = doc.body;
+        const htmlEl = doc.documentElement;
+
+        injectPushPreviewIframeResetStyles(doc);
+
+        const iframeTransform = window.getComputedStyle(iframe).transform;
+        let scale = IFRAME_PREVIEW_SCALE;
+        if (iframeTransform && iframeTransform !== 'none') {
+            const match = iframeTransform.match(/matrix\(([^,]+)/);
+            if (match) scale = parseFloat(match[1]);
+        }
+
+        const contentHeight = Math.ceil(
+            Math.max(currentBody.offsetHeight || 0, currentBody.scrollHeight || 0, htmlEl?.scrollHeight || 0),
+        );
+
+        if (contentHeight <= 0) return;
+
+        const scaledHeight = Math.ceil(contentHeight * scale);
+        const scrollWidth = Math.max(currentBody.scrollWidth, currentBody.offsetWidth);
+
+        iframe.style.setProperty('height', `${contentHeight}px`, 'important');
+        iframe.style.overflowY = 'hidden';
+        iframe.style.overflowX = 'hidden';
+        iframe.style.maxHeight = 'none';
+
+        const templateElement = document.getElementById('template');
+        if (templateElement) {
+            templateElement.style.height = `${scaledHeight}px`;
+            templateElement.style.maxHeight = `${scaledHeight}px`;
+            templateElement.style.minHeight = '0';
+            templateElement.style.overflow = 'hidden';
+            templateElement.style.lineHeight = '0';
+        }
+
+        if (setDimension && scrollWidth > 0) {
+            setDimension(contentHeight * scrollWidth);
+        }
+    } catch (error) {
+        console.error('Error setting push notification iframe height:', error);
+    }
+};
+
+const updatePushNotificationIframeHeight = (iframe, setDimension, attempt = 0) => {
+    if (!iframe?.contentDocument) return;
+
+    const maxAttempts = 10;
+    if (attempt >= maxAttempts) return;
+
+    try {
+        const body = iframe.contentDocument.body;
+        if (!body) {
+            setTimeout(() => updatePushNotificationIframeHeight(iframe, setDimension, attempt + 1), 100);
+            return;
+        }
+
+        const images = body.querySelectorAll('img');
+        const totalImages = images.length;
+
+        if (totalImages === 0) {
+            measurePushNotificationIframeHeight(iframe, setDimension);
+            return;
+        }
+
+        let imagesLoaded = 0;
+        images.forEach((img) => {
+            if (img.complete) {
+                imagesLoaded++;
+            } else {
+                img.onload = () => {
+                    imagesLoaded++;
+                    if (imagesLoaded === totalImages) {
+                        measurePushNotificationIframeHeight(iframe, setDimension);
+                    }
+                };
+                img.onerror = () => {
+                    imagesLoaded++;
+                    if (imagesLoaded === totalImages) {
+                        measurePushNotificationIframeHeight(iframe, setDimension);
+                    }
+                };
+            }
+        });
+
+        setTimeout(() => measurePushNotificationIframeHeight(iframe, setDimension), 500);
+
+        if (imagesLoaded === totalImages) {
+            measurePushNotificationIframeHeight(iframe, setDimension);
+        }
+    } catch (error) {
+        if (attempt < maxAttempts) {
+            setTimeout(() => updatePushNotificationIframeHeight(iframe, setDimension, attempt + 1), 200);
+        }
+    }
+};
+
+const configurePushNotificationIframe = (iframe) => {
+    iframe.id = 'iframe';
+    iframe.className = 'preview-email-iframe';
+    iframe.width = '100%';
+    iframe.height = 'auto';
+    iframe.style.width = '100%';
+    iframe.style.border = 'none';
+    iframe.scrolling = 'no';
+    iframe.setAttribute('allow', 'autoplay');
+};
+
+const schedulePushNotificationIframeHeight = (iframe, setDimension) => {
+    iframe.onload = () => updatePushNotificationIframeHeight(iframe, setDimension);
+    setTimeout(() => updatePushNotificationIframeHeight(iframe, setDimension), 100);
+    setTimeout(() => updatePushNotificationIframeHeight(iframe, setDimension), 500);
+    setTimeout(() => updatePushNotificationIframeHeight(iframe, setDimension), 1000);
+};
+
+const createPreviewIframe = (isPushNotification) => {
+    const createFrame = document.createElement('iframe');
+    if (isPushNotification) {
+        configurePushNotificationIframe(createFrame);
+    } else {
+        createFrame.id = 'iframe';
+        createFrame.width = '100%';
+        createFrame.setAttribute('allow', 'autoplay');
+    }
+    return createFrame;
+};
 
 const lastSpamScoreTemplateBySplit = {};
 
 const templateGalleryRequestsInFlight = new Map();
+/** Completed GetTemplateLists payloads — survives Template remount (Split A/B tab switch). */
+const templateGalleryFetchedKeys = new Set();
+
+export const clearTemplateGalleryCache = () => {
+    templateGalleryFetchedKeys.clear();
+};
+
+const resolveTemplateContentFields = (isSplit, fieldName) => ({
+    templateContentField: isSplit && fieldName ? `${fieldName}.templateContent` : 'templateContent',
+    edmContentField: isSplit && fieldName ? `${fieldName}.edmContent` : 'edmContent',
+});
+
+const hasExistingTemplateContent = (getValues, isSplit, fieldName) => {
+    const { templateContentField, edmContentField } = resolveTemplateContentFields(isSplit, fieldName);
+    return (
+        Boolean(getValues(templateContentField)?.length) || Boolean(getValues(edmContentField)?.length)
+    );
+};
 
 const buildTemplateGalleryApiPayload = (payload, { departmentId, clientId }) => ({
     ...payload,
@@ -218,6 +393,7 @@ const Template = ({
     const [loading, setLoading] = useState(false);
     const [previewMode, setPreviewMode] = useState('amp');
     const isInitializedRef = useRef(false);
+    const uploadRef = useRef(null);
     if (Object.keys(campaignDetails)?.length) {
         const { content, isSplitAB } = campaignDetails;
         let temp = {};
@@ -267,6 +443,11 @@ const Template = ({
     const lastTemplateCategoryKeyRef = useRef(null);
     const lastGalleryFetchKeyRef = useRef(null);
 
+    const galleryFetchKey = useMemo(() => {
+        if (!departmentId || !clientId) return '';
+        return JSON.stringify(buildTemplateGalleryApiPayload(payload, { departmentId, clientId }));
+    }, [payload, departmentId, clientId]);
+
     useEffect(() => {
         if (builderBootstrapRef.current.isReturningFromBuilder && userId) {
             setPayload((prev) => (prev.userId === userId ? prev : { ...prev, userId }));
@@ -274,7 +455,7 @@ const Template = ({
     }, [userId]);
 
     useEffect(() => {
-        if (!departmentId || !clientId) {
+        if (!departmentId || !clientId || !galleryFetchKey) {
             return;
         }
 
@@ -287,10 +468,17 @@ const Template = ({
             lastTemplateCategoryKeyRef.current !== categoryKey ||
             !(Array.isArray(categoriesData) && categoriesData.length);
         const payloadForApi = buildTemplateGalleryApiPayload(payload, { departmentId, clientId });
-        const galleryFetchKey = JSON.stringify(payloadForApi);
-        const shouldFetchGallery = lastGalleryFetchKeyRef.current !== galleryFetchKey;
+        const hasTemplateAlready = hasExistingTemplateContent(getValues, isSplit, fieldName);
+        const isGalleryCached = templateGalleryFetchedKeys.has(galleryFetchKey);
+        const shouldFetchGallery =
+            lastGalleryFetchKeyRef.current !== galleryFetchKey &&
+            !hasTemplateAlready &&
+            !isGalleryCached;
 
         if (!shouldFetchGallery && !shouldFetchCategories) {
+            if (hasTemplateAlready || isGalleryCached) {
+                lastGalleryFetchKeyRef.current = galleryFetchKey;
+            }
             return;
         }
 
@@ -305,6 +493,7 @@ const Template = ({
                 setLoading(false);
                 dispatch(templateLoading(false));
                 lastGalleryFetchKeyRef.current = galleryFetchKey;
+                templateGalleryFetchedKeys.add(galleryFetchKey);
 
                 if (shouldAutoSelectLatestTemplateRef.current) {
                     shouldAutoSelectLatestTemplateRef.current = false;
@@ -314,6 +503,8 @@ const Template = ({
                         fetchTemplateById(latestTemplateId, resolvedChannelId);
                     }
                 }
+            } else if (hasTemplateAlready || isGalleryCached) {
+                lastGalleryFetchKeyRef.current = galleryFetchKey;
             }
 
             if (shouldFetchCategories) {
@@ -329,7 +520,7 @@ const Template = ({
         return () => {
             cancelled = true;
         };
-    }, [payload, isNotification, dispatch, clientId, departmentId, userId]);
+    }, [galleryFetchKey, payload, isNotification, dispatch, clientId, departmentId, userId, isSplit, fieldName, getValues]);
 
     // On mount: if query params contain channelId (1, 8, or 14) and a templateId, fetch template by ID
     useEffect(() => {
@@ -360,6 +551,8 @@ const Template = ({
     const edmContentDimensionName = isSplit ? `${fieldName}.edmDimension` : 'edmDimension';
     const templateIDName = isSplit ? `${fieldName}.templateId` : 'templateId';
     const contentTypeName = isSplit ? `${fieldName}.contentType` : 'contentType';
+    const interactivityName = isSplit ? `${fieldName}.interactivity` : 'interactivity';
+    const isPushNotification = isNotification === 'Web' || isNotification === 'Mobile';
     const [edmContent = [], viewInBrowser, sampleEmailFooter, templateContent = ''] = watch([
         edmContentName,
         viewInbrowserName,
@@ -370,13 +563,9 @@ const Template = ({
         const edmContentVal = templateContent;
         // console.log('edmContentVal: ', edmContentVal);
         if (edmContentVal?.length > 0) {
-            // Sync edmContent with templateContent if it's not already set
-
             const currentEdmContent = getValues(edmContentName);
             if (!currentEdmContent || currentEdmContent.length === 0) {
-                if (isNotification !== 'Web' && isNotification !== 'Mobile') {
-                    setValue(edmContentName, edmContentVal);
-                }
+                setValue(edmContentName, edmContentVal);
             }
             handleFileInputChange(edmContentVal);
         }
@@ -545,6 +734,8 @@ const Template = ({
         return processedHTML;
     };
     function handleFileInputChange(content = '', fieldName = '') {
+        const setPushDimension = (dimension) => setValue(edmContentDimensionName, dimension);
+
         // Helper function to set iframe height after content is loaded
         const setIframeHeight = (iframeEl) => {
             if (!iframeEl) return;
@@ -623,6 +814,16 @@ const Template = ({
 
         try {
             if (content) {
+                const templateHost = document.getElementById('template');
+                if (!templateHost) {
+                    return [true, ''];
+                }
+
+                templateHost.style.height = '';
+                templateHost.style.maxHeight = '';
+                templateHost.style.minHeight = '';
+                templateHost.style.overflow = '';
+
                 if (edmContent) {
                     const iframeEl = document.querySelector('#template iframe');
                     if (iframeEl) {
@@ -638,14 +839,10 @@ const Template = ({
                 if (hasAmp) {
                     // Amp Flow - Optimized with external React state
                     const processedHtml = processEmailHTML(content, previewMode);
-                    const createFrame = document.createElement('iframe');
-                    createFrame.id = 'iframe';
-                    createFrame.width = '100%';
-                    createFrame.height = '800px';
-                    createFrame.setAttribute('allow', 'autoplay');
-
-                    // document.getElementById('template').appendChild(createFrame);
-                    // const frameDocument = createFrame.contentDocument;
+                    const createFrame = createPreviewIframe(isPushNotification);
+                    if (!isPushNotification) {
+                        createFrame.height = '800px';
+                    }
 
                     // Add load event listener to set height after scripts are loaded
                     createFrame.onload = () => {
@@ -667,9 +864,12 @@ const Template = ({
                                     const edmHeight = scrollH;
                                     const edmWidth = body?.scrollWidth || 0;
                                     setValue(edmContentDimensionName, edmHeight * edmWidth);
-                                    // Set iframe height to match content exactly
-                                    createFrame.style.height = `${edmHeight + 20}px`;
-                                    setIframeHeight(createFrame);
+                                    if (isPushNotification) {
+                                        updatePushNotificationIframeHeight(createFrame, setPushDimension);
+                                    } else {
+                                        createFrame.style.height = `${edmHeight + 20}px`;
+                                        setIframeHeight(createFrame);
+                                    }
                                 } else {
                                     setTimeout(checkReady, 200);
                                 }
@@ -689,20 +889,18 @@ const Template = ({
                     const scriptTagContent = content.slice(startIndex, endIndex) || '';
                     const convertScriptTagToObject = JSON.parse(removeTags(scriptTagContent));
                     const labelSet = convertScriptTagToObject?.LabelSet;
-                    //Creating the iframe and adding the content of the iframe
-                    const createFrame = document.createElement('iframe');
-                    createFrame.id = 'iframe';
-                    createFrame.width = '100%';
-                    createFrame.setAttribute('allow', 'autoplay');
+                    const createFrame = createPreviewIframe(isPushNotification);
                     document.getElementById('template').appendChild(createFrame);
 
-                    // Add load event listener to set height and dimensions after scripts are loaded
                     createFrame.onload = () => {
-                        let edmHeight = createFrame.contentWindow.document.body.scrollHeight;
-                        let edmWidth = createFrame.contentWindow.document.body.scrollWidth;
-                        let tempedmDimension = edmHeight * edmWidth;
-                        setValue(edmContentDimensionName, tempedmDimension);
-                        setIframeHeight(createFrame);
+                        const edmHeight = createFrame.contentWindow.document.body.scrollHeight;
+                        const edmWidth = createFrame.contentWindow.document.body.scrollWidth;
+                        setValue(edmContentDimensionName, edmHeight * edmWidth);
+                        if (isPushNotification) {
+                            updatePushNotificationIframeHeight(createFrame, setPushDimension);
+                        } else {
+                            setIframeHeight(createFrame);
+                        }
                     };
 
                     const frameDocument = createFrame.contentDocument;
@@ -710,6 +908,9 @@ const Template = ({
                     createFrame.contentWindow.document.open();
                     createFrame.contentWindow.document.write(content);
                     createFrame.contentWindow.document.close();
+                    if (isPushNotification) {
+                        injectPushPreviewIframeResetStyles(createFrame.contentDocument);
+                    }
                     //Adding the style to the iframe
                     const scriptBody = safeGetIframeBody(frameDocument);
                     if (scriptBody) {
@@ -794,34 +995,50 @@ const Template = ({
                     // } else {
                     //     throw new Error('Label and tags Set did not match');
                     // }
+                    if (isPushNotification) {
+                        schedulePushNotificationIframeHeight(createFrame, setPushDimension);
+                        setTimeout(() => updatePushNotificationIframeHeight(createFrame, setPushDimension), 200);
+                        setTimeout(() => updatePushNotificationIframeHeight(createFrame, setPushDimension), 600);
+                    }
                 } else {
-                    //Creating the iframe and adding the content of the iframe
-                    const createFrame = document.createElement('iframe');
-                    createFrame.id = 'iframe';
-                    createFrame.width = '100%';
-                    createFrame.setAttribute('allow', 'autoplay');
+                    const createFrame = createPreviewIframe(isPushNotification);
                     document.getElementById('template').appendChild(createFrame);
 
-                    // Add load event listener to set height and dimensions after scripts are loaded
-                    createFrame.onload = () => {
-                        let edmHeight = createFrame.contentWindow.document.body.scrollHeight;
-                        let edmWidth = createFrame.contentWindow.document.body.scrollWidth;
-                        let tempedmDimension = edmHeight * edmWidth;
-                        setValue(edmContentDimensionName, tempedmDimension);
-                        setIframeHeight(createFrame);
-                    };
-
-                    createFrame.contentWindow.document.open();
-                    createFrame.contentWindow.document.write(content);
-                    createFrame.contentWindow.document.close();
-                    const frameDocument = createFrame.contentDocument;
-                    const regularBody = safeGetIframeBody(frameDocument);
-                    if (regularBody) {
-                        regularBody.innerHTML = regularBody.innerHTML + iframeStyles;
+                    if (isPushNotification) {
+                        createFrame.contentWindow.document.open();
+                        createFrame.contentWindow.document.write(content);
+                        createFrame.contentWindow.document.close();
+                        injectPushPreviewIframeResetStyles(createFrame.contentDocument);
+                        const frameDocument = createFrame.contentDocument;
+                        const regularBody = safeGetIframeBody(frameDocument);
+                        if (regularBody) {
+                            regularBody.innerHTML = regularBody.innerHTML + iframeStyles;
+                        } else {
+                            throw new Error(
+                                'Unable to access iframe body. Template content may be invalid or iframe not ready.',
+                            );
+                        }
+                        schedulePushNotificationIframeHeight(createFrame, setPushDimension);
                     } else {
-                        throw new Error(
-                            'Unable to access iframe body. Template content may be invalid or iframe not ready.',
-                        );
+                        createFrame.onload = () => {
+                            const edmHeight = createFrame.contentWindow.document.body.scrollHeight;
+                            const edmWidth = createFrame.contentWindow.document.body.scrollWidth;
+                            setValue(edmContentDimensionName, edmHeight * edmWidth);
+                            setIframeHeight(createFrame);
+                        };
+
+                        createFrame.contentWindow.document.open();
+                        createFrame.contentWindow.document.write(content);
+                        createFrame.contentWindow.document.close();
+                        const frameDocument = createFrame.contentDocument;
+                        const regularBody = safeGetIframeBody(frameDocument);
+                        if (regularBody) {
+                            regularBody.innerHTML = regularBody.innerHTML + iframeStyles;
+                        } else {
+                            throw new Error(
+                                'Unable to access iframe body. Template content may be invalid or iframe not ready.',
+                            );
+                        }
                     }
                 }
                 return [true, 'Uploaded successfully'];
@@ -1284,7 +1501,9 @@ const Template = ({
                 setTemplateId(templateId);
                 setValue(contentTypeName, 'T');
                 setValue(templateContentName, res?.data?.HTML);
-                // setValue('edmContent', res?.data?.HTML);
+                if (isPushNotification) {
+                    setValue(edmContentName, res?.data?.HTML);
+                }
                 setValue(templateIDName, templateId);
                 handleFileInputChange(res?.data?.HTML);
             }
@@ -1298,8 +1517,16 @@ const Template = ({
     return (
         <div className="form-group mb0 mt30">
             <>
-                {(isNotification === 'Web' || isNotification === 'Mobile') && templateContent?.length > 0 ? (
-                    <div>
+                {(isNotification === 'Web' || isNotification === 'Mobile') &&
+                (templateContent?.length > 0 || isTemplateSelectLoading || templatePreviewError) ? (
+                    <div className="import_fileupload_wrapper mt41">
+                        {isTemplateSelectLoading || templatePreviewError ? (
+                            <TemplatePreviewInnerSkeleton
+                                variant="webNotification"
+                                showNoData={!isTemplateSelectLoading && templatePreviewError}
+                            />
+                        ) : (
+                            <>
                         <span className="d-flex justify-content-end mr65 my15">
                             <RSTooltip text="Edit">
                                 <i
@@ -1449,22 +1676,43 @@ const Template = ({
                                         setValue(edmContentName, '');
                                         setTemplatePreviewError(false);
                                         templateSelectLoader.reset();
+                                        const templateElement = document.getElementById('template');
+                                        if (templateElement) {
+                                            templateElement.innerHTML = '';
+                                        }
                                         removeQueryParams(['channelId', 'templateId']);
                                     }}
                                     className={`${restart_medium} icon-md color-primary-blue mt-5`}
                                     id="rs_TableAttributes_penciledit"
                                 ></i>
                             </RSTooltip>
-                            {/* <label style={{ backgroundColor: 'orange', color: "white", margin: 10 }} onClick={() => {
-                        setValue('templateContent', '')
-                    }}>
-                        X
-                    </label> */}
                         </span>
-                        <div
-                            id="template"
-                            className={`${edmContent?.length > 0 ? 'edm-import-wrapper EDM-template-preview' : ''}`}
-                        ></div>
+                        <Row>
+                            <Col sm={7} className="pr50">
+                                <WebPreviewConfig
+                                    fieldName={fieldName}
+                                    isSplit={isSplit}
+                                    variant="import"
+                                />
+                            </Col>
+                            <Col sm={5} className="position-relative">
+                                <RSWebPreview
+                                    {...getValues()}
+                                    variant="authoring"
+                                    templateRef={uploadRef}
+                                    templateId="template"
+                                    edmContent={templateContent || edmContent}
+                                    interactivity={getValues(interactivityName)}
+                                    emptyMessage="Preview not available"
+                                    title={isSplit ? getValues(`${fieldName}.title`) : getValues('title')}
+                                    buttonText={
+                                        isSplit ? getValues(`${fieldName}.buttonText`) : getValues('buttonText')
+                                    }
+                                />
+                            </Col>
+                        </Row>
+                            </>
+                        )}
                     </div>
                 ) : (
                     <>
@@ -1478,7 +1726,7 @@ const Template = ({
                                 callBack={handleTemplate}
                             />
                         </span>
-                        {(isTemplateSelectLoading || templatePreviewError) && (
+                        {(isTemplateSelectLoading || templatePreviewError) && !isPushNotification && (
                             <div className="form-group mt30">
                                 <TemplatePreviewInnerSkeleton
                                     showBrowserToolbar={showBrowerText && isTemplateSelectLoading}

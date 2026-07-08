@@ -1478,7 +1478,7 @@ const FormGenerator = ({ tag, setCurrentTab }) => {
                 />
                 <div className={``}>
                     {/* <span>Drag and drop the fields to include in your form.</span> */}
-                    <div className="rs-builder-elements-holder w-auto d-flex flex-column flex-xl-row align-items-center justify-content-between gap-3">
+                    <div className="rs-builder-elements-holder w-auto d-flex flex-column flex-xl-row align-items-center justify-content-between gap-3 py0 px10">
                         <ul className="rsbeh-form-builder flex-grow-1 mb-0 w-100" style={{ minWidth: 0}}>
                             {scrollList?.length ? (
                                 <Carousel

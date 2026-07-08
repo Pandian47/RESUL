@@ -459,8 +459,11 @@ export function getFirstDayOfMonth(year, month) {
 }
 export function standardizeDateFormat(dateStr) {
     if (!dateStr) return null;
-    let { dateFormatList } = getmasterData();
-    dateFormatList = [...dateFormatList.map((item) => item?.dateformat), 'MMM DD, YYYY'];
+    const { dateFormatList: masterDateFormats = [] } = getmasterData?.() ?? {};
+    const parsedFormats = Array.isArray(masterDateFormats)
+        ? masterDateFormats.map((item) => item?.dateformat).filter(Boolean)
+        : [];
+    const dateFormatList = [...parsedFormats, 'MMM DD, YYYY'];
     const date = moment(dateStr, dateFormatList, true); // strict parsing
     return date.isValid() ? date.format('YYYY-MM-DD') : null;
 }

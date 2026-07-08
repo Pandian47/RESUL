@@ -91,6 +91,7 @@ export const datePlannerSingleList = (payload, setPlanner) => async (dispatch) =
         popupShow: true,
         showMore: false,
         selectedDate: payload.specificDate,
+        eventPopupShow: false,
     }));
 
     return dispatch(

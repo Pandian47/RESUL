@@ -1,7 +1,7 @@
 import { useDispatch, useSelector } from 'react-redux';
 import RSTabbar from 'Components/RSTabber';
 
-import { ADS_TAB_CONFIG } from '../../constant';
+import { ADS_TAB_CONFIG, shouldShowAuthoringTabChangeConfirmation } from '../../constant';
 import { updateTab } from 'Reducers/communication/createCommunication/Create/reducer';
 
 const Ads = () => {
@@ -18,7 +18,7 @@ const Ads = () => {
             activeClass={`active`}
             defaultTab={currentIndex}
             tabData={ADS_TAB_CONFIG()}
-            isTabChangeConfirmation={isDirty}
+            isTabChangeConfirmation={shouldShowAuthoringTabChangeConfirmation(isDirty)}
             callBack={(tabs, index) => {
                 if (currentIndex !== index) {
                     dispatch(

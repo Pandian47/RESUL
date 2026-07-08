@@ -11,7 +11,7 @@ import { Col, Container, Row } from 'react-bootstrap';
 import { useFormContext } from 'react-hook-form';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
-import { find as _find } from 'Utils/modules/lodashReplacements';
+import { find as _find, isEqual as _isEqual, map as _map, cloneDeep as _cloneDeep } from 'Utils/modules/lodashReplacements';
 import {
     mergeFilterBindSegments,
     getFilterBindCount,
@@ -126,6 +126,7 @@ const TableAttributes = ({ pathState }) => {
         isEditLoading,
     } = reducerState;
 
+    const isOneTime = pathState?.isOneTime;
     const isEdit = pathState?.mode === 'edit';
 
     const {
@@ -617,6 +618,33 @@ const TableAttributes = ({ pathState }) => {
         }
     }, [pathState, crmTables?.data]);
 
+    const initialEditSnapshotRef = useRef(null);
+    const currentFormVals = watch();
+
+    useEffect(() => {
+        if (isEdit && !isEditLoading && (isEditCalled.current || isVersiumEditCalled.current) && !initialEditSnapshotRef.current) {
+            const vals = getValues();
+            const { isTouched, ...restVals } = vals || {};
+            if (restVals?.table || restVals?.webinar || restVals?.webex || attributes?.rightAttributes?.length > 0) {
+                initialEditSnapshotRef.current = {
+                    formValues: _cloneDeep(restVals),
+                    rightAttributes: _map(attributes?.rightAttributes || [], (attr) => attr?.dataAttributeId || attr?.name || attr?.uiPrintableName || attr?.solrFieldName),
+                };
+            }
+        }
+    }, [isEdit, isEditLoading, attributes?.rightAttributes, currentFormVals]);
+
+    const isEditDataChanged = useMemo(() => {
+        if (!isEdit || !initialEditSnapshotRef.current) return false;
+        const vals = currentFormVals || {};
+        const { isTouched, ...restVals } = vals;
+        const currentSnapshot = {
+            formValues: restVals,
+            rightAttributes: _map(attributes?.rightAttributes || [], (attr) => attr?.dataAttributeId || attr?.name || attr?.uiPrintableName || attr?.solrFieldName),
+        };
+        return !_isEqual(initialEditSnapshotRef.current, currentSnapshot);
+    }, [isEdit, currentFormVals, attributes?.rightAttributes]);
+
     const handleTableColumns = async (e, payload, isEditMode = false) => {
         const { type } = e;
         let columnData = [];
@@ -839,6 +867,7 @@ const TableAttributes = ({ pathState }) => {
                 dbName: databaseName,
                 departmentId: departmentId,
                 friendlyName: instanceName,
+                remoteSettingId: pathState?.data?.remoteSettingId || 0,
                 listType: 5,
                 sourceType: FormatEnum[pathState?.type] || 2,
                 connectionType: 'open',
@@ -852,6 +881,7 @@ const TableAttributes = ({ pathState }) => {
             let payload_mCRM = {
                 departmentId: departmentId,
                 friendlyName: instanceName,
+                remoteSettingId: pathState?.data?.remoteSettingId || 0,
                 listType: 5,
                 //  scheduleFrequency: 1,
                 tenantDomain,
@@ -873,6 +903,7 @@ const TableAttributes = ({ pathState }) => {
                 connectorName: pathState.data?.sourceName,
                 departmentId: departmentId,
                 friendlyName: instanceName,
+                remoteSettingId: pathState?.data?.remoteSettingId || 0,
             };
 
             //versium
@@ -889,6 +920,7 @@ const TableAttributes = ({ pathState }) => {
                 groupAttributeId: event?.value?.typeId,
                 groupAttributeName: event?.value?.type,
                 industryId: industryId,
+                remoteSettingId: pathState?.data?.remoteSettingId || 0,
                 //  scheduleFrequency: 1,
             };
             let payload_Digipop = {
@@ -900,6 +932,7 @@ const TableAttributes = ({ pathState }) => {
                 groupAttributeName: event?.value?.type,
                 industryId: 7,
                 groupAttributeId: event?.value?.typeId,
+                remoteSettingId: pathState?.data?.remoteSettingId || 0,
                 //  scheduleFrequency: 1,
             };
 
@@ -911,6 +944,7 @@ const TableAttributes = ({ pathState }) => {
                 userId,
                 connectorName: pathState?.data?.sourceName,
                 connectorId: rdsId,
+                remoteSettingId: pathState?.data?.remoteSettingId || 0,
             };
 
             // snowFlake
@@ -927,6 +961,7 @@ const TableAttributes = ({ pathState }) => {
                 account: accountName,
                 table: type,
                 schema: schema,
+                remoteSettingId: pathState?.data?.remoteSettingId || 0,
             };
 
             //oracle
@@ -940,6 +975,7 @@ const TableAttributes = ({ pathState }) => {
                 schema: databaseName,
                 host: ipAddress,
                 port: portNumber,
+                remoteSettingId: pathState?.data?.remoteSettingId || 0,
             };
 
             //shopify
@@ -950,6 +986,7 @@ const TableAttributes = ({ pathState }) => {
                 connectorId: rdsId,
                 connectorName: pathState?.data?.sourceName,
                 table: type,
+                remoteSettingId: pathState?.data?.remoteSettingId || 0,
             };
 
             //Salesforce
@@ -960,6 +997,7 @@ const TableAttributes = ({ pathState }) => {
                 connectorId: rdsId,
                 connectorName: pathState?.data?.sourceName,
                 table: objectName || type || '',
+                remoteSettingId: pathState?.data?.remoteSettingId || 0,
             };
             //pipedrive
             let payload_pipeDrive = {
@@ -970,6 +1008,7 @@ const TableAttributes = ({ pathState }) => {
                 clientId,
                 userId,
                 departmentId,
+                remoteSettingId: pathState?.data?.remoteSettingId || 0,
             };
 
             //Cassandra
@@ -985,6 +1024,7 @@ const TableAttributes = ({ pathState }) => {
                 clientId,
                 userId,
                 departmentId,
+                remoteSettingId: pathState?.data?.remoteSettingId || 0,
             };
 
             //Aerospike
@@ -1000,6 +1040,7 @@ const TableAttributes = ({ pathState }) => {
                 clientId,
                 userId,
                 departmentId,
+                remoteSettingId: pathState?.data?.remoteSettingId || 0,
             };
 
             //mongodb
@@ -1015,6 +1056,7 @@ const TableAttributes = ({ pathState }) => {
                 clientId,
                 userId,
                 departmentId,
+                remoteSettingId: pathState?.data?.remoteSettingId || 0,
             };
             //Storehippo
             let payload_storehippo = {
@@ -1026,6 +1068,7 @@ const TableAttributes = ({ pathState }) => {
                 userId,
                 departmentId,
                 table: type,
+                remoteSettingId: pathState?.data?.remoteSettingId || 0,
             };
 
       //postgresql
@@ -1041,7 +1084,8 @@ const TableAttributes = ({ pathState }) => {
         connectorName: pathState?.data?.sourceName,
         clientId,
         userId,
-        departmentId
+        departmentId,
+        remoteSettingId: pathState?.data?.remoteSettingId || 0,
       };
       //Eventbrite
       let payload_eventbrite = {
@@ -1051,7 +1095,8 @@ const TableAttributes = ({ pathState }) => {
         table: type,
         clientId,
         userId,
-        departmentId
+        departmentId,
+        remoteSettingId: pathState?.data?.remoteSettingId || 0,
       };
       //Bigcommerce
       let payload_bigcommerce = {
@@ -1063,7 +1108,8 @@ const TableAttributes = ({ pathState }) => {
         table: type,
         clientId,
         userId,
-        departmentId
+        departmentId,
+        remoteSettingId: pathState?.data?.remoteSettingId || 0,
       };
       //PrestaShop
       let payload_prestashop = {
@@ -1074,7 +1120,8 @@ const TableAttributes = ({ pathState }) => {
         table: type,
         clientId,
         userId,
-        departmentId
+        departmentId,
+        remoteSettingId: pathState?.data?.remoteSettingId || 0,
       };
       //Leadsquared",
       let payload_leadsquared = {
@@ -1086,7 +1133,8 @@ const TableAttributes = ({ pathState }) => {
         TableName: type,
         clientId,
         userId,
-        departmentId
+        departmentId,
+        remoteSettingId: pathState?.data?.remoteSettingId || 0,
       }; //blackbaud",
       let payload_blackbaud = {
         remoteSettingId: pathState?.data?.remoteSettingId,
@@ -1096,7 +1144,8 @@ const TableAttributes = ({ pathState }) => {
         table: type,
         clientId,
         userId,
-        departmentId
+        departmentId,
+        remoteSettingId: pathState?.data?.remoteSettingId || 0,
       }; //Magento",
       let payload_magento = {
         magentoUrl: resource,
@@ -1108,7 +1157,8 @@ const TableAttributes = ({ pathState }) => {
         table: type,
         clientId,
         userId,
-        departmentId
+        departmentId,
+        remoteSettingId: pathState?.data?.remoteSettingId || 0,
       }; //Woocommerce,
       let payload_Woocommerce = {
         domainUrl: apiHost,
@@ -1119,7 +1169,8 @@ const TableAttributes = ({ pathState }) => {
         table: type,
         clientId,
         userId,
-        departmentId
+        departmentId,
+        remoteSettingId: pathState?.data?.remoteSettingId || 0,
       };
       //Wix,
       let payload_Wix = {
@@ -1130,7 +1181,8 @@ const TableAttributes = ({ pathState }) => {
         table: type,
         clientId,
         userId,
-        departmentId
+        departmentId,
+        remoteSettingId: pathState?.data?.remoteSettingId || 0,
       };
       //Data Bricks
       let payload_DataBricks = {
@@ -1145,7 +1197,8 @@ const TableAttributes = ({ pathState }) => {
         table: type,
         clientId,
         userId,
-        departmentId
+        departmentId,
+        remoteSettingId: pathState?.data?.remoteSettingId || 0,
       };
       //Google BigQuery
       let payload_GoogleBigQuery = {
@@ -1154,14 +1207,16 @@ const TableAttributes = ({ pathState }) => {
         projectName: projectName,
         connectorName: pathState?.data.sourceName,
         connectorId: pathState?.data.remoteDataSourceID,
-        table: type
+        table: type,
+        remoteSettingId: pathState?.data?.remoteSettingId || 0,
       };
       //Insightly
       let payload_Insightly = {
         apiKey: resource,
         connectorName: pathState?.data.sourceName,
         connectorId: pathState?.data.remoteDataSourceID,
-        table: type
+        table: type,
+        remoteSettingId: pathState?.data?.remoteSettingId || 0,
       };
       //Webinar
       let payload_Webinar = {
@@ -1188,7 +1243,8 @@ const TableAttributes = ({ pathState }) => {
         schema: schema,
         connectorId: pathState?.data.remoteDataSourceID,
         connectorName: pathState?.data.sourceName,
-        table: type
+        table: type,
+        remoteSettingId: pathState?.data?.remoteSettingId || 0,
       };
       let Payload_Commercetools = {
         clientId: clientDomain,
@@ -1197,7 +1253,8 @@ const TableAttributes = ({ pathState }) => {
         authHost: resource,
         connectorId: pathState?.data.remoteDataSourceID,
         connectorName: pathState?.data.sourceName,
-        table: type
+        table: type,
+        remoteSettingId: pathState?.data?.remoteSettingId || 0,
       };
       let payload_googleSheet = {
         spreadsheetId: spreadsheetId,
@@ -1207,7 +1264,8 @@ const TableAttributes = ({ pathState }) => {
         clientId,
         departmentId,
         userId,
-        table: type
+        table: type,
+        remoteSettingId: pathState?.data?.remoteSettingId || 0,
       };
       let payload_cNl = {
           apiKey: accesstoken,
@@ -1218,6 +1276,7 @@ const TableAttributes = ({ pathState }) => {
           departmentId,
           userId,
           table: type,
+          remoteSettingId: pathState?.data?.remoteSettingId || 0,
       };
 
       const dataSourceId = pathState?.data?.remoteDataSourceID;
@@ -1971,7 +2030,7 @@ const TableAttributes = ({ pathState }) => {
                 )}
                 {(table || isListboxLoading) && (
                     <>
-                        <Row className="form-group mb0 mt20">
+                        <Row className="form-group mb0 mt30">
                             <Col>
                                 {showAttributeError && (
                                     <p style={{ color: 'red' }}>{ENTER_SELECTED_COL_ATT}</p>
@@ -2008,6 +2067,7 @@ const TableAttributes = ({ pathState }) => {
                             name="table"
                             data={tableData?.data || []}
                             label={CATEGORY}
+                            disabled={isOneTime}
                             isLoading={tableData?.loading || tableColumnsApi.isLoading}
                             textField="type"
                             dataItemKey="typeId"
@@ -2018,7 +2078,7 @@ const TableAttributes = ({ pathState }) => {
                         />
                     </Col>
                     <Col sm={1}>
-                        {tableWatch && (
+                        {tableWatch && !isOneTime && (
                             <Col>
                                 <RSTooltip
                                     position="top"
@@ -2041,7 +2101,7 @@ const TableAttributes = ({ pathState }) => {
             {(table || isListboxLoading) &&
                 (!!attributes?.leftAttributes?.length || !!attributes?.rightAttributes?.length || isListboxLoading) && (
                     <>
-                        <Row className="form-group mb0 mt20">
+                        <Row className="form-group mb0 mt30">
                             <Col>
                                 {showAttributeError && (
                                     <p style={{ color: 'red' }}>{ENTER_SELECTED_COL_ATT}</p>
@@ -2507,9 +2567,10 @@ const TableAttributes = ({ pathState }) => {
                                         isLoading={isCrmUploadLoading}
                                         blockBodyPointerEvents={isCrmUploadLoading}
                                         disabledClass={
-                                            Object.keys(errors)?.length > 0 ||
-                                            (isEdit && !pathState?.isBack) ||
-                                            isCrmUploadLoading
+                                           isOneTime|| Object.keys(errors)?.length > 0 ||
+                                          ('isBack' in pathState && !pathState?.isBack) ||
+                                            isCrmUploadLoading ||
+                                            (isEdit && !isEditDataChanged)
                                                 ? 'pe-none click-off'
                                                 : ''
                                         }

@@ -28,6 +28,17 @@ export function sanitizeDisplayText(value) {
         .trim();
 }
 
+/** Dropdown/multiselect rows with blank labels should not render as empty list items. */
+export function hasDropdownDisplayLabel(item, field) {
+    if (item == null) return false;
+    if (field) {
+        const label = item && typeof item === 'object' ? item[field] : item;
+        return label != null && String(label).trim() !== '';
+    }
+    if (typeof item === 'string') return item.trim() !== '';
+    return true;
+}
+
 export function normalizeDisplayText(value) {
     if (typeof value !== 'string') return value;
 

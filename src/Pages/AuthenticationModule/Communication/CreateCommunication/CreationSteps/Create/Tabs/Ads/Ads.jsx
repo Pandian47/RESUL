@@ -10,7 +10,7 @@ import { isEmpty as _isEmpty ,cloneDeep as _cloneDeep } from 'Utils/modules/loda
 import { Col, Row } from 'react-bootstrap';
 import { useDispatch, useSelector } from 'react-redux';
 import { FormProvider, useFieldArray, useForm, useWatch } from 'react-hook-form';
-import { availableTabs, communicationChannels, getPreCampaignStatus, ADS_TAB_CONFIG } from '../../constant';
+import { availableTabs, communicationChannels, getPreCampaignStatus, ADS_TAB_CONFIG , shouldPromptSkipChannelConfirmation} from '../../constant';
 import AdsName from './Component/AdsName';
 import RSKendoDropDownList from 'Components/FormFields/RSKendoDropdown';
 import { resetCreateCommunication, updateVerticalTab } from 'Reducers/communication/createCommunication/create/reducer';
@@ -207,7 +207,7 @@ const Ads = ({ type, isMutiField }) => {
         handleGetPaidAdList();
     }, [type]);
     useEffect(() => {
-        let rslt = statusIdCheck(paidAdsData?.statusId ? paidAdsData?.statusId : null,locationAds?.campaignType,paidAdsData);
+        let rslt = statusIdCheck(paidAdsData?.statusId ? paidAdsData?.statusId : null, locationAds?.campaignType, paidAdsData);
         setIsCommunicationEditable(rslt);
     
     }, [paidAdsData, locationAds?.statusId]);
@@ -510,18 +510,18 @@ const Ads = ({ type, isMutiField }) => {
                 className="rsv-tabs-content  position-relative"
             >
                 <div className={`box-design bd-top-border`}>
-                    {isSmartLink && isCommunicationEditable && (
-                        <SmartLinkEnable
+                    <SmartLinkEnable
                             secondaryButton={false}
+                            isPaidMedia
+                            isClickOff={!isCommunicationEditable}
+                            isChannelLoading={showEditSkeleton && isSavedChannel}
                             onSave={() => setIsSmartLink(false)}
                             onReject={() => {
                                 dispatch(showTabsSmartlink(true));
                                 setIsSmartLink(true);
                             }}
-                            isPaidMedia={true}
                             isSmartLink={isSmartLink}
                         />
-                    )}
                     <div
                         className={`${
                             checkTrigger(locationAds?.campaignType, locationAds?.endDate)
@@ -740,6 +740,10 @@ const Ads = ({ type, isMutiField }) => {
                         disabledClass={isSubmitting ? 'pe-none click-off' : ''}
                         onClick={() => {
                             if (!isDirty && !isValid) {
+                                if (!shouldPromptSkipChannelConfirmation()) {
+                                    handleNavigation();
+                                    return;
+                                }
                                 setNavigate_confirm(true);
                             } else {
                                 handleSubmit((data) => onFormSubmit(data, 'next'))();

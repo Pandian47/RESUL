@@ -13,6 +13,16 @@ import CommunicationListings from './Pages/Listings/CommunicationListings';
 import CommunicationPlanner from './Pages/Planner';
 import CommunicationGalleryTwins from './Pages/GalleryTwins';
 import CommunicationPlannerTwins from './Pages/PlannerTwins';
+import TruncatedCell from 'Components/RSKendoGrid/TruncateCell';
+
+export const PlannerCampaignTruncateCell = ({ value, wrapperClassName = 'repo-label', truncateClassName = '' }) => (
+    <TruncatedCell
+        value={value}
+        noTable
+        wrapperClassName={wrapperClassName}
+        truncateClassName={truncateClassName}
+    />
+);
 
 export const tabData = [
     { id: 0, text: LIST, component: () => <CommunicationListings /> },

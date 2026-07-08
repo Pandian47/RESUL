@@ -19,7 +19,7 @@ import {
 } from '../../kendoDocsVariables';
 
 
-import { normalizeDisplayText } from 'Utils/modules/stringUtils';
+import { hasDropdownDisplayLabel, normalizeDisplayText } from 'Utils/modules/stringUtils';
 import { _isObject } from 'Utils/modules/misc';
 
 
@@ -278,7 +278,7 @@ const ResMultiSelect = ({
     control,
     defaultValue = [],
     allowCustom = false,
-    acceptNewValue = true,
+    acceptNewValue = false,
     label,
     data = [],
     textField,
@@ -343,18 +343,19 @@ const ResMultiSelect = ({
     const normalizeItem = useCallback(
         (item) => {
             if (item == null) return null;
-            if (typeof item === 'string') return normalizeDisplayText(item);
+            if (typeof item === 'string') {
+                return item.trim() !== '' ? normalizeDisplayText(item) : null;
+            }
             if (!_isObject(item)) return item;
 
             const nextItem = { ...item };
-            if (textField) {
-                if (nextItem[textField] == null) return null;
-                if (typeof nextItem[textField] === 'string') {
-                    nextItem[textField] = normalizeDisplayText(nextItem[textField]);
-                }
+            if (textField && !hasDropdownDisplayLabel(item, textField)) return null;
+            if (textField && typeof nextItem[textField] === 'string') {
+                nextItem[textField] = normalizeDisplayText(nextItem[textField]);
             }
-            if (dataItemKey && nextItem[dataItemKey] === undefined) {
-                return null;
+            if (dataItemKey) {
+                const keyValue = nextItem[dataItemKey];
+                if (keyValue == null || String(keyValue).trim() === '') return null;
             }
             if (typeof nextItem.data === 'string') {
                 nextItem.data = normalizeDisplayText(nextItem.data);

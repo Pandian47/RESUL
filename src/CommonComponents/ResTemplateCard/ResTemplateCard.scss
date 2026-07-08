@@ -349,10 +349,21 @@ $res-template-card-heights: (
         flex-direction: column;
         position: relative;
         color: $primary-grey;
-        border: 1px solid $quaternary-blue;
         border-radius: var(--rtc-border-radius);
         overflow: hidden;
         text-align: center;
+        box-sizing: border-box;
+
+        // Draw border above preview iframes/images — descendants can otherwise cover the right edge.
+        &:not(.border-0)::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border: 1px solid $quaternary-blue;
+            border-radius: inherit;
+            pointer-events: none;
+            z-index: 5;
+        }
 
         .rs-social-post-live-preview-wrapper {
             max-height: 100%;
@@ -813,7 +824,7 @@ $res-template-card-heights: (
             flex-direction: column;
             min-height: 0;
             height: 100%;
-            width: calc(100% + 10px);
+            width: 100%;
 
             // Do not set display on all items — breaks Bootstrap slide visibility
             &.active,

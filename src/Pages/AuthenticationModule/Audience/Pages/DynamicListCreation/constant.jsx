@@ -1,5 +1,6 @@
 import { getYYMMDD } from 'Utils/modules/dateTime';
 import { formatName } from 'Utils/modules/formatters';
+import { parseAudienceJson } from 'Pages/AuthenticationModule/Audience/audienceDefaults';
 import { 
     COMPARISON_MAP, 
     COMPARISON_REVERSE_MAP, 
@@ -9,6 +10,7 @@ import {
     CUSTOM_VALUE, 
 } from './Component/RenderField/constant';
 import { get as _get } from 'Utils/modules/lodashReplacements';
+import { channelMap } from 'Pages/AuthenticationModule/Components/SegmentationLists/constant';
 
 const SAME_TRIGGER_SOURCE_NOT_ALLOWED = 'Same trigger source not allowed';
 
@@ -86,7 +88,7 @@ export const FORM_INITIAL_STATE = {
         exclusionCondition: false,
         approvalList: {
             name: [{ approverName: '', mandatory: false }],
-            requestApproval: true,
+            requestApproval: false,
             approvalFrom: 'All',
             approvalCount: '2',
             followHierarchy: false,
@@ -298,7 +300,7 @@ export const buildFieldTriggerValuesKey = (fldname, fieldType, levelNo) => {
     return fldname;
 };
 
-/** Trigger sources that use their own value APIs or free-text — never call GetTriggerAttributeValues. */
+/** Trigger sources that use their own value APIs or free-text — never call GetTriggerAttributeValues. 10 = Communication Name, uses GetCommunicationByChannel instead. */
 export const TRIGGER_IDS_SKIP_ATTRIBUTE_VALUES_API = [9, 10, 11, 14];
 
 export const shouldSkipTriggerAttributeValuesApi = (triggerId) =>
@@ -314,6 +316,59 @@ export const shouldDuplicateCheckByRuleTypeOnly = (triggerId) =>
 
 export const shouldDuplicateCheckByCommunicationNameRule = (triggerId) =>
     Number(triggerId) === COMMUNICATION_NAME_TRIGGER_ID;
+
+/** GetCommunicationByChannel returns free-text channel names (e.g. "Web Notification") — map them back to the internal channelMap type keys so status-option lookups (`communicationStatus[type]`) keep working. */
+const CHANNEL_NAME_TYPE_PATTERNS = [
+    { type: 'Email', pattern: /email/i },
+    { type: 'SMS', pattern: /sms/i },
+    { type: 'WhatsApp', pattern: /whatsapp/i },
+    { type: 'Mobilepush', pattern: /mobile/i },
+    { type: 'Webpush', pattern: /web/i },
+    { type: 'RCS', pattern: /\brcs\b/i },
+    { type: 'QRCode', pattern: /qr\s*code/i },
+];
+
+const resolveChannelTypeFromApiName = (channelName) => {
+    const name = String(channelName ?? '').trim();
+    if (!name) return null;
+    return CHANNEL_NAME_TYPE_PATTERNS.find(({ pattern }) => pattern.test(name))?.type ?? null;
+};
+
+/**
+ * Builds Channel-dropdown options from GetCommunicationByChannel rows.
+ * ChannelName + LevelNo is the unique row identifier, so the label shows both (e.g. "Email 2").
+ * `type` is resolved from ChannelName so the Status dropdown's `communicationStatus[type]` lookup keeps working.
+ */
+export const buildChannelOptionsFromCommunicationChannels = (rows) => {
+    if (!Array.isArray(rows) || !rows.length) return [];
+
+    const seenKeys = new Set();
+    const options = [];
+
+    rows.forEach((row) => {
+        const channelName = row?.ChannelName ?? row?.channelName;
+        const levelNo = row?.LevelNo ?? row?.levelNo;
+        if (!channelName || levelNo == null) return;
+
+        const key = `${channelName}_${levelNo}`;
+        if (seenKeys.has(key)) return;
+        seenKeys.add(key);
+
+        const type = resolveChannelTypeFromApiName(channelName);
+        const mapEntry = type ? Object.values(channelMap).find((entry) => entry.type === type) : null;
+
+        options.push({
+            ...(mapEntry ?? {}),
+            id: key,
+            label: `${channelName} ${levelNo}`,
+            type: type ?? mapEntry?.type ?? channelName,
+            channelName,
+            levelNo,
+        });
+    });
+
+    return options;
+};
 
 const normalizeCommunicationNameComparisonType = (value) => {
     if (value == null || value === '') {
@@ -376,10 +431,15 @@ export const shouldFetchTriggerAttributeValuesForRule = (selectedRuleType, trigg
     const fieldType = selectedRuleType?.fieldType ?? selectedRuleType?.fieldtype;
     const numericTriggerId = Number(triggerId);
 
+    if (formatName(selectedRuleType?.value) === 'beacon') {
+        return true;
+    }
+
     return (
         fieldType === 'D' ||
         fieldType === 'SD' ||
         fieldType === '2D' ||
+        fieldType === '4D' ||
         (numericTriggerId === 14 && fieldType === 'T') ||
         (numericTriggerId === 15 && fieldType === 'T')
     );
@@ -450,6 +510,146 @@ export const formatFieldTriggerValuesData = (payload, data = []) => {
     }
 
     return values;
+};
+
+/** Resolve Audience Base SOLR field key from rule-type option or saved rule attribute. */
+export const resolveAudienceBaseFieldName = (selectedRuleType = {}, ruleAttribute = {}) =>
+    selectedRuleType?.fieldName ||
+    selectedRuleType?.sOLRFieldName ||
+    selectedRuleType?.solrFieldName ||
+    ruleAttribute?.SourceName ||
+    ruleAttribute?.Name ||
+    selectedRuleType?.value ||
+    '';
+
+/** Audience base dropdown values use fieldType T historically, but APIs may return D. */
+export const isAudienceBaseDropdownFieldType = (fieldType) => {
+    const normalized = String(fieldType ?? '').toUpperCase();
+    return normalized === 'T' || normalized === 'D';
+};
+
+/** Parses Full JSON / ResEngine attribute label rows (`value:@count@;` or `value:@@:count`) into dropdown values. */
+export const getAudienceBaseFilterValues = (attributeValues = []) => {
+    if (!Array.isArray(attributeValues)) {
+        return [];
+    }
+
+    return attributeValues
+        .map((item) => {
+            if (typeof item !== 'string') {
+                return item?.value ?? item?.label ?? item?.data ?? '';
+            }
+            if (item.includes(':@@:')) {
+                return item.split(':@@:')[0] ?? '';
+            }
+            if (item.includes(':@')) {
+                return item.split(':@')[0] ?? '';
+            }
+            return item;
+        })
+        .filter(Boolean);
+};
+
+/** Normalize FulljsonDownloadGetUniqueAttributeValues `AttributeUniqueValuewithCountproperty` to `[{ field: values[] }, ...]`. */
+export const normalizeFullAttributeJSONValues = (attributeUniqueValueProperty) => {
+    if (!attributeUniqueValueProperty) {
+        return [];
+    }
+
+    if (Array.isArray(attributeUniqueValueProperty)) {
+        return attributeUniqueValueProperty.filter((item) => item && typeof item === 'object');
+    }
+
+    if (typeof attributeUniqueValueProperty === 'object') {
+        return Object.entries(attributeUniqueValueProperty).map(([fieldName, values]) => ({
+            [fieldName]: values,
+        }));
+    }
+
+    return [];
+};
+
+/** Reads a field from FulljsonDownloadGetUniqueAttributeValues response rows. */
+export const getAudienceBaseValuesFromFullJson = (fullAttributeJSONValues = [], fieldNameKey = '') => {
+    if (!fieldNameKey) {
+        return [];
+    }
+
+    const normalizedBuckets = normalizeFullAttributeJSONValues(fullAttributeJSONValues);
+    const candidates = [
+        fieldNameKey,
+        String(fieldNameKey).endsWith('_s') ? fieldNameKey : `${fieldNameKey}_s`,
+    ];
+
+    for (const candidate of candidates) {
+        for (const attributeBucket of normalizedBuckets) {
+            if (!attributeBucket || typeof attributeBucket !== 'object') {
+                continue;
+            }
+            if (Object.prototype.hasOwnProperty.call(attributeBucket, candidate)) {
+                return getAudienceBaseFilterValues(attributeBucket[candidate]);
+            }
+        }
+    }
+
+    const normalizedFieldNameKey = String(fieldNameKey).toLowerCase();
+    for (const attributeBucket of normalizedBuckets) {
+        const matchedEntry = Object.entries(attributeBucket || {}).find(([key]) => {
+            const normalizedKey = String(key).toLowerCase();
+            return (
+                normalizedKey === normalizedFieldNameKey ||
+                normalizedKey === `${normalizedFieldNameKey}_s` ||
+                normalizedKey.startsWith(`${normalizedFieldNameKey}_`)
+            );
+        });
+        if (matchedEntry) {
+            return getAudienceBaseFilterValues(matchedEntry[1]);
+        }
+    }
+
+    return [];
+};
+
+/**
+ * Parses FulljsonDownloadGetUniqueAttributeValues API body in Dynamic List only.
+ * Keeps shared `getFullAttributeJSONValues` unchanged for other modules.
+ */
+export const extractFullAttributeJSONFromApiResponse = (apiResponse) => {
+    if (!apiResponse?.status) {
+        return [];
+    }
+
+    const attributeData = parseAudienceJson(apiResponse?.data, {});
+    return normalizeFullAttributeJSONValues(attributeData?.AttributeUniqueValuewithCountproperty);
+};
+
+/** Writes normalized Full JSON buckets into Dynamic List `filterLabels` / `fullAttributeJSONValues`. */
+export const applyFullAttributeJSONToDynamicListState = (apiResponse, dispatchState) => {
+    const attributeValues = extractFullAttributeJSONFromApiResponse(apiResponse);
+
+    dispatchState?.({
+        type: 'UPDATE',
+        field: 'fullAttributeJSONValues',
+        payload: attributeValues,
+    });
+
+    attributeValues.forEach((bucket) => {
+        Object.entries(bucket || {}).forEach(([sOLRFieldName, attributeValueData]) => {
+            dispatchState?.({
+                type: 'UPDATE_ATTRIBUTE_VALUES',
+                payload: {
+                    loading: false,
+                    index: null,
+                    attrName: sOLRFieldName,
+                    values: Array.isArray(attributeValueData)
+                        ? attributeValueData.map((item) => item || '')
+                        : [],
+                },
+            });
+        });
+    });
+
+    return attributeValues;
 };
 
 const RULE_ATTRIBUTE_FIELD_KEY = /^rule\.(\d+)\.RuleAttributes\[(\d+)\](.*)$/;
@@ -618,11 +818,16 @@ export const STATE_REDUCER = (state, action) => {
                     [field]: payload,
                 },
             };
-        case 'UPDATE_ATTRIBUTE_VALUES':
+        case 'UPDATE_ATTRIBUTE_VALUES': {
+            const attrName = Array.isArray(payload.attrName) ? payload.attrName[0] : payload.attrName;
+            if (!attrName) {
+                return state;
+            }
             return {
                 ...state,
-                filterLabels: { ...state.filterLabels, [payload.attrName]: payload.values },
+                filterLabels: { ...state.filterLabels, [attrName]: payload.values },
             };
+        }
         case 'UPDATE_FIELD_TRIGGER_VALUES': {
             const { fieldName, isLoading, triggerValues } = payload;
             const current = state.fieldTriggerValues?.[fieldName] ?? { isLoading: false, triggerValues: {} };
@@ -993,6 +1198,9 @@ const handleName = (currentAttribute) => {
         if ((value === 'Forms' || value === 'Attributes' || value === 'Event brite') && fieldType === '2D') {
             return comparsion?.value;
         } else if (value === 'Latitude & Longitude - Radius' && fieldType === '2D') {
+            if (comparsion && typeof comparsion === 'object') {
+                return comparsion?.value ?? '';
+            }
             return `${currentAttribute?.attributeFrom || ''}:${currentAttribute?.attributeTo || ''}`;
         } else {
             return value;
@@ -1054,6 +1262,14 @@ function handleAttributeValueInSave(currentRule, k) {
 
     if ((triggerId === 18 || triggerId === 5) && fieldType === 'T' && formatName(attribute?.attributeName?.value) === 'locationurl') {
         return `${attribute?.attributeValue}${JSON.stringify(attribute?.mapList)}` || '';
+    }
+
+    if (formatName(attribute?.attributeName?.value) === 'beacon') {
+        const inOut = attributeValue;
+        if (typeof inOut === 'object' && inOut?.value != null) {
+            return inOut.value;
+        }
+        return inOut || '';
     }
 
     if (attributeComparison === 'Between') {
@@ -1213,6 +1429,18 @@ export const BuildCreatePayload = (data, temp, rule, location, crossDeviceStatus
                 tempRuleObj.AttributeValue = attributeValue;
                 tempRuleObj.AttributeName = attributeName;
             }
+
+            const isBeacon = rule[j]?.RuleAttributes[k]?.attributeName?.value === 'Beacon';
+            if (isBeacon) {
+                const beaconData = rule[j]?.RuleAttributes[k]?.attributeFrom;
+                const inOutValue = rule[j]?.RuleAttributes[k]?.attributeValue;
+                tempRuleObj.BeaconId = beaconData?.id || 0;
+                tempRuleObj.AttributeName = beaconData?.name || '';
+                tempRuleObj.Value =
+                    typeof inOutValue === 'object' && inOutValue?.value != null
+                        ? inOutValue.value
+                        : inOutValue || '';
+            }
             
             const isLatLonRadius = rule[j]?.RuleAttributes[k]?.attributeName?.value === 'Latitude & Longitude - Radius';
             if (isLatLonRadius) {
@@ -1223,8 +1451,15 @@ export const BuildCreatePayload = (data, temp, rule, location, crossDeviceStatus
                 rule[j]?.RuleAttributes[k]?.attributeName?.value === 'Custom events' &&
                 rule[j]?.RuleAttributes[k]?.attributeComparison === 'Contains'
             ) {
-                tempRuleObj.Value = rule[j]?.RuleAttributes[k]?.attributeValue;
-                // tempRuleObj.Value = rule[j]?.RuleAttributes[k]?.attributeMultipleValues.join();
+                const customEventAttr = rule[j]?.RuleAttributes[k];
+                const fromAttributeValue = resolveTriggerDropdownPrimitiveValue(
+                    customEventAttr?.attributeValue,
+                );
+                const fromMultipleValues = (customEventAttr?.attributeMultipleValues ?? [])
+                    .map((item) => resolveTriggerDropdownPrimitiveValue(item))
+                    .filter(Boolean)
+                    .join();
+                tempRuleObj.Value = fromAttributeValue || fromMultipleValues || tempRuleObj.Value;
             }
             let ruleJSON = {
                 ...tempRuleObj,
@@ -1269,24 +1504,27 @@ export const BuildCreatePayload = (data, temp, rule, location, crossDeviceStatus
         };
     }
     temp.IsRequestApproval = data?.approvalList?.requestApproval;
-    for (var l = 0; l < data?.approvalList?.name?.length; l++) {
-        let tempRA = {
-            DynamicListApprovalID: '0',
-            approverEmail: data.approvalList?.name[l].approverName.email,
-            approverName: data.approvalList?.name[l].approverName.firstName,
-            isMandatory: data.approvalList?.name[l]?.mandatory || false,
-            approvalCondition: _get(data?.approvalList, 'approvalFrom', 'ALL'),
-            noOfApprover: data.approvalList?.name?.length,
-            isHierarchy: _get(data?.approvalList, 'followHierarchy', true),
-            priority: l + 1,
-            domainName: location?.origin,
-            parameter: location?.pathname + '?DynamicListId={ListId}' + '&rfa=true',
-            approverCount:
-                _get(data?.approvalList, 'approvalFrom', 'ALL') === 'Any'
-                    ? _get(data?.approvalList, 'approvalCount', 0)
-                    : data?.approvalList?.name?.length,
-        };
-        temp.RequestApproval.push(tempRA);
+    temp.draftStatus = data?.approvalList?.requestApproval ? 1 : 0;
+    if (data?.approvalList?.requestApproval) {
+        for (var l = 0; l < data?.approvalList?.name?.length; l++) {
+            let tempRA = {
+                DynamicListApprovalID: '0',
+                approverEmail: data.approvalList?.name[l].approverName.email,
+                approverName: data.approvalList?.name[l].approverName.firstName,
+                isMandatory: data.approvalList?.name[l]?.mandatory || false,
+                approvalCondition: _get(data?.approvalList, 'approvalFrom', 'ALL'),
+                noOfApprover: data.approvalList?.name?.length,
+                isHierarchy: _get(data?.approvalList, 'followHierarchy', true),
+                priority: l + 1,
+                domainName: location?.origin,
+                parameter: location?.pathname + '?DynamicListId={ListId}' + '&rfa=true',
+                approverCount:
+                    _get(data?.approvalList, 'approvalFrom', 'ALL') === 'Any'
+                        ? _get(data?.approvalList, 'approvalCount', 0)
+                        : data?.approvalList?.name?.length,
+            };
+            temp.RequestApproval.push(tempRA);
+        }
     }
     return temp;
 };
@@ -1463,6 +1701,27 @@ export const repeatedValuesCheck = (ruleData, name, triggerId, isCustom = false,
                     ) {
                         return [false, `${name}[${j}].attributeComparison`, '', j];
                     }
+                }
+                continue;
+            }
+
+            // Special case: Beacon rule (API may send fieldType 2D or 4D)
+            if (
+                b?.attributeName?.fieldType === '4D' ||
+                formatName(b?.attributeName?.value) === 'beacon'
+            ) {
+                const beaconIdA = a?.attributeFrom?.id;
+                const beaconIdB = b?.attributeFrom?.id;
+                const actionA =
+                    typeof a?.attributeValue === 'object' ? a?.attributeValue?.value : a?.attributeValue;
+                const actionB =
+                    typeof b?.attributeValue === 'object' ? b?.attributeValue?.value : b?.attributeValue;
+                if (
+                    a?.attributeComparison === b?.attributeComparison &&
+                    beaconIdA === beaconIdB &&
+                    actionA === actionB
+                ) {
+                    return [false, `${name}[${j}].attributeFrom`, '', j];
                 }
                 continue;
             }
@@ -1766,10 +2025,16 @@ export const handleAttributeName = (findTriggerSource, currentAttribute, findTri
     const sourceName = currentAttribute?.SourceName;
     const id = currentAttribute?.Id;
 
-    if ((triggerId === 13 || triggerId === 27 || ((triggerId === 18 || triggerId === 5) && sourceName === 'Latitude & Longitude - Radius')) && fieldType === '2D') {
+    if (
+        fieldType === '2D' &&
+        (triggerId === 13 ||
+            triggerId === 27 ||
+            sourceName === 'Latitude & Longitude - Radius')
+    ) {
         return {
+            ...(findTriggerAttributes?.[0] ?? {}),
             fieldType: fieldType,
-            id: parseInt(id, 10), // Ensure ID is converted to a number
+            id: parseInt(id, 10) || id,
             placeholder: 'Select',
             value: sourceName,
         };
@@ -1786,9 +2051,13 @@ export const handleAttributeComparison = (currentAttribute, findTriggerSource, g
     const triggerId = findTriggerSource[0]?.triggerId;
     
     if (!compareValue) return '';
+
+    if (formatName(name) === 'beacon') {
+        return convertComparisonValue(compareValue, fieldType === '4D' ? '4D' : 'D', 'edit');
+    }
     
     if (triggerId === 13 || triggerId === 27 || triggerId === 18) {
-        if (fieldType !== 'T' && fieldType !== 'AN') {
+        if (fieldType !== 'T' && fieldType !== 'AN' && fieldType !== '4D' && formatName(name) !== 'beacon') {
             return getAttributeValue(
                 currentAttribute.formId,
                 triggerId === 13 || triggerId === 27 ? name : compareValue,
@@ -1824,6 +2093,10 @@ function getAttributeEditValue(ruleAttribute, checkTriggerType, triggerSource) {
 
     if (checkTriggerType) {
         return '';
+    }
+
+    if (formatName(ruleAttribute?.Name) === 'beacon') {
+        return Value || '';
     }
 
     // Operators that use attributeValue as a simple string (not comma-separated)

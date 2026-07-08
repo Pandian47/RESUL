@@ -102,6 +102,12 @@ const WATextEditor = ({
     } = templateResponse;
 
     const effectiveHeaderType = mediaType === 'location' ? 'location' : isHeaderType;
+    const headerMediaUrlField =
+        effectiveHeaderType && !['text', 'location'].includes(effectiveHeaderType)
+            ? `${headerTypeName}.${effectiveHeaderType}Url`
+            : null;
+    const headerMediaUrl = headerMediaUrlField ? watch(headerMediaUrlField) : '';
+    const effectivePreviewImage = previewImage || header || headerMediaUrl || '';
 
     // const handleConfig = () => {
     //     const {
@@ -298,7 +304,8 @@ const WATextEditor = ({
                         renderBubbleContent()
                     }
                     schedule={context?.levelNumber < 2 ? schedule : ''}
-                    previewImage={previewImage}
+                    previewImage={effectivePreviewImage}
+                    header={effectivePreviewImage}
                     formErrors={errors}
                     customRenderContent={
                         !isCarousel &&
@@ -334,7 +341,7 @@ const WATextEditor = ({
         show: context?.preview,
         type: context.type,
         audience: getValues('audience'),
-        previewImage: previewImage,
+        previewImage: effectivePreviewImage,
         handleClose: () => context?.setPreview(false),
         sendPreview: async (e) => {
             await handleSubmit(async (data) => {

@@ -46,7 +46,8 @@ export const useTabState = ({
 
     const setSelectedIndex = useCallback(
         (index, isForceUpdate = false) => {
-            const nextIndex = normalizeTabIndex(index, { preserveNull: preserveNullDefault });
+            const nextIndex =
+                index === null ? null : normalizeTabIndex(index, { preserveNull: preserveNullDefault });
             const prevIndex = selectedIdxRef.current;
 
             if (prevIndex === nextIndex) {

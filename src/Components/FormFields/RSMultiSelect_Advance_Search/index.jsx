@@ -1,15 +1,16 @@
-import { NO_RESULTS_FOUND } from 'Constants/GlobalConstant/ValidationMessage';
 import { circle_zoom_fill_edge_medium } from 'Constants/GlobalConstant/Glyphicons';
 import { memo, useCallback, useEffect, useId, useMemo, useState } from 'react';
 import PropTypes from 'prop-types';
 import { get as _get } from 'Utils/modules/lodashReplacements';
 import { useForm } from 'react-hook-form';
-import { DropdownButton, Dropdown } from 'react-bootstrap';
+import { Dropdown } from 'react-bootstrap';
 import RSCheckbox from 'Components/FormFields/RSCheckbox';
-import { RS_BOOTSTRAP_DROPDOWN_POPPER_CONFIG } from 'Components/FormFields/RSBootstrapdown';
+import NoDataAvailableRender from 'Components/FormFields/Component/NoDataAvailableRender';
+import { RS_ADVANCE_SEARCH_DROPDOWN_POPPER_CONFIG } from 'Components/FormFields/RSBootstrapdown';
 import './RSMultiSelect_Advance_Search.scss';
 
 const TOGGLE_TITLE_MAX_LEN = 56;
+const ADVANCE_SEARCH_FILTER_EMPTY_MIN_HEIGHT_PX = 247;
 
 const MultiSelectOptionRow = memo(function MultiSelectOptionRow({
     item,
@@ -248,30 +249,47 @@ const RSMultiSelectNew = ({
     );
 
     const toggleTitle = useMemo(() => {
-        if (!omitStaticLabelInToggle) return label;
-        if (!selectedItems.length) return '\u00a0';
+        if (omitStaticLabelInToggle) return label;
+        if (!selectedItems.length) return label;
         const joined = selectedItems.map((item) => getDisplayValue(item)).filter(Boolean).join(', ');
-        if (!joined) return '\u00a0';
+        if (!joined) return label;
         if (joined.length <= TOGGLE_TITLE_MAX_LEN) return joined;
         return `${joined.slice(0, TOGGLE_TITLE_MAX_LEN - 1)}\u2026`;
     }, [omitStaticLabelInToggle, label, selectedItems, getDisplayValue]);
 
     const showListFilter = filterable && Array.isArray(data) && data.length > minOptionsForFilter;
+    const isListSearchActive = showListFilter && String(searchDraft ?? '').trim().length > 0;
+    const showSelectAllRow = showSyntheticSelectAll && !isListSearchActive;
+
+    const renderEmptyListState = (withSearchMinHeight = false) => (
+        <div
+            className="rs-ms-list-empty"
+            style={
+                withSearchMinHeight
+                    ? { minHeight: `${ADVANCE_SEARCH_FILTER_EMPTY_MIN_HEIGHT_PX}px` }
+                    : undefined
+            }
+        >
+            <NoDataAvailableRender />
+        </div>
+    );
 
     return (
         <div className="rs-bootstrap-dropdown rs-multi-select-new">
-            <DropdownButton
-                title={label}
+            <Dropdown
                 className="rs-dropdown"
                 align={alignRight ? 'end' : 'start'}
-                disabled={disabled}
                 show={menuOpen}
                 onToggle={handleMenuToggle}
                 autoClose="outside"
-                renderMenuOnMount
-                popperConfig={RS_BOOTSTRAP_DROPDOWN_POPPER_CONFIG}
-                {...(omitStaticLabelInToggle ? { 'aria-label': label } : {})}
             >
+                <Dropdown.Toggle
+                    disabled={disabled}
+                    {...(omitStaticLabelInToggle ? { 'aria-label': label } : {})}
+                >
+                    {label}
+                </Dropdown.Toggle>
+                <Dropdown.Menu renderOnMount popperConfig={RS_ADVANCE_SEARCH_DROPDOWN_POPPER_CONFIG}>
                 {showListFilter && (
                     <div className="k-list-filter">
                         <span className="k-searchbox rs-ms-searchbox position-relative d-block">
@@ -303,7 +321,7 @@ const RSMultiSelectNew = ({
                 <div className="css-scrollbar custome-dropdown-scroll">
                     {rowSource.length > 0 ? (
                         <>
-                            {showSyntheticSelectAll && (
+                            {showSelectAllRow && (
                                 <Dropdown.Item
                                     as="div"
                                     className={`bs-dd-item rs-ms-dd-item rs-multi-select-all ${disabled ? 'rs-ms-dd-item--disabled' : ''} ${allItemsSelected ? '' : ''}`}
@@ -337,7 +355,7 @@ const RSMultiSelectNew = ({
                                     </div>
                                 </Dropdown.Item>
                             )}
-                            {!hideSelectAllRow && insertAfterSelectAll}
+                            {!hideSelectAllRow && !isListSearchActive && insertAfterSelectAll}
                             {filteredRowSource.length ? (
                                 filteredRowSource.map((item) => (
                                     <MultiSelectOptionRow
@@ -356,18 +374,15 @@ const RSMultiSelectNew = ({
                                     />
                                 ))
                             ) : (
-                                <div className="text-center pe-none py-2 text-muted">
-                                    {NO_RESULTS_FOUND}
-                                </div>
+                                renderEmptyListState(isListSearchActive)
                             )}
                         </>
                     ) : (
-                        <div className="text-center pe-none py-2 text-muted">
-                            {NO_RESULTS_FOUND}
-                        </div>
+                        renderEmptyListState(false)
                     )}
                 </div>
-            </DropdownButton>
+                </Dropdown.Menu>
+            </Dropdown>
         </div>
     );
 };

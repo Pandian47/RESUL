@@ -250,6 +250,21 @@ $res-dd-zoom-icon: url('../../../../Assets/Images/svg/rs-zoom-medium.svg');
         }
     }
 
+    // Empty list — match trigger width (Add audience › Source, etc.)
+    > .k-animation-container:has(.res-nodata-bar) {
+        width: 100% !important;
+        min-width: 200px !important;
+        max-width: 100% !important;
+
+        .k-child-animation-container,
+        .k-popup,
+        .k-list-container {
+            width: 100% !important;
+            min-width: 200px !important;
+            max-width: 100% !important;
+        }
+    }
+
     .k-floating-label-container {
         width: 100%;
         font-family: $rs-font-regular;
@@ -644,6 +659,8 @@ $res-dd-zoom-icon: url('../../../../Assets/Images/svg/rs-zoom-medium.svg');
 
             &.k-popup.#{$res-dd-list-popup} {
                 padding: 0;
+                margin-top: 5px;
+                margin-bottom: 5px;
             }
         }
 
@@ -954,19 +971,41 @@ $res-dd-zoom-icon: url('../../../../Assets/Images/svg/rs-zoom-medium.svg');
 }
 
 
-// RSModal / dialog / grid — list popups must not be clipped (Kendo sets overflow:hidden inline)
+// RSModal / dialog / grid — animation shells must not clip portaled list (Kendo sets overflow:hidden inline)
 .rs-modal .k-animation-container,
 .rs-modal.show .k-animation-container,
 [role='dialog'] .k-animation-container,
-.rs-modal .rsmd-content>.k-animation-container,
-.rs-modal .modal-content>.k-animation-container,
-[role='dialog'] .modal-body>.k-animation-container {
+.rs-modal .rsmd-content > .k-animation-container,
+.rs-modal .modal-content > .k-animation-container,
+[role='dialog'] .modal-body > .k-animation-container {
     overflow: visible !important;
     z-index: 1101 !important;
 
-    .k-child-animation-container,
-    .k-popup.k-list-container.#{$res-dd-list-popup} {
+    .k-child-animation-container {
         overflow: visible !important;
+    }
+
+    // ResKendoDropdown list — border/chrome on .k-popup only; shells must not paint stray edges
+    &:has(.#{$res-dd-list-popup}) {
+        border: none !important;
+        background: transparent !important;
+        box-shadow: none !important;
+        padding: 0 !important;
+        height: auto !important;
+        min-height: 0 !important;
+
+        .k-child-animation-container {
+            border: none !important;
+            background: transparent !important;
+            box-shadow: none !important;
+            height: auto !important;
+            min-height: 0 !important;
+        }
+
+        .k-popup.#{$res-dd-list-popup},
+        .k-popup.k-list-container.#{$res-dd-list-popup} {
+            overflow: hidden !important;
+        }
     }
 }
 
@@ -978,24 +1017,40 @@ $res-dd-zoom-icon: url('../../../../Assets/Images/svg/rs-zoom-medium.svg');
     position: relative;
     overflow: visible !important;
 
-    >.k-animation-container {
+    > .k-animation-container {
         overflow: visible !important;
         z-index: 1101 !important;
         animation: none !important;
         transform: none !important;
 
         &,
-        .k-child-animation-container,
-        .k-popup {
+        .k-child-animation-container {
             animation: none !important;
             transform: none !important;
         }
 
-        .k-child-animation-container,
-        .k-popup.#{$res-dd-list-popup},
-        .k-popup.k-list-container.#{$res-dd-list-popup},
-        .k-popup {
+        .k-child-animation-container {
             overflow: visible !important;
+        }
+
+        &:has(.#{$res-dd-list-popup}) {
+            border: none !important;
+            background: transparent !important;
+            box-shadow: none !important;
+            height: auto !important;
+            min-height: 0 !important;
+
+            .k-child-animation-container {
+                border: none !important;
+                background: transparent !important;
+                box-shadow: none !important;
+                height: auto !important;
+            }
+
+            .k-popup.#{$res-dd-list-popup},
+            .k-popup.k-list-container.#{$res-dd-list-popup} {
+                overflow: hidden !important;
+            }
         }
     }
 }

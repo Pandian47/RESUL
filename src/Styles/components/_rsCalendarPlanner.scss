@@ -220,7 +220,12 @@
                 }
             }
 
-            .rbcct-dates {
+                .rbcct-dates {
+                ul {
+                    li:first-child {
+                    width: 120px;
+                }
+                }
                 /* [Kendo disabled]
                 .rs-kendo-dropdownmenu-wrapper {
                     .k-input-value-text {
@@ -367,10 +372,18 @@
                 }
 
                 .rbc-row-content {
+                    // Let empty cell areas pass clicks through to day background (onSelectSlot)
+                    pointer-events: none;
+
+                    .rbc-row:nth-child(2) {
+                        margin-top: -25px;
+                    }
+
                     .rbc-row {
                         .rbc-date-cell {
                             position: relative;
                             top: 155px;
+                            pointer-events: none;
 
                             &.rbc-off-range {
                                 opacity: 0.5;
@@ -383,10 +396,19 @@
                             // margin-left: 7px;
                             //  max-width: 160px !important;
                             //  margin: 0 7px;
+                            padding: 2px 5px;
                             .rbc-show-more {
+                                position: relative;
+                                z-index: 3;
+                                display: block;
+                                width: 100%;
+                                padding: 2px 5px 4px;
                                 color: $primary-blue;
                                 font-weight: normal;
                                 font-size: $font-xsm;
+                                text-align: left;
+                                cursor: pointer;
+                                pointer-events: auto;
 
                                 &:hover {
                                     text-decoration: underline;
@@ -394,10 +416,13 @@
                             }
 
                             .rbc-event {
+                                position: relative;
+                                z-index: 2;
                                 background-color: $secondary-blue;
                                 max-width: 170px;
                                 white-space: nowrap;
                                 text-overflow: ellipsis;
+                                pointer-events: auto;
                             }
                         }
                     }
@@ -409,21 +434,130 @@
 
 // Events modal
 .rs-planner-events-modal {
+    .rspem-wrapper {
+        position: relative;
+        padding: 4px 0 8px;
+    }
+
+    .rspem-sections {
+        display: flex;
+        flex-direction: column;
+        gap: 0;
+    }
+
+    .rspem-no-data,
+    .rspem-section-no-data {
+        &.nodata-bar,
+        .nodata-bar {
+            position: static !important;
+            top: auto !important;
+            left: auto !important;
+            transform: none !important;
+            width: 100%;
+            max-width: 100%;
+            box-shadow: none !important;
+            z-index: auto;
+        }
+    }
+
     .rspem-no-data {
         @extend .clearfix;
-        //margin: 50px 0 0 0;
-        //position: relative;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 160px;
+        padding: 24px 0;
+
+        &.nodata-bar {
+            background-color: transparent;
+            border: 0;
+        }
+    }
+
+    .rspem-section-header {
+        width: 100%;
+        cursor: pointer;
+        min-height: 28px;
+    }
+
+    .rspem-section-title {
+        color: $secondary-black;
+        font-family: $rs-font-regular;
+        font-size: $font-sm;
+        line-height: 1.35;
+        min-width: 0;
+    }
+
+    .rspem-section-count {
+        color: $white;
+        flex-shrink: 0;
+        min-width: 30px;
+        padding: 4px 10px;
+        text-align: center;
+        font-size: $font-xs;
+        line-height: 1.2;
+    }
+
+    .rspem-section-panel {
+        margin-top: 12px;
+    }
+
+    .rspem-section-no-data {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-top: 0;
+        padding: 28px 16px;
+        background-color: $tertiary-blue;
+        border: 1px solid $quaternary-blue;
+        border-radius: 4px;
+        box-sizing: border-box;
+
+        p {
+            margin: 0;
+            white-space: normal;
+        }
+    }
+
+    .rspem-section-body {
+        max-height: 240px;
+        overflow-x: hidden;
+        overflow-y: auto;
+        border: 1px solid $quaternary-blue;
+        border-radius: 4px;
     }
 
     .modal-body {
         min-height: 200px;
+        padding-top: 8px;
+    }
+
+    .rspem-section-card.card {
+        border: 1px solid $quaternary-blue;
+        border-radius: 0;
+        margin: 0;
+        padding: 14px 16px;
+
+        &:first-child {
+            border-top-left-radius: var(--borderRadiusTabDropMenu);
+            border-top-right-radius: var(--borderRadiusTabDropMenu);
+        }
+
+        &:last-child {
+            border-bottom-left-radius: var(--borderRadiusTabDropMenu);
+            border-bottom-right-radius: var(--borderRadiusTabDropMenu);
+        }
+
+        & + .rspem-section-card {
+            margin-top: -1px;
+        }
     }
 
     .card {
         border: 1px solid $quaternary-blue;
         border-radius: 0;
         margin-top: 20px;
-        padding: 10px;
+        padding: 12px 14px;
 
         &:first-child {
             border-top-left-radius: var(--borderRadiusTabDropMenu);
@@ -438,13 +572,16 @@
 
     .planner-body-card {
         cursor: pointer;
+        padding: 10px 12px !important;
+        text-align: left;
+        word-break: break-word;
 
         &:nth-child(odd) {
             background-color: $tertiary-blue;
         }
 
         &:first-child {
-            margin-top: 10px;
+            margin-top: 0;
         }
 
         &:hover {
@@ -452,19 +589,33 @@
             text-decoration: underline;
         }
     }
+
+    .planner-modal-skeleton {
+        .card {
+            min-height: 52px;
+            padding: 14px 16px;
+        }
+    }
 }
 
 .calendar-wrapper {
     padding: 0;
+    position: relative;
+
+    .carousel-control-prev,
+    .carousel-control-next {
+        top: 50%;
+        transform: translateY(-50%);
+        width: 28px;
+        z-index: 4;
+    }
 
     .carousel-control-prev {
-        left: -48px !important;
-        top: -50px;
+        left: 4px !important;
     }
 
     .carousel-control-next {
-        right: -48px !important;
-        top: -50px;
+        right: 4px !important;
     }
 
     .carousel-item {
@@ -482,6 +633,29 @@
 
 .GalleryModal {
     .gaugeslider-wrapper.calendar-wrapper {
+        padding: 0 32px 24px;
+        box-sizing: border-box;
+
+        .carousel-control-prev,
+        .carousel-control-next {
+            top: 50% !important;
+            transform: translateY(-50%);
+        }
+
+        .carousel-control-prev {
+            left: 0 !important;
+        }
+
+        .carousel-control-next {
+            right: 0 !important;
+        }
+
+        .carousel-indicators {
+            bottom: 0;
+            margin-bottom: 0;
+            z-index: 4;
+        }
+
         .carousel-inner {
             margin: 0 auto !important;
             overflow: hidden;

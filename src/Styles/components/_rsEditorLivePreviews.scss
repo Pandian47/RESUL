@@ -850,7 +850,7 @@
                 flex-shrink: 0;
 
                 ul {
-                    border-top: 1px solid $primary-grey;
+                    border-top: 1px solid $secondary-grey;
                     margin-top: 0;
                     padding: 10px 0 0 0;
                     ;
@@ -1004,6 +1004,7 @@
                 justify-content: space-between;
                 background-color: $white;
                 padding: 10px 0 0 0;
+                border-top: 1px solid $secondary-grey;
                 ;
                 box-sizing: border-box;
 
@@ -1236,7 +1237,6 @@
 
             .rs-linkedin-preview-card__actions.post-bottom-section {
                 flex-shrink: 0;
-                border-top: 1px solid $secondary-grey;
                 background-color: $white;
                 margin-top: 0;
 
@@ -1244,10 +1244,9 @@
                     display: flex;
                     justify-content: space-between;
                     align-items: stretch;
-                    border-top: none;
                     margin-top: 0;
                     padding: 10px 0 0 0;
-                    ;
+                    border-top: 1px solid $secondary-grey;
                     box-sizing: border-box;
                     cursor: default;
 
@@ -3080,17 +3079,14 @@
 
     .rs-linkedin-preview-card__actions.post-bottom-section {
         flex-shrink: 0;
-        border-top: 1px solid $quaternary-blue;
         background-color: $white;
 
         ul {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            border-top: none;
             margin-top: 0;
             cursor: default;
-
             li {
                 display: flex;
                 align-items: center;
@@ -3143,12 +3139,6 @@
     .rs-twitter-preview__footer.post-bottom-section {
         flex-shrink: 0;
         margin-top: 0;
-
-        ul {
-            border-top: 1px solid $secondary-grey;
-            margin-top: 0;
-            padding-top: 8px;
-        }
     }
 
     .post-top-section {

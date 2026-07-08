@@ -262,7 +262,7 @@
             position: absolute;
             width: 15px;
             bottom: 0;
-            left: 0;
+            left: 7px;
         }
     }
 }
@@ -2425,6 +2425,36 @@ ul.rsp-header-band {
             text-overflow: ellipsis;
         }
     }
+
+    &.form-generator-header-band {
+        align-items: stretch;
+        padding: 5px 10px !important;
+
+        > li {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+
+            &.position-absolute {
+                top: 5px;
+                bottom: 5px;
+                flex-direction: row;
+                align-items: center;
+            }
+
+            &::before {
+                top: 0;
+                bottom: 0;
+                height: auto;
+            }
+
+            &:nth-child(n + 2):nth-child(-n + 5)::before {
+                top: 0;
+                bottom: 0;
+                height: auto;
+            }
+        }
+    }
 }
 
 ul.rsp-header-band,
@@ -2798,7 +2828,7 @@ ul.rsp-header-band,
 
         // Arrow pointing RIGHT (►) when collapsed, DOWN (▼) when open
         .cim-tree-arrow {
-            margin-top: 10px;
+            margin-top: 5px;
             font-size: 11px;
             color: $secondary-grey;
             width: 16px;
@@ -2845,7 +2875,7 @@ ul.rsp-header-band,
                 content: '';
                 position: absolute;
                 left: 8px; // align exactly with the start of the horizontal line (23px - 14px = 9px)
-                top: -12px; // start exactly from the parent's arrow/horizontal connector level
+                top: -17px; // start exactly from the parent's arrow/horizontal connector level
                 bottom: 0; // extend to the bottom of this node
                 border-left: 1px dashed #c8dff5;
             }
@@ -2872,7 +2902,7 @@ ul.rsp-header-band,
                 left: -14px; // start exactly at the vertical line (31px - 14px = 17px)
                 // top: 50%;
                 // top: 16px;
-                top: 23px;
+                top: 18px;
                 // width: 31px; // touches the arrow
                 // width: 19px; // leaves a 4px gap before the 23px start (23px - 19px = 4px gap)
                 width: 28px;
@@ -2891,6 +2921,22 @@ ul.rsp-header-band,
                 margin-left: 31px;
             }
         }
+    }
+}
+
+.cim-modal-skeleton {
+    .cim-entity-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 12px 16px;
+    }
+
+    .cim-tree-skeleton-row {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 5px 8px;
     }
 }
 
@@ -3445,6 +3491,10 @@ ul.rsp-header-band,
 
                 label.roles_checkbox {
                     margin-bottom: 0;
+
+                    .res-checkbox-box {
+                        fill: $white;
+                    }
                 }
             }
 
@@ -3535,4 +3585,28 @@ li.template-category-multidropdown {
             }
         }
     }
+}
+
+.rs-goals-summary-grid-wrapper {
+  .k-table-tbody {
+    tr:nth-child(odd) {
+      .rs-goals-grid-col {
+        i {
+          background-color: $tertiary-blue;
+          padding: 5px;
+          border-radius: 10px;
+        }
+      }
+    }
+
+    tr:nth-child(even) {
+      .rs-goals-grid-col {
+        i {
+          background-color: $white;
+          padding: 5px;
+          border-radius: 10px;
+        }
+      }
+    }
+  }
 }

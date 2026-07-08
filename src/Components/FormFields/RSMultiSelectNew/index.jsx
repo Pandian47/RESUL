@@ -1,9 +1,11 @@
 import { NO_RESULTS_FOUND } from 'Constants/GlobalConstant/ValidationMessage';
-import { memo, useEffect, useState } from 'react';
+import { memo, useEffect, useMemo, useState } from 'react';
 import PropTypes from 'prop-types';
 import { get as _get } from 'Utils/modules/lodashReplacements';
-import { DropdownButton, Dropdown } from 'react-bootstrap';
+import { Dropdown } from 'react-bootstrap';
 import { RS_BOOTSTRAP_DROPDOWN_POPPER_CONFIG } from 'Components/FormFields/RSBootstrapdown';
+import { hasDropdownDisplayLabel } from 'Utils/modules/stringUtils';
+
 const RSMultiSelectNew = ({
     data = [],
     fieldKey = 'name',
@@ -21,6 +23,14 @@ const RSMultiSelectNew = ({
     useEffect(() => {
         setSelectedItems(value);
     }, [valueKey]);
+
+    const displayableData = useMemo(
+        () =>
+            data.filter((item) =>
+                hasDropdownDisplayLabel(item, isObject ? fieldKey : null),
+            ),
+        [data, isObject, fieldKey],
+    );
 
     const getDisplayValue = (item) =>
         isObject ? _get(item, fieldKey, '') : String(item ?? '');
@@ -42,38 +52,39 @@ const RSMultiSelectNew = ({
     return (
         <div
             className="rs-bootstrap-dropdown"
-            style={{ '--rs-dropdown-item-count': data.length }}
+            style={{ '--rs-dropdown-item-count': displayableData.length }}
         >
-            <DropdownButton
-                title={label}
+            <Dropdown
                 className="rs-dropdown"
                 align={alignRight ? 'end' : 'start'}
-                disabled={disabled}
-                renderMenuOnMount
-                popperConfig={RS_BOOTSTRAP_DROPDOWN_POPPER_CONFIG}
             >
-                <div className="css-scrollbar custome-dropdown-scroll">
-                    {data.length > 0 ? (
-                        data.map((item, index) => (
-                            <Dropdown.Item
-                                key={index}
-                                className={`bs-dd-item ${isItemSelected(item) ? 'active' : ''}`}
-                                style={{
-                                    pointerEvents: 'auto',
-                                    '--rs-dropdown-item-index': index,
-                                }}
-                                onClick={() => handleItemClick(item)}
-                            >
-                                {getDisplayValue(item)}
-                            </Dropdown.Item>
-                        ))
-                    ) : (
-                        <div className="text-center pe-none py-2 text-muted">
-                            {NO_RESULTS_FOUND}
-                        </div>
-                    )}
-                </div>
-            </DropdownButton>
+                <Dropdown.Toggle disabled={disabled}>
+                    {label}
+                </Dropdown.Toggle>
+                <Dropdown.Menu renderOnMount popperConfig={RS_BOOTSTRAP_DROPDOWN_POPPER_CONFIG}>
+                    <div className="css-scrollbar custome-dropdown-scroll">
+                        {displayableData.length > 0 ? (
+                            displayableData.map((item, index) => (
+                                <Dropdown.Item
+                                    key={index}
+                                    className={`bs-dd-item ${isItemSelected(item) ? 'active' : ''}`}
+                                    style={{
+                                        pointerEvents: 'auto',
+                                        '--rs-dropdown-item-index': index,
+                                    }}
+                                    onClick={() => handleItemClick(item)}
+                                >
+                                    {getDisplayValue(item)}
+                                </Dropdown.Item>
+                            ))
+                        ) : (
+                            <div className="text-center pe-none py-2 text-muted">
+                                {NO_RESULTS_FOUND}
+                            </div>
+                        )}
+                    </div>
+                </Dropdown.Menu>
+            </Dropdown>
         </div>
     );
 };

@@ -34,6 +34,8 @@ const RsTab = ({
     onClear,
     customTooltipName,
     customIconsize,
+    disableAddMenu,
+    disableRemoveMenu,
     disable,
     singleTab,
     isMandatory,
@@ -120,11 +122,16 @@ const RsTab = ({
                                         className={mapResTabberClasses('tab-remove lh0')}
                                         innerContent={false}
                                     >
-                                        <div className={item?.isRemove ? 'pe-none click-off' : ''}>
+                                        <div
+                                            className={
+                                                item?.isRemove || disableRemoveMenu ? 'pe-none click-off' : ''
+                                            }
+                                        >
                                             <i
                                                 className={`${item?.remove} icon-${customIconsize} color-primary-red`}
                                                 onClick={(e) => {
                                                     e.stopPropagation();
+                                                    if (item?.isRemove || disableRemoveMenu) return;
                                                     if (isRemoveConfirmation) {
                                                         setConfimrationModal(true);
                                                     } else {
@@ -142,10 +149,16 @@ const RsTab = ({
                         {item.add && (
                             <li className={mapResTabberClasses('tabDefault tab-add')}>
                                 <RSTooltip text={customTooltipName ?? ADD} position="top" className="lh0">
-                                    <div className={item?.isAdd ? 'pe-none click-off' : ''}>
+                                    <div
+                                        className={item?.isAdd || disableAddMenu ? 'pe-none click-off' : ''}
+                                    >
                                         <i
                                             className={`${item.add} icon-md color-primary-blue`}
-                                            onClick={() => onAddMenu(index + 1)}
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                if (item?.isAdd || disableAddMenu) return;
+                                                onAddMenu(index + 1);
+                                            }}
                                         />
                                     </div>
                                 </RSTooltip>

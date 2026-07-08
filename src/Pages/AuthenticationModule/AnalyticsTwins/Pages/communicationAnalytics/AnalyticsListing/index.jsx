@@ -2,7 +2,6 @@ import { getStatus } from 'Utils/modules/communicationStatus';
 import { encodeUrl } from 'Utils/modules/crypto';
 import { getUserCurrentFormat } from 'Utils/modules/dateTime';
 import { renderCommunicationListingTags } from 'Utils/modules/display';
-import { truncateTitle } from 'Utils/modules/displayCore';
 import { DOWNLOAD, GOLDEN_CAMPAIGN, SENT_ON, SHARE, TREND_REPORT, VIEW_ANALYTICS } from 'Constants/GlobalConstant/Placeholders';
 import { analytics_medium, download_medium, share_tick_medium, star_fill_mini, trend_report_large } from 'Constants/GlobalConstant/Glyphicons';
 import { useMemo, useEffect } from 'react';
@@ -129,26 +128,19 @@ const AnalyticsList = ({ dataItem, listLayout }) => {
                         {dataItem?.modifiedDate !== null && dataItem?.modifiedDate !== '' && !!dataItem?.modifiedName
                             ? dataItem?.modifiedName || ''
                             : dataItem?.createdName || ''}
-                       <span></span>
+                        <span></span>
                         {
                             getUserCurrentFormat(
                                 dataItem?.modifiedDate !== null && dataItem?.modifiedDate !== '' ? dataItem?.modifiedDate : dataItem?.createdDate,
                             )?.dateFormat
                         }
                     </small>
-                    <div className={LAYOUT_CLASSES.listCardTitle}>
-                        {dataItem?.isGoldCampaign === true && (
-                            <RSTooltip text={GOLDEN_CAMPAIGN} position="top" className="d-inline-block lh0">
-                                <i className={`${star_fill_mini} icon-xs color-alert`}></i>
-                            </RSTooltip>
-                        )}{' '}
-                        {dataItem?.campaignName?.length > 60 ? (
-                            <RSTooltip text={dataItem?.campaignName} position="bottom" className="d-inline-block">
-                                {truncateTitle(dataItem?.campaignName, 60)}
-                            </RSTooltip>
-                        ) : (
-                            dataItem?.campaignName
-                        )}
+                    <div className={`${LAYOUT_CLASSES.listCardTitle} d-flex gap-1`}>
+                        {dataItem?.isGoldCampaign && <RSTooltip text={GOLDEN_CAMPAIGN} position="top">  <i
+                            id="rs_data_Golden_campaign"
+                            className={`icon-rs-star-fill-large color-alert icon-xs `}
+
+                        ></i>   </RSTooltip>}   <TruncatedCell value={dataItem?.campaignName} noTable />
                     </div>
                     {renderCommunicationListingTags({
                         tags: dataItem?.tags,
@@ -158,15 +150,9 @@ const AnalyticsList = ({ dataItem, listLayout }) => {
                 </div>
                 <div className="communication-content">
                     <small>{dataItem?.campaignTypeValue}</small>
-                    <p className="d-flex">
-                        {dataItem?.communicationType?.length > 20 ? (
-                            <RSTooltip text={dataItem?.communicationType} position="bottom">
-                                {truncateTitle(dataItem?.communicationType, 20)}
-                            </RSTooltip>
-                        ) : (
-                            dataItem?.communicationType
-                        )}
-                    </p>
+                  <div className="d-flex">
+                            <TruncatedCell value={dataItem?.communicationType} noTable />
+                        </div>
                 </div>
                 <div className="communication-content">
                     <small>{SENT_ON}</small>
@@ -203,20 +189,19 @@ const AnalyticsList = ({ dataItem, listLayout }) => {
                     <ul className="rs-communication-icon">
                         <li>
                             <RSTooltip text={VIEW_ANALYTICS} position="top">
-                                <div className={`${
-                                    (Array.isArray(dataItem?.channelId) && dataItem?.channelId.includes(33)) || 
-                                    dataItem?.channelId === 33 
-                                    ? 'pe-none click-off' 
-                                    : ''
-                                }`}>
-                                <a
-                                    href={analyticsUrl}
-                                    id="rs_AnalyticsList_Viewanalytics"
-                                    onClick={handleLinkClick}
-                                    style={{ textDecoration: 'none', color: 'inherit' }}
-                                >
-                                    <i className={`${analytics_medium} icon-md color-primary-blue`}></i>
-                                </a>
+                                <div className={`${(Array.isArray(dataItem?.channelId) && dataItem?.channelId.includes(33)) ||
+                                        dataItem?.channelId === 33
+                                        ? 'pe-none click-off'
+                                        : ''
+                                    }`}>
+                                    <a
+                                        href={analyticsUrl}
+                                        id="rs_AnalyticsList_Viewanalytics"
+                                        onClick={handleLinkClick}
+                                        style={{ textDecoration: 'none', color: 'inherit' }}
+                                    >
+                                        <i className={`${analytics_medium} icon-md color-primary-blue`}></i>
+                                    </a>
                                 </div>
                             </RSTooltip>
                         </li>

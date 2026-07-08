@@ -23,6 +23,7 @@ import { RSPrimaryButton, RSSecondaryButton } from 'Components/Buttons';
 import { getAudience, getRcsList } from 'Reducers/communication/createCommunication/Create/selectors';
 import useQueryParams from 'Hooks/useQueryParams';
 import useApiLoader from 'Hooks/useApiLoader';
+import useComponentWillUnmount from 'Hooks/useComponentWillUnMount';
 import { getRequestApprovalList, getSessionId, getUtcTimeData } from 'Reducers/globalState/selector';
 import { getUtcTimeNow, getUserListCampaign } from 'Reducers/globalState/request';
 import RSCheckbox from 'Components/FormFields/RSCheckbox';
@@ -42,7 +43,7 @@ import {
     splitABRefreshFields,
     refreshFields,
 } from './constant';
-import { availableTabs, communicationChannels, getNextEligibleTabIndex, getChannelNavigationValues, handleAutoRefreshClickOff, handlePersonalizationFetchApiCall, MESSAGING_TAB_CHANNEL_MAP, calculateDefaultSplittedCount, AudienceFieldRenderComponent, audienceTypeList, handleMDCQueryParamsUpdate, handleCheckCTGT, validateAudienceCount, mergeChannelAudiences, handleUpdateEditAudienceCount,handleTotalAudienceCount, handleCGTGModalCheck, editActionIdFromCommunicationResponse, getPastPlanDurationBlockedState, validatePastPlanDurationOnSubmit, PAST_PLAN_DURATION_CLICK_OFF_CLASS } from '../../constant';
+import { availableTabs, communicationChannels, getNextEligibleTabIndex, getChannelNavigationValues, handleAutoRefreshClickOff, handlePersonalizationFetchApiCall, MESSAGING_TAB_CHANNEL_MAP, calculateDefaultSplittedCount, AudienceFieldRenderComponent, audienceTypeList, handleMDCQueryParamsUpdate, handleCheckCTGT, validateAudienceCount, mergeChannelAudiences, handleUpdateEditAudienceCount,handleTotalAudienceCount, handleCGTGModalCheck, editActionIdFromCommunicationResponse, getPastPlanDurationBlockedState, validatePastPlanDurationOnSubmit, PAST_PLAN_DURATION_CLICK_OFF_CLASS , shouldPromptSkipChannelConfirmation} from '../../constant';
 import RSTooltip from 'Components/RSTooltip';
 import RSTabbar from 'Components/RSTabber';
 import RSSwitch from 'Components/FormFields/RSSwitch/index';
@@ -88,10 +89,9 @@ export const RCSProvider = createContext({
 });
 
 const RCS = ({ channelId, mCampType }) => {
-    const methods = useForm(rcsFormInitialState);
-    const location = useQueryParams('/communication');
     const dispatch = useDispatch();
     const navigate = useNavigate();
+    const location = useQueryParams('/communication');
 
     const {
         senderName: senderNameList,
@@ -99,25 +99,86 @@ const RCS = ({ channelId, mCampType }) => {
         templateContentDetail,
         campaignDetails,
         editorContent,
-    } = useSelector((state) => getRcsList(state));
-
+    } = useSelector((state) => getRcsList(state) ?? {});
     const approvalList = useSelector((state) => getRequestApprovalList(state));
-    let audienceList = useSelector((state) => getAudience(state));
-    const { failureApiErrors, isCurrentBURFAStatus } = useSelector(({ globalstate }) => globalstate);
-    const { savedChannelsId, channelAudiences = {} } = useSelector(({ communicationPlanReducer }) => communicationPlanReducer);
-    const { userId, clientId, departmentId } = useSelector((state) => getSessionId(state));
+    let audienceList = useSelector((state) => getAudience(state)) ?? [];
+    const { failureApiErrors, isCurrentBURFAStatus } = useSelector(({ globalstate = {} }) => globalstate);
+    const { savedChannelsId, channelAudiences = {} } = useSelector(
+        ({ communicationPlanReducer = {} }) => communicationPlanReducer ?? {},
+    );
+    const { userId, clientId, departmentId } = useSelector((state) => getSessionId(state) ?? {});
     const utcTimeData = useSelector(getUtcTimeData);
     const {
-        rcs,
-        tabsState: { messaging: messagingTabState },
+        tabsState: { messaging: messagingTabState = {} } = {},
         activeTabs,
-        verticalTab: { type: channelType, currentTab: currentVerticalTab },
+        verticalTab: { type: channelType, currentTab: currentVerticalTab } = {},
         isDirty,
         isMDCEditMode,
         personalization,
         listTypeWisePersonlization,
-    } = useSelector(({ createCommunicationReducer }) => createCommunicationReducer);
-    const { tabSmartLink_Flag } = useSelector(({ smartLinkReducer }) => smartLinkReducer);
+    } = useSelector(({ createCommunicationReducer = {} }) => createCommunicationReducer ?? {});
+    const { tabSmartLink_Flag } = useSelector(({ smartLinkReducer = {} }) => smartLinkReducer ?? {});
+
+    const { isMounted } = useComponentWillUnmount();
+    const isEditCallRef = useRef(false);
+    const formTypeRef = useRef(null);
+    const rfaAutoNavTimeoutRef = useRef(null);
+    const rfaManuallyClosedRef = useRef(false);
+    const audienceRef = useRef();
+
+    const [campaignTypeAndId, setCampaignTypeAndId] = useState({});
+    const [updateTabData, setUpdateTabData] = useState([]);
+    const [carouselTabs, setCarouselTabs] = useState({});
+    const [cTabState, setCTabState] = useState([]);
+    const [mask, setMask] = useState(COUNTRY_MASK);
+    const [country, setCountry] = useState('');
+    const [isTestCommSent, setisTestComSent] = useState({
+        show: false,
+        message: 'Falied',
+        isRFA: false,
+        status: false,
+        smsPreview: false,
+    });
+    const [navigate_confirm, setNavigate_confirm] = useState(false);
+    const [isAudienceChangeConfirm, setIsAudienceChangeConfirm] = useState(false);
+    const [previousAudience, setPreviousAudience] = useState([]);
+    const [levelNumber, setLevelNumber] = useState(1);
+    const [isNotScheduled, setIsNotScheduled] = useState(false);
+    const [isClickOff, setIsClickOff] = useState(false);
+    const [isReset, setIsReset] = useState(false);
+    const [isFailure, setIsFailure] = useState({
+        status: false,
+        message: '',
+    });
+    const [preview, setPreview] = useState(false);
+    const [mdcContentSetupDetails, setMdcContentSetupDetails] = useState({
+        levelNumber: 1,
+        actionId: 0,
+        dataSource: 'TL',
+        mdcButtonText: 'Create',
+    });
+    const [splitTabs, setSplitTabs] = useState(SPLIT_TABS);
+    const [splitTabConfig, setSplitTabConfig] = useState({
+        currentTab: 0,
+        splitTabs: ['splitA', 'splitB'],
+    });
+    const [sliderState, setSliderState] = useState({
+        show: false,
+        splittedCount: {},
+    });
+    const [emptySplitdate, setEmptySplitDate] = useState({
+        text: '',
+    });
+    const [editAutoScheduleDetails, setEditAutoScheduleDetails] = useState({});
+    const [issplitOffConfirmationModal, setIsSplitOffConfirmationModal] = useState(false);
+    const [isShowScheduleModal, setIsShowScheduleModal] = useState(false);
+    const [nextButtonCGTGModal, setNextButtonCGTGModal] = useState(false);
+    const [audienceCountZeroWarning, setAudienceCountZeroWarning] = useState(false);
+    const [pendingNextSubmitParams, setPendingNextSubmitParams] = useState(null);
+    const [userKeyInfo, setUserInfo] = useState(approvalList);
+    const [saveCampaigData, setSaveCampaigData] = useState(null);
+
+    const methods = useForm(rcsFormInitialState);
     const {
         control,
         handleSubmit,
@@ -144,24 +205,7 @@ const RCS = ({ channelId, mCampType }) => {
     ] = watch([...Object.values(rcsFieldName)]);
     const watchtotalAudience = watch('totalAudience');
     const scheduleTimezone = watch('timezone');
-    const [campaignTypeAndId, setCampaignTypeAndId] = useState({});
-    const [updateTabData, setUpdateTabData] = useState([]);
-    const [carouselTabs, setCarouselTabs] = useState({});
-    const [carouselImg, setCarouselImg] = useState([]);
-    const [cTabState, setCTabState] = useState([]);
-    const [mask, setMask] = useState(COUNTRY_MASK);
-    const [country, setCountry] = useState('');
-    const [isTestCommSent, setisTestComSent] = useState({
-        show: false,
-        message: 'Falied',
-        isRFA: false,
-        status: false,
-        smsPreview: false,
-    });
-    const [navigate_confirm, setNavigate_confirm] = useState(false);
-    const [isAudienceChangeConfirm, setIsAudienceChangeConfirm] = useState(false);
-    const [previousAudience, setPreviousAudience] = useState([]);
-    const [levelNumber, setLevelNumber] = useState(1);
+
     const isPastPlanDurationBlocked = useMemo(() => {
         if (levelNumber >= 2 || location?.campaignType === 'T') return false;
         return getPastPlanDurationBlockedState({
@@ -177,48 +221,12 @@ const RCS = ({ channelId, mCampType }) => {
         scheduleTimezone?.gmtOffset,
         utcTimeData?.utcTime,
     ]);
-    const [isNotScheduled, setIsNotScheduled] = useState(false);
-    const [isClickOff, setIsClickOff] = useState(false);
-    const [isReset, setIsReset] = useState(false);
-    const [isFailure, setIsFailure] = useState({
-        status: false,
-        message: '',
-    });
-    const [preview, setPreview] = useState(false);
-    const [mdcContentSetupDetails, setMdcContentSetupDetails] = useState({
-        levelNumber: 1,
-        actionId: 0,
-        dataSource: 'TL',
-        mdcButtonText: 'Create',
-    });
-
-    // Split AB related states
-    const [splitTabs, setSplitTabs] = useState(SPLIT_TABS);
-    const [splitTabConfig, setSplitTabConfig] = useState({
-        currentTab: 0,
-        splitTabs: ['splitA', 'splitB'],
-    });
-    const [sliderState, setSliderState] = useState({
-        show: false,
-        splittedCount: {},
-    });
-    const [emptySplitdate, setEmptySplitDate] = useState({
-        text: '',
-    });
-    const [editAutoScheduleDetails, setEditAutoScheduleDetails] = useState({});
-    const [issplitOffConfirmationModal, setIsSplitOffConfirmationModal] = useState(false);
-    const [isShowScheduleModal, setIsShowScheduleModal] = useState(false);
-    const isEditCallRef = useRef(false);
-    const [nextButtonCGTGModal, setNextButtonCGTGModal] = useState(false);
-    const [audienceCountZeroWarning, setAudienceCountZeroWarning] = useState(false);
-    const [pendingNextSubmitParams, setPendingNextSubmitParams] = useState(null);
-    const [userKeyInfo, setUserInfo] = useState(approvalList)
-    const [saveCampaigData , setSaveCampaigData] = useState(null);
-
-    const formTypeRef = useRef(null);
-    const rfaAutoNavTimeoutRef = useRef(null);
-    const rfaManuallyClosedRef = useRef(false);
-    const audienceRef = useRef();
+    const calucateAudienceCount = useMemo(
+        () => sumAudienceCountByField(watchAudience, 'recipientCountRCS'),
+        [watchAudience],
+    );
+    const isSplitABEnable = calucateAudienceCount >= 100;
+    const shouldDisableAutoRefresh = useMemo(() => handleAutoRefreshClickOff(watchAudience), [watchAudience]);
 
     const { timeZoneList } = getmasterData();
 
@@ -243,67 +251,221 @@ const RCS = ({ channelId, mCampType }) => {
     const templateListLoader = useApiLoader();
     const templateContentLoader = useApiLoader();
 
+    useEffect(() => {
+        if (!userKeyInfo?.length || !userKeyInfo) {
+            getUsersList();
+        }
+    }, []);
+
+    useEffect(() => {
+        const isEditMode =
+            _get(location, 'campaignType', 'S') === 'M'
+                ? isMDCEditMode?.toLowerCase() === 'edit'
+                : savedChannel;
+        if (isEditMode) return;
+        if (!watchApprovalList?.testPhoneNumber) {
+            contactLoader
+                .refetch({
+                    fetcher: ({ payload } = {}) =>
+                        dispatch(getContactByUserId({ payload, loading: false })),
+                    mode: savedChannel ? 'edit' : 'create',
+                    loaderConfig: AUTHORING_FIELD_LOADER_CONFIG,
+                    params: { payload: { userId, clientId, departmentId } },
+                })
+                .then((rslt) => {
+                    if (!isMounted.current || !rslt) return;
+                    const {
+                        status,
+                        data: { phoneNo, countryCode } = {},
+                    } = rslt;
+                    if (status && countryCode) {
+                        const tempCode = countryCode.includes('+') ? countryCode : `+${countryCode}`;
+                        if (tempCode) {
+                            const num = `${tempCode} ${phoneNo}`;
+                            setValue('approvalList.testPhoneNumber', num);
+                            setValue('approvalList.dialCode', tempCode);
+                        }
+                    }
+                })
+                .catch(() => {});
+        }
+    }, []);
+
+    useEffect(() => {
+        dispatch(updateTotalAudienceCount(calucateAudienceCount || 0));
+    }, [calucateAudienceCount, dispatch]);
+
+    useEffect(() => {
+        if (!isSplitABEnable && watchSplitTest) refreshSplitABTab();
+    }, [isSplitABEnable]);
+
+    useEffect(() => {
+        !watchSplitTest &&
+            setEmptySplitDate({
+                text: '',
+            });
+    }, [watchSplitTest]);
+
+    useEffect(() => {
+        if (location) {
+            setCampaignTypeAndId({
+                campaignType: _get(location, 'campaignType', 'S'),
+                campaignId: _get(location, 'campaignId', 0),
+                dynamiclistId: location?.campaignType === 'T' ? _get(location, 'dynamicListId', 0) : 0,
+            });
+            if (_get(location, 'campaignType', 'S') === 'M') {
+                const mdcDetails = _get(location, 'mdcContentSetupDetails', {});
+                const mdcLevelNumber = _get(mdcDetails, 'levelNumber', 1);
+                const actionId = _get(mdcDetails, 'actionId', 0);
+                const mdcChannelDetailId = _get(mdcDetails, 'channelDetailId', 0);
+                const mdcAudience = _get(mdcDetails, 'audience', []);
+                const dataSource = _get(mdcDetails, 'dataSource', []);
+                const mdcIsCGTGEnabled = _get(mdcDetails, 'isCGTGEnabled', false);
+                const mdcButtonText = mdcChannelDetailId ? 'Update' : 'Create';
+                setMdcContentSetupDetails((pre) => ({
+                    ...pre,
+                    ...mdcDetails,
+                    levelNumber: mdcLevelNumber,
+                    actionId: actionId,
+                    dataSource: dataSource,
+                    mdcButtonText: mdcButtonText,
+                    mdcAudience: mdcAudience,
+                }));
+                setLevelNumber(mdcLevelNumber);
+
+                if (!mdcChannelDetailId) {
+                    setValue('isCGTGEnabled', mdcIsCGTGEnabled);
+                }
+            }
+        }
+    }, [location]);
+
+    useEffect(() => {
+        if (
+            checkTrigger(location?.campaignType, location?.endDate) ||
+            !statusIdCheck(getCampaignStatusId(campaignDetails), location?.campaignType, campaignDetails) ||
+            checkRFAApproved(
+                getCampaignStatusId(campaignDetails),
+                campaignDetails?.requestForApproval?.approvarList,
+            )
+        ) {
+            setIsClickOff(true);
+        } else {
+            setIsClickOff(false);
+        }
+    }, [location?.campaignType, location?.endDate, campaignDetails?.content?.[0]?.statusId]);
+
+    useEffect(() => {
+        return () => {
+            resetState(true);
+            dispatch(updateAudience([]));
+            dispatch(updateFilterAudience([]));
+            resetAuthoringChannelEditSession(isEditCallRef, resetEditLoading);
+        };
+    }, [dispatch, resetEditLoading]);
+
+    useEffect(() => {
+        if (!_isEmpty(location) && !isEditCallRef?.current) {
+            const isEditMode = handleEditCallApi();
+            if (isEditMode) {
+                isEditCallRef.current = true;
+            }
+            getRcsDetails();
+        }
+    }, [JSON.stringify(location)]);
+
+    useEffect(() => {
+        if (!isDirty && Object.keys(dirtyFields)?.length > 0) {
+            dispatch(updateDirtyState(true));
+        } else if (isDirty && Object.keys(dirtyFields)?.length === 0 && Object.keys(editorContent ?? {})?.length === 0) {
+            dispatch(updateDirtyState(false));
+        }
+    }, [JSON.stringify(dirtyFields)]);
+
+    useEffect(() => {
+        if (shouldDisableAutoRefresh) {
+            setValue('isAutoRefereshenabled', false);
+        }
+    }, [watchAudience, shouldDisableAutoRefresh]);
+
     const fetchSenderName = async (payload) => {
-        return await senderNameLoader.refetch({
-            fetcher: ({ payload: senderPayload } = {}) =>
-                dispatch(get_Rcs_Sendername({ payload: senderPayload, loading: false })),
-            mode: savedChannel ? 'edit' : 'create',
-            loaderConfig: editFieldLoaderConfig,
-            params: {
-                payload: {
-                    ...payload,
-                    campaignId: _get(location, 'campaignId', 0),
-                    senderId: 0,
+        try {
+            return await senderNameLoader.refetch({
+                fetcher: ({ payload: senderPayload } = {}) =>
+                    dispatch(get_Rcs_Sendername({ payload: senderPayload, loading: false })),
+                mode: savedChannel ? 'edit' : 'create',
+                loaderConfig: editFieldLoaderConfig,
+                params: {
+                    payload: {
+                        ...payload,
+                        campaignId: _get(location, 'campaignId', 0),
+                        senderId: 0,
+                    },
                 },
-            },
-        });
+            });
+        } catch {
+            return { status: false };
+        }
     };
 
     const fetchRCSTempateList = async (value) => {
-        const payload = {
-            userId,
-            clientId,
-            departmentId,
-            campaignId: _get(location, 'campaignId', 0),
-            senderId: value,
-        };
-        return await templateListLoader.refetch({
-            fetcher: ({ payload: templatePayload } = {}) =>
-                dispatch(get_Rcs_Template({ payload: templatePayload, loading: false })),
-            mode: savedChannel ? 'edit' : 'create',
-            loaderConfig: AUTHORING_FIELD_LOADER_CONFIG,
-            params: { payload },
-        });
+        try {
+            const payload = {
+                userId,
+                clientId,
+                departmentId,
+                campaignId: _get(location, 'campaignId', 0),
+                senderId: value,
+            };
+            return await templateListLoader.refetch({
+                fetcher: ({ payload: templatePayload } = {}) =>
+                    dispatch(get_Rcs_Template({ payload: templatePayload, loading: false })),
+                mode: savedChannel ? 'edit' : 'create',
+                loaderConfig: AUTHORING_FIELD_LOADER_CONFIG,
+                params: { payload },
+            });
+        } catch {
+            return { status: false };
+        }
     };
     const fetchAudienceList = async (payload) => {
-        return await audienceLoader.refetch({
-            fetcher: ({ payload: audPayload, isFilter = false } = {}) =>
-                dispatch(getAudienceList({ payload: audPayload, isFilter, loading: false })),
-            mode: savedChannel ? 'edit' : 'create',
-            loaderConfig: editFieldLoaderConfig,
-            params: {
-                payload: {
-                    searchText: '',
-                    segmentIds: [],
-                    channelType: 'RCS',
-                    ...payload,
+        try {
+            return await audienceLoader.refetch({
+                fetcher: ({ payload: audPayload, isFilter = false } = {}) =>
+                    dispatch(getAudienceList({ payload: audPayload, isFilter, loading: false })),
+                mode: savedChannel ? 'edit' : 'create',
+                loaderConfig: editFieldLoaderConfig,
+                params: {
+                    payload: {
+                        searchText: '',
+                        segmentIds: [],
+                        channelType: 'RCS',
+                        ...payload,
+                    },
                 },
-            },
-        });
+            });
+        } catch {
+            return { status: false };
+        }
     };
     const fetchRCSCampaign = async (payload, { enableGlobalLoader = false } = {}) => {
-        return dispatch(
-            Get_RCS_Campaign({
-                payload: {
-                    ...payload,
-                    campaignId: _get(location, 'campaignId', 0),
-                    levelNumber: _get(location, 'mdcContentSetupDetails.levelNumber', 1),
-                    actionId: _get(location, 'mdcContentSetupDetails.actionId', 0),
-                    rcsChannelDetailId: _get(location, 'mdcContentSetupDetails.channelDetailId', 0),
-                },
-                loading: enableGlobalLoader,
-            }),
-        );
+        const isMDCCampaign = _get(location, 'campaignType', 'S') === 'M';
+        try {
+            return await dispatch(
+                Get_RCS_Campaign({
+                    payload: {
+                        ...payload,
+                        campaignId: _get(location, 'campaignId', 0),
+                        levelNumber: isMDCCampaign ? _get(location, 'mdcContentSetupDetails.levelNumber', 1) : 1,
+                        actionId: isMDCCampaign ? _get(location, 'mdcContentSetupDetails.actionId', 0) : 1,
+                        rcsChannelDetailId: _get(location, 'mdcContentSetupDetails.channelDetailId', 0),
+                    },
+                    loading: enableGlobalLoader,
+                }),
+            );
+        } catch {
+            return { status: false };
+        }
     };
 
     /**
@@ -372,23 +534,27 @@ const RCS = ({ channelId, mCampType }) => {
         };
     };
     const fetchRCSTemplateContent = async (value, isSplit = false, fieldName = '') => {
-        // console.log('value: ', value);
-        const payload = {
-            userId,
-            clientId,
-            departmentId,
-            campaignId: _get(location, 'campaignId', 0),
-            templateId: value.rcsTemplateId,
-            templateType: value.templateType,
-        };
-        const res = await templateContentLoader.refetch({
-            fetcher: ({ payload: templatePayload } = {}) =>
-                dispatch(get_Rcs_Content_Template({ payload: templatePayload, loading: false })),
-            mode: savedChannel ? 'edit' : 'create',
-            loaderConfig: AUTHORING_FIELD_LOADER_CONFIG,
-            params: { payload },
-        });
-        handleTemplate(res, value.templateType, 'template', isSplit, fieldName);
+        try {
+            const payload = {
+                userId,
+                clientId,
+                departmentId,
+                campaignId: _get(location, 'campaignId', 0),
+                templateId: value?.rcsTemplateId,
+                templateType: value?.templateType,
+            };
+            const res = await templateContentLoader.refetch({
+                fetcher: ({ payload: templatePayload } = {}) =>
+                    dispatch(get_Rcs_Content_Template({ payload: templatePayload, loading: false })),
+                mode: savedChannel ? 'edit' : 'create',
+                loaderConfig: AUTHORING_FIELD_LOADER_CONFIG,
+                params: { payload },
+            });
+            if (!isMounted.current) return;
+            handleTemplate(res, value?.templateType, 'template', isSplit, fieldName);
+        } catch {
+            // template fetch failures are surfaced via failureApiErrors popup
+        }
     };
 
     // Split AB tab management functions
@@ -494,175 +660,23 @@ const RCS = ({ channelId, mCampType }) => {
         }
     };
     const getUsersList = async () => {
-        const usersRes = await dispatch(
-            getUserListCampaign({ payload: { clientId, userId, loggedinusertype: 0 }, loading: false }),
-        );
-        let userList = usersRes?.status ? usersRes?.data : [];
-        const users = _map(userList, (list) => ({ ...list, name: `${list.firstName} (${list.email})` }));
-        setUserInfo(users)
-        return users;
+        try {
+            const usersRes = await dispatch(
+                getUserListCampaign({ payload: { clientId, userId, loggedinusertype: 0 }, loading: false }),
+            );
+            const userList = usersRes?.status ? usersRes?.data : [];
+            const users = _map(ensureArray(userList), (list) => ({
+                ...list,
+                name: `${list.firstName} (${list.email})`,
+            }));
+            if (!isMounted.current) return users;
+            setUserInfo(users);
+            return users;
+        } catch {
+            if (isMounted.current) setUserInfo([]);
+            return [];
+        }
     };
-    useEffect(() => {
-        if (!userKeyInfo?.length || !userKeyInfo) {
-            getUsersList();
-        }
-    }, []);
-    useEffect(() => {
-        const isEditMode =
-            _get(location, 'campaignType', 'S') === 'M'
-                ? isMDCEditMode?.toLowerCase() === 'edit'
-                : savedChannel;
-        if (isEditMode) return;
-        if (!watchApprovalList?.testPhoneNumber) {
-            contactLoader
-                .refetch({
-                    fetcher: ({ payload } = {}) =>
-                        dispatch(getContactByUserId({ payload, loading: false })),
-                    mode: savedChannel ? 'edit' : 'create',
-                    loaderConfig: AUTHORING_FIELD_LOADER_CONFIG,
-                    params: { payload: { userId, clientId, departmentId } },
-                })
-                .then((rslt) => {
-                    if (!rslt) return;
-                    const {
-                        status,
-                        data: { phoneNo, countryCode } = {},
-                    } = rslt;
-                    if (status && countryCode) {
-                        let tempCode = countryCode.includes('+') ? countryCode : `+${countryCode}`;
-                        if (tempCode) {
-                            const num = `${tempCode} ${phoneNo}`;
-                            setValue('approvalList.testPhoneNumber', num);
-                            setValue('approvalList.dialCode', tempCode);
-                        }
-                    }
-                });
-        }
-    }, []);
-    let calucateAudienceCount = useMemo(
-        () => sumAudienceCountByField(watchAudience, 'recipientCountRCS'),
-        [watchAudience],
-    );
-
-    const isSplitABEnable = calucateAudienceCount >= 100;
-
-    useEffect(() => {
-        dispatch(updateTotalAudienceCount(calucateAudienceCount || 0));
-    }, [calucateAudienceCount, dispatch]);
-
-    // Disable Split AB when audience count drops below 100
-    useEffect(() => {
-        if (!isSplitABEnable && watchSplitTest) refreshSplitABTab();
-    }, [isSplitABEnable]);
-
-    useEffect(() => {
-        !watchSplitTest &&
-            setEmptySplitDate({
-                text: '',
-            });
-    }, [watchSplitTest]);
-
-    // Call UTC time API on component mount
-    useEffect(() => {
-        dispatch(getUtcTimeNow());
-    }, [dispatch]);
-
-    // useEffect(() => {
-    //     if (!senderNameList?.length && location) {
-    //         fetchSenderName();
-    //     }
-    //     if (location?.campaignType === 'S') {
-    //         const payload = { userId, clientId, departmentId };
-    //         dispatch(
-    //             getAudienceList({
-    //                 payload: {
-    //                     ...payload,
-    //                     searchText: '',
-    //                     segmentIds: [],
-    //                     channelType: 'RCS',
-    //                 },
-    //             }),
-    //         );
-    //     }
-
-    //     // return () => {
-    //     //     dispatch(resetRCSList());
-    //     // };
-    // }, [location]);
-
-    useEffect(() => {
-        if (location) {
-            setCampaignTypeAndId({
-                campaignType: _get(location, 'campaignType', 'S'),
-                campaignId: _get(location, 'campaignId', 0),
-                dynamiclistId: location['campaignType'] === 'T' ? _get(location, 'dynamicListId', 0) : 0,
-            });
-            if (_get(location, 'campaignType', 'S') === 'M') {
-                const mdcContentSetupDetails = _get(location, 'mdcContentSetupDetails', {});
-                const levelNumber = _get(mdcContentSetupDetails, 'levelNumber', 1);
-                const actionId = _get(mdcContentSetupDetails, 'actionId', 0);
-                const mdcChannelDetailId = _get(mdcContentSetupDetails, 'channelDetailId', 0);
-                const mdcAudience = _get(mdcContentSetupDetails, 'audience', []);
-                const dataSource = _get(mdcContentSetupDetails, 'dataSource', []);
-                const mdcIsCGTGEnabled = _get(mdcContentSetupDetails, 'isCGTGEnabled', false);
-                const mdcButtonText = mdcChannelDetailId ? 'Update' : 'Create';
-                setMdcContentSetupDetails((pre) => ({
-                    ...pre,
-                    ...mdcContentSetupDetails,
-                    levelNumber: levelNumber,
-                    actionId: actionId,
-                    dataSource: dataSource,
-                    mdcButtonText: mdcButtonText,
-                    mdcAudience: mdcAudience,
-                }));
-                setLevelNumber(levelNumber);
-
-                // For MDC create mode (no channelDetailId), set isCGTGEnabled from mdcContentSetupDetails
-                if (!mdcChannelDetailId) {
-                    setValue('isCGTGEnabled', mdcIsCGTGEnabled);
-                }
-            }
-        }
-    }, [location]);
-    useEffect(() => {
-        if (
-            checkTrigger(location?.campaignType, location?.endDate) ||
-            !statusIdCheck(getCampaignStatusId(campaignDetails), location?.campaignType, campaignDetails) ||
-            checkRFAApproved(
-                getCampaignStatusId(campaignDetails),
-                campaignDetails?.requestForApproval?.approvarList,
-            )
-        ) {
-            setIsClickOff(true);
-        } else {
-            setIsClickOff(false);
-        }
-    }, [location?.campaignType, location?.endDate, campaignDetails?.content?.[0]?.statusId]);
-    useEffect(() => {
-        return () => {
-            resetState(true);
-            dispatch(updateAudience([]));
-            dispatch(updateFilterAudience([]));
-            resetAuthoringChannelEditSession(isEditCallRef, resetEditLoading);
-        };
-    }, [dispatch, resetEditLoading]);
-
-    useEffect(() => {
-        if (!_isEmpty(location) && !isEditCallRef?.current) {
-            const isEditMode = handleEditCallApi();
-            if (isEditMode) {
-                isEditCallRef.current = true;
-            }
-            getRcsDetails();
-        }
-    }, [JSON.stringify(location)]);
-    useEffect(() => {
-        if (!isDirty && Object.keys(dirtyFields)?.length > 0) {
-            dispatch(updateDirtyState(true));
-        } else if (isDirty && Object.keys(dirtyFields)?.length === 0 && Object.keys(editorContent)?.length === 0) {
-            dispatch(updateDirtyState(false));
-        }
-    }, [JSON.stringify(dirtyFields)]);
 
     const handleEditCallApi = () => {
         const isMDC = _get(location, 'campaignType', 'S') === 'M';
@@ -701,6 +715,7 @@ const RCS = ({ channelId, mCampType }) => {
             promises.push(fetchSenderName(payload));
             promises.push(isEditMode ? fetchRCSCampaign(payload) : Promise.resolve({ status: false }));
             const editApiResult = await Promise.all(promises);
+            if (!isMounted.current) return;
             let [rcsAudience, rcsSenderData, rcsCampaignData] = editApiResult || [];
 
         if (rcsCampaignData?.status && !_isEmpty(ensureObject(rcsCampaignData?.data))) {
@@ -742,6 +757,7 @@ const RCS = ({ channelId, mCampType }) => {
                     campaignId: _get(location, 'campaignId', 0),
                 };
                 const filterAudienceResponse = await fetchAudienceList(payload);
+                if (!isMounted.current) return;
                 let tempAudienceData = [];
                 if (filterAudienceResponse?.data) {
                     tempAudienceData = _map(ensureArray(filterAudienceResponse?.data), mapAudienceWithChannelLabels);
@@ -763,6 +779,7 @@ const RCS = ({ channelId, mCampType }) => {
             });
             dispatch(updateRCSList({ data: contentDetails, field: 'templateContentDetail' }));
             const template = await fetchRCSTempateList(senderId);
+            if (!isMounted.current) return;
             let templateList;
             let senderList;
             if (template.status) templateList = template?.data;
@@ -954,6 +971,7 @@ const RCS = ({ channelId, mCampType }) => {
                 audience?.map((aud) => aud?.listType)?.includes(typeList?.id),
             );
             temp.isCGTGEnabled = isCGTGEnabled ?? false;
+            if (!isMounted.current) return;
             reset((formState) => ({
                 ...formState,
                 ...temp,
@@ -979,7 +997,9 @@ const RCS = ({ channelId, mCampType }) => {
                 }
             }
         } catch {
-            dispatch(updateRCSList({ data: {}, field: 'campaignDetails' }));
+            if (isMounted.current) {
+                dispatch(updateRCSList({ data: {}, field: 'campaignDetails' }));
+            }
         } finally {
             if (isEditMode) {
                 finishEditSkeleton();
@@ -991,7 +1011,6 @@ const RCS = ({ channelId, mCampType }) => {
             ...item,
             disable: parseInt(item.id, 10) !== parseInt(templateType, 10),
         }));
-        // setValue('currentTabIndex', templateType - 1);
         setUpdateTabData(currentTabData);
         if (!_isEmpty(templateContentDetail)) {
             let temp = {};
@@ -1218,24 +1237,6 @@ const RCS = ({ channelId, mCampType }) => {
         }
     }
 
-    // const payload = {
-    //     userId,
-    //     clientId,
-    //     departmentId ,
-
-    const shouldDisableAutoRefresh = useMemo(() => {
-        return handleAutoRefreshClickOff(watchAudience);
-    }, [watchAudience]);
-    useEffect(() => {
-        if (shouldDisableAutoRefresh) {
-            setValue('isAutoRefereshenabled', false);
-        }
-    }, [watchAudience]);
-
-    useEffect(() => {
-        if (!isSplitABEnable && watchSplitTest) refreshSplitABTab();
-    }, [isSplitABEnable]);
-
     const handleMdcNavigation = ({ data }) => {
         resetState(true);
         const { rcsChannelDetailId: channelResponseDetailId } = data;
@@ -1263,7 +1264,7 @@ const RCS = ({ channelId, mCampType }) => {
 
     function handleNavigation() {
         window.scrollTo(0, 0);
-        const tabIndex = messagingTabState.currentIndex + 1;
+        const tabIndex = (messagingTabState?.currentIndex ?? 0) + 1;
         const handleVertcialNextTab = () => {
             const nextChannel = communicationChannels.find(
                 (chan, index) => channelType !== chan && Object.hasOwn(activeTabs, chan) && index > currentVerticalTab,
@@ -1332,6 +1333,7 @@ const RCS = ({ channelId, mCampType }) => {
         beginSubmit(getAuthoringSaveButtonType(formType));
         try {
         const utcTimeResponse = await dispatch(getUtcTimeNow(false));
+        if (!isMounted.current) return;
         const currentUtcTimeData = utcTimeResponse || utcTimeData;
 
         if (
@@ -1723,13 +1725,32 @@ const RCS = ({ channelId, mCampType }) => {
             } = await runSave(getAuthoringSaveButtonType(formType), () =>
                 dispatch(save_Rcs_Campaign({ payload: payloadData, loading: false })),
             );
+            if (!isMounted.current) return;
             setSaveCampaigData(data);
             if (status) {
                 await handleSaveChannelIds();
                 const selectedAudience = formState?.audience ?? [];
                 dispatch(updateChannelAudiences(mergeChannelAudiences('RCS', selectedAudience, channelAudiences)));
-                const payload = { userId, clientId, departmentId };
-                fetchRCSCampaign(payload);
+                if (getTestType() > 1) {
+                    setValue('rcsChannelDetailId', data?.rcsChannelDetailId);
+                    const isMDCCampaign = _get(location, 'campaignType', 'S') === 'M';
+                    await dispatch(
+                        Get_RCS_Campaign({
+                            payload: {
+                                userId,
+                                clientId,
+                                departmentId,
+                                campaignId: _get(location, 'campaignId', 0),
+                                levelNumber: isMDCCampaign ? _get(location, 'mdcContentSetupDetails.levelNumber', 0) : 1,
+                                actionId: isMDCCampaign ? _get(location, 'mdcContentSetupDetails.actionId', 0) : 1,
+                                rcsChannelDetailId: data?.rcsChannelDetailId,
+                            },
+                            loading: false,
+                        }),
+                    );
+                    if (!isMounted.current) return;
+                    formTypeRef.current = null;
+                }
 
                 // Handle different submission types
                 if (formType === 'form') {
@@ -1795,21 +1816,6 @@ const RCS = ({ channelId, mCampType }) => {
                         status: true,
                         isRFA: false,
                     });
-                    setValue('rcsChannelDetailId', rcsChannelDetailId);
-                    dispatch(
-                        Get_RCS_Campaign({
-                            payload: {
-                                userId,
-                                clientId,
-                                departmentId,
-                                campaignId: _get(location, 'campaignId', 0),
-                                levelNumber: _get(location, 'mdcContentSetupDetails.levelNumber', 0),
-                                actionId: _get(location, 'mdcContentSetupDetails.actionId', 0),
-                                rcsChannelDetailId: rcsChannelDetailId,
-                            },
-                            loading: false,
-                        }),
-                    );
                     setTimeout(() => setisTestComSent({ show: false, message: '', status: false, isRFA: false }), 5000);
                 } else if (formType === 'request for approval') {
                     // Clear dirty state after successful save while keeping form values
@@ -1931,16 +1937,6 @@ const RCS = ({ channelId, mCampType }) => {
             splitTabConfig
         ],
     );
-    // useEffect(() => {
-    //     if (savedChannel && !_isEmpty(campaignDetails) && audienceList?.length > 0) {
-    //         let segIds = campaignDetails?.segmentationListId;
-    //         let audience = _filter(audienceList, (aud) => segIds?.includes(aud.segmentationListId));
-    //         reset((formState) => ({
-    //             ...formState,
-    //             audience: audience,
-    //         }));
-    //     }
-    // }, [audienceList, campaignDetails]);
     const resetState = (resetCampaign = false) => {
         resetAuthoringChannelEditSession(isEditCallRef, resetEditLoading);
         let initialState = rcsFormInitialState?.defaultValues;
@@ -2075,16 +2071,24 @@ const RCS = ({ channelId, mCampType }) => {
                                                         title={ADD_SENDER_ID}
                                                         handleClick={() => {
                                                             const nav = getChannelNavigationValues('rcs');
-                                                            navigate('/preferences/communication-settings', {
-                                                                state: createCommunicationSettingsNavState('messaging', {
+                                                            const navState = createCommunicationSettingsNavState(
+                                                                'messaging',
+                                                                {
                                                                     mode: 'add',
-                                                                    subfrom: 'MP',
+                                                                    from: 'CreateCommunication',
+                                                                    campaignType: location?.campaignType,
                                                                     messagingTabId: MESSAGING_TAB_ID.RCS,
+                                                                    rcsTabId: 'vendor',
                                                                     backAction: window.location.search,
                                                                     tabValueName: nav.tabValueName,
                                                                     tabValue: nav.tabValue,
-                                                                }, location, getValues),
-                                                            });
+                                                                },
+                                                                location,
+                                                            );
+                                                            navigate(
+                                                                `/preferences/communication-settings?q=${encodeUrl(navState)}`,
+                                                                { state: {} },
+                                                            );
                                                         }}
                                                     />
                                                 </span>
@@ -2534,6 +2538,10 @@ const RCS = ({ channelId, mCampType }) => {
                                         onClick={() => {
                                             if (isPastPlanDurationBlocked) return;
                                             if (!isDirty && !isValid && location?.campaignType !== 'M') {
+                                                if (!shouldPromptSkipChannelConfirmation()) {
+                                    handleNavigation();
+                                    return;
+                                }
                                                 setNavigate_confirm(true);
                                             } else if (Object.keys(errors).includes('approvalList')) {
                                                 return;
@@ -2622,19 +2630,24 @@ const RCS = ({ channelId, mCampType }) => {
                         setIsAudienceChangeConfirm(false);
                     }}
                     handleConfirm={async () => {
-                        const payloadParams = {
-                            departmentId,
-                            clientId,
-                            userId,
-                        };
-                        await handlePersonalizationFetchApiCall({
-                            audience: watch(rcsFieldName.audience),
-                            errors,
-                            dispatch,
-                            payloadParams,
-                            listTypeWisePersonlization,
-                        });
-                        setIsAudienceChangeConfirm(false);
+                        try {
+                            const payloadParams = {
+                                departmentId,
+                                clientId,
+                                userId,
+                            };
+                            await handlePersonalizationFetchApiCall({
+                                audience: watch(rcsFieldName.audience),
+                                errors,
+                                dispatch,
+                                payloadParams,
+                                listTypeWisePersonlization,
+                            });
+                            if (!isMounted.current) return;
+                            setIsAudienceChangeConfirm(false);
+                        } catch {
+                            if (isMounted.current) setIsAudienceChangeConfirm(false);
+                        }
                     }}
                 />
                 <RSConfirmationModal

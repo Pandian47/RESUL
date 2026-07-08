@@ -1,5 +1,7 @@
 import { lazy } from 'react';
-import { renderEmbeddedLazyInner } from '../../../../constant';
+import { renderEmbeddedLazyInner, WEB_INNER_TAB_CONFIG } from '../../../../constant';
+
+export { WEB_INNER_TAB_CONFIG };
 
 const WebTab = lazy(() => import('./Tabs/Web'));
 const LifetimeCap = lazy(() => import('./Tabs/LifetimeCap'));
@@ -7,11 +9,21 @@ const CustomEvent = lazy(() => import('./Tabs/CustomEvent'));
 
 export const WEB_FORM_ACTIONS_PORTAL_ID = 'pref-cs-web-form-actions';
 
-export const TABBER_CONFIG = [
-    { id: 1010, text: 'Web', disable: false, component: renderEmbeddedLazyInner(WebTab) },
-    { id: 1012, text: 'Lifetime cap', disable: true, component: renderEmbeddedLazyInner(LifetimeCap) },
-    { id: 1013, text: 'Custom events', disable: false, component: renderEmbeddedLazyInner(CustomEvent) },
-];
+const WEB_TAB_COMPONENTS = {
+    web: renderEmbeddedLazyInner(WebTab),
+    lifetimeCap: renderEmbeddedLazyInner(LifetimeCap),
+    customEvents: renderEmbeddedLazyInner(CustomEvent),
+};
+
+export const getWebTabConfig = () =>
+    WEB_INNER_TAB_CONFIG.filter((tab) => tab.id !== 'quiet-hours-web').map((tab) => ({
+        id: tab.id,
+        text: tab.text,
+        disable: tab.disable ?? false,
+        component: WEB_TAB_COMPONENTS[tab.id],
+    }));
+
+export const TABBER_CONFIG = getWebTabConfig();
 
 export const ACTION_INITIAL_STATE = {
     showGrid: true,

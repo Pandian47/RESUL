@@ -573,6 +573,11 @@ const AssignRole = ({
         return clientDatata?.find((item) => item?.id === currType?.id);
     }, [currType, clientDatata]);
 
+    const companyDropdownToggleLabel = useMemo(() => {
+        if (defaultCompany?.name) return undefined;
+        return 'Select Company';
+    }, [defaultCompany]);
+
     const depList = useMemo(() => {
         const firstClient = responseApiData?.clientDetails?.[0];
         const list = firstClient?.departmentList || [];
@@ -706,7 +711,7 @@ const AssignRole = ({
                                 <Col md={3} className="pr0 ">
                                     <div className="d-flex justify-content-between align-items-center position-relative">
                                         {/* First Dropdown - All Companies (GHQ + RHQ + LOC + BU) */}
-                                        <div className="mr3">
+                                        <div className="ml3">
                                             <RSBootstrapdown
                                                 data={clientDatata || []}
                                                 isObject
@@ -718,7 +723,8 @@ const AssignRole = ({
                                                 alignRight
                                                 isFullHierarchyUI
                                                 isTruncateTitle
-                                                truncateTitleLength={16}
+                                                truncateTitleLength={30}
+                                                toggleLabel={companyDropdownToggleLabel}
                                                 defaultItem={defaultCompany}
                                                 onSelect={async (value, index) => {
                                                     if (!value) return;
@@ -785,17 +791,18 @@ const AssignRole = ({
                             <ul className="rs-list-group-horizontal jc-right">
                                 <li
                                     className={
-                                        !addAccess
-                                            ? 'click-off'
-                                            : activeUsersCount >= licenseValue || userLimitFailure
-                                                ? 'click-off'
-                                                : ''
+                                        !addAccess ||
+                                        assignRolePageApi.isPageLoading ||
+                                        activeUsersCount >= licenseValue ||
+                                        userLimitFailure
+                                            ? 'pe-none click-off'
+                                            : ''
                                     }
                                     onClick={() => {
-                                        if (addAccess) back('ADDUSER');
+                                        if (addAccess && !assignRolePageApi.isPageLoading) back('ADDUSER');
                                     }}
                                 >
-                                    <RSTooltip position="top" text={ADD_NEW_USER}>
+                                    <RSTooltip position="top" text={ADD_NEW_USER} className="lh0">
                                         <i
                                             id="rs_data_circle_plus_fill_edge"
                                             className={`${circle_plus_fill_edge_medium} icon-md primary-color icon-hover-shadow-primary`}
@@ -878,7 +885,7 @@ const AssignRole = ({
                                     })}
                                 </ul>
                             ) : (
-                                <NoDataAvailableRender isShowIcon={false} message={<span>No users found.</span>} />
+                                <NoDataAvailableRender isShowIcon={true} message={<span>No users found.</span>} />
                             )}
                         </Col>
 
@@ -960,7 +967,7 @@ const AssignRole = ({
                         </Col>
                     </Row>
                     <small className="align-items-center d-flex mt10">
-                        {/* <i className={`${circle_info_mini} icon-xs color-primary-blue mr5`} /> */}
+                        <i className={`${circle_info_mini} icon-xs color-primary-blue mr5`} />
                         {`Hold ${isMac ? 'Cmd' : 'Ctrl'} to select multiple users.`}
                     </small>
                 </div>

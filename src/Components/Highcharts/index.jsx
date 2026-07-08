@@ -220,7 +220,10 @@ const RSHighchartsContainer = forwardRef(({
 
     return (
         <div className={`${chartCore ? '' : 'portlet-chart'} ${pClassName}`} onMouseLeave={onMouseLeave}>
-            <div style={{ width: width !== null && width, height: height }} className={className}>
+            <div
+                style={{ width: width !== null && width, height: height }}
+                className={`${isCommunicationSent ? 'position-relative ' : ''}${className}`}
+            >
                 {!hasData ? (
                     <>
                         {Array(count || 1)
@@ -264,22 +267,28 @@ const RSHighchartsContainer = forwardRef(({
                     </>
                 )}
                 {content && <small className="portlet-info-text">Day-wise unique audience</small>}
-                {isDataStorage && (
-                    <RSTooltip text='Detail view' position='top' className={`position-absolute cp align-items-end ${isCustomStyle ? 'bottom0 right5': 'right20'}`}>
-                        <span  onClick={onDataStorageClick}>
-                            <i className={`${circle_info_medium} icon-md color-primary-blue`}/>
-                        </span>
-                    </RSTooltip>
-                )}
-                 {isCommunicationSent && (
-                    <RSTooltip text='Communication sent' position='top' className='position-absolute right5 mt-5 cp'>
-                        <span  onClick={handleCommunicationSentClick}>
-                            <i className={`${circle_info_medium} icon-md color-primary-blue`}/>
-                        </span>
-                    </RSTooltip>
+                {isCommunicationSent && (
+                    <div className="position-absolute right5 mt-5 cp">
+                        <RSTooltip text="Communication sent" position="top" className="lh0">
+                            <span onClick={handleCommunicationSentClick}>
+                                <i className={`${circle_info_medium} icon-md color-primary-blue`} />
+                            </span>
+                        </RSTooltip>
+                    </div>
                 )}
             </div>
-            {(chartOptions?.series?.length > 0 && isdataAvailable) && smallText && <small className="portlet-info-text">{smallText}</small>}
+            {(chartOptions?.series?.length > 0 && isdataAvailable) && smallText && (
+                <small className="portlet-info-text">{smallText}</small>
+            )}
+            {isDataStorage && (
+                <div className={`snap-info-ico cp${isCustomStyle ? ' right5' : ''}`}>
+                    <RSTooltip text="Detail view" position="top" className="lh0">
+                        <span onClick={onDataStorageClick}>
+                            <i className={`${circle_info_medium} icon-md color-primary-blue`} />
+                        </span>
+                    </RSTooltip>
+                </div>
+            )}
         </div>
     );
 });

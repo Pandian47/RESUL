@@ -218,7 +218,7 @@ export const addCompany = (payload, navigate) => async (dispatch) => {
         request.post({
             url: BRAND_CLIENT_CREATION,
             payload,
-            loading: true,
+            loading: false,
             isFailureCheck: true,
             ok: ({ data }) => {
                 if (data?.status) {
@@ -399,7 +399,7 @@ export const getEntityInfo = (payload, callback) => async (dispatch) => {
         request.post({
             url: GET_ENTITY_INFO,
             payload,
-            loading: true,
+            loading: false,
             ok: ({ data }) => {
                 if (callback) callback(data);
             },

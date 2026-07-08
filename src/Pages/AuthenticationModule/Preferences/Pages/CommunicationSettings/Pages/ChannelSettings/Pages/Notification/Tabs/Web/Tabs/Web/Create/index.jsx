@@ -1,4 +1,6 @@
 import { encryptWithAES, iv } from 'Utils/modules/crypto';
+import { validateIsCustomNavigate } from 'Utils/modules/navigation';
+import { updateQueryParams } from 'Utils/modules/urlQuery';
 import { GeneratePasswordpseudorandom } from 'Utils/modules/passwordUtils';
 import { MAX_LENGTH15, MAX_LENGTH25, MAX_LENGTH250, MAX_LENGTH255 } from 'Constants/GlobalConstant/Regex';
 import { API_KEY as API_KEY_MSG, AUTH_TOKEN as AUTH_TOKEN_MSG, DATA_BASE_URL, DOMAIN_NAME as DOMAIN_NAME_MSG, DOMAIN_URL as DOMAIN_URL_MSG, MESUREMENT as MESUREMENT_MSG, PROJECT_ID as PROJECT_ID_MSG, SELECT, STORAGE_BUCKET as STORAGE_BUCKET_MSG, UPLOAD_FILE } from 'Constants/GlobalConstant/ValidationMessage';
@@ -38,22 +40,33 @@ import { useSelector, useDispatch, useStore } from 'react-redux';
 import { useLocation, useNavigate } from 'react-router-dom';
 
 import useApiLoader from 'Hooks/useApiLoader';
+import useQueryParams from 'Hooks/useQueryParams';
 import { FIELD_BOTH_LOADER_CONFIG as fieldLoaderConfig } from 'Hooks/loaderTypes';
 import { CommunicationSettingsEditSkeletonGate } from 'Components/Skeleton/Components/PreferencesSubPageRouteSkeleton';
-
-
-const PUSH_WEB_CREATE_FORM_ID = 'rs_PushWebCreate_Form';
-
 import {
     validateFirebaseServiceAccountJson,
     extractBase64PayloadFromDataUrl,
 } from 'Utils/firebaseServiceAccountJson';
 import detectTechnology from './utils/detectTechnology';
 import IntegrationSuccessModal from '../../../../../Components/IntegrationSuccessModal';
+
+const PUSH_WEB_CREATE_FORM_ID = 'rs_PushWebCreate_Form';
+
+const WEB_ADD_QUERY_KEYS_TO_CLEAR = {
+    backNavigationDetails: null,
+    backAction: null,
+    mode: null,
+    subfrom: null,
+};
+
 const PushWebCreate = ({ type, handleCancel, config, setFailedApi }) => {
     const methods = useForm(FORM_INITIAL_STATE);
     const { state } = useLocation();
     const navigate = useNavigate();
+    const queryState = useQueryParams('/preferences/communication-settings');
+    const isNavigatingBackRef = useRef(false);
+    const isAddFromExternalFlow =
+        queryState?.mode === 'add' && queryState?.backNavigationDetails?.isCustomNavigate;
     const {
         control,
         handleSubmit,
@@ -403,16 +416,29 @@ const PushWebCreate = ({ type, handleCancel, config, setFailedApi }) => {
     };
 
     // Handle success modal okay button click
-    const handleSuccessModalOkay = () => {
-        setShowSuccessModal(false);
+    const handleReturn = () => {
+        if (isAddFromExternalFlow) {
+            isNavigatingBackRef.current = true;
+            validateIsCustomNavigate(queryState, queryState, navigate, () => {
+                handleCancel(true);
+            }, { dispatch });
+            return;
+        }
         if (state?.from === 'WN') {
             const locationState = state?.locationState;
             const encryptState = encodeURIComponent(
                 encryptWithAES(JSON.stringify(locationState).replace(/\+/g, '%2B')),
             );
             navigate(`/communication/create-communication?q=${encryptState}`);
+            handleCancel(true);
+            return;
         }
         handleCancel(true);
+    };
+
+    const handleSuccessModalOkay = () => {
+        setShowSuccessModal(false);
+        handleReturn();
     };
 
     const [actionsPortalTarget, setActionsPortalTarget] = useState(null);
@@ -422,19 +448,15 @@ const PushWebCreate = ({ type, handleCancel, config, setFailedApi }) => {
 
         return () => {
             setActionsPortalTarget(null);
+            if (isAddFromExternalFlow && !isNavigatingBackRef.current) {
+                updateQueryParams(WEB_ADD_QUERY_KEYS_TO_CLEAR);
+            }
         };
     }, []);
 
     const handleCancelClick = () => {
         if (isSaveLoading) return;
-        if (state?.from === 'WN') {
-            const locationState = state?.locationState;
-            const encryptState = encodeURIComponent(
-                encryptWithAES(JSON.stringify(locationState).replace(/\+/g, '%2B')),
-            );
-            navigate(`/communication/create-communication?q=${encryptState}`);
-        }
-        handleCancel(true);
+        handleReturn();
     };
 
     const renderFormActions = () => (

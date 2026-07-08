@@ -922,7 +922,7 @@ div#otp .rs-input-wrapper {
 
 .validation-message {
     @include abs-position($position: absolute, $left: 0, $right: 0, $zindex: 15);
-    @include sizing($fs: $font-xxs, $lh: 16px, $mw: max-content, $w: fit-content);
+    @include sizing($fs: $font-xxs, $lh: 15px, $mw: max-content, $w: fit-content);
     @include color($bg: $white, $color: $primary-red);
     @include space($padding: 5px);
 }
@@ -1017,7 +1017,7 @@ i {
 
 .click-off {
     cursor: not-allowed !important;
-    opacity: var(--click-off-opacity);
+    opacity: var(--click-off-opacity) !important;
     pointer-events: none;
     user-select: none;
 }
@@ -2873,7 +2873,7 @@ input:-webkit-autofill:active {
 
         .license_type {
             position: absolute;
-            top: -9px;
+            top: -20px;
             width: 47px;
             right: 0;
         }
@@ -6617,7 +6617,9 @@ div[disabled] {
         top: 40px;
         // right: 0;
         z-index: 5;
-        @extend .box-design;
+        background-color: $white;
+        border-radius: var(--globalBorderRadius);
+        border: 1px solid $quaternary-blue;
         padding: 10px;
 
         &::before {
@@ -12811,7 +12813,7 @@ input.checkbox[type='checkbox']:disabled~.lbl:before {
     }
 }
 
-.rs-bootstrap-dropdown .rs-dropdown .dropdown-menu.show .form-control:focus {
+.rs-bootstrap-dropdown .rs-dropdown .dropdown-menu .form-control:focus {
     box-shadow: none !important;
     border: none !important;
     background-color: transparent !important;
@@ -12819,7 +12821,7 @@ input.checkbox[type='checkbox']:disabled~.lbl:before {
     padding: 4px 8px;
 }
 
-.rs-bootstrap-dropdown .rs-dropdown .dropdown-menu.show .form-control-sm {
+.rs-bootstrap-dropdown .rs-dropdown .dropdown-menu .form-control-sm {
     border: none !important;
     background-color: transparent !important;
 }

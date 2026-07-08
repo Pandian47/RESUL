@@ -84,7 +84,7 @@ const Users = ({ permissions }) => {
         departmentList,
         accountAdmin,
     } = useSelector(({ globalstate }) => globalstate);
-    const { isFailure, userLimitFailure, totalUsers } = useSelector(({ userReducer }) => userReducer);
+    const { isFailure, userLimitFailure, totalUsers, isLoading } = useSelector(({ userReducer }) => userReducer);
 
     const usersApi = usePreferencesSubPageApi({
         mode: 'edit',
@@ -270,14 +270,18 @@ const Users = ({ permissions }) => {
                                     <RSPTooltip position="top" text={ADD_NEW_USER} className="lh0">
                                         <div
                                             className={
-                                                !addAccess || activeUsersCount >= licenseValue || userLimitFailure
+                                                !addAccess ||
+                                                isLoading ||
+                                                usersApi.isPageLoading ||
+                                                activeUsersCount >= licenseValue ||
+                                                userLimitFailure
                                                     ? 'pe-none click-off'
                                                     : ''
                                             }
                                         >
                                             <div
                                                 onClick={() => {
-                                                    if (addAccess) {
+                                                    if (addAccess && !isLoading && !usersApi.isPageLoading) {
                                                         let LocationState = {
                                                             mode: 'create',
                                                             clientId: company_clientId?.clientId,

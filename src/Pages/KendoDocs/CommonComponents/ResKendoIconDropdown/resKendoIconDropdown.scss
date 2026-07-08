@@ -43,6 +43,34 @@
     }
 }
 
+// ResCheckbox (SVG) on blue row hover — mirrors legacy .lbl::before hover rules
+@mixin res-icon-dd-res-checkbox-on-blue-bg {
+    .#{$res-checkbox-class} {
+        .checkbox-wrapper label {
+            .lbl .res-checkbox-box {
+                fill: $white;
+                stroke: $secondary-black;
+            }
+
+            input[type='checkbox']:checked + .lbl,
+            input.checkbox:checked + .lbl {
+                .res-checkbox-box {
+                    fill: $white;
+                    stroke: $secondary-black;
+                }
+            }
+
+            input[type='checkbox']:disabled + .lbl,
+            input.checkbox:disabled + .lbl {
+                .res-checkbox-box {
+                    stroke: $secondary-grey;
+                    fill: none;
+                }
+            }
+        }
+    }
+}
+
 @mixin res-icon-dd-box-design {
     box-shadow: 0 0 5px 0 rgb(0 0 0 / 5%), 0 0 5px 0 rgb(0 0 0 / 5%);
     border: 1px solid $quaternary-blue;
@@ -263,7 +291,7 @@
 }
 
 .k-animation-container .k-popup.k-menu-popup.filterAttributeDropdownContainer {
-    max-height: 180px;
+    max-height: 185px;
     margin-top: -2px;
     min-width: 160px;
     position: relative;
@@ -273,7 +301,7 @@
     @include res-icon-dd-box-design;
 
     ul.k-menu-group {
-        max-height: 180px;
+        max-height: 185px;
         border: none;
         box-shadow: none;
         background: $white;
@@ -334,6 +362,8 @@
                         border-color: $white;
                         background-color: $white;
                     }
+
+                    @include res-icon-dd-res-checkbox-on-blue-bg;
                 }
 
                 &:has(.look-alike-attribute-row) {
@@ -357,6 +387,8 @@
                     .checkbox-wrapper label .lbl::before {
                         border-color: $white;
                     }
+
+                    @include res-icon-dd-res-checkbox-on-blue-bg;
                 }
 
                 .look-alike-attribute-row,
@@ -394,18 +426,7 @@
                             align-items: center;
                             min-height: 15px;
                             padding-left: 0;
-
-                            &::before {
-                                content: ' ';
-                                display: inline-block;
-                                height: 15px;
-                                width: 15px;
-                                min-width: 15px;
-                                margin-right: 5px;
-                                border: 1px solid $secondary-black;
-                                box-sizing: border-box;
-                                vertical-align: middle;
-                            }
+                         
                         }
 
                         input.checkbox:checked + .lbl::before {

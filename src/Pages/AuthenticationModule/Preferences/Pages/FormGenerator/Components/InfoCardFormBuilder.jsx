@@ -63,7 +63,7 @@ const InfoCardFormBuilder = ({ data, onPreviewClick, onProgressiveProfilingClick
 
     return (
         <>
-            <ul className={`d-flex align-items-center rsp-header-band bg-white`}>
+            <ul className="d-flex rsp-header-band form-generator-header-band bg-white">
                 <li>
                     <img src={ResulticksLogoBl} alt="RESUL" className="mdc-logo-contain" />
                 </li>

@@ -74,15 +74,11 @@ const EventInfoModal = ({
             // headerTitleTooltip={true}
             bodyClassName=""
             body={
-                <div className="rs-planner-events-wrapper mb10">
+                <div className="rs-planner-events-wrapper ">
                     {isLoading ? (
                         <PlannerEventInfoSkeleton />
                     ) : isFailure || !hasCampaigns ? (
-                        <div className="rs-planner-events-empty">
-                            <div className="gallery-no-data-message">
-                                <NoDataAvailableRender />
-                            </div>
-                        </div>
+                         <PlannerEventInfoSkeleton isError = {true}/>
                     ) : (
                         <Carousel
                             // variant="dark"
@@ -103,7 +99,7 @@ const EventInfoModal = ({
                                             </h6> */}
                                             <div className="border-bottom  mb10 pb10 px5">
                                                 {/* <small>Created on: {getDateWithDay(selecteditems.createdDate)}</small> */}
-                                                <small className='fs14'>Created on: {getUserCurrentFormat(selecteditems.createdDate)?.dateFormat}</small>
+                                                <small className=''>Created on: {getUserCurrentFormat(selecteditems.createdDate)?.dateFormat}</small>
                                                 <h3 className="d-flex color-primary-blue">
                                                     {selectedEvent[0]?.campaignName}
                                                 </h3>

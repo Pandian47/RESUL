@@ -13,7 +13,7 @@ import { ENTER_DOMAIN, ENTER_HASHTAG, ENTER_INBOX_CLASSIFICATION, SELECT_INBOX_C
 import { ADJUST_SPLIT_SIZE, ARE_YOU_SURE_WANT_TO_RESET, AUDIENCE, AUDIENCE_CHANGE_CONFIRMATION, AUDIENCE_COUNT_ZERO_ENABLE_AUTO_REFRESH, AUTO_REFRESH, AUTO_REFRESH_POP_HOVER_TEXT, AUTO_SCHEDULE, AUTO_SCHEDULE_SPLITS, CANCEL, CHECK_START_DATE_AND_END_DATE, CLOSE, COMMUNICATION_LIST_SCREEN, COMMUNICATION_SCHEDULED, IGNORE_CHANNEL, INBOX_CLASSIFICATION, LAYOUT_POSITION, MANDATORY_SMARTLINK, MINIMUM_DIFFERENCE_SPLITS, MOBILE_APP, MOBILE_SMARTLINK_MANDATORY, NEXT, OK, POSITION, PUSH_TYPE, RESET, RESET_DOMAIN, SAVE, SPLIT_AB_TEST, SPLIT_AB_TEST_TEXT, SPLIT_AB_TURNOFF, UPLOAD_MEDIA, WARNING, YES } from 'Constants/GlobalConstant/Placeholders';
 import { adjust_split_medium, circle_minus_fill_large, circle_minus_fill_medium, circle_plus_fill_edge_medium, circle_plus_fill_medium, circle_plus_medium, circle_question_mark_medium, circle_question_mark_mini, close_medium, close_mini, restart_medium, save_mini, shield_medium, shield_tick_medium, timer_medium } from 'Constants/GlobalConstant/Glyphicons';
 import { Fragment, useEffect, useMemo, useRef, useState } from 'react';
-import { map as _map,get as _get,find as _find,forEach as _forEach,cloneDeep as _cloneDeep,isEmpty as _isEmpty } from 'Utils/modules/lodashReplacements';
+import { map as _map, get as _get, find as _find, forEach as _forEach, cloneDeep as _cloneDeep, isEmpty as _isEmpty } from 'Utils/modules/lodashReplacements';
 import { Row, Col } from 'react-bootstrap';
 import { useForm, FormProvider } from 'react-hook-form';
 
@@ -58,6 +58,7 @@ import {
     getPastPlanDurationBlockedState,
     validatePastPlanDurationOnSubmit,
     PAST_PLAN_DURATION_CLICK_OFF_CLASS,
+    shouldPromptSkipChannelConfirmation,
 } from '../../constant';
 import { RSPrimaryButton, RSSecondaryButton } from 'Components/Buttons';
 import { refreshFields } from './constant';
@@ -66,7 +67,7 @@ import { updateVerticalTab, updateTab, updateDirtyState, resetCreateCommunicatio
 import { getSmartUrl } from 'Reducers/communication/createCommunication/smartlink/request';
 import { getRequestApprovalList, getSessionId, getUtcTimeData } from 'Reducers/globalState/selector';
 import { updateSmartLinkShow } from 'Reducers/communication/createCommunication/execute/reducer';
-import { getGeneratedLink, getMobileSmartLinkOverlayMessage, getResolvedMobileAppId, getSmartLinksListWithLabels, smartlinkEdit } from 'Reducers/communication/createCommunication/smartlink/selectors';
+import { getGeneratedLink, getMobileSmartLinkOverlayMessage, getResolvedMobileAppId, getSmartLinksListWithLabels, selectIsSmartLinkFetchResolved, smartlinkEdit } from 'Reducers/communication/createCommunication/smartlink/selectors';
 import { getAudioListByApp, getInboxClassification, getMobileApp, getMobilePushById, getNotificationWebPush, getRecipientForNotification, saveMobilePush } from 'Reducers/communication/createCommunication/Create/request';
 import { updateChannelAudiences } from 'Reducers/communication/createCommunication/plan/reducer';
 import { useNavigate } from 'react-router-dom';
@@ -149,7 +150,7 @@ const MobileNotification = ({ type, mCampType }) => {
     const mobileAppLoader = useApiLoader();
     const audioListLoader = useApiLoader();
 
-    const { tabSmartLink_Flag } = useSelector(({ smartLinkReducer }) => smartLinkReducer);
+    const isSmartLinkFetchResolved = useSelector(selectIsSmartLinkFetchResolved);
 
     const checkSave = (savedChannelsId[14]?.includes(14) || (location?.templateId && location?.templateChannelId === 14) || (location?.isSavedMobilePushChannel && location?.fromSource === 'communication')) ?? false;
     const { showEditSkeleton, isEditContentLoading, isSavedChannel, finishEditSkeleton, beginEditSkeleton } =
@@ -211,7 +212,6 @@ const MobileNotification = ({ type, mCampType }) => {
 
     const [splitTabs, setSplitTabs] = useState(INITIAL_SPLIT_AB_STATE(setDirtyReset));
     const [scheduleModal, setShowScheduleModal] = useState(false);
-    const [isSmartLink, setIsSmartLink] = useState(false);
     const [modal, setModal] = useState({
         isRefresh: false,
         scheduleConfirmModal: false,
@@ -487,11 +487,6 @@ const MobileNotification = ({ type, mCampType }) => {
         }
     }, [calculateAudienceCount, splitTest, tabs?.splitTabsList]);
 
-    // Call UTC time API on component mount
-    useEffect(() => {
-        dispatch(getUtcTimeNow());
-    }, [dispatch]);
-
     useEffect(() => {
         if (!isSplitABEnable && (splitTest || isLayoutCarousel)) {
             disableSplitTabs();
@@ -510,21 +505,21 @@ const MobileNotification = ({ type, mCampType }) => {
             setTempSmartLink(tempSmartLink);
         }
     }, [smartLink1, smartLink]);
+
     const getSmartLink = async () => {
         const payload = { clientId, departmentId, userId, campaignId: _get(location, 'campaignId', 0) };
         const res = await dispatch(getSmartUrl({ payload, reduceLoad: true }));
         if (!res?.status) {
             dispatch(updateSmartLinkShow(false));
             return '';
-        } else {
-            let temp = res?.data?.map((item) => {
-                return JSON.parse(item?.smartAppStoreUrl)?.[1]?.MobileApp;
-            });
-            setMobileAppIdState(temp?.[0]);
-            await getMobileAppData(temp?.[0]);
-            dispatch(updateSmartLinkShow(true));
-            return temp?.[0];
         }
+        const temp = res?.data?.map((item) => {
+            return JSON.parse(item?.smartAppStoreUrl)?.[1]?.MobileApp;
+        });
+        setMobileAppIdState(temp?.[0]);
+        await getMobileAppData(temp?.[0]);
+        dispatch(updateSmartLinkShow(true));
+        return temp?.[0];
     };
 
     // useEffect(() => {
@@ -534,16 +529,6 @@ const MobileNotification = ({ type, mCampType }) => {
     //         }
     //     }
     // }, [showSmartLink, smartLink1, location]);
-
-    useEffect(() => {
-        if (checkSave) {
-            if (!resolvedMobileAppId || !smartLink1 || !Object.values(smartLink)[0]) setIsSmartLink(true);
-            else setIsSmartLink(false);
-        } else {
-            if (!resolvedMobileAppId || !smartLink1 || !Object.values(smartLink)[0]) setIsSmartLink(true);
-            else setIsSmartLink(false);
-        }
-    }, [smartLink1, smartLink, resolvedMobileAppId, showSmartLink]);
 
     useEffect(() => {
         resolvedMobileAppId && _get(location, 'campaignId', 0) > 0;
@@ -1058,7 +1043,7 @@ const MobileNotification = ({ type, mCampType }) => {
             if (
                 location &&
                 Object.keys(location)?.length &&
-                tempSmartLink?.length &&
+                isSmartLinkFetchResolved &&
                 checkSave &&
                 !isAlReadyCalled?.current
             ) {
@@ -1080,7 +1065,7 @@ const MobileNotification = ({ type, mCampType }) => {
         }
 
         getData();
-    }, [location, mobileAppData, tempSmartLink, checkSave]);
+    }, [location, mobileAppData, isSmartLinkFetchResolved, checkSave]);
 
     useEffect(() => {
         if (location?.templateId > 0 && mobileAppData?.length !== 0 && !isTemplateFlow) {
@@ -1254,284 +1239,230 @@ const MobileNotification = ({ type, mCampType }) => {
     const onFormSubmit = async (formState, formType = 'form', saveType, isScheduled = true) => {
         beginSubmit(getAuthoringSaveButtonType(formType));
         try {
-        const utcTimeResponse = await dispatch(getUtcTimeNow(false));
-        const currentUtcTimeData = utcTimeResponse || utcTimeData;
+            const utcTimeResponse = await dispatch(getUtcTimeNow(false));
+            const currentUtcTimeData = utcTimeResponse || utcTimeData;
 
-        if (
-            location?.campaignType !== 'T' &&
-            (!levelNumber || levelNumber < 2) &&
-            validatePastPlanDurationOnSubmit({
-                location,
-                formState,
-                setError,
-                currentUtcTime: currentUtcTimeData?.utcTime,
-                splitTest: formState?.splitTest,
-                splitTabList: tabs?.splitTabsList,
-            })
-        ) {
-            return;
-        }
+            if (
+                location?.campaignType !== 'T' &&
+                (!levelNumber || levelNumber < 2) &&
+                validatePastPlanDurationOnSubmit({
+                    location,
+                    formState,
+                    setError,
+                    currentUtcTime: currentUtcTimeData?.utcTime,
+                    splitTest: formState?.splitTest,
+                    splitTabList: tabs?.splitTabsList,
+                })
+            ) {
+                return;
+            }
 
-        if (
-            !checkTrigger(location?.campaignType, location?.endDate) &&
-            statusIdCheck(
-                Object.keys(mobileNotificationEditData)?.length > 1
-                    ? mobileNotificationEditData?.content[0]?.statusId
-                    : null,
-                location?.campaignType,
-                mobileNotificationEditData,
-            ) &&
-            !checkRFAApproved(
-                Object.keys(mobileNotificationEditData)?.length > 1
-                    ? mobileNotificationEditData?.content[0]?.statusId
-                    : null,
-                mobileNotificationEditData?.requestForApproval?.approvarList,
-            )
-        ) {
-            if (formType !== 'send') {
-                if (!handleAutoRefreshClickOff(audience)) {
-                    const audienceCountValid = validateAudienceCount({
-                        audienceCount: calculateAudienceCount ?? 0,
-                        isAutoRefereshenabled: getValues('isAutoRefereshenabled') ?? false,
-                        campaignType: location?.campaignType ?? 'S',
-                        levelNumber: levelNumber ?? 1,
+            if (
+                !checkTrigger(location?.campaignType, location?.endDate) &&
+                statusIdCheck(
+                    Object.keys(mobileNotificationEditData)?.length > 1
+                        ? mobileNotificationEditData?.content[0]?.statusId
+                        : null,
+                    location?.campaignType,
+                    mobileNotificationEditData,
+                ) &&
+                !checkRFAApproved(
+                    Object.keys(mobileNotificationEditData)?.length > 1
+                        ? mobileNotificationEditData?.content[0]?.statusId
+                        : null,
+                    mobileNotificationEditData?.requestForApproval?.approvarList,
+                )
+            ) {
+                if (formType !== 'send') {
+                    if (!handleAutoRefreshClickOff(audience)) {
+                        const audienceCountValid = validateAudienceCount({
+                            audienceCount: calculateAudienceCount ?? 0,
+                            isAutoRefereshenabled: getValues('isAutoRefereshenabled') ?? false,
+                            campaignType: location?.campaignType ?? 'S',
+                            levelNumber: levelNumber ?? 1,
+                        });
+                        if (!audienceCountValid.valid) {
+                            setAudienceCountZeroWarning(true);
+                            return;
+                        }
+                    }
+                    let schedulerName =
+                        splitTest && !isLayoutCarousel ? `${tabs?.splitTabsList?.[tabs?.currentTab]}.schedule` : 'schedule';
+                    const currentSchedule = getValues(schedulerName) || null;
+                    const isRFAValid = validateRFAMandatory({
+                        isCurrentBURFAStatus,
+                        getValues,
+                        setValue,
+                        setError,
+                        trigger,
+                        isCommunication: true,
+                        currentSchedule: currentSchedule,
+                        levelNumber: levelNumber,
+                        campaignType: location?.campaignType,
+                        dataSource: dataSource,
+                        triggerPlayPauseStatus: mobileNotificationEditData?.triggerPlayPauseStatus,
                     });
-                    if (!audienceCountValid.valid) {
-                        setAudienceCountZeroWarning(true);
+
+                    if (!isRFAValid) {
                         return;
                     }
                 }
-                let schedulerName =
-                    splitTest && !isLayoutCarousel ? `${tabs?.splitTabsList?.[tabs?.currentTab]}.schedule` : 'schedule';
-                const currentSchedule = getValues(schedulerName) || null;
-                const isRFAValid = validateRFAMandatory({
-                    isCurrentBURFAStatus,
-                    getValues,
-                    setValue,
-                    setError,
-                    trigger,
-                    isCommunication: true,
-                    currentSchedule: currentSchedule,
-                    levelNumber: levelNumber,
-                    campaignType: location?.campaignType,
-                    dataSource: dataSource,
-                    triggerPlayPauseStatus: mobileNotificationEditData?.triggerPlayPauseStatus,
-                });
 
-                if (!isRFAValid) {
+                let statusId =
+                    Object.keys(mobileNotificationEditData)?.length > 1
+                        ? mobileNotificationEditData?.content?.[0]?.statusId
+                        : null;
+                const mandatoryFields = ['hashtag', 'schedule'];
+                const textMandtoryFields = ['titleText', 'editorText', ...mandatoryFields];
+
+                let errorIndex, errorField;
+                // debugger;
+                // console.log('Submit data ::::::::::: ', formState, formType, errorIndex);
+                //Split A/B Scenario
+
+                //SplitTest Error Validtion
+                if (errorIndex !== undefined) {
                     return;
                 }
-            }
+                if (Object.keys(errors)?.length !== 0 || formState?.errorBlock) {
+                    trigger();
+                    return;
+                }
 
-            let statusId =
-                Object.keys(mobileNotificationEditData)?.length > 1
-                    ? mobileNotificationEditData?.content?.[0]?.statusId
-                    : null;
-            const mandatoryFields = ['hashtag', 'schedule'];
-            const textMandtoryFields = ['titleText', 'editorText', ...mandatoryFields];
-
-            let errorIndex, errorField;
-            // debugger;
-            // console.log('Submit data ::::::::::: ', formState, formType, errorIndex);
-            //Split A/B Scenario
-
-            //SplitTest Error Validtion
-            if (errorIndex !== undefined) {
-                return;
-            }
-            if (Object.keys(errors)?.length !== 0 || formState?.errorBlock) {
-                trigger();
-                return;
-            }
-
-            //NON SplitA/B Scenario and Scedule is selected
-            if (!formState.splitTest && formState.layoutPosition?.value !== 'Carousel') {
-                if (formState.currentTabIndex !== null && formState.currentTabIndex !== undefined) {
-                    // if (formState.hashtag?.length === 0) {
-                    //     setError(`hashtag`, {
-                    //         type: 'custom',
-                    //         message: ENTER_HASHTAG,
-                    //     });
-                    //     setFocus('editorText');
-                    //     return;
-                    // } else
-                    if (
-                        formState?.contentInput === 'import' ||
-                        (formState?.deliveryType?.id === 5 && formState?.currentTabIndex === 1)
-                    ) {
+                //NON SplitA/B Scenario and Scedule is selected
+                if (!formState.splitTest && formState.layoutPosition?.value !== 'Carousel') {
+                    if (formState.currentTabIndex !== null && formState.currentTabIndex !== undefined) {
+                        // if (formState.hashtag?.length === 0) {
+                        //     setError(`hashtag`, {
+                        //         type: 'custom',
+                        //         message: ENTER_HASHTAG,
+                        //     });
+                        //     setFocus('editorText');
+                        //     return;
+                        // } else
                         if (
-                            formState?.deliveryType?.id !== 5 &&
-                            formState?.importType === 'url' &&
-                            !(formState?.importUrl && String(formState.importUrl).trim()) &&
-                            !hasMobileImportFileContent(formState)
+                            formState?.contentInput === 'import' ||
+                            (formState?.deliveryType?.id === 5 && formState?.currentTabIndex === 1)
                         ) {
-                            setError(`importUrl`, {
-                                type: 'custom',
-                                message: 'Enter Communication URL',
-                            });
-                            setFocus('importUrl');
-                            return;
-                        }
-                        if (!hasMobileImportFileContent(getValues() || formState)) {
-                            const uploadMessage =
-                                formState?.deliveryType?.id === 5
-                                    ? UPLOAD_MEDIA
-                                    : 'Select a file to proceed';
-                            setError(`zipFile`, {
-                                type: 'custom',
-                                message: uploadMessage,
-                            });
-                            if (formState?.deliveryType?.id === 5) {
-                                setError(`tabErrorText`, {
+                            if (
+                                formState?.deliveryType?.id !== 5 &&
+                                formState?.importType === 'url' &&
+                                !(formState?.importUrl && String(formState.importUrl).trim()) &&
+                                !hasMobileImportFileContent(formState)
+                            ) {
+                                setError(`importUrl`, {
+                                    type: 'custom',
+                                    message: 'Enter Communication URL',
+                                });
+                                setFocus('importUrl');
+                                return;
+                            }
+                            if (!hasMobileImportFileContent(getValues() || formState)) {
+                                const uploadMessage =
+                                    formState?.deliveryType?.id === 5
+                                        ? UPLOAD_MEDIA
+                                        : 'Select a file to proceed';
+                                setError(`zipFile`, {
                                     type: 'custom',
                                     message: uploadMessage,
                                 });
-                            }
-                            setFocus('zipFile');
-                            trigger(['zipFile', 'tabErrorText']);
-                            return;
-                        }
-                    } else if (formState?.contentInput === 'template' || formState?.currentTabIndex === 2) {
-                        if (!hasTemplateTabContent(formState)) {
-                            setError(`tabErrorText`, {
-                                type: 'custom',
-                                message: 'Select template to proceed',
-                            });
-                            trigger();
-                            audienceRef.current.scrollIntoView({
-                                behavior: 'smooth',
-                            });
-                            return;
-                        }
-                    } else if (formState?.contentInput === 'create') {
-                        // if (formState?.editorTextLength > 350) {
-                        //     return;
-                        // }
-                        if (!formState?.previewImage) {
-                            if (formState?.title?.text === '') {
-                                setError(`title.text`, {
-                                    type: 'custom',
-                                    message: 'Enter a title',
-                                });
-                                tabberRef.current.scrollIntoView({
-                                    behavior: 'smooth',
-                                });
+                                if (formState?.deliveryType?.id === 5) {
+                                    setError(`tabErrorText`, {
+                                        type: 'custom',
+                                        message: uploadMessage,
+                                    });
+                                }
+                                setFocus('zipFile');
+                                trigger(['zipFile', 'tabErrorText']);
                                 return;
-                            } else if (formState.editorTextLength === 0) {
-                                setError(`editorTextLength`, {
+                            }
+                        } else if (formState?.contentInput === 'template' || formState?.currentTabIndex === 2) {
+                            if (!hasTemplateTabContent(formState)) {
+                                setError(`tabErrorText`, {
                                     type: 'custom',
-                                    message: 'Enter a body text',
+                                    message: 'Select template to proceed',
                                 });
-                                tabberRef.current.scrollIntoView({
+                                trigger();
+                                audienceRef.current.scrollIntoView({
                                     behavior: 'smooth',
                                 });
                                 return;
                             }
+                        } else if (formState?.contentInput === 'create') {
+                            // if (formState?.editorTextLength > 350) {
+                            //     return;
+                            // }
+                            if (!formState?.previewImage) {
+                                if (formState?.title?.text === '') {
+                                    setError(`title.text`, {
+                                        type: 'custom',
+                                        message: 'Enter a title',
+                                    });
+                                    tabberRef.current.scrollIntoView({
+                                        behavior: 'smooth',
+                                    });
+                                    return;
+                                } else if (formState.editorTextLength === 0) {
+                                    setError(`editorTextLength`, {
+                                        type: 'custom',
+                                        message: 'Enter a body text',
+                                    });
+                                    tabberRef.current.scrollIntoView({
+                                        behavior: 'smooth',
+                                    });
+                                    return;
+                                }
+                            }
                         }
-                    }
-                } else if (formState.currentTabIndex === null || formState.currentTabIndex === undefined) {
-                    setError(`tabErrorText`, {
-                        type: 'custom',
-                        message: 'Select content type to proceed',
-                    });
-                    trigger();
-                    audienceRef.current.scrollIntoView({
-                        behavior: 'smooth',
-                    });
-                    return;
-                }
-
-                if (
-                    !(formType === 'schedule') &&
-                    !(formType === 'send') &&
-                    levelNumber === 1 &&
-                    dataSource !== 'DL' &&
-                    location?.campaignType !== 'T' &&
-                    isScheduled
-                ) {
-                    // for (var j = 0; j < tabs?.splitTabsList?.length; j++) {
-                    if (!formState?.schedule) {
-                        UpdateState(setModal, 'scheduleConfirmModal', true);
-                        formTypeRef.current = formType;
-                        return;
-                        // setTabs((prev) => ({
-                        //     ...prev,
-                        //     currentTab: i,
-                        // }));
-                    }
-                    // }
-                }
-            } else if (formState.splitTest || formState.layoutPosition?.value === 'Carousel') {
-                const splitKeys = getSplitTabKeysForValidation(formState, tabs?.splitTabsList);
-                for (var i = 0; i < splitKeys.length; i++) {
-                    const splitKey = splitKeys[i];
-                    const splitTabState = getValues(splitKey) || formState[splitKey];
-                    if (
-                        splitTabState?.currentTabIndex === null ||
-                        splitTabState?.currentTabIndex === undefined
-                    ) {
-                        setError(`${splitKey}.tabErrorText`, {
+                    } else if (formState.currentTabIndex === null || formState.currentTabIndex === undefined) {
+                        setError(`tabErrorText`, {
                             type: 'custom',
                             message: 'Select content type to proceed',
                         });
-                        setTabs((prev) => ({
-                            ...prev,
-                            currentTab: i,
-                        }));
                         trigger();
-                        if (tabberRef?.current) {
-                            tabberRef.current.scrollIntoView({ behavior: 'smooth' });
-                        } else {
-                            audienceRef.current.scrollIntoView({ behavior: 'smooth' });
-                        }
+                        audienceRef.current.scrollIntoView({
+                            behavior: 'smooth',
+                        });
                         return;
                     }
-                    const importValidationError = getMobileSplitImportValidationError({
-                        splitTabState,
-                        splitKey,
-                        deliveryTypeId: formState?.deliveryType?.id,
-                    });
-                    if (importValidationError) {
-                        const importMessage =
-                            importValidationError.type === 'url'
-                                ? 'Enter Communication URL'
-                                : formState?.deliveryType?.id === 5
-                                    ? UPLOAD_MEDIA
-                                    : 'Select a file to proceed';
-                        setError(importValidationError.field, {
-                            type: 'custom',
-                            message: importMessage,
-                        });
-                        if (formState?.deliveryType?.id === 5) {
+
+                    if (
+                        !(formType === 'schedule') &&
+                        !(formType === 'send') &&
+                        levelNumber === 1 &&
+                        dataSource !== 'DL' &&
+                        location?.campaignType !== 'T' &&
+                        isScheduled
+                    ) {
+                        // for (var j = 0; j < tabs?.splitTabsList?.length; j++) {
+                        if (!formState?.schedule) {
+                            UpdateState(setModal, 'scheduleConfirmModal', true);
+                            formTypeRef.current = formType;
+                            return;
+                            // setTabs((prev) => ({
+                            //     ...prev,
+                            //     currentTab: i,
+                            // }));
+                        }
+                        // }
+                    }
+                } else if (formState.splitTest || formState.layoutPosition?.value === 'Carousel') {
+                    const splitKeys = getSplitTabKeysForValidation(formState, tabs?.splitTabsList);
+                    for (var i = 0; i < splitKeys.length; i++) {
+                        const splitKey = splitKeys[i];
+                        const splitTabState = getValues(splitKey) || formState[splitKey];
+                        if (
+                            splitTabState?.currentTabIndex === null ||
+                            splitTabState?.currentTabIndex === undefined
+                        ) {
                             setError(`${splitKey}.tabErrorText`, {
                                 type: 'custom',
-                                message: importMessage,
+                                message: 'Select content type to proceed',
                             });
-                        }
-                        setTabs((prev) => ({
-                            ...prev,
-                            currentTab: i,
-                        }));
-                        setFocus(importValidationError.focusField);
-                        trigger([importValidationError.field, `${splitKey}.tabErrorText`]);
-                        if (tabberRef?.current) {
-                            tabberRef.current.scrollIntoView({ behavior: 'smooth' });
-                        }
-                        return;
-                    }
-                    if (
-                        splitTabState?.contentInput === 'template' ||
-                        splitTabState?.currentTabIndex === 2
-                    ) {
-                        if (!hasTemplateTabContent(splitTabState)) {
                             setTabs((prev) => ({
                                 ...prev,
                                 currentTab: i,
                             }));
-                            setError(`${splitKey}.tabErrorText`, {
-                                type: 'custom',
-                                message: 'Select template to proceed',
-                            });
                             trigger();
                             if (tabberRef?.current) {
                                 tabberRef.current.scrollIntoView({ behavior: 'smooth' });
@@ -1540,124 +1471,218 @@ const MobileNotification = ({ type, mCampType }) => {
                             }
                             return;
                         }
-                    }
-                    // if (formState[`split${splitObj[i]}`]?.editorText?.length > 350) {
-                    //     return;
-                    // }
-                    if (
-                        splitTabState?.editorText?.length === 0 &&
-                        splitTabState?.contentInput === 'create'
-                    ) {
-                        setTabs((prev) => ({
-                            ...prev,
-                            currentTab: i,
-                        }));
-                        setError(`${splitKey}.editorText`, {
-                            type: 'custom',
-                            message: 'Enter the body text',
+                        const importValidationError = getMobileSplitImportValidationError({
+                            splitTabState,
+                            splitKey,
+                            deliveryTypeId: formState?.deliveryType?.id,
                         });
-                        tabberRef.current.scrollIntoView({
-                            behavior: 'smooth',
-                        });
-                        return;
-                    }
-                    // check carousel interacivity field
-                    const interActivityStatus = handleFieldValueCheck(
-                        splitTabState,
-                        i,
-                        splitKey,
-                        'interactivity',
-                        setTabs,
-                        audienceRef,
-                        setError,
-                    );
-                    if (!interActivityStatus) {
-                        setTimeout(() => {
-                            trigger();
-                        }, 1000);
-                        return;
-                    }
-                }
-                if (
-                    !(formType === 'schedule') &&
-                    !(formType === 'send') &&
-                    formState.layoutPosition?.value !== 'Carousel' &&
-                    levelNumber === 1 &&
-                    location?.campaignType !== 'T'
-                ) {
-                    let scheduleAll = [];
-                    let nullCount = 0;
-                    for (var j = 0; j < tabs?.splitTabsList?.length; j++) {
-                        if (!formState[`split${splitObj[j]}`]?.schedule) {
-                            scheduleAll.push(null);
-                            // UpdateState(setModal, 'scheduleConfirmModal', true);
-                            // return;
-                            // setTabs((prev) => ({
-                            //     ...prev,
-                            //     currentTab: i,
-                            // }));
-                            nullCount++;
-                        } else {
-                            scheduleAll.push(true);
+                        if (importValidationError) {
+                            const importMessage =
+                                importValidationError.type === 'url'
+                                    ? 'Enter Communication URL'
+                                    : formState?.deliveryType?.id === 5
+                                        ? UPLOAD_MEDIA
+                                        : 'Select a file to proceed';
+                            setError(importValidationError.field, {
+                                type: 'custom',
+                                message: importMessage,
+                            });
+                            if (formState?.deliveryType?.id === 5) {
+                                setError(`${splitKey}.tabErrorText`, {
+                                    type: 'custom',
+                                    message: importMessage,
+                                });
+                            }
+                            setTabs((prev) => ({
+                                ...prev,
+                                currentTab: i,
+                            }));
+                            setFocus(importValidationError.focusField);
+                            trigger([importValidationError.field, `${splitKey}.tabErrorText`]);
+                            if (tabberRef?.current) {
+                                tabberRef.current.scrollIntoView({ behavior: 'smooth' });
+                            }
+                            return;
                         }
-                    }
-                    // console.log(
-                    //     'ScheduleALL [[][[[[[[[[[[[[[[[[[[[[[[[[[]]]]]]]]]]]]]]]]]]]]]]]]]]]][ ::::: ',
-                    //     scheduleAll,
-                    //     nullCount,
-                    // );
-                    if (nullCount === tabs?.splitTabsList?.length && isScheduled) {
-                        UpdateState(setModal, 'scheduleConfirmModal', true);
-                        formTypeRef.current = formType;
-                        return;
-                    } else {
-                        for (var k = 0; k < scheduleAll?.length; k++) {
-                            // If any one SplitAB schedule exists, SplitAB is mandatory.
-                            let checkAllSplitNoSchedule = Object.values(scheduleAll)?.every((schedule) => !schedule);
-                            if (scheduleAll[k] === null && !checkAllSplitNoSchedule) {
-                                // console.log(
-                                //     'ScheduleALL [[][[[[[[[[[[[[kjdnasdkjnjakdasd[[[[[[[[[[[[[]]]]]]]]]]]]]]]]]]]]]]]]]]]][ ::::: ',
-                                //     scheduleAll,
-                                // ); name="splitB.schedule"
-                                // console.log('${splitObj[k]}', `split${splitObj[k]}`);
+                        if (
+                            splitTabState?.contentInput === 'template' ||
+                            splitTabState?.currentTabIndex === 2
+                        ) {
+                            if (!hasTemplateTabContent(splitTabState)) {
                                 setTabs((prev) => ({
                                     ...prev,
-                                    currentTab: k,
+                                    currentTab: i,
                                 }));
-                                setValue('scheduleAlert', true);
-                                // setValue(`split${splitObj[k]}.schedule`, new Date());
-                                setError(`split${splitObj[k]}.schedule`, {
+                                setError(`${splitKey}.tabErrorText`, {
                                     type: 'custom',
-                                    message: 'Select a schedule time',
+                                    message: 'Select template to proceed',
                                 });
-                                // trigger(`split${splitObj[k]}.schedule`);
+                                trigger();
+                                if (tabberRef?.current) {
+                                    tabberRef.current.scrollIntoView({ behavior: 'smooth' });
+                                } else {
+                                    audienceRef.current.scrollIntoView({ behavior: 'smooth' });
+                                }
                                 return;
-                            } else if (scheduleAll[k]) {
-                                // console.log('ASdasdad ::: ', formState[tabs?.splitTabsList?.[k]], formState);
-                                if (k > 0) {
-                                    if (
-                                        diff_minutes(
-                                            formState[tabs?.splitTabsList[k]]?.schedule,
-                                            formState[tabs?.splitTabsList[k - 1]]?.schedule,
-                                        ) < 5
-                                    ) {
-                                        setError(`${tabs?.splitTabsList[k]}.schedule`, {
-                                            type: 'required',
-                                            message: MINIMUM_DIFFERENCE_SPLITS,
-                                        });
+                            }
+                        }
+                        // if (formState[`split${splitObj[i]}`]?.editorText?.length > 350) {
+                        //     return;
+                        // }
+                        if (
+                            splitTabState?.editorText?.length === 0 &&
+                            splitTabState?.contentInput === 'create'
+                        ) {
+                            setTabs((prev) => ({
+                                ...prev,
+                                currentTab: i,
+                            }));
+                            setError(`${splitKey}.editorText`, {
+                                type: 'custom',
+                                message: 'Enter the body text',
+                            });
+                            tabberRef.current.scrollIntoView({
+                                behavior: 'smooth',
+                            });
+                            return;
+                        }
+                        // check carousel interacivity field
+                        const interActivityStatus = handleFieldValueCheck(
+                            splitTabState,
+                            i,
+                            splitKey,
+                            'interactivity',
+                            setTabs,
+                            audienceRef,
+                            setError,
+                        );
+                        if (!interActivityStatus) {
+                            setTimeout(() => {
+                                trigger();
+                            }, 1000);
+                            return;
+                        }
+                    }
+                    if (
+                        !(formType === 'schedule') &&
+                        !(formType === 'send') &&
+                        formState.layoutPosition?.value !== 'Carousel' &&
+                        levelNumber === 1 &&
+                        location?.campaignType !== 'T'
+                    ) {
+                        let scheduleAll = [];
+                        let nullCount = 0;
+                        for (var j = 0; j < tabs?.splitTabsList?.length; j++) {
+                            if (!formState[`split${splitObj[j]}`]?.schedule) {
+                                scheduleAll.push(null);
+                                // UpdateState(setModal, 'scheduleConfirmModal', true);
+                                // return;
+                                // setTabs((prev) => ({
+                                //     ...prev,
+                                //     currentTab: i,
+                                // }));
+                                nullCount++;
+                            } else {
+                                scheduleAll.push(true);
+                            }
+                        }
+                        // console.log(
+                        //     'ScheduleALL [[][[[[[[[[[[[[[[[[[[[[[[[[[]]]]]]]]]]]]]]]]]]]]]]]]]]]][ ::::: ',
+                        //     scheduleAll,
+                        //     nullCount,
+                        // );
+                        if (nullCount === tabs?.splitTabsList?.length && isScheduled) {
+                            UpdateState(setModal, 'scheduleConfirmModal', true);
+                            formTypeRef.current = formType;
+                            return;
+                        } else {
+                            for (var k = 0; k < scheduleAll?.length; k++) {
+                                // If any one SplitAB schedule exists, SplitAB is mandatory.
+                                let checkAllSplitNoSchedule = Object.values(scheduleAll)?.every((schedule) => !schedule);
+                                if (scheduleAll[k] === null && !checkAllSplitNoSchedule) {
+                                    // console.log(
+                                    //     'ScheduleALL [[][[[[[[[[[[[[kjdnasdkjnjakdasd[[[[[[[[[[[[[]]]]]]]]]]]]]]]]]]]]]]]]]]]][ ::::: ',
+                                    //     scheduleAll,
+                                    // ); name="splitB.schedule"
+                                    // console.log('${splitObj[k]}', `split${splitObj[k]}`);
+                                    setTabs((prev) => ({
+                                        ...prev,
+                                        currentTab: k,
+                                    }));
+                                    setValue('scheduleAlert', true);
+                                    // setValue(`split${splitObj[k]}.schedule`, new Date());
+                                    setError(`split${splitObj[k]}.schedule`, {
+                                        type: 'custom',
+                                        message: 'Select a schedule time',
+                                    });
+                                    // trigger(`split${splitObj[k]}.schedule`);
+                                    return;
+                                } else if (scheduleAll[k]) {
+                                    // console.log('ASdasdad ::: ', formState[tabs?.splitTabsList?.[k]], formState);
+                                    if (k > 0) {
+                                        if (
+                                            diff_minutes(
+                                                formState[tabs?.splitTabsList[k]]?.schedule,
+                                                formState[tabs?.splitTabsList[k - 1]]?.schedule,
+                                            ) < 5
+                                        ) {
+                                            setError(`${tabs?.splitTabsList[k]}.schedule`, {
+                                                type: 'required',
+                                                message: MINIMUM_DIFFERENCE_SPLITS,
+                                            });
 
-                                        setTabs((prev) => ({
-                                            ...prev,
-                                            currentTab: k,
-                                        }));
+                                            setTabs((prev) => ({
+                                                ...prev,
+                                                currentTab: k,
+                                            }));
 
-                                        return;
+                                            return;
+                                        } else {
+                                            let scheduleError = campaignSchedule(
+                                                formState[tabs?.splitTabsList[k]]?.schedule,
+                                                formState[tabs?.splitTabsList[k]]?.timezone?.gmtOffset,
+                                                statusId,
+                                                currentUtcTimeData?.utcTime,
+                                            );
+                                            const { adjustedStartDate, adjustedEndDate } = getTimezoneAdjustedDateRange(
+                                                tabs?.splitTabsList[k],
+                                                formState[tabs?.splitTabsList[k]]?.timezone,
+                                            );
+                                            const ScheduleStatus = checkScheduleDate(
+                                                formState[tabs?.splitTabsList[k]]?.schedule,
+                                                adjustedStartDate,
+                                                adjustedEndDate,
+                                            );
+                                            if (ScheduleStatus) {
+                                                setError(`${tabs?.splitTabsList[k]}.schedule`, {
+                                                    type: 'custom',
+                                                    // message: 'Select a date and time later than ' + scheduleError + '.',
+                                                    message: CHECK_START_DATE_AND_END_DATE,
+                                                });
+                                                return;
+                                            }
+                                            // if (scheduleError !== undefined) {
+                                            if (!scheduleError) {
+                                                setError(`${tabs?.splitTabsList[k]}.schedule`, {
+                                                    type: 'required',
+                                                    message: 'Select a date & time later than 15mins.',
+                                                    // message: 'Select a date and time later than ' + scheduleError + '.',
+                                                });
+
+                                                setTabs((prev) => ({
+                                                    ...prev,
+                                                    currentTab: k,
+                                                }));
+
+                                                return;
+                                            }
+                                        }
                                     } else {
                                         let scheduleError = campaignSchedule(
                                             formState[tabs?.splitTabsList[k]]?.schedule,
                                             formState[tabs?.splitTabsList[k]]?.timezone?.gmtOffset,
                                             statusId,
-                                            currentUtcTimeData?.utcTime,
+                                            utcTimeData?.utcTime,
                                         );
                                         const { adjustedStartDate, adjustedEndDate } = getTimezoneAdjustedDateRange(
                                             tabs?.splitTabsList[k],
@@ -1678,9 +1703,20 @@ const MobileNotification = ({ type, mCampType }) => {
                                         }
                                         // if (scheduleError !== undefined) {
                                         if (!scheduleError) {
+                                            const cityTime = convertUserTimezoneToTarget(
+                                                currentUtcTimeData?.utcTime
+                                                    ? new Date(utcTimeData.utcTime.replace('Z', ''))
+                                                    : new Date(),
+                                                '(GMT+00:00) ',
+                                                formState[tabs?.splitTabsList[k]]?.timezone?.gmtOffset,
+                                            );
+                                            // Add 15 minutes to cityTime
+                                            const cityTimeWithBuffer = new Date(cityTime);
+                                            cityTimeWithBuffer.setMinutes(cityTimeWithBuffer.getMinutes() + 15);
+                                            const formattedCityTime = cityTimeWithBuffer.toLocaleString();
                                             setError(`${tabs?.splitTabsList[k]}.schedule`, {
                                                 type: 'required',
-                                                message: 'Select a date & time later than 15mins.',
+                                                message: `Select a date & time later than ${formattedCityTime}`,
                                                 // message: 'Select a date and time later than ' + scheduleError + '.',
                                             });
 
@@ -1692,199 +1728,178 @@ const MobileNotification = ({ type, mCampType }) => {
                                             return;
                                         }
                                     }
-                                } else {
-                                    let scheduleError = campaignSchedule(
-                                        formState[tabs?.splitTabsList[k]]?.schedule,
-                                        formState[tabs?.splitTabsList[k]]?.timezone?.gmtOffset,
-                                        statusId,
-                                        utcTimeData?.utcTime,
-                                    );
-                                    const { adjustedStartDate, adjustedEndDate } = getTimezoneAdjustedDateRange(
-                                        tabs?.splitTabsList[k],
-                                        formState[tabs?.splitTabsList[k]]?.timezone,
-                                    );
-                                    const ScheduleStatus = checkScheduleDate(
-                                        formState[tabs?.splitTabsList[k]]?.schedule,
-                                        adjustedStartDate,
-                                        adjustedEndDate,
-                                    );
-                                    if (ScheduleStatus) {
-                                        setError(`${tabs?.splitTabsList[k]}.schedule`, {
-                                            type: 'custom',
-                                            // message: 'Select a date and time later than ' + scheduleError + '.',
-                                            message: CHECK_START_DATE_AND_END_DATE,
-                                        });
-                                        return;
-                                    }
-                                    // if (scheduleError !== undefined) {
-                                    if (!scheduleError) {
-                                        const cityTime = convertUserTimezoneToTarget(
-                                            currentUtcTimeData?.utcTime
-                                                ? new Date(utcTimeData.utcTime.replace('Z', ''))
-                                                : new Date(),
-                                            '(GMT+00:00) ',
-                                            formState[tabs?.splitTabsList[k]]?.timezone?.gmtOffset,
-                                        );
-                                        // Add 15 minutes to cityTime
-                                        const cityTimeWithBuffer = new Date(cityTime);
-                                        cityTimeWithBuffer.setMinutes(cityTimeWithBuffer.getMinutes() + 15);
-                                        const formattedCityTime = cityTimeWithBuffer.toLocaleString();
-                                        setError(`${tabs?.splitTabsList[k]}.schedule`, {
-                                            type: 'required',
-                                            message: `Select a date & time later than ${formattedCityTime}`,
-                                            // message: 'Select a date and time later than ' + scheduleError + '.',
-                                        });
-
-                                        setTabs((prev) => ({
-                                            ...prev,
-                                            currentTab: k,
-                                        }));
-
-                                        return;
-                                    }
                                 }
                             }
                         }
+                    } else if (
+                        !(formType === 'schedule') &&
+                        !(formType === 'send') &&
+                        levelNumber === 1 &&
+                        location?.campaignType !== 'T' &&
+                        isScheduled
+                    ) {
+                        if (!formState?.schedule) {
+                            UpdateState(setModal, 'scheduleConfirmModal', true);
+                            formTypeRef.current = formType;
+                            return;
+                            // setTabs((prev) => ({
+                            //     ...prev,
+                            //     currentTab: i,
+                            // }));
+                        }
                     }
-                } else if (
-                    !(formType === 'schedule') &&
-                    !(formType === 'send') &&
-                    levelNumber === 1 &&
+                }
+
+                //If Not SplitA/B Just need to confirm Whether can proceed without scedule
+                // if (
+                //     !formState.splitTest &&
+                //     formState.layoutPosition?.value !== 'Carousel' &&
+                //     !formState.schedule
+                //     // formType === 'form'
+                // ) {
+                //     // UpdateState(setProceedWithoutSchedule, 'showModal', true);
+                //     UpdateState(setModal, 'scheduleConfirmModal', true);
+                //     return;
+                // }
+                function getTestType() {
+                    let testType = 0;
+                    if ((formType === 'form' || formType === 'save') && !formState?.approvalList?.requestApproval)
+                        testType = 0;
+                    else if (formType === 'request for approval') testType = 1;
+                    else if (formType === 'send') testType = 2;
+                    else if (formState?.approvalList?.requestApproval) testType = 1;
+
+                    testType = formState?.approvalList?.requestApproval && type === 'form' ? 1 : testType;
+                    return testType;
+                }
+
+                const splitTabsFromForm = getValues('splitTabs');
+                const resolvedSplitTabs =
+                    Array.isArray(splitTabsFromForm) && splitTabsFromForm.length > 0
+                        ? splitTabsFromForm
+                        : ['splitA', 'splitB'];
+                formState = {
+                    ...formState,
+                    splitTabs: resolvedSplitTabs,
+                    splitABCount: sliderState.splittedCount,
+                    isSecureMessage,
+                    isScheduled: !(
+                        !formState.splitTest &&
+                        formState.layoutPosition?.value !== 'Carousel' &&
+                        !formState.schedule &&
+                        formType === 'schedule'
+                    ),
+                    dataSource: location['campaignType'] === 'T' ? 'DL' : 'TL',
+                    dynamiclistId: location['campaignType'] === 'T' ? _get(location, 'dynamicListId', 0) : 0,
+                    ...(location['campaignType'] === 'M' && mdcContentSetupDetails),
+                    campaignType: location?.campaignType,
+                    isSendTestMail: getTestType(),
+                };
+                // console.log('ASdasad :::::::::::: ', formType);
+                dispatch(updateNotificationMobile({ data: formState, field: 'result' }));
+                // else dispatch(updateNotificationWeb({ data: formState, field: 'result' }));
+                if (
+                    formState?.schedule !== '' &&
+                    formState?.schedule !== null &&
                     location?.campaignType !== 'T' &&
-                    isScheduled
+                    dataSource === 'TL'
                 ) {
-                    if (!formState?.schedule) {
-                        UpdateState(setModal, 'scheduleConfirmModal', true);
-                        formTypeRef.current = formType;
+                    const { adjustedStartDate, adjustedEndDate } = getTimezoneAdjustedDateRange(null, formState?.timezone);
+                    const ScheduleStatus = checkScheduleDate(formState?.schedule, adjustedStartDate, adjustedEndDate);
+                    if (ScheduleStatus) {
+                        setError(`schedule`, {
+                            type: 'custom',
+                            // message: 'Select a date and time later than ' + scheduleError + '.',
+                            message: CHECK_START_DATE_AND_END_DATE,
+                        });
                         return;
-                        // setTabs((prev) => ({
-                        //     ...prev,
-                        //     currentTab: i,
-                        // }));
+                    }
+
+                    let scheduleError = campaignSchedule(
+                        formState?.schedule,
+                        formState?.timezone?.gmtOffset,
+                        statusId,
+                        utcTimeData?.utcTime,
+                    );
+                    if (!scheduleError) {
+                        const cityTime = convertUserTimezoneToTarget(
+                            currentUtcTimeData?.utcTime
+                                ? new Date(currentUtcTimeData.utcTime.replace('Z', ''))
+                                : new Date(),
+                            '(GMT+00:00) ',
+                            formState?.timezone?.gmtOffset,
+                        );
+                        // Add 15 minutes to cityTime
+                        const cityTimeWithBuffer = new Date(cityTime);
+                        cityTimeWithBuffer.setMinutes(cityTimeWithBuffer.getMinutes() + 15);
+                        const formattedCityTime = cityTimeWithBuffer.toLocaleString();
+                        setError(`schedule`, {
+                            type: 'custom',
+                            // message: 'Select a date and time later than ' + scheduleError + '.',
+                            message: `Select a date & time later than ${formattedCityTime}`,
+                        });
+                        return;
                     }
                 }
-            }
+                const payload = buildPayload(formState, timeZoneId, mobileApp, location, mobileNotificationEditData);
 
-            //If Not SplitA/B Just need to confirm Whether can proceed without scedule
-            // if (
-            //     !formState.splitTest &&
-            //     formState.layoutPosition?.value !== 'Carousel' &&
-            //     !formState.schedule
-            //     // formType === 'form'
-            // ) {
-            //     // UpdateState(setProceedWithoutSchedule, 'showModal', true);
-            //     UpdateState(setModal, 'scheduleConfirmModal', true);
-            //     return;
-            // }
-            function getTestType() {
-                let testType = 0;
-                if ((formType === 'form' || formType === 'save') && !formState?.approvalList?.requestApproval)
-                    testType = 0;
-                else if (formType === 'request for approval') testType = 1;
-                else if (formType === 'send') testType = 2;
-                else if (formState?.approvalList?.requestApproval) testType = 1;
-
-                testType = formState?.approvalList?.requestApproval && type === 'form' ? 1 : testType;
-                return testType;
-            }
-
-            const splitTabsFromForm = getValues('splitTabs');
-            const resolvedSplitTabs =
-                Array.isArray(splitTabsFromForm) && splitTabsFromForm.length > 0
-                    ? splitTabsFromForm
-                    : ['splitA', 'splitB'];
-            formState = {
-                ...formState,
-                splitTabs: resolvedSplitTabs,
-                splitABCount: sliderState.splittedCount,
-                isSecureMessage,
-                isScheduled: !(
-                    !formState.splitTest &&
-                    formState.layoutPosition?.value !== 'Carousel' &&
-                    !formState.schedule &&
-                    formType === 'schedule'
-                ),
-                dataSource: location['campaignType'] === 'T' ? 'DL' : 'TL',
-                dynamiclistId: location['campaignType'] === 'T' ? _get(location, 'dynamicListId', 0) : 0,
-                ...(location['campaignType'] === 'M' && mdcContentSetupDetails),
-                campaignType: location?.campaignType,
-                isSendTestMail: getTestType(),
-            };
-            // console.log('ASdasad :::::::::::: ', formType);
-            dispatch(updateNotificationMobile({ data: formState, field: 'result' }));
-            // else dispatch(updateNotificationWeb({ data: formState, field: 'result' }));
-            if (
-                formState?.schedule !== '' &&
-                formState?.schedule !== null &&
-                location?.campaignType !== 'T' &&
-                dataSource === 'TL'
-            ) {
-                const { adjustedStartDate, adjustedEndDate } = getTimezoneAdjustedDateRange(null, formState?.timezone);
-                const ScheduleStatus = checkScheduleDate(formState?.schedule, adjustedStartDate, adjustedEndDate);
-                if (ScheduleStatus) {
-                    setError(`schedule`, {
-                        type: 'custom',
-                        // message: 'Select a date and time later than ' + scheduleError + '.',
-                        message: CHECK_START_DATE_AND_END_DATE,
-                    });
-                    return;
-                }
-
-                let scheduleError = campaignSchedule(
-                    formState?.schedule,
-                    formState?.timezone?.gmtOffset,
-                    statusId,
-                    utcTimeData?.utcTime,
+                // console.log(payload, communicationChannels, '--payload');
+                const payloadSubmit = {
+                    clientId,
+                    departmentId,
+                    userId,
+                    createdBy: userId,
+                    campaignId: _get(location, 'campaignId', 0),
+                    campaignType: location?.campaignType,
+                    edmGuid: !!notification[type]?.edmGuid ? notification[type]?.edmGuid : '',
+                    campaignGuid: !!notification[type]?.campaignGuId ? notification[type]?.campaignGuId : '',
+                    audienceCount: calculateAudienceCount || sumAudienceRecipientCount(formState?.audience, 'recipientCountMobilePush'),
+                    // audienceCount: sumAudienceRecipientCount(formState?.audience, 'recipientCountMobilePush'),
+                    ...payload,
+                };
+                // if (isMobileType) {
+                const response = await runSave(getAuthoringSaveButtonType(formType), () =>
+                    dispatch(saveMobilePush({ payload: payloadSubmit, savedChannelsId, loading: false })),
                 );
-                if (!scheduleError) {
-                    const cityTime = convertUserTimezoneToTarget(
-                        currentUtcTimeData?.utcTime
-                            ? new Date(currentUtcTimeData.utcTime.replace('Z', ''))
-                            : new Date(),
-                        '(GMT+00:00) ',
-                        formState?.timezone?.gmtOffset,
-                    );
-                    // Add 15 minutes to cityTime
-                    const cityTimeWithBuffer = new Date(cityTime);
-                    cityTimeWithBuffer.setMinutes(cityTimeWithBuffer.getMinutes() + 15);
-                    const formattedCityTime = cityTimeWithBuffer.toLocaleString();
-                    setError(`schedule`, {
-                        type: 'custom',
-                        // message: 'Select a date and time later than ' + scheduleError + '.',
-                        message: `Select a date & time later than ${formattedCityTime}`,
-                    });
-                    return;
-                }
-            }
-            const payload = buildPayload(formState, timeZoneId, mobileApp, location, mobileNotificationEditData);
+                setSaveCampaigData(response);
+                // console.log('Rsponse for submit :::: ', response);
+                if (response?.status) {
+                    const selectedAudience = formState?.audience ?? [];
+                    dispatch(updateChannelAudiences(mergeChannelAudiences('MobileNotification', selectedAudience, channelAudiences)));
+                    // setEditId(response?.WebPushNotifyChannelDetailID);
+                    let MobileNotificationChannelDetailId = response?.data?.MobilePushNotifyChannelDetailID;
+                    if (formType === 'form') {
+                        if (formState?.approvalList?.requestApproval) {
+                            // Clear dirty state after successful save while keeping form values
+                            reset(getValues(), { keepValues: true });
+                            dispatch(updateDirtyState(false));
 
-            // console.log(payload, communicationChannels, '--payload');
-            const payloadSubmit = {
-                clientId,
-                departmentId,
-                userId,
-                createdBy: userId,
-                campaignId: _get(location, 'campaignId', 0),
-                campaignType: location?.campaignType,
-                edmGuid: !!notification[type]?.edmGuid ? notification[type]?.edmGuid : '',
-                campaignGuid: !!notification[type]?.campaignGuId ? notification[type]?.campaignGuId : '',
-                audienceCount: calculateAudienceCount || sumAudienceRecipientCount(formState?.audience, 'recipientCountMobilePush'),
-                // audienceCount: sumAudienceRecipientCount(formState?.audience, 'recipientCountMobilePush'),
-                ...payload,
-            };
-            // if (isMobileType) {
-            const response = await runSave(getAuthoringSaveButtonType(formType), () =>
-                dispatch(saveMobilePush({ payload: payloadSubmit, savedChannelsId, loading: false })),
-            );
-            setSaveCampaigData(response);
-            // console.log('Rsponse for submit :::: ', response);
-            if (response?.status) {
-                const selectedAudience = formState?.audience ?? [];
-                dispatch(updateChannelAudiences(mergeChannelAudiences('MobileNotification', selectedAudience, channelAudiences)));
-                // setEditId(response?.WebPushNotifyChannelDetailID);
-                let MobileNotificationChannelDetailId = response?.data?.MobilePushNotifyChannelDetailID;
-                if (formType === 'form') {
-                    if (formState?.approvalList?.requestApproval) {
+                            setModal((prev) => ({
+                                ...prev,
+                                sendConfirmModal: true,
+                                rfaMsg: true,
+                            }));
+                            if (rfaAutoNavTimeoutRef.current) clearTimeout(rfaAutoNavTimeoutRef.current);
+                            rfaManuallyClosedRef.current = false;
+                            rfaAutoNavTimeoutRef.current = setTimeout(() => {
+                                if (rfaManuallyClosedRef.current) return;
+                                setModal((prev) => ({
+                                    ...prev,
+                                    sendConfirmModal: false,
+                                    rfaMsg: false,
+                                }));
+                                location['campaignType'] === 'M' ? handleMdcNavigation(response) : handleNavigation();
+                            }, 5000);
+                        } else {
+                            if (location['campaignType'] === 'M') {
+                                handleMdcNavigation(response);
+                            } else {
+                                handleNavigation();
+                            }
+                            getSmartLink();
+                            // handleNavigation();
+                        }
+                    } else if (formType === 'request for approval') {
                         // Clear dirty state after successful save while keeping form values
                         reset(getValues(), { keepValues: true });
                         dispatch(updateDirtyState(false));
@@ -1905,84 +1920,64 @@ const MobileNotification = ({ type, mCampType }) => {
                             }));
                             location['campaignType'] === 'M' ? handleMdcNavigation(response) : handleNavigation();
                         }, 5000);
-                    } else {
-                        if (location['campaignType'] === 'M') {
-                            handleMdcNavigation(response);
-                        } else {
-                            handleNavigation();
-                        }
-                        getSmartLink();
-                        // handleNavigation();
-                    }
-                } else if (formType === 'request for approval') {
-                    // Clear dirty state after successful save while keeping form values
-                    reset(getValues(), { keepValues: true });
-                    dispatch(updateDirtyState(false));
-
-                    setModal((prev) => ({
-                        ...prev,
-                        sendConfirmModal: true,
-                        rfaMsg: true,
-                    }));
-                    if (rfaAutoNavTimeoutRef.current) clearTimeout(rfaAutoNavTimeoutRef.current);
-                    rfaManuallyClosedRef.current = false;
-                    rfaAutoNavTimeoutRef.current = setTimeout(() => {
-                        if (rfaManuallyClosedRef.current) return;
-                        setModal((prev) => ({
-                            ...prev,
-                            sendConfirmModal: false,
-                            rfaMsg: false,
-                        }));
-                        location['campaignType'] === 'M' ? handleMdcNavigation(response) : handleNavigation();
-                    }, 5000);
-                    return;
-                } else if (formType === 'send') {
-                    // Clear dirty state after successful test preview save while keeping form values
-                    reset(getValues(), { keepValues: true });
-                    dispatch(updateDirtyState(false));
-                    await getUpdatedMobileData(MobileNotificationChannelDetailId, 'testNotif', formState, false);
-                    setModal((prev) => ({
-                        ...prev,
-                        sendConfirmModal: true,
-                        testSentCommunicationModal: '',
-                    }));
-                    setTimeout(() => {
-                        setModal((prev) => ({
-                            ...prev,
-                            sendConfirmModal: false,
-                            testSentCommunicationModal: false,
-                        }));
-                    }, 5000);
-                } else if (formType === 'schedule') {
-                    if (saveType) {
-                        navigate('/communication', {
-                            state: {
-                                index: 0,
-                            },
-                        });
-                    } else {
-                        if (location['campaignType'] === 'M') {
-                            handleMdcNavigation(response);
-                        } else {
-                            handleNavigation();
-                        }
-                    }
-                } else if (formType === 'save') {
-                    if (formState?.approvalList?.requestApproval) {
+                        return;
+                    } else if (formType === 'send') {
+                        // Clear dirty state after successful test preview save while keeping form values
+                        reset(getValues(), { keepValues: true });
+                        dispatch(updateDirtyState(false));
+                        await getUpdatedMobileData(MobileNotificationChannelDetailId, 'testNotif', formState, false);
                         setModal((prev) => ({
                             ...prev,
                             sendConfirmModal: true,
-                            rfaMsg: true,
+                            testSentCommunicationModal: '',
                         }));
-                        if (rfaAutoNavTimeoutRef.current) clearTimeout(rfaAutoNavTimeoutRef.current);
-                        rfaManuallyClosedRef.current = false;
-                        rfaAutoNavTimeoutRef.current = setTimeout(() => {
-                            if (rfaManuallyClosedRef.current) return;
+                        setTimeout(() => {
                             setModal((prev) => ({
                                 ...prev,
                                 sendConfirmModal: false,
-                                rfaMsg: false,
+                                testSentCommunicationModal: false,
                             }));
+                        }, 5000);
+                    } else if (formType === 'schedule') {
+                        if (saveType) {
+                            navigate('/communication', {
+                                state: {
+                                    index: 0,
+                                },
+                            });
+                        } else {
+                            if (location['campaignType'] === 'M') {
+                                handleMdcNavigation(response);
+                            } else {
+                                handleNavigation();
+                            }
+                        }
+                    } else if (formType === 'save') {
+                        if (formState?.approvalList?.requestApproval) {
+                            setModal((prev) => ({
+                                ...prev,
+                                sendConfirmModal: true,
+                                rfaMsg: true,
+                            }));
+                            if (rfaAutoNavTimeoutRef.current) clearTimeout(rfaAutoNavTimeoutRef.current);
+                            rfaManuallyClosedRef.current = false;
+                            rfaAutoNavTimeoutRef.current = setTimeout(() => {
+                                if (rfaManuallyClosedRef.current) return;
+                                setModal((prev) => ({
+                                    ...prev,
+                                    sendConfirmModal: false,
+                                    rfaMsg: false,
+                                }));
+                                if (location['campaignType'] === 'M') {
+                                    handleMdcNavigation(response);
+                                } else {
+                                    navigate('/communication', {
+                                        index: 0,
+                                    });
+                                }
+                            }, 5000);
+                            return;
+                        } else {
                             if (location['campaignType'] === 'M') {
                                 handleMdcNavigation(response);
                             } else {
@@ -1990,138 +1985,128 @@ const MobileNotification = ({ type, mCampType }) => {
                                     index: 0,
                                 });
                             }
-                        }, 5000);
-                        return;
-                    } else {
-                        if (location['campaignType'] === 'M') {
-                            handleMdcNavigation(response);
-                        } else {
-                            navigate('/communication', {
-                                index: 0,
-                            });
                         }
                     }
-                }
-            } else {
-                if (formType === 'send') {
-                    setModal((prev) => ({
-                        ...prev,
-                        sendConfirmModal: true,
-                        testSentCommunicationModal: true,
-                        requestFalse: response?.message,
-                    }));
-                    setTimeout(() => {
+                } else {
+                    if (formType === 'send') {
                         setModal((prev) => ({
                             ...prev,
-                            sendConfirmModal: false,
-                            rfaMsg: false,
-                            requestFalse: '',
+                            sendConfirmModal: true,
+                            testSentCommunicationModal: true,
+                            requestFalse: response?.message,
                         }));
-                    }, 5000);
-                } else {
-                    setModal((prev) => ({
-                        ...prev,
-                        sendConfirmModal: true,
-                        testSentCommunicationModal: true,
-                        requestFalse: response?.message,
-                    }));
+                        setTimeout(() => {
+                            setModal((prev) => ({
+                                ...prev,
+                                sendConfirmModal: false,
+                                rfaMsg: false,
+                                requestFalse: '',
+                            }));
+                        }, 5000);
+                    } else {
+                        setModal((prev) => ({
+                            ...prev,
+                            sendConfirmModal: true,
+                            testSentCommunicationModal: true,
+                            requestFalse: response?.message,
+                        }));
+                    }
                 }
-            }
-            // } else {
-            //     const response = await dispatch(saveWebPush({ payload: payloadSubmit }));
-            //     console.log('Rsponse for submit :::: ', response);
-            //     if (response?.status) {
-            //         // setEditId(response?.WebPushNotifyChannelDetailID);
-            //         if (formType === 'form') {
-            //             if (location['campaignType'] === 'M') {
-            //                 handleMdcNavigation(response);
-            //             } else {
-            //                 getSmartLink();
-            //                 handleNavigation();
-            //             }
-            //         } else if (formType === 'send') {
-            //             setModal((prev) => ({
-            //                 ...prev,
-            //                 sendConfirmModal: true,
-            //             }));
-            //             getUpdatedData();
-            //         } else if (formType === 'schedule') {
-            //             if (saveType) {
-            //                 navigate('/communication', {
-            //                     state: {
-            //                         index: 0,
-            //                     },
-            //                 });
-            //             } else {
-            //                 handleNavigation();
-            //             }
-            //         } else if (formType === 'save') {
-            //             navigate('/communication', {
-            //                 state: {
-            //                     index: 0,
-            //                 },
-            //             });
-            //         }
-            //     }
-            // }
+                // } else {
+                //     const response = await dispatch(saveWebPush({ payload: payloadSubmit }));
+                //     console.log('Rsponse for submit :::: ', response);
+                //     if (response?.status) {
+                //         // setEditId(response?.WebPushNotifyChannelDetailID);
+                //         if (formType === 'form') {
+                //             if (location['campaignType'] === 'M') {
+                //                 handleMdcNavigation(response);
+                //             } else {
+                //                 getSmartLink();
+                //                 handleNavigation();
+                //             }
+                //         } else if (formType === 'send') {
+                //             setModal((prev) => ({
+                //                 ...prev,
+                //                 sendConfirmModal: true,
+                //             }));
+                //             getUpdatedData();
+                //         } else if (formType === 'schedule') {
+                //             if (saveType) {
+                //                 navigate('/communication', {
+                //                     state: {
+                //                         index: 0,
+                //                     },
+                //                 });
+                //             } else {
+                //                 handleNavigation();
+                //             }
+                //         } else if (formType === 'save') {
+                //             navigate('/communication', {
+                //                 state: {
+                //                     index: 0,
+                //                 },
+                //             });
+                //         }
+                //     }
+                // }
 
-            // window.scrollTo(0, 0);
-            // const tabIndex = notificationTabState.currentIndex + 1;
-            // if (availableTabs['notification']?.length === tabIndex) {
-            //     const nextChannel = communicationChannels.find(
-            //         (chan, index) => channelType !== chan && Object.hasOwn(activeTabs, chan) && index > currentTab,
-            //     );
-            //     dispatch(
-            //         updateVerticalTab({
-            //             tabs: activeTabs?.[nextChannel] || {
-            //                 type: 'socialPost',
-            //                 currentTab: 3,
-            //             },
-            //         }),
-            //     );
-            // } else {
-            //     dispatch(
-            //         updateTab({
-            //             field: 'notification',
-            //             data: {
-            //                 tabName: availableTabs['notification'][tabIndex],
-            //                 currentIndex: tabIndex,
-            //             },
-            //         }),
-            //     );
-            // }
-        } else {
-            const tempResponse = {
-                data: {
-                    MobilePushNotifyChannelDetailID:
-                        mobileNotificationEditData?.content[0]?.pushNotifyChannelDetailId || 0,
-                },
-            };
-            if (formType === 'form') {
-                if (location['campaignType'] === 'M') {
-                    handleMdcNavigation(tempResponse);
-                } else {
-                    getSmartLink();
-                    handleNavigation();
-                }
-            } else if (formType === 'save') {
-                if (location['campaignType'] === 'M') {
-                    handleMdcNavigation(tempResponse);
-                } else if (formState?.isCGTGEnabled) {
-                    let url = '/communication/execute';
-                    const encryptState = encodeUrl(location);
-                    navigate(`${url}?q=${encryptState}`, {
-                        state: location,
-                    });
-                } else {
-                    navigate('/communication', {
-                        state: {
-                            index: 0,
-                        },
-                    });
+                // window.scrollTo(0, 0);
+                // const tabIndex = notificationTabState.currentIndex + 1;
+                // if (availableTabs['notification']?.length === tabIndex) {
+                //     const nextChannel = communicationChannels.find(
+                //         (chan, index) => channelType !== chan && Object.hasOwn(activeTabs, chan) && index > currentTab,
+                //     );
+                //     dispatch(
+                //         updateVerticalTab({
+                //             tabs: activeTabs?.[nextChannel] || {
+                //                 type: 'socialPost',
+                //                 currentTab: 3,
+                //             },
+                //         }),
+                //     );
+                // } else {
+                //     dispatch(
+                //         updateTab({
+                //             field: 'notification',
+                //             data: {
+                //                 tabName: availableTabs['notification'][tabIndex],
+                //                 currentIndex: tabIndex,
+                //             },
+                //         }),
+                //     );
+                // }
+            } else {
+                const tempResponse = {
+                    data: {
+                        MobilePushNotifyChannelDetailID:
+                            mobileNotificationEditData?.content[0]?.pushNotifyChannelDetailId || 0,
+                    },
+                };
+                if (formType === 'form') {
+                    if (location['campaignType'] === 'M') {
+                        handleMdcNavigation(tempResponse);
+                    } else {
+                        getSmartLink();
+                        handleNavigation();
+                    }
+                } else if (formType === 'save') {
+                    if (location['campaignType'] === 'M') {
+                        handleMdcNavigation(tempResponse);
+                    } else if (formState?.isCGTGEnabled) {
+                        let url = '/communication/execute';
+                        const encryptState = encodeUrl(location);
+                        navigate(`${url}?q=${encryptState}`, {
+                            state: location,
+                        });
+                    } else {
+                        navigate('/communication', {
+                            state: {
+                                index: 0,
+                            },
+                        });
+                    }
                 }
             }
-        }
         } finally {
             endSubmit();
         }
@@ -2304,35 +2289,36 @@ const MobileNotification = ({ type, mCampType }) => {
                 isSavedChannel={isSavedChannel}
                 checkSave={checkSave}
             >
-            <NotificationProvider.Provider value={{ type: 'mobile' }}>
-                <div className="rsv-tabs-content  position-relative">
-                    <form className="allow-copy" onSubmit={handleSubmit((data) => onFormSubmit(data))}>
-                        {/* <div className="box-design bd-top-border"> */}
-                        <div
-                            className={`box-design bd-top-border ${checkTrigger(location?.campaignType, location?.endDate)
-                                ? 'pe-none click-off'
-                                : !isCommunicationEditable
+                <NotificationProvider.Provider value={{ type: 'mobile' }}>
+                    <div className="rsv-tabs-content  position-relative">
+                        <form className="allow-copy" onSubmit={handleSubmit((data) => onFormSubmit(data))}>
+                            {/* <div className="box-design bd-top-border"> */}
+                            <div
+                                className={`box-design bd-top-border ${checkTrigger(location?.campaignType, location?.endDate)
                                     ? 'pe-none click-off'
-                                    : ''
-                                }`}
-                        >
-                            {isSmartLink && isCommunicationEditable && (
+                                    : !isCommunicationEditable
+                                        ? 'pe-none click-off'
+                                        : ''
+                                    }`}
+                            >
                                 <SmartLinkEnable
                                     message={smartLinkOverlayMessage}
                                     secondaryButton={false}
-                                    onSave={() => setIsSmartLink(false)}
+                                    requiresMobileApp
+                                    isClickOff={!isCommunicationEditable}
+                                    isChannelLoading={showEditSkeleton}
                                     onReject={() => {
                                         dispatch(showTabsSmartlink(true));
-                                        setIsSmartLink(false);
                                     }}
+                                    ignoreButton
+                                    onIgnore={() => { handleNavigation() }}
                                 />
-                            )}
-                            <div className="form-group mt20">
-                                <Row>
-                                    <Col sm={{ offset: 1, span: 2 }}>
-                                        <label className="control-label-left">{'Mobile app'}</label>
-                                    </Col>
-                                    {/*
+                                <div className="form-group mt20">
+                                    <Row>
+                                        <Col sm={{ offset: 1, span: 2 }}>
+                                            <label className="control-label-left">{'Mobile app'}</label>
+                                        </Col>
+                                        {/*
                                     <Col sm={6}>
                                         {isMobileType ? (
                                             <Fragment>
@@ -2444,139 +2430,147 @@ const MobileNotification = ({ type, mCampType }) => {
                                         </div>
                                     </Col>*/}
 
-                                    {/* {sendwebPushTo?.value === 'Domain' && !!sendwebPushTo && ( */}
-                                    <Col sm={6} id="rs_MobileNotification_mobileApp">
-                                        <RSKendoDropDownList
-                                            control={control}
-                                            data={mobileAppData}
-                                            name={'mobileApp'}
-                                            label={MOBILE_APP}
-                                            dataItemKey={'mobileAppId'}
-                                            textField={'appName'}
-                                            required
-                                            isLoading={mobileAppLoader.isLoading}
-                                            rules={{
-                                                required: SELECT_MOBILE_APP,
+                                        {/* {sendwebPushTo?.value === 'Domain' && !!sendwebPushTo && ( */}
+                                        <Col sm={6} id="rs_MobileNotification_mobileApp">
+                                            <RSKendoDropDownList
+                                                control={control}
+                                                data={mobileAppData}
+                                                name={'mobileApp'}
+                                                label={MOBILE_APP}
+                                                dataItemKey={'mobileAppId'}
+                                                textField={'appName'}
+                                                required
+                                                isLoading={mobileAppLoader.isLoading}
+                                                rules={{
+                                                    required: SELECT_MOBILE_APP,
+                                                }}
+                                                // disabled={!!mobileApp ? true : false}
+                                                disabled={true}
+                                                handleChange={(e) => {
+                                                    // console.log('E ::::::::::::::::::::::::::::::::::::: ', e);
+                                                    getAudienceData(e?.value, '', true);
+                                                }}
+                                                footer={
+                                                    <span id="rs_data_circle_plus_fill">
+                                                        <RSDropdownFooterBtn
+                                                            title="Add mobile app"
+                                                            handleClick={() => {
+                                                                const navState = createCommunicationSettingsNavState(
+                                                                    'notification',
+                                                                    {
+                                                                        mode: 'add',
+                                                                        from: 'CreateCommunication',
+                                                                        campaignType: location?.campaignType,
+                                                                        notificationTabId: NOTIFICATION_TAB_ID.MOBILE,
+                                                                        mobileTabId: 'appsList',
+                                                                        backAction: window.location.search,
+                                                                        tabValueName: 'notification',
+                                                                        tabValue: 'mobile',
+                                                                    },
+                                                                    location,
+                                                                );
+                                                                navigate(
+                                                                    `/preferences/communication-settings?q=${encodeUrl(navState)}`,
+                                                                    { state: {} },
+                                                                );
+                                                            }}
+                                                        />
+                                                    </span>
+                                                }
+                                            />
+                                        </Col>
+                                        <Col sm={3} className="p0 d-flex">
+                                            <div className="fg-icons">
+                                                {domainURLNew && (
+                                                    <RSTooltip text={RESET_DOMAIN}>
+                                                        <i
+                                                            onClick={() => {
+                                                                setValue('domain', '');
+                                                                setDomainURLNew(false);
+                                                            }}
+                                                            className={`${close_medium} icon-md color-primary-red`}
+                                                        />
+                                                    </RSTooltip>
+                                                )}
+                                            </div>
+                                        </Col>
+                                        {/* )} */}
+                                    </Row>
+                                </div>
+
+                                {location?.campaignType !== 'T' && location?.campaignType !== 'M' && (
+                                    <div className="form-group fg-wl-radio mt15" ref={audienceRef}>
+                                        <AudienceFieldRenderComponent
+                                            type={'mobileNotification'}
+                                            audienceList={notification?.mobile?.audienceList}
+                                            isAudienceLoading={audienceLoader.isLoading}
+                                            methods={methods}
+                                            userDetails={{ departmentId, userId, clientId }}
+                                            campaignId={_get(location, 'campaignId', 0)}
+                                            audienceTextField={'recipientsBunchName'}
+                                            audienceValidatorParam={true}
+                                            customHandleFilterChange={debouncedHandleAudienceWebMobileFilterChange}
+                                            customFilterPayload={(event) => ({
+                                                userId,
+                                                clientId,
+                                                departmentId,
+                                                searchText: event?.filter?.value,
+                                                channelType: 'MP',
+                                                campaignType: _get(location, 'campaignType', 'S'),
+                                                domainURL: '',
+                                                appGuId: domain?.appGuId,
+                                                segmentIds: [],
+                                            })}
+                                            handleAudienceFieldOnChange={() => {
+                                                setTimeout(() => {
+                                                    const splitTabList = getValues('splitTabList');
+                                                    const resolvedSplitTabs =
+                                                        Array.isArray(splitTabList) && splitTabList.length > 0
+                                                            ? splitTabList
+                                                            : tabs?.splitTabsList;
+                                                    const freshCount = sumAudienceRecipientCount(
+                                                        getValues('audience'),
+                                                        'recipientCountMobilePush',
+                                                    );
+                                                    if (
+                                                        getValues('splitTest') &&
+                                                        resolvedSplitTabs?.length >= 2 &&
+                                                        freshCount > 0
+                                                    ) {
+                                                        const defaultSplittedCount = calculateDefaultSplittedCount(
+                                                            resolvedSplitTabs.length,
+                                                            freshCount,
+                                                            resolvedSplitTabs,
+                                                        );
+                                                        setSliderState({
+                                                            show: false,
+                                                            splittedCount: defaultSplittedCount,
+                                                        });
+                                                        setValue('sliderSplitter', defaultSplittedCount);
+                                                    }
+                                                }, 0);
                                             }}
-                                            // disabled={!!mobileApp ? true : false}
-                                            disabled={true}
-                                            handleChange={(e) => {
-                                                // console.log('E ::::::::::::::::::::::::::::::::::::: ', e);
-                                                getAudienceData(e?.value, '', true);
-                                            }}
-                                            footer={
-                                                <span id="rs_data_circle_plus_fill">
-                                                    <RSDropdownFooterBtn
-                                                        title="Add mobile app"
-                                                        handleClick={() =>
-                                                            navigate('/preferences/communication-settings', {
-                                                                state: createCommunicationSettingsNavState('notification', {
-                                                                    mode: 'add',
-                                                                    subfrom: 'MP',
-                                                                    notificationTabId: NOTIFICATION_TAB_ID.MOBILE,
-                                                                    backAction: window.location.search,
-                                                                    tabValueName: 'notification',
-                                                                    tabValue: 'mobile',
-                                                                }, location, getValues),
-                                                            })
-                                                        }
-                                                    />
-                                                </span>
+                                            children={
+                                                <div className="d-flex justify-content-between">
+                                                    <span className={`${shouldDisableAutoRefresh ? 'click-off' : ''}`}>
+                                                        <RSCheckbox
+                                                            control={control}
+                                                            name="isAutoRefereshenabled"
+                                                            labelName={AUTO_REFRESH}
+                                                            popover
+                                                            popover_icon={`${circle_question_mark_mini} icon-xs color-primary-blue top2`}
+                                                            popover_position="top"
+                                                            popover_content={AUTO_REFRESH_POP_HOVER_TEXT}
+                                                        />
+                                                    </span>
+                                                    <small>
+                                                        {AUDIENCE}:{' '}
+                                                        {handleTotalAudienceCount(mobileNotificationEditData, watchTotalAudience, calculateAudienceCount)}
+                                                    </small>
+                                                </div>
                                             }
                                         />
-                                    </Col>
-                                    <Col sm={3} className="p0 d-flex">
-                                        <div className="fg-icons">
-                                            {domainURLNew && (
-                                                <RSTooltip text={RESET_DOMAIN}>
-                                                    <i
-                                                        onClick={() => {
-                                                            setValue('domain', '');
-                                                            setDomainURLNew(false);
-                                                        }}
-                                                        className={`${close_medium} icon-md color-primary-red`}
-                                                    />
-                                                </RSTooltip>
-                                            )}
-                                        </div>
-                                    </Col>
-                                    {/* )} */}
-                                </Row>
-                            </div>
-
-                            {location?.campaignType !== 'T' && location?.campaignType !== 'M' && (
-                                <div className="form-group fg-wl-radio mt15" ref={audienceRef}>
-                                    <AudienceFieldRenderComponent
-                                        type={'mobileNotification'}
-                                        audienceList={notification?.mobile?.audienceList}
-                                        isAudienceLoading={audienceLoader.isLoading}
-                                        methods={methods}
-                                        userDetails={{ departmentId, userId, clientId }}
-                                        campaignId={_get(location, 'campaignId', 0)}
-                                        audienceTextField={'recipientsBunchName'}
-                                        audienceValidatorParam={true}
-                                        customHandleFilterChange={debouncedHandleAudienceWebMobileFilterChange}
-                                        customFilterPayload={(event) => ({
-                                            userId,
-                                            clientId,
-                                            departmentId,
-                                            searchText: event?.filter?.value,
-                                            channelType: 'MP',
-                                            campaignType: _get(location, 'campaignType', 'S'),
-                                            domainURL: '',
-                                            appGuId: domain?.appGuId,
-                                            segmentIds: [],
-                                        })}
-                                        handleAudienceFieldOnChange={() => {
-                                            setTimeout(() => {
-                                                const splitTabList = getValues('splitTabList');
-                                                const resolvedSplitTabs =
-                                                    Array.isArray(splitTabList) && splitTabList.length > 0
-                                                        ? splitTabList
-                                                        : tabs?.splitTabsList;
-                                                const freshCount = sumAudienceRecipientCount(
-                                                    getValues('audience'),
-                                                    'recipientCountMobilePush',
-                                                );
-                                                if (
-                                                    getValues('splitTest') &&
-                                                    resolvedSplitTabs?.length >= 2 &&
-                                                    freshCount > 0
-                                                ) {
-                                                    const defaultSplittedCount = calculateDefaultSplittedCount(
-                                                        resolvedSplitTabs.length,
-                                                        freshCount,
-                                                        resolvedSplitTabs,
-                                                    );
-                                                    setSliderState({
-                                                        show: false,
-                                                        splittedCount: defaultSplittedCount,
-                                                    });
-                                                    setValue('sliderSplitter', defaultSplittedCount);
-                                                }
-                                            }, 0);
-                                        }}
-                                        children={
-                                            <div className="d-flex justify-content-between">
-                                                <span className={`${shouldDisableAutoRefresh ? 'click-off' : ''}`}>
-                                                    <RSCheckbox
-                                                        control={control}
-                                                        name="isAutoRefereshenabled"
-                                                        labelName={AUTO_REFRESH}
-                                                        popover
-                                                        popover_icon={`${circle_question_mark_mini} icon-xs color-primary-blue top2`}
-                                                        popover_position="top"
-                                                        popover_content={AUTO_REFRESH_POP_HOVER_TEXT}
-                                                    />
-                                                </span>
-                                                <small>
-                                                    {AUDIENCE}:{' '}
-                                                    {handleTotalAudienceCount(mobileNotificationEditData, watchTotalAudience, calculateAudienceCount)}
-                                                </small>
-                                            </div>
-                                        }
-                                    />
-                                    {/* <Col sm={3} className="pr0">
+                                        {/* <Col sm={3} className="pr0">
                                             <ul className="flex-list fl-space-10 position-relative top8">
                                                 <li>
                                                     <RSTooltip text={AUDIENCE_TOOLTIP_TEXT}>
@@ -2607,125 +2601,125 @@ const MobileNotification = ({ type, mCampType }) => {
                                                 </li>
                                             </ul>
                                         </Col> */}
-                                </div>
-                            )}
-                            <div className="form-group">
-                                <Row>
-                                    <Col sm={{ offset: 1, span: 2 }}>
-                                        <label className="control-label-left">{PUSH_TYPE}</label>
-                                    </Col>
-                                    <Col sm={6}>
-                                        <Row>
-                                            <Col sm={6} id="rs_MobileNotification_Pushtype">
-                                                <RSKendoDropDownList
-                                                    required
-                                                    control={control}
-                                                    data={
-                                                        String(getEnvironment()).toUpperCase() === 'TEAM'
-                                                            ? DELIVERY_TYPE_FOR_MOBILE
-                                                            : DELIVERY_TYPE_FOR_MOBILE?.filter(
-                                                                (item) => item.id !== 5
-                                                            )
-                                                    }
-                                                    name={'deliveryType'}
-                                                    label={PUSH_TYPE}
-                                                    dataItemKey={'id'}
-                                                    textField={'value'}
-                                                    disabled={
-                                                        !!deliveryType || (!!deliveryType && !!inboxClassification)
-                                                    }
-                                                    rules={{
-                                                        required: SELECT_PUSHTYPE,
-                                                    }}
-                                                    handleChange={() => {
-                                                        const emptyBanner = { bannerId: '', bannerName: '' };
-                                                        setValue('inPageBanner', null);
-                                                        dispatch(
-                                                            updateNotificationMobile({
-                                                                field: 'inPageBanner',
-                                                                data: emptyBanner,
-                                                            }),
-                                                        );
-                                                        getInboxClassificationData();
-                                                    }}
-                                                />
-                                            </Col>
-                                            <Col sm={6} className="position-relative">
-                                                {newInbox ? (
-                                                    <Fragment>
-                                                        <RSInput
-                                                            name={'newInboxName'}
-                                                            control={control}
-                                                            id="rs_MobileNotification_NewInboxclassification"
-                                                            required
-                                                            label={INBOX_CLASSIFICATION}
-                                                            rules={{
-                                                                required: ENTER_INBOX_CLASSIFICATION,
-                                                            }}
-                                                            handleOnBlur={(e) => {
-                                                                // debugger;
-                                                                if (!!e.target.value) {
-                                                                    setValue('inboxClassification', {
-                                                                        cdId: 0,
-                                                                        classificationId: e.target.value,
-                                                                    });
-                                                                    getInboxClassificationData(
-                                                                        undefined,
-                                                                        e.target.value,
-                                                                        'notSave',
-                                                                    );
-                                                                }
-                                                            }}
-                                                            isCustomDoubleIcon
-                                                            isLoading={inboxClassificationLoader.isLoading || inboxState.loading}
-                                                            isValidIcon={inboxState.isValid}
-                                                        />
-                                                        {!(inboxClassificationLoader.isLoading || inboxState.loading) && (
-                                                            <>
-                                                                <RSTooltip
-                                                                    position="top"
-                                                                    text={SAVE}
-                                                                    className="position-absolute right43 top5 z-2"
-                                                                >
-                                                                    <i
-                                                                        onClick={() => {
-                                                                            // saveCategoryData();
-                                                                            getInboxClassificationData(
-                                                                                undefined,
-                                                                                getValues('newInboxName'),
-                                                                                'save',
-                                                                            );
-                                                                        }}
-                                                                        className={`${save_mini} ${clickOff ? 'pe-none click-off' : ''
-                                                                            } icon-xs color-primary-blue`}
-                                                                    ></i>
-                                                                </RSTooltip>
-                                                                <RSTooltip
-                                                                    position="top"
-                                                                    text={CLOSE}
-                                                                    className="position-absolute top4 right17 zIndex2 "
-                                                                >
-                                                                    <i
-                                                                        className={`${close_mini} icon-xs color-primary-red`}
-                                                                        onClick={() => {
-                                                                            setValue('newInbox', false);
-                                                                            // setAudioList( );
-                                                                            clearErrors('newInboxName');
-                                                                            setClickOff(true);
-                                                                            setValue('inboxClassification', '');
-                                                                            setValue('newInboxName', '');
-                                                                            setInboxState({
-                                                                                isValid: false,
-                                                                                loading: false,
-                                                                            });
-                                                                        }}
-                                                                        id="rs_MobileNotification_close"
-                                                                    ></i>
-                                                                </RSTooltip>
-                                                            </>
-                                                        )}
+                                    </div>
+                                )}
+                                <div className="form-group">
+                                    <Row>
+                                        <Col sm={{ offset: 1, span: 2 }}>
+                                            <label className="control-label-left">{PUSH_TYPE}</label>
+                                        </Col>
+                                        <Col sm={6}>
+                                            <Row>
+                                                <Col sm={6} id="rs_MobileNotification_Pushtype">
+                                                    <RSKendoDropDownList
+                                                        required
+                                                        control={control}
+                                                        data={
+                                                            String(getEnvironment()).toUpperCase() === 'TEAM'
+                                                                ? DELIVERY_TYPE_FOR_MOBILE
+                                                                : DELIVERY_TYPE_FOR_MOBILE?.filter(
+                                                                    (item) => item.id !== 5
+                                                                )
+                                                        }
+                                                        name={'deliveryType'}
+                                                        label={PUSH_TYPE}
+                                                        dataItemKey={'id'}
+                                                        textField={'value'}
+                                                        disabled={
+                                                            !!deliveryType || (!!deliveryType && !!inboxClassification)
+                                                        }
+                                                        rules={{
+                                                            required: SELECT_PUSHTYPE,
+                                                        }}
+                                                        handleChange={() => {
+                                                            const emptyBanner = { bannerId: '', bannerName: '' };
+                                                            setValue('inPageBanner', null);
+                                                            dispatch(
+                                                                updateNotificationMobile({
+                                                                    field: 'inPageBanner',
+                                                                    data: emptyBanner,
+                                                                }),
+                                                            );
+                                                            getInboxClassificationData();
+                                                        }}
+                                                    />
+                                                </Col>
+                                                <Col sm={6} className="position-relative">
+                                                    {newInbox ? (
+                                                        <Fragment>
+                                                            <RSInput
+                                                                name={'newInboxName'}
+                                                                control={control}
+                                                                id="rs_MobileNotification_NewInboxclassification"
+                                                                required
+                                                                label={INBOX_CLASSIFICATION}
+                                                                rules={{
+                                                                    required: ENTER_INBOX_CLASSIFICATION,
+                                                                }}
+                                                                handleOnBlur={(e) => {
+                                                                    // debugger;
+                                                                    if (!!e.target.value) {
+                                                                        setValue('inboxClassification', {
+                                                                            cdId: 0,
+                                                                            classificationId: e.target.value,
+                                                                        });
+                                                                        getInboxClassificationData(
+                                                                            undefined,
+                                                                            e.target.value,
+                                                                            'notSave',
+                                                                        );
+                                                                    }
+                                                                }}
+                                                                isCustomDoubleIcon
+                                                                isLoading={inboxClassificationLoader.isLoading || inboxState.loading}
+                                                                isValidIcon={inboxState.isValid}
+                                                            />
+                                                            {!(inboxClassificationLoader.isLoading || inboxState.loading) && (
+                                                                <>
+                                                                    <RSTooltip
+                                                                        position="top"
+                                                                        text={SAVE}
+                                                                        className="position-absolute right43 top5 z-2"
+                                                                    >
+                                                                        <i
+                                                                            onClick={() => {
+                                                                                // saveCategoryData();
+                                                                                getInboxClassificationData(
+                                                                                    undefined,
+                                                                                    getValues('newInboxName'),
+                                                                                    'save',
+                                                                                );
+                                                                            }}
+                                                                            className={`${save_mini} ${clickOff ? 'pe-none click-off' : ''
+                                                                                } icon-xs color-primary-blue`}
+                                                                        ></i>
+                                                                    </RSTooltip>
+                                                                    <RSTooltip
+                                                                        position="top"
+                                                                        text={CLOSE}
+                                                                        className="position-absolute top4 right17 zIndex2 "
+                                                                    >
+                                                                        <i
+                                                                            className={`${close_mini} icon-xs color-primary-red`}
+                                                                            onClick={() => {
+                                                                                setValue('newInbox', false);
+                                                                                // setAudioList( );
+                                                                                clearErrors('newInboxName');
+                                                                                setClickOff(true);
+                                                                                setValue('inboxClassification', '');
+                                                                                setValue('newInboxName', '');
+                                                                                setInboxState({
+                                                                                    isValid: false,
+                                                                                    loading: false,
+                                                                                });
+                                                                            }}
+                                                                            id="rs_MobileNotification_close"
+                                                                        ></i>
+                                                                    </RSTooltip>
+                                                                </>
+                                                            )}
 
-                                                        {/* <RSInput
+                                                            {/* <RSInput
                                                         control={control}
                                                         name={'newInboxName'}
                                                         required
@@ -2758,503 +2752,503 @@ const MobileNotification = ({ type, mCampType }) => {
                                                             }}
                                                         />
                                                     </RSTooltip> */}
-                                                    </Fragment>
-                                                ) : (
-                                                    <RSKendoDropDownList
-                                                        // required
-                                                        control={control}
-                                                        data={notification?.mobile?.inboxClassifications}
-                                                        name={'inboxClassification'}
-                                                        label={INBOX_CLASSIFICATION}
-                                                        dataItemKey={'cdId'}
-                                                        textField={'classificationId'}
-                                                        disabled={!mobileApp?.appGuId || (!!deliveryType && !!inboxClassification)}
-                                                        isLoading={inboxClassificationLoader.isLoading}
-                                                        // rules={{
-                                                        //     required: SELECT_INBOX_CLASSIFICATION,
-                                                        // }}
-                                                        footer={
-                                                            <RSDropdownFooterBtn
-                                                                title="New inbox classification"
-                                                                handleClick={() => {
-                                                                    if (!mobileApp?.appGuId) return;
-                                                                    setClickOff(true);
-                                                                    setInboxState({
-                                                                        isValid: false,
-                                                                        loading: false,
-                                                                    });
-                                                                    setValue('newInbox', true);
-                                                                }}
-                                                            />
-                                                        }
-                                                    />
-                                                )}
-                                            </Col>
-                                        </Row>
-                                    </Col>
-                                    <Col sm={2} className="fg-icons-wrapper pl0">
-                                        <div className="fg-icons d-flex">
-                                            <RSTooltip text={`Secure message ${isSecureMessage ? 'ON' : 'OFF'}`}>
-                                                <i
-                                                    className={`${isSecureMessage
-                                                        ? shield_tick_medium + ' color-primary-green'
-                                                        : shield_medium + ' color-primary-blue'
-                                                        } icon-md `}
-                                                    onClick={() => setSecureMessages(!isSecureMessage)}
-                                                />
-                                            </RSTooltip>
-                                            {!!deliveryType && (
-                                                <RSTooltip text={RESET}>
+                                                        </Fragment>
+                                                    ) : (
+                                                        <RSKendoDropDownList
+                                                            // required
+                                                            control={control}
+                                                            data={notification?.mobile?.inboxClassifications}
+                                                            name={'inboxClassification'}
+                                                            label={INBOX_CLASSIFICATION}
+                                                            dataItemKey={'cdId'}
+                                                            textField={'classificationId'}
+                                                            disabled={!mobileApp?.appGuId || (!!deliveryType && !!inboxClassification)}
+                                                            isLoading={inboxClassificationLoader.isLoading}
+                                                            // rules={{
+                                                            //     required: SELECT_INBOX_CLASSIFICATION,
+                                                            // }}
+                                                            footer={
+                                                                <RSDropdownFooterBtn
+                                                                    title="New inbox classification"
+                                                                    handleClick={() => {
+                                                                        if (!mobileApp?.appGuId) return;
+                                                                        setClickOff(true);
+                                                                        setInboxState({
+                                                                            isValid: false,
+                                                                            loading: false,
+                                                                        });
+                                                                        setValue('newInbox', true);
+                                                                    }}
+                                                                />
+                                                            }
+                                                        />
+                                                    )}
+                                                </Col>
+                                            </Row>
+                                        </Col>
+                                        <Col sm={2} className="fg-icons-wrapper pl0">
+                                            <div className="fg-icons d-flex">
+                                                <RSTooltip text={`Secure message ${isSecureMessage ? 'ON' : 'OFF'}`}>
                                                     <i
-                                                        id="rs_data_refresh"
-                                                        className={`${restart_medium} icon-md color-primary-blue `}
-                                                        onClick={() => UpdateState(setModal, 'isRefresh', true)}
+                                                        className={`${isSecureMessage
+                                                            ? shield_tick_medium + ' color-primary-green'
+                                                            : shield_medium + ' color-primary-blue'
+                                                            } icon-md `}
+                                                        onClick={() => setSecureMessages(!isSecureMessage)}
                                                     />
                                                 </RSTooltip>
-                                            )}
+                                                {!!deliveryType && (
+                                                    <RSTooltip text={RESET}>
+                                                        <i
+                                                            id="rs_data_refresh"
+                                                            className={`${restart_medium} icon-md color-primary-blue `}
+                                                            onClick={() => UpdateState(setModal, 'isRefresh', true)}
+                                                        />
+                                                    </RSTooltip>
+                                                )}
 
-                                            {/* <RSTooltip text={`Add inbox classification`}>
+                                                {/* <RSTooltip text={`Add inbox classification`}>
                                                         <i
                                                             className={`${circle_plus_fill_medium} icon-md color-primary-blue`}
                                                             onClick={() => {}}
                                                         />
                                                     </RSTooltip> */}
-                                        </div>
-                                    </Col>
-                                </Row>
-                            </div>
-                            {deliveryType?.id === 5 && (
-                                <InpageContainer
-                                    data={{
-                                        mobileApp: mobileApp,
-                                        appId: mobileApp?.appGuId || resolvedMobileAppId || '',
-                                        domainName: '',
-                                        bannerDetails: notification?.mobile?.inPageBanner,
-                                        editDetails: {
-                                            bannerId: mobileNotificationEditData?.bannerId || 0,
-                                            bannerName: mobileNotificationEditData?.bannerName || '',
-                                        },
-                                    }}
-                                    type="mobile"
-                                    onBannerSelect={(selectedBanner) => {
-                                        // Store selected banner in Redux
-                                        dispatch(
-                                            updateNotificationMobile({
-                                                field: 'inPageBanner',
-                                                data: selectedBanner,
-                                            }),
-                                        );
-                                        // Set active tab to 1 when banner is selected
-                                        setValue('currentTabIndex', 1);
-                                    }}
-                                />
-                            )}
-                            {!!deliveryType?.value && (
-                                <Fragment>
-                                    {deliveryType?.value !== 'In-app inbox' && deliveryType?.id !== 5 && (
-                                        <div className="form-group">
-                                            <Row>
-                                                <Col sm={{ offset: 1, span: 2 }}>
-                                                    <label className="control-label-left">
-                                                        {LAYOUT_POSITION}
-                                                    </label>
-                                                </Col>
-                                                <Col
-                                                    sm={isLayoutPositionModal ? 3 : 6}
-                                                    id="rs_MobileNotification_layout"
-                                                >
-                                                    <RSKendoDropDownList
-                                                        control={control}
-                                                        data={findLayoutPositionData(deliveryType)}
-                                                        name={'layoutPosition'}
-                                                        label={'Layout'}
-                                                        dataItemKey={'id'}
-                                                        textField={'value'}
-                                                        required
-                                                        rules={{
-                                                            required: SELECT_LAYOUT_POSITION,
-                                                        }}
-                                                        handleChange={(e) => {
-                                                            const { value } = e;
-
-                                                            reset(
-                                                                ({
-                                                                    audience,
-                                                                    mobileApp,
-                                                                    sendwebPushTo,
-                                                                    domain,
-                                                                    pushNotifyChannelDetailId,
-                                                                    deliveryType,
-                                                                    inboxClassification,
-                                                                    layoutPosition,
-                                                                    splitA,
-                                                                    splitB,
-                                                                    splitC,
-                                                                    splitD,
-                                                                    templateContent,
-                                                                    contentType,
-                                                                    contentInput,
-                                                                    currentTabIndex,
-                                                                }) => ({
-                                                                    ..._cloneDeep(
-                                                                        FORM_INITIAL_STATE.defaultValues,
-                                                                    ),
-                                                                    ...(isTemplateFlow &&
-                                                                        templateContent && {
-                                                                        contentType,
-                                                                        contentInput,
-                                                                        templateContent,
-                                                                        currentTabIndex:
-                                                                            deliveryType?.id !== 1 || deliveryType?.id !== 5
-                                                                                ? currentTabIndex
-                                                                                : 0,
-                                                                    }),
-                                                                    audience,
-                                                                    mobileApp,
-                                                                    domain,
-                                                                    sendwebPushTo,
-                                                                    pushNotifyChannelDetailId,
-                                                                    deliveryType,
-                                                                    inboxClassification,
-                                                                    layoutPosition: value,
-                                                                    splitTest: false,
-                                                                    splitA: {
-                                                                        ..._cloneDeep(
-                                                                            FORM_INITIAL_STATE.defaultValues
-                                                                                .splitA,
-                                                                        ),
-                                                                        pushNotifyChannelDetailId:
-                                                                            splitA.pushNotifyChannelDetailId,
-                                                                    },
-                                                                    splitB: {
-                                                                        ..._cloneDeep(
-                                                                            FORM_INITIAL_STATE.defaultValues
-                                                                                .splitB,
-                                                                        ),
-                                                                        pushNotifyChannelDetailId:
-                                                                            splitB.pushNotifyChannelDetailId,
-                                                                    },
-                                                                    splitC: {
-                                                                        ..._cloneDeep(
-                                                                            FORM_INITIAL_STATE.defaultValues
-                                                                                .splitC,
-                                                                        ),
-                                                                        pushNotifyChannelDetailId:
-                                                                            splitC.pushNotifyChannelDetailId,
-                                                                    },
-                                                                    splitD: {
-                                                                        ..._cloneDeep(
-                                                                            FORM_INITIAL_STATE.defaultValues
-                                                                                .splitD,
-                                                                        ),
-                                                                        pushNotifyChannelDetailId:
-                                                                            splitD.pushNotifyChannelDetailId,
-                                                                    },
-                                                                }),
-                                                                {
-                                                                    keepDirty: true,
-                                                                },
-                                                            );
-                                                            if (value?.value === 'Carousel') {
-                                                                setSplitTabs([
-                                                                    ...INITIAL_CAROUSEL_STATE(setDirtyReset),
-                                                                ]);
-                                                                setValue('splitTest', true);
-                                                            } else {
-                                                                setValue('splitTest', false);
-                                                                setSplitTabs([
-                                                                    ...INITIAL_SPLIT_AB_STATE(setDirtyReset),
-                                                                ]);
-                                                            }
-
-                                                            if (splitTest || isLayoutCarousel) {
-                                                                setSliderState({ show: false, splittedCount: {} });
-                                                                setSecureMessages(false);
-                                                                // setTabs({
-                                                                //     currentTab: 0,
-                                                                //     splitTabsList: ['splitA', 'splitB'],
-                                                                //     confirmationModal: false,
-                                                                // });
-                                                                setSplitTabs([
-                                                                    ...INITIAL_SPLIT_AB_STATE(setDirtyReset),
-                                                                ]);
-                                                            }
-
-                                                            setDirtyReset(true);
-                                                            // debugger;
-                                                            // reset((formState) => ({
-                                                            //     ...formState,
-                                                            //     ..._cloneDeep(refreshLayoutPosition),
-                                                            // }));
-
-                                                            if (isDeliverTypeRichPush) {
-                                                                setValue('currentTabIndex', 0);
-                                                            }
-                                                        }}
-                                                    />
-                                                </Col>
-                                                {isPositionElgibleInCarousel && (
-                                                    <Col md={3}>
+                                            </div>
+                                        </Col>
+                                    </Row>
+                                </div>
+                                {deliveryType?.id === 5 && (
+                                    <InpageContainer
+                                        data={{
+                                            mobileApp: mobileApp,
+                                            appId: mobileApp?.appGuId || resolvedMobileAppId || '',
+                                            domainName: '',
+                                            bannerDetails: notification?.mobile?.inPageBanner,
+                                            editDetails: {
+                                                bannerId: mobileNotificationEditData?.bannerId || 0,
+                                                bannerName: mobileNotificationEditData?.bannerName || '',
+                                            },
+                                        }}
+                                        type="mobile"
+                                        onBannerSelect={(selectedBanner) => {
+                                            // Store selected banner in Redux
+                                            dispatch(
+                                                updateNotificationMobile({
+                                                    field: 'inPageBanner',
+                                                    data: selectedBanner,
+                                                }),
+                                            );
+                                            // Set active tab to 1 when banner is selected
+                                            setValue('currentTabIndex', 1);
+                                        }}
+                                    />
+                                )}
+                                {!!deliveryType?.value && (
+                                    <Fragment>
+                                        {deliveryType?.value !== 'In-app inbox' && deliveryType?.id !== 5 && (
+                                            <div className="form-group">
+                                                <Row>
+                                                    <Col sm={{ offset: 1, span: 2 }}>
+                                                        <label className="control-label-left">
+                                                            {LAYOUT_POSITION}
+                                                        </label>
+                                                    </Col>
+                                                    <Col
+                                                        sm={isLayoutPositionModal ? 3 : 6}
+                                                        id="rs_MobileNotification_layout"
+                                                    >
                                                         <RSKendoDropDownList
                                                             control={control}
-                                                            data={MODAL_POSISTION_FOR_MOBILE}
-                                                            name={'position'}
-                                                            label={POSITION}
+                                                            data={findLayoutPositionData(deliveryType)}
+                                                            name={'layoutPosition'}
+                                                            label={'Layout'}
                                                             dataItemKey={'id'}
                                                             textField={'value'}
-                                                            rules={{
-                                                                required: SELECT_POSITION,
-                                                            }}
                                                             required
-                                                            handleChange={() => {
-                                                                if (isLayoutCarousel) {
-                                                                    setValue('splitTest', true);
-                                                                    setTabs({
-                                                                        currentTab: 0,
-                                                                        splitTabsList: ['splitA', 'splitB'],
-                                                                        confirmationModal: false,
-                                                                    });
-                                                                }
+                                                            rules={{
+                                                                required: SELECT_LAYOUT_POSITION,
                                                             }}
-                                                        />
-                                                    </Col>
-                                                )}
-                                            </Row>
-                                        </div>
-                                    )}
+                                                            handleChange={(e) => {
+                                                                const { value } = e;
 
-                                    {shouldShowSplitABSwitch({
-                                        isLayoutCarousel,
-                                        campaignType: _get(location, 'campaignType', 'S'),
-                                        dataSource,
-                                        levelNumber,
-                                        deliveryTypeId: deliveryType?.id,
-                                    }) ? (
-                                        <div className="form-group">
-                                            <Row>
-                                                <Col sm={{ offset: 1, span: 2 }}>
-                                                    <label className="control-label-left">
-                                                        {SPLIT_AB_TEST_TEXT}
-                                                    </label>
-                                                </Col>
-
-                                                <Col sm={1} className={!isSplitABEnable ? 'pe-none click-off' : 'cp'}>
-                                                    <div
-                                                        onClick={() => {
-                                                            if (splitTest) {
-                                                                UpdateState(setTabs, 'confirmationModal', true);
-                                                            } else {
                                                                 reset(
-                                                                    (formState) => {
-                                                                        const nextState = {
-                                                                            ...formState,
-                                                                            splitTest: true,
-                                                                            ..._cloneDeep(refreshFields),
-                                                                        };
-                                                                        if (deliveryType?.id === 5) {
-                                                                            const splitInit =
-                                                                                buildInPageSplitInitFromForm(
-                                                                                    formState,
-                                                                                );
-                                                                            return {
-                                                                                ...nextState,
-                                                                                ...splitInit,
-                                                                                inPageBanner: formState.inPageBanner || null,
-                                                                            };
-                                                                        }
-                                                                        return nextState;
-                                                                    },
+                                                                    ({
+                                                                        audience,
+                                                                        mobileApp,
+                                                                        sendwebPushTo,
+                                                                        domain,
+                                                                        pushNotifyChannelDetailId,
+                                                                        deliveryType,
+                                                                        inboxClassification,
+                                                                        layoutPosition,
+                                                                        splitA,
+                                                                        splitB,
+                                                                        splitC,
+                                                                        splitD,
+                                                                        templateContent,
+                                                                        contentType,
+                                                                        contentInput,
+                                                                        currentTabIndex,
+                                                                    }) => ({
+                                                                        ..._cloneDeep(
+                                                                            FORM_INITIAL_STATE.defaultValues,
+                                                                        ),
+                                                                        ...(isTemplateFlow &&
+                                                                            templateContent && {
+                                                                            contentType,
+                                                                            contentInput,
+                                                                            templateContent,
+                                                                            currentTabIndex:
+                                                                                deliveryType?.id !== 1 || deliveryType?.id !== 5
+                                                                                    ? currentTabIndex
+                                                                                    : 0,
+                                                                        }),
+                                                                        audience,
+                                                                        mobileApp,
+                                                                        domain,
+                                                                        sendwebPushTo,
+                                                                        pushNotifyChannelDetailId,
+                                                                        deliveryType,
+                                                                        inboxClassification,
+                                                                        layoutPosition: value,
+                                                                        splitTest: false,
+                                                                        splitA: {
+                                                                            ..._cloneDeep(
+                                                                                FORM_INITIAL_STATE.defaultValues
+                                                                                    .splitA,
+                                                                            ),
+                                                                            pushNotifyChannelDetailId:
+                                                                                splitA.pushNotifyChannelDetailId,
+                                                                        },
+                                                                        splitB: {
+                                                                            ..._cloneDeep(
+                                                                                FORM_INITIAL_STATE.defaultValues
+                                                                                    .splitB,
+                                                                            ),
+                                                                            pushNotifyChannelDetailId:
+                                                                                splitB.pushNotifyChannelDetailId,
+                                                                        },
+                                                                        splitC: {
+                                                                            ..._cloneDeep(
+                                                                                FORM_INITIAL_STATE.defaultValues
+                                                                                    .splitC,
+                                                                            ),
+                                                                            pushNotifyChannelDetailId:
+                                                                                splitC.pushNotifyChannelDetailId,
+                                                                        },
+                                                                        splitD: {
+                                                                            ..._cloneDeep(
+                                                                                FORM_INITIAL_STATE.defaultValues
+                                                                                    .splitD,
+                                                                            ),
+                                                                            pushNotifyChannelDetailId:
+                                                                                splitD.pushNotifyChannelDetailId,
+                                                                        },
+                                                                    }),
                                                                     {
                                                                         keepDirty: true,
                                                                     },
                                                                 );
-                                                                setSplitTabs([
-                                                                    ...INITIAL_SPLIT_AB_STATE(setDirtyReset),
-                                                                ]);
-                                                                if (calculateAudienceCount > 0) {
-                                                                    const defaultSplittedCount =
-                                                                        calculateDefaultSplittedCount(
-                                                                            2,
-                                                                            calculateAudienceCount,
-                                                                            ['splitA', 'splitB'],
-                                                                        );
-                                                                    setSliderState({
-                                                                        show: false,
-                                                                        splittedCount: defaultSplittedCount,
-                                                                    });
-                                                                    setValue('sliderSplitter', defaultSplittedCount);
+                                                                if (value?.value === 'Carousel') {
+                                                                    setSplitTabs([
+                                                                        ...INITIAL_CAROUSEL_STATE(setDirtyReset),
+                                                                    ]);
+                                                                    setValue('splitTest', true);
                                                                 } else {
-                                                                    setSliderState({
-                                                                        show: false,
-                                                                        splittedCount: {},
-                                                                    });
-                                                                    setValue('sliderSplitter', {});
+                                                                    setValue('splitTest', false);
+                                                                    setSplitTabs([
+                                                                        ...INITIAL_SPLIT_AB_STATE(setDirtyReset),
+                                                                    ]);
                                                                 }
-                                                            }
-                                                        }}
-                                                    >
-                                                        {splitTest && emptySplitdate?.text && (
-                                                            <small className="alert alert-danger d-block color-primary-red position-absolute px7 top-35 splitab-error-text">
-                                                                {AUTO_SCHEDULE_SPLITS}
-                                                            </small>
-                                                        )}
-                                                        <RSSwitch control={control} name={'splitTest'} preventChange />
-                                                    </div>
-                                                </Col>
-                                                <Col sm={8} className="pl0 d-flex">
-                                                    <div className="pl0 d-flex align-items-center">
-                                                        {splitTest && (
-                                                            <Fragment>
-                                                                <RSTooltip
-                                                                    text={ADJUST_SPLIT_SIZE}
-                                                                    className={`lh0 mr15 ${!isSplitSizeEnable ? 'click-off' : ''}`}
-                                                                >
-                                                                    <i
-                                                                        className={`${adjust_split_medium} icon-md color-primary-blue ${!isSplitSizeEnable ? 'click-off' : ''}`}
-                                                                        onClick={() => {
-                                                                            if (!isSplitSizeEnable) return;
-                                                                            setSliderState((prev) => ({
-                                                                                ...prev,
-                                                                                show: true,
-                                                                            }));
-                                                                        }}
-                                                                    />
-                                                                </RSTooltip>
-                                                                <RSTooltip
-                                                                    text={AUTO_SCHEDULE}
-                                                                    className="lh0 mr15"
-                                                                >
-                                                                    <i
-                                                                        className={`${timer_medium} icon-md  color-primary-blue `}
-                                                                        onClick={() => {
-                                                                            let emptySplit = '';
-                                                                            let isError = {};
-                                                                            const formState = getValues();
-                                                                            _forEach(tabsData, (tab) => {
-                                                                                const date =
-                                                                                    formState[tab]?.['schedule'] ||
-                                                                                    null;
-                                                                                if (!date) {
-                                                                                    emptySplit += emptySplit
-                                                                                        ? `, ${tab}`
-                                                                                        : tab;
-                                                                                    setEmptySplitDate(() => ({
-                                                                                        text: `Schedule  ${emptySplit} `,
-                                                                                    }));
-                                                                                    setTimeout(() => {
-                                                                                        setEmptySplitDate(() => ({
-                                                                                            text: ``,
-                                                                                        }));
-                                                                                    }, 3000);
-                                                                                    isError[tab] = true;
-                                                                                } else {
-                                                                                    isError[tab] = false;
-                                                                                }
-                                                                            });
 
-                                                                            handleAutoScheduleModal(isError);
-                                                                        }}
-                                                                    ></i>
-                                                                </RSTooltip>
-                                                            </Fragment>
-                                                        )}
-                                                        <RSPPophover
-                                                            pophover={
-                                                                <>
-                                                                    <ul className="rs-tooltip-text-multi">
-                                                                        <li>{SPLIT_AB_TEST}</li>
-                                                                        <li>{COMMUNICATION_LIST_SCREEN}</li>
-                                                                    </ul>
-                                                                </>
-                                                            }
+                                                                if (splitTest || isLayoutCarousel) {
+                                                                    setSliderState({ show: false, splittedCount: {} });
+                                                                    setSecureMessages(false);
+                                                                    // setTabs({
+                                                                    //     currentTab: 0,
+                                                                    //     splitTabsList: ['splitA', 'splitB'],
+                                                                    //     confirmationModal: false,
+                                                                    // });
+                                                                    setSplitTabs([
+                                                                        ...INITIAL_SPLIT_AB_STATE(setDirtyReset),
+                                                                    ]);
+                                                                }
+
+                                                                setDirtyReset(true);
+                                                                // debugger;
+                                                                // reset((formState) => ({
+                                                                //     ...formState,
+                                                                //     ..._cloneDeep(refreshLayoutPosition),
+                                                                // }));
+
+                                                                if (isDeliverTypeRichPush) {
+                                                                    setValue('currentTabIndex', 0);
+                                                                }
+                                                            }}
+                                                        />
+                                                    </Col>
+                                                    {isPositionElgibleInCarousel && (
+                                                        <Col md={3}>
+                                                            <RSKendoDropDownList
+                                                                control={control}
+                                                                data={MODAL_POSISTION_FOR_MOBILE}
+                                                                name={'position'}
+                                                                label={POSITION}
+                                                                dataItemKey={'id'}
+                                                                textField={'value'}
+                                                                rules={{
+                                                                    required: SELECT_POSITION,
+                                                                }}
+                                                                required
+                                                                handleChange={() => {
+                                                                    if (isLayoutCarousel) {
+                                                                        setValue('splitTest', true);
+                                                                        setTabs({
+                                                                            currentTab: 0,
+                                                                            splitTabsList: ['splitA', 'splitB'],
+                                                                            confirmationModal: false,
+                                                                        });
+                                                                    }
+                                                                }}
+                                                            />
+                                                        </Col>
+                                                    )}
+                                                </Row>
+                                            </div>
+                                        )}
+
+                                        {shouldShowSplitABSwitch({
+                                            isLayoutCarousel,
+                                            campaignType: _get(location, 'campaignType', 'S'),
+                                            dataSource,
+                                            levelNumber,
+                                            deliveryTypeId: deliveryType?.id,
+                                        }) ? (
+                                            <div className="form-group">
+                                                <Row>
+                                                    <Col sm={{ offset: 1, span: 2 }}>
+                                                        <label className="control-label-left">
+                                                            {SPLIT_AB_TEST_TEXT}
+                                                        </label>
+                                                    </Col>
+
+                                                    <Col sm={1} className={!isSplitABEnable ? 'pe-none click-off' : 'cp'}>
+                                                        <div
+                                                            onClick={() => {
+                                                                if (splitTest) {
+                                                                    UpdateState(setTabs, 'confirmationModal', true);
+                                                                } else {
+                                                                    reset(
+                                                                        (formState) => {
+                                                                            const nextState = {
+                                                                                ...formState,
+                                                                                splitTest: true,
+                                                                                ..._cloneDeep(refreshFields),
+                                                                            };
+                                                                            if (deliveryType?.id === 5) {
+                                                                                const splitInit =
+                                                                                    buildInPageSplitInitFromForm(
+                                                                                        formState,
+                                                                                    );
+                                                                                return {
+                                                                                    ...nextState,
+                                                                                    ...splitInit,
+                                                                                    inPageBanner: formState.inPageBanner || null,
+                                                                                };
+                                                                            }
+                                                                            return nextState;
+                                                                        },
+                                                                        {
+                                                                            keepDirty: true,
+                                                                        },
+                                                                    );
+                                                                    setSplitTabs([
+                                                                        ...INITIAL_SPLIT_AB_STATE(setDirtyReset),
+                                                                    ]);
+                                                                    if (calculateAudienceCount > 0) {
+                                                                        const defaultSplittedCount =
+                                                                            calculateDefaultSplittedCount(
+                                                                                2,
+                                                                                calculateAudienceCount,
+                                                                                ['splitA', 'splitB'],
+                                                                            );
+                                                                        setSliderState({
+                                                                            show: false,
+                                                                            splittedCount: defaultSplittedCount,
+                                                                        });
+                                                                        setValue('sliderSplitter', defaultSplittedCount);
+                                                                    } else {
+                                                                        setSliderState({
+                                                                            show: false,
+                                                                            splittedCount: {},
+                                                                        });
+                                                                        setValue('sliderSplitter', {});
+                                                                    }
+                                                                }
+                                                            }}
                                                         >
-                                                            {!splitTest ? (
-                                                                <i
-                                                                    className={`${circle_question_mark_mini} icon-xs top6 left-5 color-primary-blue position-relative`}
-                                                                    id="circle_question_mark"
-                                                                ></i>
-                                                            ) : (
-                                                                <i
-                                                                    className={`${circle_question_mark_medium} icon-md color-primary-blue`}
-                                                                    id="circle_question_mark"
-                                                                ></i>
+                                                            {splitTest && emptySplitdate?.text && (
+                                                                <small className="alert alert-danger d-block color-primary-red position-absolute px7 top-35 splitab-error-text">
+                                                                    {AUTO_SCHEDULE_SPLITS}
+                                                                </small>
                                                             )}
-                                                        </RSPPophover>
-                                                    </div>
-                                                </Col>
-                                            </Row>
-                                        </div>
-                                    ) : null}
-                                    {sliderState.show && isSplitSizeEnable && (
-                                        <SplitSlider
-                                            audienceCount={calculateAudienceCount}
-                                            splitTabs={tabs.splitTabsList}
-                                            sliderData={sliderState.splittedCount}
-                                            onSave={(slider) => {
-                                                setSliderState({
-                                                    show: false,
-                                                    splittedCount: slider,
-                                                });
-                                                setValue(`sliderSplitter`, slider);
-                                            }}
-                                            handleClose={() =>
-                                                setSliderState((prev) => ({
-                                                    ...prev,
-                                                    show: false,
-                                                }))
-                                            }
-                                        />
-                                    )}
+                                                            <RSSwitch control={control} name={'splitTest'} preventChange />
+                                                        </div>
+                                                    </Col>
+                                                    <Col sm={8} className="pl0 d-flex">
+                                                        <div className="pl0 d-flex align-items-center">
+                                                            {splitTest && (
+                                                                <Fragment>
+                                                                    <RSTooltip
+                                                                        text={ADJUST_SPLIT_SIZE}
+                                                                        className={`lh0 mr15 ${!isSplitSizeEnable ? 'click-off' : ''}`}
+                                                                    >
+                                                                        <i
+                                                                            className={`${adjust_split_medium} icon-md color-primary-blue ${!isSplitSizeEnable ? 'click-off' : ''}`}
+                                                                            onClick={() => {
+                                                                                if (!isSplitSizeEnable) return;
+                                                                                setSliderState((prev) => ({
+                                                                                    ...prev,
+                                                                                    show: true,
+                                                                                }));
+                                                                            }}
+                                                                        />
+                                                                    </RSTooltip>
+                                                                    <RSTooltip
+                                                                        text={AUTO_SCHEDULE}
+                                                                        className="lh0 mr15"
+                                                                    >
+                                                                        <i
+                                                                            className={`${timer_medium} icon-md  color-primary-blue `}
+                                                                            onClick={() => {
+                                                                                let emptySplit = '';
+                                                                                let isError = {};
+                                                                                const formState = getValues();
+                                                                                _forEach(tabsData, (tab) => {
+                                                                                    const date =
+                                                                                        formState[tab]?.['schedule'] ||
+                                                                                        null;
+                                                                                    if (!date) {
+                                                                                        emptySplit += emptySplit
+                                                                                            ? `, ${tab}`
+                                                                                            : tab;
+                                                                                        setEmptySplitDate(() => ({
+                                                                                            text: `Schedule  ${emptySplit} `,
+                                                                                        }));
+                                                                                        setTimeout(() => {
+                                                                                            setEmptySplitDate(() => ({
+                                                                                                text: ``,
+                                                                                            }));
+                                                                                        }, 3000);
+                                                                                        isError[tab] = true;
+                                                                                    } else {
+                                                                                        isError[tab] = false;
+                                                                                    }
+                                                                                });
 
-                                    {contentConfig.status ? (
-                                        contentConfig.isSplitAB ? (
-                                            isMobileNotificationContentShown && (
-                                                <div
-                                                    className={`${contentClickOffClass} no-scroll-rs-content-tabs`}
-                                                    ref={tabberRef}
-                                                >
-                                                    <RSTabbar
-                                                        dynamicTab={`res-content-tabs-split mb30`}
-                                                        flatTabs
-                                                        tabData={splitTabs}
-                                                        defaultTab={tabs?.currentTab}
-                                                        componentClassName ={'w-100'}
-                                                        isRemoveConfirmation
-                                                        callBack={(_, index, isForceUpdate) => {
-                                                            setTabs((prev) => ({
-                                                                ...prev,
-                                                                currentTab: index,
-                                                            }));
-                                                            setValue('currentSplitTab', index);
-                                                            setValue('currentTab', index);
-                                                            setValue('channelType', type);
-                                                            // if (Object.keys(errors)?.length) clearErrors();
-                                                            if (!isForceUpdate && !_isEmpty(errors))
-                                                                tabs?.splitTabsList.forEach((name) => {
-                                                                    clearErrors(`${name}.tabErrorText`);
-                                                                });
-                                                        }}
-                                                        onAddMenu={(index) => onAddTab(index)}
-                                                        onRemoveMenu={onRemoveTab}
-                                                    />
-                                                </div>
+                                                                                handleAutoScheduleModal(isError);
+                                                                            }}
+                                                                        ></i>
+                                                                    </RSTooltip>
+                                                                </Fragment>
+                                                            )}
+                                                            <RSPPophover
+                                                                pophover={
+                                                                    <>
+                                                                        <ul className="rs-tooltip-text-multi">
+                                                                            <li>{SPLIT_AB_TEST}</li>
+                                                                            <li>{COMMUNICATION_LIST_SCREEN}</li>
+                                                                        </ul>
+                                                                    </>
+                                                                }
+                                                            >
+                                                                {!splitTest ? (
+                                                                    <i
+                                                                        className={`${circle_question_mark_mini} icon-xs top6 left-5 color-primary-blue position-relative`}
+                                                                        id="circle_question_mark"
+                                                                    ></i>
+                                                                ) : (
+                                                                    <i
+                                                                        className={`${circle_question_mark_medium} icon-md color-primary-blue`}
+                                                                        id="circle_question_mark"
+                                                                    ></i>
+                                                                )}
+                                                            </RSPPophover>
+                                                        </div>
+                                                    </Col>
+                                                </Row>
+                                            </div>
+                                        ) : null}
+                                        {sliderState.show && isSplitSizeEnable && (
+                                            <SplitSlider
+                                                audienceCount={calculateAudienceCount}
+                                                splitTabs={tabs.splitTabsList}
+                                                sliderData={sliderState.splittedCount}
+                                                onSave={(slider) => {
+                                                    setSliderState({
+                                                        show: false,
+                                                        splittedCount: slider,
+                                                    });
+                                                    setValue(`sliderSplitter`, slider);
+                                                }}
+                                                handleClose={() =>
+                                                    setSliderState((prev) => ({
+                                                        ...prev,
+                                                        show: false,
+                                                    }))
+                                                }
+                                            />
+                                        )}
+
+                                        {contentConfig.status ? (
+                                            contentConfig.isSplitAB ? (
+                                                isMobileNotificationContentShown && (
+                                                    <div
+                                                        className={`${contentClickOffClass} no-scroll-rs-content-tabs`}
+                                                        ref={tabberRef}
+                                                    >
+                                                        <RSTabbar
+                                                            dynamicTab={`res-content-tabs-split mb30`}
+                                                            flatTabs
+                                                            tabData={splitTabs}
+                                                            defaultTab={tabs?.currentTab}
+                                                            componentClassName={'w-100'}
+                                                            isRemoveConfirmation
+                                                            callBack={(_, index, isForceUpdate) => {
+                                                                setTabs((prev) => ({
+                                                                    ...prev,
+                                                                    currentTab: index,
+                                                                }));
+                                                                setValue('currentSplitTab', index);
+                                                                setValue('currentTab', index);
+                                                                setValue('channelType', type);
+                                                                // if (Object.keys(errors)?.length) clearErrors();
+                                                                if (!isForceUpdate && !_isEmpty(errors))
+                                                                    tabs?.splitTabsList.forEach((name) => {
+                                                                        clearErrors(`${name}.tabErrorText`);
+                                                                    });
+                                                            }}
+                                                            onAddMenu={(index) => onAddTab(index)}
+                                                            onRemoveMenu={onRemoveTab}
+                                                        />
+                                                    </div>
+                                                )
+                                            ) : (
+                                                isMobileNotificationContentShown && (
+                                                    <div ref={tabberRef} className={contentClickOffClass}>
+                                                        <SplitAB
+                                                            key={'noSplitAb'}
+                                                            type={type}
+                                                            campaignType={location?.campaignType}
+                                                            levelNumber={levelNumber}
+                                                            setDirtyReset={setDirtyReset}
+                                                        />
+                                                    </div>
+                                                )
                                             )
-                                        ) : (
-                                            isMobileNotificationContentShown && (
-                                                <div ref={tabberRef} className={contentClickOffClass}>
-                                                    <SplitAB
-                                                        key={'noSplitAb'}
-                                                        type={type}
-                                                        campaignType={location?.campaignType}
-                                                        levelNumber={levelNumber}
-                                                        setDirtyReset={setDirtyReset}
-                                                    />
-                                                </div>
-                                            )
-                                        )
-                                    ) : null}
-                                    {/* <RequestApproval name="approvalList.name" parent="approvalList" /> */}
-                                    {/* <RFA
+                                        ) : null}
+                                        {/* <RequestApproval name="approvalList.name" parent="approvalList" /> */}
+                                        {/* <RFA
                                         name="approvalList.name"
                                         isSendButton
                                         parent="approvalList"
@@ -3267,364 +3261,368 @@ const MobileNotification = ({ type, mCampType }) => {
                                             handleSubmit((data) => onFormSubmit(data, 'send', false))();
                                         }}
                                     /> */}
-                                    {isContentSetupForRfa && (
-                                        <div className={isPastPlanDurationBlocked ? PAST_PLAN_DURATION_CLICK_OFF_CLASS : ''}>
-                                            <RequestApproval
-                                                name="approvalList.name"
-                                                isSendButton
-                                                parent="approvalList"
-                                                isCustomapproval={false}
-                                                isCustomEnterMail={true}
-                                                isClickOff={isPastPlanDurationBlocked || isSubmitting}
-                                                isSendLoading={isSendLoading}
-                                                onRequestApproval={(status) => {
-                                                    if (isPastPlanDurationBlocked) return;
-                                                    const type = !status ? 'send' : 'request for approval';
-                                                    setValue('isSendTestMail', !status ? 2 : 4);
+                                        {isContentSetupForRfa && (
+                                            <div className={isPastPlanDurationBlocked ? PAST_PLAN_DURATION_CLICK_OFF_CLASS : ''}>
+                                                <RequestApproval
+                                                    name="approvalList.name"
+                                                    isSendButton
+                                                    parent="approvalList"
+                                                    isCustomapproval={false}
+                                                    isCustomEnterMail={true}
+                                                    isClickOff={isPastPlanDurationBlocked || isSubmitting}
+                                                    isSendLoading={isSendLoading}
+                                                    onRequestApproval={(status) => {
+                                                        if (isPastPlanDurationBlocked) return;
+                                                        const type = !status ? 'send' : 'request for approval';
+                                                        setValue('isSendTestMail', !status ? 2 : 4);
 
-                                                    handleSubmit((data) => onFormSubmit(data, type, false, false))();
-                                                }}
-                                                isApprovalSettings
-                                                channelType={'notif'}
-                                                testPreviewConfigDetail={{
-                                                    fieldType: 'kendoDropdown',
-                                                    fieldLabel: 'Test notification',
-                                                    fieldName: 'approvalList.testEmail',
-                                                    testEmail: false,
-                                                }}
-                                                RfaCallBack={(isRFA) => {
-                                                    let schedulerName =
-                                                        splitTest && !isLayoutCarousel
-                                                            ? `${tabs?.splitTabsList?.[tabs?.currentTab]}.schedule`
-                                                            : 'schedule';
-                                                    if (!isRFA) {
-                                                        const currentSchedule = getValues(schedulerName);
-                                                        unregister(schedulerName);
-                                                        if (currentSchedule) {
-                                                            setValue(schedulerName, currentSchedule, {
-                                                                shouldValidate: true,
-                                                            });
-                                                        } else {
-                                                            setValue(schedulerName, '', { shouldValidate: true });
+                                                        handleSubmit((data) => onFormSubmit(data, type, false, false))();
+                                                    }}
+                                                    isApprovalSettings
+                                                    channelType={'notif'}
+                                                    testPreviewConfigDetail={{
+                                                        fieldType: 'kendoDropdown',
+                                                        fieldLabel: 'Test notification',
+                                                        fieldName: 'approvalList.testEmail',
+                                                        testEmail: false,
+                                                    }}
+                                                    RfaCallBack={(isRFA) => {
+                                                        let schedulerName =
+                                                            splitTest && !isLayoutCarousel
+                                                                ? `${tabs?.splitTabsList?.[tabs?.currentTab]}.schedule`
+                                                                : 'schedule';
+                                                        if (!isRFA) {
+                                                            const currentSchedule = getValues(schedulerName);
+                                                            unregister(schedulerName);
+                                                            if (currentSchedule) {
+                                                                setValue(schedulerName, currentSchedule, {
+                                                                    shouldValidate: true,
+                                                                });
+                                                            } else {
+                                                                setValue(schedulerName, '', { shouldValidate: true });
+                                                            }
                                                         }
-                                                    }
-                                                }}
-                                            />
-                                        </div>
-                                    )}
-                                </Fragment>
-                            )}
-                        </div>
-                        <div className="buttons-holder">
-                            <RSSecondaryButton
-                                onClick={() => {
-                                    if (location?.campaignType === 'M') {
-                                        handleMdcCancel();
-                                    } else {
-                                        dispatch(resetCreateCommunication());
-                                        navigate('/communication', {
-                                            replace: true,
-                                            state: {
-                                                index: 0,
-                                            },
-                                        });
-                                    }
-                                }}
-                            >
-                                {CANCEL}
-                            </RSSecondaryButton>
+                                                    }}
+                                                />
+                                            </div>
+                                        )}
+                                    </Fragment>
+                                )}
+                            </div>
+                            <div className="buttons-holder">
+                                <RSSecondaryButton
+                                    onClick={() => {
+                                        if (location?.campaignType === 'M') {
+                                            handleMdcCancel();
+                                        } else {
+                                            dispatch(resetCreateCommunication());
+                                            navigate('/communication', {
+                                                replace: true,
+                                                state: {
+                                                    index: 0,
+                                                },
+                                            });
+                                        }
+                                    }}
+                                >
+                                    {CANCEL}
+                                </RSSecondaryButton>
 
-                            {disableNext && (
-                                <>
-                                    <RSSecondaryButton
-                                        className={`color-primary-blue ${isPastPlanDurationBlocked ? PAST_PLAN_DURATION_CLICK_OFF_CLASS : ''}`}
-                                        onClick={() => {
-                                            if (isPastPlanDurationBlocked) return;
-                                            const formData = getValues();
-                                            const isCTGTConfirm = handleCheckCTGT(formData.audience);
-                                            const hasUserConfirmed = formData.isCGTGConfirm === true;
-
-                                            // Only show modal if CG/TG conflict exists and user hasn't confirmed yet
-                                            if (isCTGTConfirm && !hasUserConfirmed && !handleCGTGModalCheck(mobileNotificationEditData?.content?.[0]?.statusId)) {
-                                                setPendingNextSubmitParams({ type: 'save', isSchedule: true });
-                                                setNextButtonCGTGModal(true);
-                                                return;
-                                            }
-
-                                            setSaveTypeTerm('save');
-                                            setValue('isSendTestMail', 0);
-                                            handleSubmit((data) => onFormSubmit(data, 'save', true))();
-                                        }}
-                                        isLoading={isSaveLoading}
-                                        blockBodyPointerEvents
-                                        disabledClass={isSubmitting ? 'pe-none click-off' : ''}
-                                    >
-                                        {SAVE}
-                                    </RSSecondaryButton>
-                                    <RSPrimaryButton
-                                        className={isPastPlanDurationBlocked ? PAST_PLAN_DURATION_CLICK_OFF_CLASS : ''}
-                                        isLoading={isNextLoading}
-                                        blockBodyPointerEvents
-                                        disabledClass={isSubmitting ? 'pe-none click-off' : ''}
-                                        onClick={() => {
-                                            if (isPastPlanDurationBlocked) return;
-                                            if (!isDirty && !isValid && location?.campaignType !== 'M') {
-                                                setNavigate_confirm(true);
-                                            } else {
+                                {disableNext && (
+                                    <>
+                                        <RSSecondaryButton
+                                            className={`color-primary-blue ${isPastPlanDurationBlocked ? PAST_PLAN_DURATION_CLICK_OFF_CLASS : ''}`}
+                                            onClick={() => {
+                                                if (isPastPlanDurationBlocked) return;
                                                 const formData = getValues();
                                                 const isCTGTConfirm = handleCheckCTGT(formData.audience);
                                                 const hasUserConfirmed = formData.isCGTGConfirm === true;
 
                                                 // Only show modal if CG/TG conflict exists and user hasn't confirmed yet
                                                 if (isCTGTConfirm && !hasUserConfirmed && !handleCGTGModalCheck(mobileNotificationEditData?.content?.[0]?.statusId)) {
-                                                    setPendingNextSubmitParams({ type: 'form', isSchedule: false });
+                                                    setPendingNextSubmitParams({ type: 'save', isSchedule: true });
                                                     setNextButtonCGTGModal(true);
                                                     return;
                                                 }
 
-                                                setSaveTypeTerm('next');
+                                                setSaveTypeTerm('save');
                                                 setValue('isSendTestMail', 0);
-                                                handleSubmit((data) => onFormSubmit(data, 'form', false))();
-                                            }
-                                        }}
-                                    >
-                                        {location?.campaignType === 'M' && mdcChannelDetailId > 0
-                                            ? 'Update notification content'
-                                            : location?.campaignType === 'M' && mdcChannelDetailId === 0
-                                                ? 'Create notification content'
-                                                : NEXT}
-                                    </RSPrimaryButton>
-                                </>
-                            )}
-                        </div>
-                        <RSConfirmationModal
-                            show={modal?.scheduleConfirmModal || tabs?.confirmationModal}
-                            text={
-                                tabs?.confirmationModal
-                                    ? SPLIT_AB_TURNOFF
-                                    : COMMUNICATION_SCHEDULED
-                            }
-                            primaryButtonText={tabs?.confirmationModal ? OK : SAVE}
-                            handleClose={() => {
-                                if (tabs?.confirmationModal) {
-                                    UpdateState(setTabs, 'confirmationModal', false);
-                                } else {
-                                    UpdateState(setModal, 'scheduleConfirmModal', false);
+                                                handleSubmit((data) => onFormSubmit(data, 'save', true))();
+                                            }}
+                                            isLoading={isSaveLoading}
+                                            blockBodyPointerEvents
+                                            disabledClass={isSubmitting ? 'pe-none click-off' : ''}
+                                        >
+                                            {SAVE}
+                                        </RSSecondaryButton>
+                                        <RSPrimaryButton
+                                            className={isPastPlanDurationBlocked ? PAST_PLAN_DURATION_CLICK_OFF_CLASS : ''}
+                                            isLoading={isNextLoading}
+                                            blockBodyPointerEvents
+                                            disabledClass={isSubmitting ? 'pe-none click-off' : ''}
+                                            onClick={() => {
+                                                if (isPastPlanDurationBlocked) return;
+                                                if (!isDirty && !isValid && location?.campaignType !== 'M') {
+                                                    if (!shouldPromptSkipChannelConfirmation()) {
+                                                        handleNavigation();
+                                                        return;
+                                                    }
+                                                    setNavigate_confirm(true);
+                                                } else {
+                                                    const formData = getValues();
+                                                    const isCTGTConfirm = handleCheckCTGT(formData.audience);
+                                                    const hasUserConfirmed = formData.isCGTGConfirm === true;
+
+                                                    // Only show modal if CG/TG conflict exists and user hasn't confirmed yet
+                                                    if (isCTGTConfirm && !hasUserConfirmed && !handleCGTGModalCheck(mobileNotificationEditData?.content?.[0]?.statusId)) {
+                                                        setPendingNextSubmitParams({ type: 'form', isSchedule: false });
+                                                        setNextButtonCGTGModal(true);
+                                                        return;
+                                                    }
+
+                                                    setSaveTypeTerm('next');
+                                                    setValue('isSendTestMail', 0);
+                                                    handleSubmit((data) => onFormSubmit(data, 'form', false))();
+                                                }
+                                            }}
+                                        >
+                                            {location?.campaignType === 'M' && mdcChannelDetailId > 0
+                                                ? 'Update notification content'
+                                                : location?.campaignType === 'M' && mdcChannelDetailId === 0
+                                                    ? 'Create notification content'
+                                                    : NEXT}
+                                        </RSPrimaryButton>
+                                    </>
+                                )}
+                            </div>
+                            <RSConfirmationModal
+                                show={modal?.scheduleConfirmModal || tabs?.confirmationModal}
+                                text={
+                                    tabs?.confirmationModal
+                                        ? SPLIT_AB_TURNOFF
+                                        : COMMUNICATION_SCHEDULED
                                 }
-                            }}
-                            handleConfirm={() => {
-                                if (tabs?.confirmationModal) {
-                                    disableSplitTabs();
-                                } else {
-                                    // UpdateState(setModal, 'scheduleConfirmModal', false);
-                                    // debugger;
+                                primaryButtonText={tabs?.confirmationModal ? OK : SAVE}
+                                handleClose={() => {
+                                    if (tabs?.confirmationModal) {
+                                        UpdateState(setTabs, 'confirmationModal', false);
+                                    } else {
+                                        UpdateState(setModal, 'scheduleConfirmModal', false);
+                                    }
+                                }}
+                                handleConfirm={() => {
+                                    if (tabs?.confirmationModal) {
+                                        disableSplitTabs();
+                                    } else {
+                                        // UpdateState(setModal, 'scheduleConfirmModal', false);
+                                        // debugger;
+                                        setModal((prev) => ({
+                                            ...prev,
+                                            scheduleConfirmModal: false,
+                                        }));
+                                        if (false)
+                                            handleSubmit((data) => onFormSubmit(data, formTypeRef.current, true, false))();
+                                        else
+                                            handleSubmit((data) => onFormSubmit(data, formTypeRef.current, false, false))();
+
+                                        // console.log('AASDASDAS');
+
+                                        // handleNavigation();
+                                    }
+                                }}
+                            />
+                        </form>
+                    </div>
+                    {/* //Modals */}
+                    <SplitABScheduleModal
+                        tabs={tabs?.splitTabsList}
+                        show={scheduleModal}
+                        type="notification"
+                        handleClose={() => setShowScheduleModal(false)}
+                        editAutoScheduleDetails={editAutoScheduleDetails}
+                    />
+
+                    {modal.sendConfirmModal &&
+                        <CommunicationSent
+                            show={modal.sendConfirmModal}
+                            status={modal?.testSentCommunicationModal}
+                            rfaMsg={modal?.rfaMsg || false}
+                            requestFalse={modal?.requestFalse || ''}
+                            handleClose={() => {
+                                if (modal?.rfaMsg === true && modal?.rfaMsg != undefined) {
+                                    rfaManuallyClosedRef.current = true;
+                                    if (rfaAutoNavTimeoutRef.current) {
+                                        clearTimeout(rfaAutoNavTimeoutRef.current);
+                                        rfaAutoNavTimeoutRef.current = null;
+                                    }
+
                                     setModal((prev) => ({
                                         ...prev,
-                                        scheduleConfirmModal: false,
+                                        sendConfirmModal: false,
+                                        rfaMsg: false,
                                     }));
-                                    if (false)
-                                        handleSubmit((data) => onFormSubmit(data, formTypeRef.current, true, false))();
-                                    else
-                                        handleSubmit((data) => onFormSubmit(data, formTypeRef.current, false, false))();
-
-                                    // console.log('AASDASDAS');
-
-                                    // handleNavigation();
+                                    location['campaignType'] === 'M'
+                                        ? handleMdcNavigation({ data: saveCampaigData })
+                                        : handleNavigation();
+                                } else {
+                                    setModal((prev) => ({
+                                        ...prev,
+                                        sendConfirmModal: false,
+                                        rfaMsg: false,
+                                        requestFalse: '',
+                                    }))
                                 }
-                            }}
-                        />
-                    </form>
-                </div>
-                {/* //Modals */}
-                <SplitABScheduleModal
-                    tabs={tabs?.splitTabsList}
-                    show={scheduleModal}
-                    type="notification"
-                    handleClose={() => setShowScheduleModal(false)}
-                    editAutoScheduleDetails={editAutoScheduleDetails}
-                />
-
-                {modal.sendConfirmModal &&
-                    <CommunicationSent
-                        show={modal.sendConfirmModal}
-                        status={modal?.testSentCommunicationModal}
-                        rfaMsg={modal?.rfaMsg || false}
-                        requestFalse={modal?.requestFalse || ''}
-                        handleClose={() => {
-                            if (modal?.rfaMsg === true && modal?.rfaMsg != undefined) {
-                                rfaManuallyClosedRef.current = true;
-                                if (rfaAutoNavTimeoutRef.current) {
-                                    clearTimeout(rfaAutoNavTimeoutRef.current);
-                                    rfaAutoNavTimeoutRef.current = null;
-                                }
-
-                                setModal((prev) => ({
-                                    ...prev,
-                                    sendConfirmModal: false,
-                                    rfaMsg: false,
-                                }));
-                                location['campaignType'] === 'M'
-                                    ? handleMdcNavigation({ data: saveCampaigData })
-                                    : handleNavigation();
-                            } else {
-                                setModal((prev) => ({
-                                    ...prev,
-                                    sendConfirmModal: false,
-                                    rfaMsg: false,
-                                    requestFalse: '',
-                                }))
                             }
-                        }
-                        }
-                        isCloseButton={modal?.rfaMsg ? false : true}
-                    />
-                }
+                            }
+                            isCloseButton={modal?.rfaMsg ? false : true}
+                        />
+                    }
 
-                <RSConfirmationModal
-                    show={navigate_confirm}
-                    text={IGNORE_CHANNEL}
-                    primaryButtonText={OK}
-                    handleClose={() => {
-                        setNavigate_confirm(false);
-                    }}
-                    handleConfirm={() => {
-                        handleNavigation();
-                        setNavigate_confirm(false);
-                        setDirtyReset(false);
-                    }}
-                />
-                <RSConfirmationModal
-                    show={modal.isRefresh}
-                    header={RESET}
-                    text={ARE_YOU_SURE_WANT_TO_RESET}
-                    primaryButtonText={YES}
-                    handleClose={() => UpdateState(setModal, 'isRefresh', false)}
-                    handleConfirm={() => {
-                        if (splitTest || isLayoutCarousel) {
-                            setSliderState({ show: false, splittedCount: {} });
-                            setSecureMessages(false);
-                            setTabs({
-                                currentTab: 0,
-                                splitTabsList: ['splitA', 'splitB'],
-                                confirmationModal: false,
-                            });
-                            setSplitTabs([...INITIAL_SPLIT_AB_STATE(setDirtyReset)]);
-                        }
-                        reset(
-                            ({
-                                audience,
-                                mobileApp,
-                                sendwebPushTo,
-                                domain,
-                                pushNotifyChannelDetailId,
-                                splitA,
-                                splitB,
-                                splitC,
-                                splitD,
-                                templateContent,
-                                contentType,
-                                contentInput,
-                                currentTabIndex,
-                            }) => ({
-                                ..._cloneDeep(FORM_INITIAL_STATE.defaultValues),
-                                ...(isTemplateFlow &&
-                                    templateContent && {
+                    <RSConfirmationModal
+                        show={navigate_confirm}
+                        text={IGNORE_CHANNEL}
+                        primaryButtonText={OK}
+                        handleClose={() => {
+                            setNavigate_confirm(false);
+                        }}
+                        handleConfirm={() => {
+                            handleNavigation();
+                            setNavigate_confirm(false);
+                            setDirtyReset(false);
+                        }}
+                    />
+                    <RSConfirmationModal
+                        show={modal.isRefresh}
+                        header={RESET}
+                        text={ARE_YOU_SURE_WANT_TO_RESET}
+                        primaryButtonText={YES}
+                        handleClose={() => UpdateState(setModal, 'isRefresh', false)}
+                        handleConfirm={() => {
+                            if (splitTest || isLayoutCarousel) {
+                                setSliderState({ show: false, splittedCount: {} });
+                                setSecureMessages(false);
+                                setTabs({
+                                    currentTab: 0,
+                                    splitTabsList: ['splitA', 'splitB'],
+                                    confirmationModal: false,
+                                });
+                                setSplitTabs([...INITIAL_SPLIT_AB_STATE(setDirtyReset)]);
+                            }
+                            reset(
+                                ({
+                                    audience,
+                                    mobileApp,
+                                    sendwebPushTo,
+                                    domain,
+                                    pushNotifyChannelDetailId,
+                                    splitA,
+                                    splitB,
+                                    splitC,
+                                    splitD,
+                                    templateContent,
                                     contentType,
                                     contentInput,
-                                    templateContent,
-                                    currentTabIndex: deliveryType?.id !== 1 || deliveryType?.id !== 5 ? currentTabIndex : templateContent ? 2 : 0,
+                                    currentTabIndex,
+                                }) => ({
+                                    ..._cloneDeep(FORM_INITIAL_STATE.defaultValues),
+                                    ...(isTemplateFlow &&
+                                        templateContent && {
+                                        contentType,
+                                        contentInput,
+                                        templateContent,
+                                        currentTabIndex: deliveryType?.id !== 1 || deliveryType?.id !== 5 ? currentTabIndex : templateContent ? 2 : 0,
+                                    }),
+                                    audience,
+                                    mobileApp,
+                                    domain,
+                                    sendwebPushTo,
+                                    pushNotifyChannelDetailId,
+                                    splitA: {
+                                        ..._cloneDeep(FORM_INITIAL_STATE.defaultValues.splitA),
+                                        pushNotifyChannelDetailId: splitA.pushNotifyChannelDetailId,
+                                    },
+                                    splitB: {
+                                        ..._cloneDeep(FORM_INITIAL_STATE.defaultValues.splitB),
+                                        pushNotifyChannelDetailId: splitB.pushNotifyChannelDetailId,
+                                    },
+                                    splitC: {
+                                        ..._cloneDeep(FORM_INITIAL_STATE.defaultValues.splitC),
+                                        pushNotifyChannelDetailId: splitC.pushNotifyChannelDetailId,
+                                    },
+                                    splitD: {
+                                        ..._cloneDeep(FORM_INITIAL_STATE.defaultValues.splitD),
+                                        pushNotifyChannelDetailId: splitD.pushNotifyChannelDetailId,
+                                    },
                                 }),
-                                audience,
-                                mobileApp,
-                                domain,
-                                sendwebPushTo,
-                                pushNotifyChannelDetailId,
-                                splitA: {
-                                    ..._cloneDeep(FORM_INITIAL_STATE.defaultValues.splitA),
-                                    pushNotifyChannelDetailId: splitA.pushNotifyChannelDetailId,
+                                {
+                                    keepDirty: true,
                                 },
-                                splitB: {
-                                    ..._cloneDeep(FORM_INITIAL_STATE.defaultValues.splitB),
-                                    pushNotifyChannelDetailId: splitB.pushNotifyChannelDetailId,
-                                },
-                                splitC: {
-                                    ..._cloneDeep(FORM_INITIAL_STATE.defaultValues.splitC),
-                                    pushNotifyChannelDetailId: splitC.pushNotifyChannelDetailId,
-                                },
-                                splitD: {
-                                    ..._cloneDeep(FORM_INITIAL_STATE.defaultValues.splitD),
-                                    pushNotifyChannelDetailId: splitD.pushNotifyChannelDetailId,
-                                },
-                            }),
-                            {
-                                keepDirty: true,
-                            },
-                        );
-                        UpdateState(setModal, 'isRefresh', false);
-                        setDirtyReset(true);
-                    }}
-                />
-                {getWarningPopupMessage(failureApiErrors, dispatch, handleFailureNavigation)}
-                <RSConfirmationModal
-                    show={isAudienceChangeConfirm}
-                    text={AUDIENCE_CHANGE_CONFIRMATION}
-                    primaryButtonText="Yes, proceed"
-                    secondaryButtonText="Cancel"
-                    handleClose={() => {
-                        setValue('audience', previousAudience);
-                        setIsAudienceChangeConfirm(false);
-                    }}
-                    handleConfirm={async () => {
-                        const payloadParams = {
-                            departmentId,
-                            clientId,
-                            userId,
-                        };
-                        await handlePersonalizationFetchApiCall({
-                            audience: watch('audience'),
-                            errors,
-                            dispatch,
-                            payloadParams,
-                            listTypeWisePersonlization,
-                        });
-                        setIsAudienceChangeConfirm(false);
-                    }}
-                />
-                <RSConfirmationModal
-                    show={audienceCountZeroWarning}
-                    text={AUDIENCE_COUNT_ZERO_ENABLE_AUTO_REFRESH}
-                    primaryButtonText="OK"
-                    handleClose={() => setAudienceCountZeroWarning(false)}
-                    handleConfirm={() => setAudienceCountZeroWarning(false)}
-                    secondaryButton={false}
-                    header={WARNING}
-                />
-                <RSConfirmationModal
-                    show={nextButtonCGTGModal}
-                    header="Mixed Control Group Settings Detected"
-                    text="Selected lists have different Control Group settings and won't be applied now. Enable it in Pre-Campaign Summary to apply to all lists."
-                    primaryButtonText="Proceed"
-                    secondaryButtonText="Cancel"
-                    handleClose={() => {
-                        setNextButtonCGTGModal(false);
-                        setPendingNextSubmitParams(null);
-                    }}
-                    handleConfirm={async () => {
-                        setNextButtonCGTGModal(false);
-                        setValue('isCGTGConfirm', true);
-                        setValue('isCGTGEnabled', false);
+                            );
+                            UpdateState(setModal, 'isRefresh', false);
+                            setDirtyReset(true);
+                        }}
+                    />
+                    {getWarningPopupMessage(failureApiErrors, dispatch, handleFailureNavigation)}
+                    <RSConfirmationModal
+                        show={isAudienceChangeConfirm}
+                        text={AUDIENCE_CHANGE_CONFIRMATION}
+                        primaryButtonText="Yes, proceed"
+                        secondaryButtonText="Cancel"
+                        handleClose={() => {
+                            setValue('audience', previousAudience);
+                            setIsAudienceChangeConfirm(false);
+                        }}
+                        handleConfirm={async () => {
+                            const payloadParams = {
+                                departmentId,
+                                clientId,
+                                userId,
+                            };
+                            await handlePersonalizationFetchApiCall({
+                                audience: watch('audience'),
+                                errors,
+                                dispatch,
+                                payloadParams,
+                                listTypeWisePersonlization,
+                            });
+                            setIsAudienceChangeConfirm(false);
+                        }}
+                    />
+                    <RSConfirmationModal
+                        show={audienceCountZeroWarning}
+                        text={AUDIENCE_COUNT_ZERO_ENABLE_AUTO_REFRESH}
+                        primaryButtonText="OK"
+                        handleClose={() => setAudienceCountZeroWarning(false)}
+                        handleConfirm={() => setAudienceCountZeroWarning(false)}
+                        secondaryButton={false}
+                        header={WARNING}
+                    />
+                    <RSConfirmationModal
+                        show={nextButtonCGTGModal}
+                        header="Mixed Control Group Settings Detected"
+                        text="Selected lists have different Control Group settings and won't be applied now. Enable it in Pre-Campaign Summary to apply to all lists."
+                        primaryButtonText="Proceed"
+                        secondaryButtonText="Cancel"
+                        handleClose={() => {
+                            setNextButtonCGTGModal(false);
+                            setPendingNextSubmitParams(null);
+                        }}
+                        handleConfirm={async () => {
+                            setNextButtonCGTGModal(false);
+                            setValue('isCGTGConfirm', true);
+                            setValue('isCGTGEnabled', false);
 
-                        if (pendingNextSubmitParams) {
-                            setSaveTypeTerm(pendingNextSubmitParams.type === 'form' ? 'next' : 'save');
-                            setValue('isSendTestMail', 0);
-                            handleSubmit((data) =>
-                                onFormSubmit(data, pendingNextSubmitParams.type, pendingNextSubmitParams.isSchedule),
-                            )();
-                        }
-                        setPendingNextSubmitParams(null);
-                    }}
-                />
-            </NotificationProvider.Provider>
+                            if (pendingNextSubmitParams) {
+                                setSaveTypeTerm(pendingNextSubmitParams.type === 'form' ? 'next' : 'save');
+                                setValue('isSendTestMail', 0);
+                                handleSubmit((data) =>
+                                    onFormSubmit(data, pendingNextSubmitParams.type, pendingNextSubmitParams.isSchedule),
+                                )();
+                            }
+                            setPendingNextSubmitParams(null);
+                        }}
+                    />
+                </NotificationProvider.Provider>
             </AuthoringChannelEditSkeletonGate>
         </FormProvider>
     );

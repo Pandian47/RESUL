@@ -6,7 +6,7 @@ import PropTypes from 'prop-types';
 import { DropDownList } from '@progress/kendo-react-dropdowns';
 import { Controller } from 'react-hook-form';
 
-import { normalizeDisplayText } from 'Utils/modules/stringUtils';
+import { hasDropdownDisplayLabel, normalizeDisplayText } from 'Utils/modules/stringUtils';
 import { _isObject } from 'Utils/modules/misc';
 import { flushSync } from 'react-dom';
 import ResNoDataAvailable from '../ResNoDataAvailable';
@@ -16,6 +16,7 @@ import {
     RES_KENDO_DD_CLASS as DD_CLASS,
     addKendoPopupClassTokens,
     applyKendoPortaledPopupShellStyles,
+    KENDO_EMPTY_LIST_POPUP_MIN_WIDTH,
     resolveKendoPopupAppendTo,
     shouldDisableKendoPopupAnimate,
 } from '../../kendoDocsVariables';
@@ -62,7 +63,7 @@ const ResKendoDropdown = ({
     useErrorContainer = true,
     ...rest
 }) => {
-    const { popupSettings: consumerPopupSettings, ...dropDownRest } = rest;
+    const { popupSettings: consumerPopupSettings, disabled: consumerDisabled, ...dropDownRest } = rest;
     const resolvedPopupClass = useMemo(
         () => [
             popupClass,
@@ -77,6 +78,7 @@ const ResKendoDropdown = ({
         subLabel != null
             ? subLabel
             : (item) => (item != null ? String(_get(item, 'subLabel', '') ?? '') : '');
+
     const normalizeItem = useCallback(
         (item) => {
             if (typeof item === 'string') return normalizeDisplayText(item);
@@ -97,7 +99,9 @@ const ResKendoDropdown = ({
         if (!Array.isArray(data)) return [];
 
         if (!dataItemKey) {
-            return data.filter((item) => item != null).map(normalizeItem);
+            return data
+                .filter((item) => hasDropdownDisplayLabel(item, textField))
+                .map(normalizeItem);
         }
 
         const nextData = [];
@@ -107,8 +111,8 @@ const ResKendoDropdown = ({
             if (rawItem == null || !_isObject(rawItem)) continue;
 
             const keyValue = rawItem[dataItemKey];
-            if (keyValue == null) continue;
-            if (textField && rawItem[textField] == null) continue;
+            if (keyValue == null || String(keyValue).trim() === '') continue;
+            if (!hasDropdownDisplayLabel(rawItem, textField)) continue;
             if (seenKeys.has(keyValue)) continue;
 
             seenKeys.add(keyValue);
@@ -116,15 +120,16 @@ const ResKendoDropdown = ({
         }
 
         return nextData;
-    }, [data, dataItemKey, textField, normalizeItem]);
+    }, [data, dataItemKey, textField, normalizeItem, hasDropdownDisplayLabel]);
     const isValidDropdownValue = useCallback(
         (item) => {
             if (item == null || item === '') return false;
-            if (!_isObject(item)) return true;
+            if (!_isObject(item)) return String(item).trim() !== '';
             if (dataItemKey && _get(item, dataItemKey) === undefined) return false;
+            if (textField && !hasDropdownDisplayLabel(item, textField)) return false;
             return true;
         },
-        [dataItemKey],
+        [dataItemKey, textField, hasDropdownDisplayLabel],
     );
     const resolveDropdownValue = useCallback(
         (item) => (isValidDropdownValue(item) ? item : null),
@@ -313,14 +318,17 @@ const ResKendoDropdown = ({
         const animationContainer = findPopupContainer();
         if (!animationContainer) return;
 
-        applyKendoPortaledPopupShellStyles(animationContainer, containerWrapper.current);
+        applyKendoPortaledPopupShellStyles(animationContainer, containerWrapper.current, {
+            minPopupWidth:
+                normalizedData.length === 0 ? KENDO_EMPTY_LIST_POPUP_MIN_WIDTH : undefined,
+        });
 
         animationContainer.classList.add(DD_CLASS.listPopup);
         animationContainer
             .querySelector('.k-popup, .k-list-container')
             ?.classList.add(DD_CLASS.listPopup);
         applyPopupClassesToContainer(animationContainer);
-    }, [applyPopupClassesToContainer]);
+    }, [applyPopupClassesToContainer, normalizedData.length]);
 
     // Check dropdown position on mount and window resize
     useEffect(() => {
@@ -704,7 +712,7 @@ const ResKendoDropdown = ({
                         )}
                         {/* {_isEmpty && <div className="validation-message">{get(error, 'message', '')}</div>} */}
                         <DropDownList
-                            disabled={isLoading}
+                            disabled={isLoading || Boolean(consumerDisabled)}
                             className={`${DD_CLASS.base} ${required ? DD_CLASS.required : ''}`}
                             data={finalData}
                             filter={filterText}

@@ -9,14 +9,14 @@ const DAY_LABELS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 const WEEKS = 6;
 const skeletonProps = { enableAnimation: false, style: { background: scolor1 } };
 
-/** Communication › Planner calendar grid (no toolbar — toolbar stays visible on loaded page). */
+/** Communication › Planner — `calendarOnly` for in-page overlay (real toolbar stays visible). */
 const CommunicationPlannerSkeleton = ({ showToolbar = false, calendarOnly = false }) => {
     const hideToolbar = calendarOnly || !showToolbar;
 
     return (
         <div className="communication-planner-skeleton">
             {!hideToolbar ? (
-                <div className="flex-row justify-content-end top-sub-heading mb21 mt-6">
+                <div className="flex-row justify-content-end top-sub-heading my21">
                     <div className="d-flex align-items-center gap-3">
                         <Skeleton width={190} height={32} {...skeletonProps} />
                         <Skeleton width={180} height={32} {...skeletonProps} />
@@ -32,7 +32,10 @@ const CommunicationPlannerSkeleton = ({ showToolbar = false, calendarOnly = fals
                         <Skeleton width={60} height={28} {...skeletonProps} />
                         <Skeleton width={35} height={28} {...skeletonProps} />
                     </div>
-                    <Skeleton width={140} height={28} {...skeletonProps} />
+                     <div className="d-flex align-items-center gap-2 mt-7">
+                        <Skeleton width={120} height={28} {...skeletonProps} />
+                        <Skeleton width={80} height={28} {...skeletonProps} />
+                    </div>
                     <div style={{ width: 128 }} aria-hidden="true" />
                 </div>
 

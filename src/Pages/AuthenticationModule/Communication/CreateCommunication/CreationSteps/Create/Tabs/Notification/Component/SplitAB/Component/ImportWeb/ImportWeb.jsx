@@ -1304,9 +1304,9 @@ const ImportWeb = ({
             })) || {};
         setValue(zipFileTextName, fileName);
         if (!status) return;
-        const html = html;
+        const { html } = data;
         localStorage.setItem(fieldName || 'edm', edmFileWeight);
-        setValue(edmGuidName, edmGuid);
+        setValue(edmGuidName, data?.edmGuid);
         applyHtmlToEditor(html);
     };
     const uploadInPageBannerMediaFile = async ({ fileByte, extension, fileName, edmFileWeight }) => {

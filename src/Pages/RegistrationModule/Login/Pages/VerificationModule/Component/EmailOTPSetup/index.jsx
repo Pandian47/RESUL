@@ -214,6 +214,7 @@ const EmailOTPSetup = ({ onBack, onComplete }) => {
                             } pt0`}
                         >
                             <RSOTPForm
+                                className='pt10'
                                 isLoading={isOtpSendLoading}
                                 isOtpValidateLoading={isOtpValidateLoading}
                                 isOTPValid={otpValid}

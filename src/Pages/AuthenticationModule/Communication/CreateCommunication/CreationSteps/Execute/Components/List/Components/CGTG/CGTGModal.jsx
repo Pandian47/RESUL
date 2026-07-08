@@ -20,7 +20,9 @@ const CGTGModal = ({ show, handleClose, tab, data, cgTgValues, setCgTgValues, is
     const state = useQueryParams('/communication');
     const { channelDetails } = useSelector(({ communicationExecuteReducer }) => communicationExecuteReducer);
     const channelId = channelDetails?.[tab]?.channelId;
+    const TGCG = data?.TGCG;
     const isCGTGEnabled = TGCG?.isTGCGEnabled;
+    const contentDetail = data?.contentDetail;
     //console.log('isCGTGEnabled: ', isCGTGEnabled);
     const dispatch = useDispatch();
     const cgtgSaveAPI = useApiLoader({ autoFetch: false });

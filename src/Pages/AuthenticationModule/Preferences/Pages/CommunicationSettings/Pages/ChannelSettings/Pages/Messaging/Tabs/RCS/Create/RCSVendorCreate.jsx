@@ -2,11 +2,15 @@ import { charNumUnderScore } from 'Utils/modules/inputValidators';
 import { MAX_LENGTH, MAX_LENGTH150, MAX_LENGTH256, MAX_LENGTH75, URLPATTERN } from 'Constants/GlobalConstant/Regex';
 import { ENTER_VALID_URL, UPLOAD_FILE } from 'Constants/GlobalConstant/ValidationMessage';
 import { CANCEL } from 'Constants/GlobalConstant/Placeholders';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useContext, useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { Row, Col } from 'react-bootstrap';
 import { useForm, FormProvider, useWatch } from 'react-hook-form';
+import { useNavigate } from 'react-router-dom';
+import { updateQueryParams } from 'Utils/modules/urlQuery';
+import { validateIsCustomNavigate } from 'Utils/modules/navigation';
+import useQueryParams from 'Hooks/useQueryParams';
 import NoDataAvailableRender from 'Components/FormFields/Component/NoDataAvailableRender';
 
 
@@ -15,6 +19,7 @@ import { RSPrimaryButton, RSSecondaryButton } from 'Components/Buttons';
 import RSKendoDropDownList from 'Components/FormFields/RSKendoDropdown';
 import RSInput from 'Components/FormFields/RSInput';
 import { FORM_INITIAL_STATE, RCS_FORM_ACTIONS_PORTAL_ID } from '../constants';
+import { RCSProvider } from '../Context';
 
 import usePermission from 'Hooks/usePersmission';
 import {
@@ -37,8 +42,20 @@ import { CommunicationSettingsEditSkeletonGate } from 'Components/Skeleton/Compo
 
 const RCS_VENDOR_CREATE_FORM_ID = 'rs_RCSCreate_Form';
 
+const ADD_VENDOR_COMM_QUERY_KEYS_TO_CLEAR = {
+    backNavigationDetails: null,
+    backAction: null,
+    mode: null,
+    from: null,
+    campaignType: null,
+};
+
 const RCSVendorCreate = ({ type, config, handleCancel, setFailedApi }) => {
     const dispatch = useDispatch();
+    const navigate = useNavigate();
+    const queryState = useQueryParams('/preferences/communication-settings');
+    const { addVendorFromComm } = useContext(RCSProvider) || {};
+    const isNavigatingBackToCommRef = useRef(false);
     const methods = useForm(FORM_INITIAL_STATE);
     const { permissions } = usePermission();
     const { addAccess } = permissions || {};
@@ -255,10 +272,25 @@ const RCSVendorCreate = ({ type, config, handleCancel, setFailedApi }) => {
             vendorId: formState.provider?.configuration?.customData?.vendorID || '',
         };
         await saveApi.refetch({
-            fetcher: () => dispatch(createCSRCSSettings(payload, handleCancel, false)),
+            fetcher: () => dispatch(createCSRCSSettings(payload, handleSaveComplete, false)),
             loaderConfig: fieldLoaderConfig,
             mode: 'create',
         });
+    };
+
+    const handleReturn = () => {
+        if (addVendorFromComm) {
+            isNavigatingBackToCommRef.current = true;
+            validateIsCustomNavigate(queryState, queryState, navigate, () => {
+                handleCancel(true);
+            }, { dispatch });
+            return;
+        }
+        handleCancel(true);
+    };
+
+    const handleSaveComplete = (status) => {
+        if (status) handleReturn();
     };
 
     const vendorFields = RenderVendors(provider)?.fields || [];
@@ -271,6 +303,9 @@ const RCSVendorCreate = ({ type, config, handleCancel, setFailedApi }) => {
 
         return () => {
             setActionsPortalTarget(null);
+            if (addVendorFromComm && !isNavigatingBackToCommRef.current) {
+                updateQueryParams(ADD_VENDOR_COMM_QUERY_KEYS_TO_CLEAR);
+            }
         };
     }, []);
 
@@ -281,7 +316,7 @@ const RCSVendorCreate = ({ type, config, handleCancel, setFailedApi }) => {
                 blockInteraction={isSaveLoading}
                 onClick={() => {
                     if (isSaveLoading) return;
-                    handleCancel(true);
+                    handleReturn();
                 }}
                 id="rs_RCSCreate_Cancel"
             >

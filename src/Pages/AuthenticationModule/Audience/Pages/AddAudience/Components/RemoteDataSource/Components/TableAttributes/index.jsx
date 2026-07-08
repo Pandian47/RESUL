@@ -1,4 +1,4 @@
-import { find as _find } from 'Utils/modules/lodashReplacements';
+import { find as _find, isEqual as _isEqual, map as _map, cloneDeep as _cloneDeep } from 'Utils/modules/lodashReplacements';
 import { updateQueryParams } from 'Utils/modules/urlQuery';
 import { getBrandName } from 'Utils/modules/brandStorage';
 import { encodeUrl } from 'Utils/modules/crypto';
@@ -8,7 +8,7 @@ import { onlyNumbers } from 'Utils/modules/inputValidators';
 import { CHECK_UPDATE, ENTER_VOLUME, EXCEPTION_OCCURRED, SELECT_FOREIGN_KEY, SELECT_IMPORT_PREFERENCE, SELECT_PRIMARY_KEY, UPDATE_CYCLE as UPDATE_CYCLE_MSG, UPDATE_RECENCY } from 'Constants/GlobalConstant/ValidationMessage';
 import { ARE_YOU_SURE_RESET, BARND_NAME_DOESNT_EXISTS, BRAND_ID_NOT_EXISTS, CANCEL, CHECK_FOR_UPDATES, CONNECTIONTYPE, DATA_SYNC_PROGRESS, DATA_SYNC_STATUS, ENTER_SELECTED_COL_ATT, FOREIGN_KEY_HELP_TEXT, IMPORT_PREFERENCE_LABEL, IMPORT_PREFERENCES, IMPORT_PRESERVE_PREFERENCE_LABEL, OK, POTENTIAL_AUDIENCE, PRIMARY_FOREIGN_KEY, PRIMARY_KEY_HELP_TEXT, REFINE_AUDIENCE_SELECTION, REQUIRED_VOLUME, UPDATE_CYCLE, UPLOAD, WARNING, YES } from 'Constants/GlobalConstant/Placeholders';
 import { alert_medium, alert_xlarge, circle_question_mark_medium, circle_question_mark_mini, circle_time_large, pencil_edit_medium, refresh_large, restart_medium } from 'Constants/GlobalConstant/Glyphicons';
-import { useEffect, useReducer, useState } from 'react';
+import { useEffect, useMemo, useReducer, useRef, useState } from 'react';
 import { Col, Container, Row } from 'react-bootstrap';
 import { useFormContext } from 'react-hook-form';
 import { useDispatch, useSelector } from 'react-redux';
@@ -102,6 +102,8 @@ const TableAttributes = ({ pathState, from = '' }) => {
         dataSyncModal,
         dataRemovePopup,
     } = state;
+    const isOneTime =
+        pathState?.isOneTime; 
     const isEdit = pathState?.mode === 'edit';
     const [modal, setModal] = useState({
         show: false,
@@ -133,6 +135,33 @@ const TableAttributes = ({ pathState, from = '' }) => {
         rightAttributes: [],
     });
     // console.log('attributes', attributes);
+
+    const initialEditSnapshotRef = useRef(null);
+    const currentFormVals = watch();
+
+    useEffect(() => {
+        if (isEdit && !isTouched) {
+            const vals = getValues();
+            const { isTouched: _touched, ...restVals } = vals || {};
+            if (restVals?.table || restVals?.webinar || restVals?.webex || attributes?.rightAttributes?.length > 0) {
+                initialEditSnapshotRef.current = {
+                    formValues: _cloneDeep(restVals),
+                    rightAttributes: _map(attributes?.rightAttributes || [], (attr) => attr?.dataAttributeId || attr?.name || attr?.uiPrintableName || attr?.solrFieldName),
+                };
+            }
+        }
+    }, [isEdit, isTouched, attributes?.rightAttributes, currentFormVals]);
+
+    const isEditDataChanged = useMemo(() => {
+        if (!isEdit || !initialEditSnapshotRef.current) return false;
+        const vals = currentFormVals || {};
+        const { isTouched: _touched, ...restVals } = vals;
+        const currentSnapshot = {
+            formValues: restVals,
+            rightAttributes: _map(attributes?.rightAttributes || [], (attr) => attr?.dataAttributeId || attr?.name || attr?.uiPrintableName || attr?.solrFieldName),
+        };
+        return !_isEqual(initialEditSnapshotRef.current, currentSnapshot);
+    }, [isEdit, currentFormVals, attributes?.rightAttributes]);
 
     const [updateTabledd, setUpdateTabledd] = useState(tabledd ?? []);
     const [err, setErr] = useState(false);
@@ -2371,6 +2400,7 @@ const TableAttributes = ({ pathState, from = '' }) => {
                                                 placeholder={'Select'}
                                                 control={control}
                                                 name="table"
+                                                disabled={isOneTime}
                                                 data={tabledd}
                                                 required
                                                 defaultValue={tabledd[0]}
@@ -2395,7 +2425,7 @@ const TableAttributes = ({ pathState, from = '' }) => {
                                                     <RSKendoDropDown
                                                         name="primaryKey"
                                                         control={control}
-                                                        disabled={primaryKeyDisable}
+                                                        disabled={primaryKeyDisable || isOneTime}
                                                         data={
                                                             pathState?.data?.remoteDataSourceID === 45 ||
                                                             pathState?.data?.remoteDataSourceID === 5 ||
@@ -2450,7 +2480,7 @@ const TableAttributes = ({ pathState, from = '' }) => {
                                                         <RSKendoDropDown
                                                             name="foreignKey"
                                                             control={control}
-                                                            disabled={foreignKeyDisable}
+                                                            disabled={foreignKeyDisable || isOneTime}
                                                             data={
                                                                 tableColumns?.length > 0 &&
                                                                 (pathState?.data?.remoteDataSourceID === 45 ||
@@ -2493,15 +2523,17 @@ const TableAttributes = ({ pathState, from = '' }) => {
                                             )}
                                         </>
                                     )}
-                                <Col sm={1} className="d-flex align-items-center ">
-                                    <RSTooltip position="top" text="Reset" className="lh0">
-                                        <i
-                                            id="rs_data_refresh"
-                                            className={`${restart_medium} icon-md color-primary-blue`}
-                                            onClick={() => handleRefresh(pathState.type.toLowerCase())}
-                                        ></i>
-                                    </RSTooltip>
-                                </Col>
+                                {!isOneTime && (
+                                    <Col sm={1} className="d-flex align-items-center ">
+                                        <RSTooltip position="top" text="Reset" className="lh0">
+                                            <i
+                                                id="rs_data_refresh"
+                                                className={`${restart_medium} icon-md color-primary-blue`}
+                                                onClick={() => handleRefresh(pathState.type.toLowerCase())}
+                                            ></i>
+                                        </RSTooltip>
+                                    </Col>
+                                )}
                             </Row>
                         )
                     )}
@@ -2954,10 +2986,10 @@ const TableAttributes = ({ pathState, from = '' }) => {
                                 <RSPrimaryButton
                                     type="submit"
                                     className={
-                                        Object.keys(errors)?.length > 0 || (isEdit && !pathState?.isBack)
-                                            ? // ||
-                                              // (pathState?.data?.remoteDataSourceID === 40 && !pathState?.id)
-                                              'click-off'
+                                          isOneTime|| Object.keys(errors)?.length > 0 ||
+                                          ('isBack' in pathState && !pathState?.isBack) ||
+                                          (isEdit && !isEditDataChanged)
+                                            ? 'click-off'
                                             : ''
                                     }
                                 >

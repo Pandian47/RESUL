@@ -1,3 +1,4 @@
+import { COMPLETED_CAMPAIGN_STATUS_ID } from 'Utils/modules/campaignUtils';
 import { getIndexBasedOnCampaign } from 'Utils/modules/communicationStatus';
 import { GENERATE_SMART_LINK } from 'Constants/GlobalConstant/Placeholders';
 import { encodeUrl } from 'Utils/modules/crypto';
@@ -134,7 +135,7 @@ const CampaignInfoCard = ({
     const isDisplayEditCommunication =
         (campaignType === 'M' && pathName === '/communication/execute') || campaignType !== 'M' ? true : false;
     const isExecutePage = pathName === '/communication/execute';
-    const isCompletedCampaign = Number(state?.statusId) === 9;
+    const isCompletedCampaign = Number(state?.statusId) === COMPLETED_CAMPAIGN_STATUS_ID;
     const hasSmartLink = Boolean(smartLink1 && Object.values(smartLink || {})[0]);
     const isSmartLinkIconDisabled = isExecutePage && isCompletedCampaign && !hasSmartLink;
     // const period = `${getDateWithDay(startDate)} - ${getDateWithDay(endDate)}`;

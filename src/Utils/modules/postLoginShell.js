@@ -40,6 +40,7 @@ export function loadAppShellStyles() {
     }
 
     appShellStylesPromise = Promise.all([
+        import('@progress/kendo-theme-default/dist/all.css'),
         import('Styles/app.scss'),
         import('resul-genie-ui/resul-host-genie.css'),
     ])

@@ -69,6 +69,10 @@ export const PREFERENCES_SUBPAGE_VARIANT = {
     TG_TABBED_GALLERY: 'tgTabbedGallery',
     TG_LANDING_GALLERY: 'tgLandingGallery',
     TG_FORM_GENERATOR: 'tgFormGenerator',
+    FORM_GENERATOR: 'formGenerator',
+    FORM_GENERATOR_EDITOR: 'formGeneratorEditor',
+    FORM_GENERATOR_ADD: 'formGeneratorAdd',
+    BRAND_OWNED_FORM: 'brandOwnedForm',
     TG_ADS: 'tgAds',
     TG_WHATSAPP: 'tgWhatsapp',
     DATA_CATALOGUE: 'dataCatalogue',
@@ -122,21 +126,65 @@ const CS_CHANNEL_SUB_TAB_COUNT = {
     notification: CS_NOTIFICATION_SUB_TAB_COUNT,
 };
 
-/** Mail › Email footer — index in MAIL_TABBER_CONFIG (no SMTP/Domain inner tabs). */
+/** Mail › Email footer — index in MAIL_TABBER_CONFIG (no inner RSTabbar). */
 const CS_MAIL_EMAIL_FOOTER_TAB_INDEX = 5;
+
+/** Icon sub-tabs that render a horizontal RSTabbar inside the content panel (matches live pages). */
+const CS_MAIL_TABS_WITH_INNER_TABS = new Set([0, 3]); // SMTP, Sub / Un-sub
+const CS_MESSAGING_TABS_WITH_INNER_TABS = new Set([0, 1, 4]); // SMS, WhatsApp, RCS
+const CS_NOTIFICATION_TABS_WITH_INNER_TABS = new Set([0, 1]); // Web, Mobile
+
+/** Icon sub-tabs whose heading row includes the + add icon (icon-lg / 32px). */
+const CS_MAIL_TABS_WITH_ADD_ACTION = new Set([0, 1, 3, 4, 5]);
+const CS_MESSAGING_TABS_WITH_ADD_ACTION = new Set([0, 1, 2, 3, 4]);
+
+const MAIL_TAB_ID_TO_INDEX = {
+    SMTP: 0,
+    QuietHours: 1,
+    LifetimeCap: 2,
+    SubscriptionUnsubscription: 3,
+    DoubleOptIn: 4,
+    EmailFooter: 5,
+};
+
+const MESSAGING_TAB_ID_TO_INDEX = {
+    SMS: 0,
+    Whatsapp: 1,
+    VMS: 2,
+    LINE: 3,
+    RCS: 4,
+};
+
+const NOTIFICATION_TAB_ID_TO_INDEX = {
+    Web: 0,
+    Mobile: 1,
+    WebMobile: 2,
+};
 
 /** Mirrors resolveMailTabState enough for skeleton inner-tab visibility (avoids jsx cycle). */
 const resolveMailSkeletonTabIndex = (navState = {}) => {
     if (navState?.currentTab !== undefined && navState?.currentTab !== null) {
         return navState.currentTab;
     }
-    if (navState?.mailTabId === 'EmailFooter') {
-        return CS_MAIL_EMAIL_FOOTER_TAB_INDEX;
+    if (navState?.mailTabId) {
+        const index = MAIL_TAB_ID_TO_INDEX[navState.mailTabId];
+        if (index !== undefined) return index;
     }
     if (navState?.subfrom === 'footer-builder') {
         return CS_MAIL_EMAIL_FOOTER_TAB_INDEX;
     }
-    if (navState?.subTab !== undefined && navState?.subTab !== null) {
+    if (navState?.from === 'sub') {
+        return MAIL_TAB_ID_TO_INDEX.SubscriptionUnsubscription;
+    }
+    const isMailVertical =
+        navState?.verticalTabId === 'Mail' || navState?.verticalTab === 0;
+    if (
+        isMailVertical &&
+        navState?.subTab !== undefined &&
+        navState?.subTab !== null &&
+        !navState?.messagingTabId &&
+        !navState?.notificationTabId
+    ) {
         return navState.subTab;
     }
     if (navState?.index !== undefined && navState?.index !== null) {
@@ -145,13 +193,94 @@ const resolveMailSkeletonTabIndex = (navState = {}) => {
     return 0;
 };
 
-const shouldShowMailInnerTabsSkeleton = (navState = {}) =>
-    resolveMailSkeletonTabIndex(navState) !== CS_MAIL_EMAIL_FOOTER_TAB_INDEX;
+/** Mirrors resolveMessagingTabState — avoids importing ChannelSettings constant (cycle). */
+const resolveMessagingSkeletonTabIndex = (navState = {}) => {
+    if (navState?.messagingTabId) {
+        const index = MESSAGING_TAB_ID_TO_INDEX[navState.messagingTabId];
+        if (index !== undefined) return index;
+    }
+    if (navState?.from === 'messaging' && navState?.subTab !== undefined && navState?.subTab !== null) {
+        return navState.subTab;
+    }
+    const isMessagingVertical =
+        navState?.verticalTabId === 'Messaging' || navState?.verticalTab === 1;
+    if (isMessagingVertical && navState?.subTab !== undefined && navState?.subTab !== null) {
+        return navState.subTab;
+    }
+    return 0;
+};
 
-const useMailInnerTabsSkeletonVisibility = () => {
+/** Mirrors resolveNotificationTabState — avoids importing ChannelSettings constant (cycle). */
+const resolveNotificationSkeletonTabIndex = (navState = {}) => {
+    if (navState?.from === 'cs_preferences' && navState?.innerTab !== undefined) {
+        return navState.innerTab;
+    }
+    if (navState?.notificationTabId) {
+        const index = NOTIFICATION_TAB_ID_TO_INDEX[navState.notificationTabId];
+        if (index !== undefined) return index;
+    }
+    if (navState?.subfrom != null && navState?.subfrom !== '' && navState?.subTab !== undefined) {
+        return navState.subTab;
+    }
+    if (navState?.type === true) return 1;
+    if (navState?.type === false) return 0;
+    return 0;
+};
+
+const shouldShowInnerTabsForChannel = (channel, navState = {}) => {
+    if (channel === 'mail') {
+        return CS_MAIL_TABS_WITH_INNER_TABS.has(resolveMailSkeletonTabIndex(navState));
+    }
+    if (channel === 'messaging') {
+        return CS_MESSAGING_TABS_WITH_INNER_TABS.has(resolveMessagingSkeletonTabIndex(navState));
+    }
+    if (channel === 'notification') {
+        return CS_NOTIFICATION_TABS_WITH_INNER_TABS.has(resolveNotificationSkeletonTabIndex(navState));
+    }
+    return false;
+};
+
+const shouldShowAddActionForChannel = (channel, navState = {}) => {
+    if (channel === 'mail') {
+        return CS_MAIL_TABS_WITH_ADD_ACTION.has(resolveMailSkeletonTabIndex(navState));
+    }
+    if (channel === 'messaging') {
+        return CS_MESSAGING_TABS_WITH_ADD_ACTION.has(resolveMessagingSkeletonTabIndex(navState));
+    }
+    return false;
+};
+
+const useCommunicationSettingsInnerTabsSkeletonVisibility = (channel) => {
     const { state } = useLocation();
     const queryState = useQueryParams('/preferences/communication-settings');
-    return shouldShowMailInnerTabsSkeleton({ ...queryState, ...state });
+    const navState = { ...queryState, ...state };
+
+    if (channel) {
+        return shouldShowInnerTabsForChannel(channel, navState);
+    }
+
+    if (navState?.verticalTabId === 'Messaging' || navState?.verticalTab === 1) {
+        return shouldShowInnerTabsForChannel('messaging', navState);
+    }
+    if (navState?.verticalTabId === 'Notification' || navState?.verticalTab === 2) {
+        return shouldShowInnerTabsForChannel('notification', navState);
+    }
+    return shouldShowInnerTabsForChannel('mail', navState);
+};
+
+const useCommunicationSettingsAddActionSkeletonVisibility = (channel) => {
+    const { state } = useLocation();
+    const queryState = useQueryParams('/preferences/communication-settings');
+    const navState = { ...queryState, ...state };
+
+    if (channel) {
+        return shouldShowAddActionForChannel(channel, navState);
+    }
+
+    if (navState?.verticalTabId === 'Messaging' || navState?.verticalTab === 1) {
+        return shouldShowAddActionForChannel('messaging', navState);
+    }
+    return shouldShowAddActionForChannel('mail', navState);
 };
 
 /** Top RSTabbarFluid tab from `?q=` or `isBenchMark` (Communication settings page). */
@@ -208,8 +337,21 @@ export const resolveCompanyFlowSkeletonVariant = (currentPage = '') => {
     }
 };
 
+/** Form builder canvas — tab selected or edit query present (matches RSHeader hide + InfoCardFormBuilder). */
+export const resolveFormGeneratorEditorMode = (pathname = '', search = '') => {
+    const normalized = (pathname || '').toLowerCase().replace(/\/$/, '');
+    if (!normalized.includes('/add-form-generator')) return false;
+
+    const queryString =
+        search ||
+        (typeof window !== 'undefined' && window.location?.search ? window.location.search : '');
+    const params = new URLSearchParams(queryString.replace(/^\?/, ''));
+
+    return params.get('tabSelected') === 'true' || Boolean(params.get('q'));
+};
+
 /** Map preferences sub-route path to skeleton layout variant. */
-export const resolvePreferencesSubPageVariant = (pathname = '') => {
+export const resolvePreferencesSubPageVariant = (pathname = '', search = '') => {
     const normalized = (pathname || '').toLowerCase().replace(/\/$/, '');
     if (normalized.includes('/preferences/my-profile')) {
         return PREFERENCES_SUBPAGE_VARIANT.MY_PROFILE;
@@ -273,6 +415,17 @@ export const resolvePreferencesSubPageVariant = (pathname = '') => {
     }
     if (/^\/preferences\/template-gallery\/form-generator$/.test(normalized)) {
         return PREFERENCES_SUBPAGE_VARIANT.TG_FORM_GENERATOR;
+    }
+    if (/\/add-form-generator$/.test(normalized)) {
+        return resolveFormGeneratorEditorMode(pathname, search)
+            ? PREFERENCES_SUBPAGE_VARIANT.FORM_GENERATOR_EDITOR
+            : PREFERENCES_SUBPAGE_VARIANT.FORM_GENERATOR_ADD;
+    }
+    if (/^\/preferences\/form-generator$/.test(normalized)) {
+        return PREFERENCES_SUBPAGE_VARIANT.FORM_GENERATOR;
+    }
+    if (/^\/preferences\/template-gallery\/brand-owned-form-generator$/.test(normalized)) {
+        return PREFERENCES_SUBPAGE_VARIANT.BRAND_OWNED_FORM;
     }
     if (/^\/preferences\/template-gallery\/ads$/.test(normalized)) {
         return PREFERENCES_SUBPAGE_VARIANT.TG_ADS;
@@ -342,6 +495,9 @@ const SUBPAGE_VARIANTS_WITH_BACK = new Set([
     PREFERENCES_SUBPAGE_VARIANT.TG_TABBED_GALLERY,
     PREFERENCES_SUBPAGE_VARIANT.TG_LANDING_GALLERY,
     PREFERENCES_SUBPAGE_VARIANT.TG_FORM_GENERATOR,
+    PREFERENCES_SUBPAGE_VARIANT.FORM_GENERATOR,
+    PREFERENCES_SUBPAGE_VARIANT.FORM_GENERATOR_ADD,
+    PREFERENCES_SUBPAGE_VARIANT.BRAND_OWNED_FORM,
     PREFERENCES_SUBPAGE_VARIANT.TG_ADS,
     PREFERENCES_SUBPAGE_VARIANT.TG_WHATSAPP,
     PREFERENCES_SUBPAGE_VARIANT.DATA_CATALOGUE,
@@ -376,6 +532,9 @@ const SUBPAGE_TITLE_WIDTH = {
     [PREFERENCES_SUBPAGE_VARIANT.TG_TABBED_GALLERY]: 300,
     [PREFERENCES_SUBPAGE_VARIANT.TG_LANDING_GALLERY]: 340,
     [PREFERENCES_SUBPAGE_VARIANT.TG_FORM_GENERATOR]: 140,
+    [PREFERENCES_SUBPAGE_VARIANT.FORM_GENERATOR]: 140,
+    [PREFERENCES_SUBPAGE_VARIANT.FORM_GENERATOR_ADD]: 160,
+    [PREFERENCES_SUBPAGE_VARIANT.BRAND_OWNED_FORM]: 160,
     [PREFERENCES_SUBPAGE_VARIANT.TG_ADS]: 80,
     [PREFERENCES_SUBPAGE_VARIANT.TG_WHATSAPP]: 280,
     [PREFERENCES_SUBPAGE_VARIANT.DATA_CATALOGUE]: 140,
@@ -479,13 +638,7 @@ export const MyProfileFormSkeleton = ({ showNoData = false }) => {
                                         <Col sm={6} xs={12}>
                                             <div className="form-group pref-sk-title-first-row">
                                                 <Row>
-                                                    <Col xs={4}>
-                                                        <PrefMyProfileSkelBar
-                                                            className="pref-my-profile-sk-input"
-                                                            stopAnimation={freeze}
-                                                        />
-                                                    </Col>
-                                                    <Col xs={8}>
+                                                    <Col xs={12}>
                                                         <PrefMyProfileSkelBar
                                                             className="pref-my-profile-sk-input"
                                                             stopAnimation={freeze}
@@ -569,17 +722,10 @@ export const MyProfileFormSkeleton = ({ showNoData = false }) => {
                                         <Col sm={4} xs={6}>
                                             <PrefMyProfileFieldSkeleton stopAnimation={freeze} />
                                         </Col>
-                                        <Col sm={4} xs={6}>
+                                        <Col sm={8} xs={6}>
                                             <PrefMyProfileFieldSkeleton stopAnimation={freeze} />
                                         </Col>
-                                        <Col sm={4} xs={6}>
-                                            <div className="form-group m0 position-relative top6 pref-sk-checkbox">
-                                                <PrefMyProfileSkelBar
-                                                    className="pref-my-profile-sk-checkbox"
-                                                    stopAnimation={freeze}
-                                                />
-                                            </div>
-                                        </Col>
+                                       
                                     </Row>
                                 </Col>
                             </Row>
@@ -953,77 +1099,361 @@ export const CompanyAssignRoleSkeleton = () => (
 
             <PrefAssignRoleSkelBar className="pref-sk-assign-bar--hint mt10" />
         </div>
-        <div className="buttons-holder pref-sk-assign-role-actions d-flex justify-content-end gap-3">
-            <PrefAssignRoleSkelBar className="pref-sk-assign-bar--action-text" />
+        <div className="buttons-holder pref-sk-assign-role-actions d-flex justify-content-end">
             <PrefAssignRoleSkelBar className="pref-sk-assign-bar--action-btn" />
+            <PrefAssignRoleSkelBar className="pref-sk-assign-bar--action-btn ml15" />
         </div>
     </>
 );
 
-/** Localization settings step — dropdowns + tag panels + footer fields. */
+const PrefCompanyLocalizationSkelBar = ({ className = '', stopAnimation = false }) => (
+    <div
+        className={`pref-company-localization-sk-bar ${className}${
+            stopAnimation ? ' pref-company-localization-sk-bar--static' : ''
+        }`.trim()}
+        aria-hidden="true"
+    />
+);
+
+const LocalizationDropdownFieldSkeleton = ({ stopAnimation = false }) => (
+    <div className="form-group">
+        <PrefCompanyLocalizationSkelBar
+            className="pref-company-localization-sk-bar--dropdown"
+            stopAnimation={stopAnimation}
+        />
+    </div>
+);
+
+const LocalizationRegionFieldSkeleton = ({ stopAnimation = false }) => (
+    <div className="form-group mt4">
+        <div className="pref-company-localization-sk-region-tags">
+            {Array.from({ length: 14 }, (_, index) => (
+                <PrefCompanyLocalizationSkelBar
+                    key={index}
+                    className="pref-company-localization-sk-bar--region-pill"
+                    stopAnimation={stopAnimation}
+                />
+            ))}
+        </div>
+    </div>
+);
+
+const LocalizationTagPanelSkeleton = ({ stopAnimation = false, pillCount = 8, variant = 'default' }) => (
+    <div className={`pref-company-localization-sk-tag-panel pref-company-localization-sk-tag-panel--${variant}`}>
+        <div className="pref-company-localization-sk-tag-panel-header">
+            <PrefCompanyLocalizationSkelBar
+                className="pref-company-localization-sk-bar--tag-panel-title"
+                stopAnimation={stopAnimation}
+            />
+        </div>
+        <div className="pref-company-localization-sk-tag-pills">
+            {Array.from({ length: pillCount }, (_, index) => (
+                <PrefCompanyLocalizationSkelBar
+                    key={index}
+                    className="pref-company-localization-sk-bar--tag-pill"
+                    stopAnimation={stopAnimation}
+                />
+            ))}
+        </div>
+        <div className="pref-company-localization-sk-tag-panel-footer">
+            <PrefCompanyLocalizationSkelBar
+                className="pref-company-localization-sk-bar--tag-input"
+                stopAnimation={stopAnimation}
+            />
+        </div>
+    </div>
+);
+
+const LocalizationConversionPanelSkeleton = ({ stopAnimation = false }) => (
+    <div className="pref-company-localization-sk-tag-panel pref-company-localization-sk-tag-panel--conversion">
+        <div className="pref-company-localization-sk-tag-panel-header">
+            <PrefCompanyLocalizationSkelBar
+                className="pref-company-localization-sk-bar--tag-panel-title"
+                stopAnimation={stopAnimation}
+            />
+        </div>
+        <div className="pref-company-localization-sk-conversion-body">
+            <div className="pref-company-localization-sk-conversion-block">
+                <PrefCompanyLocalizationSkelBar
+                    className="pref-company-localization-sk-bar--conversion-section-title"
+                    stopAnimation={stopAnimation}
+                />
+                <div className="pref-company-localization-sk-tag-pills pref-company-localization-sk-tag-pills--conversion">
+                    {Array.from({ length: 4 }, (_, index) => (
+                        <PrefCompanyLocalizationSkelBar
+                            key={index}
+                            className="pref-company-localization-sk-bar--tag-pill"
+                            stopAnimation={stopAnimation}
+                        />
+                    ))}
+                </div>
+            </div>
+            <div className="pref-company-localization-sk-conversion-block">
+                <PrefCompanyLocalizationSkelBar
+                    className="pref-company-localization-sk-bar--conversion-section-title"
+                    stopAnimation={stopAnimation}
+                />
+                <div className="pref-company-localization-sk-tag-pills pref-company-localization-sk-tag-pills--conversion">
+                    {Array.from({ length: 6 }, (_, index) => (
+                        <PrefCompanyLocalizationSkelBar
+                            key={index}
+                            className="pref-company-localization-sk-bar--tag-pill"
+                            stopAnimation={stopAnimation}
+                        />
+                    ))}
+                </div>
+            </div>
+        </div>
+        <div className="pref-company-localization-sk-tag-panel-footer">
+            <PrefCompanyLocalizationSkelBar
+                className="pref-company-localization-sk-bar--tag-input"
+                stopAnimation={stopAnimation}
+            />
+        </div>
+    </div>
+);
+
+const LocalizationInputFieldSkeleton = ({ stopAnimation = false }) => (
+    <div className="form-group">
+        <PrefCompanyLocalizationSkelBar
+            className="pref-company-localization-sk-bar--input"
+            stopAnimation={stopAnimation}
+        />
+        <PrefCompanyLocalizationSkelBar
+            className="pref-company-localization-sk-bar--helper"
+            stopAnimation={stopAnimation}
+        />
+    </div>
+);
+
+const LocalizationJobServiceRowSkeleton = ({ stopAnimation = false }) => (
+    <div className="form-group">
+        <Row className="align-items-center">
+            <Col sm={5} xs={6} className="text-left">
+                <PrefCompanyLocalizationSkelBar
+                    className="pref-company-localization-sk-bar--field-label-left"
+                    stopAnimation={stopAnimation}
+                />
+            </Col>
+            <Col sm={7} xs={3}>
+                <PrefCompanyLocalizationSkelBar
+                    className="pref-company-localization-sk-bar--job-input"
+                    stopAnimation={stopAnimation}
+                />
+            </Col>
+        </Row>
+    </div>
+);
+
+const LocalizationCommRefSkeleton = ({ stopAnimation = false }) => (
+    <div className="form-group textbox-min-h">
+        <div className="pref-company-localization-sk-tag-panel pref-company-localization-sk-tag-panel--comm-ref">
+            <div className="pref-company-localization-sk-tag-panel-header">
+                <PrefCompanyLocalizationSkelBar
+                    className="pref-company-localization-sk-bar--tag-panel-title"
+                    stopAnimation={stopAnimation}
+                />
+                <PrefCompanyLocalizationSkelBar
+                    className="pref-company-localization-sk-bar--toggle"
+                    stopAnimation={stopAnimation}
+                />
+            </div>
+            <div className="pref-company-localization-sk-tag-pills">
+                {Array.from({ length: 3 }, (_, index) => (
+                    <PrefCompanyLocalizationSkelBar
+                        key={index}
+                        className="pref-company-localization-sk-bar--tag-pill"
+                        stopAnimation={stopAnimation}
+                    />
+                ))}
+            </div>
+            <div className="pref-company-localization-sk-tag-panel-footer">
+                <PrefCompanyLocalizationSkelBar
+                    className="pref-company-localization-sk-bar--tag-input"
+                    stopAnimation={stopAnimation}
+                />
+            </div>
+        </div>
+    </div>
+);
+
+const LocalizationRadioRowSkeleton = ({ stopAnimation = false }) => (
+    <Row className="align-items-center">
+        <Col sm={5} xs={6} className="text-left">
+            <PrefCompanyLocalizationSkelBar
+                className="pref-company-localization-sk-bar--field-label-left"
+                stopAnimation={stopAnimation}
+            />
+        </Col>
+        <Col sm={7} xs={6} className="pl0">
+            <div className="pref-company-localization-sk-radios">
+                <PrefCompanyLocalizationSkelBar
+                    className="pref-company-localization-sk-bar--radio"
+                    stopAnimation={stopAnimation}
+                />
+                <PrefCompanyLocalizationSkelBar
+                    className="pref-company-localization-sk-bar--radio"
+                    stopAnimation={stopAnimation}
+                />
+            </div>
+        </Col>
+    </Row>
+);
+
+/** Localization settings step — mirrors localizationSettings.jsx layout. */
 export const CompanyLocalizationSkeleton = ({ showNoData = false }) => {
     const freeze = showNoData;
 
     return (
         <>
             <div
-                className={`box-design rs-box accountsetup-contact-info py30 pref-company-localization-skeleton${showNoData ? ' pref-subpage-skeleton-panel--no-data' : ''
-                    }`}
+                className={`box-design rs-box accountsetup-contact-info py30 pref-company-localization-skeleton${
+                    showNoData ? ' pref-subpage-skeleton-panel--no-data' : ''
+                }`}
+                aria-hidden={!showNoData}
             >
-                <CommonSkeleton box height={20} width={200} stopAnimation={freeze} mainClass="mb-4" />
                 <Row>
-                    <PrefFieldSkeleton sm={6} stopAnimation={freeze} />
-                    <PrefFieldSkeleton sm={6} stopAnimation={freeze} />
-                    <PrefFieldSkeleton sm={6} stopAnimation={freeze} />
-                    <PrefFieldSkeleton sm={6} stopAnimation={freeze} />
-                    <PrefFieldSkeleton sm={6} stopAnimation={freeze} />
-                    <Col sm={6} xs={6}>
-                        <PrefFieldSkeleton sm={12} stopAnimation={freeze} />
-                        <CommonSkeleton box height={18} width={120} stopAnimation={freeze} mainClass="pref-sk-checkbox mt-2" />
-                    </Col>
-                </Row>
-                <Row className="mt-3">
-                    <Col sm={6} xs={12}>
-                        <TagPanelSkeleton titleWidth={160} stopAnimation={freeze} />
-                    </Col>
-                    <Col sm={6} xs={12}>
-                        <TagPanelSkeleton titleWidth={140} stopAnimation={freeze} />
-                    </Col>
-                    <Col sm={6} xs={12} className="mt-3">
-                        <TagPanelSkeleton titleWidth={120} stopAnimation={freeze} />
-                    </Col>
-                    <Col sm={6} xs={12} className="mt-3">
-                        <TagPanelSkeleton titleWidth={100} stopAnimation={freeze} />
-                    </Col>
-                </Row>
-                <Row className="mt-4">
-                    <PrefFieldSkeleton sm={6} stopAnimation={freeze} />
-                    <PrefFieldSkeleton sm={6} stopAnimation={freeze} />
-                </Row>
-                <Row className="mt-3">
                     <Col sm={12}>
-                        <CommonSkeleton box height={16} width={180} stopAnimation={freeze} mainClass="mb-3" />
-                        <div className="pref-sk-tag-pills d-flex flex-wrap gap-2">
-                            {Array.from({ length: 4 }, (_, i) => (
-                                <CommonSkeleton key={i} box width={120} height={24} stopAnimation={freeze} />
-                            ))}
+                        <PrefCompanyLocalizationSkelBar
+                            className="pref-company-localization-sk-bar--page-title"
+                            stopAnimation={freeze}
+                        />
+                    </Col>
+                </Row>
+                <Row className="d-flex align-items-end">
+                    <Col sm={6} xs={6}>
+                        <LocalizationRegionFieldSkeleton stopAnimation={freeze} />
+                    </Col>
+                    <Col sm={6} xs={6}>
+                        <LocalizationDropdownFieldSkeleton stopAnimation={freeze} />
+                    </Col>
+                    <Col sm={6} xs={6}>
+                        <LocalizationDropdownFieldSkeleton stopAnimation={freeze} />
+                    </Col>
+                    <Col sm={6} xs={6}>
+                        <LocalizationDropdownFieldSkeleton stopAnimation={freeze} />
+                    </Col>
+                    <Col sm={6} xs={6}>
+                        <LocalizationDropdownFieldSkeleton stopAnimation={freeze} />
+                    </Col>
+                    <Col sm={6} xs={6}>
+                        <LocalizationDropdownFieldSkeleton stopAnimation={freeze} />
+                    </Col>
+                </Row>
+                <Row className="pref-company-localization-sk-tag-row align-items-start">
+                    <Col sm={6} xs={6}>
+                        <div className="form-group pref-company-localization-sk-tag-field">
+                            <LocalizationTagPanelSkeleton stopAnimation={freeze} pillCount={10} variant="communication" />
+                        </div>
+                    </Col>
+                    <Col sm={6} xs={6}>
+                        <div className="form-group pref-company-localization-sk-tag-field">
+                            <LocalizationConversionPanelSkeleton stopAnimation={freeze} />
                         </div>
                     </Col>
                 </Row>
-                <Row className="mt-4 gx-3">
-                    <PrefFieldSkeleton sm={4} stopAnimation={freeze} />
-                    <PrefFieldSkeleton sm={4} stopAnimation={freeze} />
-                    <PrefFieldSkeleton sm={4} stopAnimation={freeze} />
+                <Row className="pref-company-localization-sk-tag-row align-items-start">
+                    <Col sm={6} xs={6}>
+                        <div className="form-group pref-company-localization-sk-tag-field">
+                            <LocalizationTagPanelSkeleton stopAnimation={freeze} pillCount={16} variant="product" />
+                        </div>
+                    </Col>
+                    <Col sm={6} xs={6}>
+                        <div className="form-group pref-company-localization-sk-tag-field">
+                            <LocalizationTagPanelSkeleton stopAnimation={freeze} pillCount={4} variant="offer" />
+                        </div>
+                    </Col>
+                </Row>
+                <Row>
+                    <Col sm={6} xs={6}>
+                        <LocalizationInputFieldSkeleton stopAnimation={freeze} />
+                    </Col>
+                    <Col sm={6} xs={6}>
+                        <LocalizationInputFieldSkeleton stopAnimation={freeze} />
+                    </Col>
+                </Row>
+                <Row>
+                    <Col sm={6} xs={6}>
+                        <LocalizationCommRefSkeleton stopAnimation={freeze} />
+                    </Col>
+                    <Col sm={6} xs={6}>
+                        <PrefCompanyLocalizationSkelBar
+                            className="pref-company-localization-sk-bar--section-title pref-company-localization-sk-bar--section-title-job mt15"
+                            stopAnimation={freeze}
+                        />
+                        <LocalizationJobServiceRowSkeleton stopAnimation={freeze} />
+                        <LocalizationJobServiceRowSkeleton stopAnimation={freeze} />
+                        <LocalizationJobServiceRowSkeleton stopAnimation={freeze} />
+                    </Col>
+                </Row>
+                <Row>
+                    <Col sm={12}>
+                        <PrefCompanyLocalizationSkelBar
+                            className="pref-company-localization-sk-bar--section-title pref-company-localization-sk-bar--section-title-analytics"
+                            stopAnimation={freeze}
+                        />
+                    </Col>
+                    <div className="form-group w-100">
+                        <Row>
+                            <Col sm={4} xs={4}>
+                                <LocalizationDropdownFieldSkeleton stopAnimation={freeze} />
+                            </Col>
+                            <Col sm={4} xs={4}>
+                                <LocalizationDropdownFieldSkeleton stopAnimation={freeze} />
+                            </Col>
+                            <Col sm={4} xs={4}>
+                                <LocalizationDropdownFieldSkeleton stopAnimation={freeze} />
+                            </Col>
+                        </Row>
+                    </div>
+                </Row>
+                <Row>
+                    <Col sm={7} xs={6}>
+                        <PrefCompanyLocalizationSkelBar
+                            className="pref-company-localization-sk-bar--section-title pref-company-localization-sk-bar--section-title-multi"
+                            stopAnimation={freeze}
+                        />
+                        <div className="form-group">
+                            <LocalizationRadioRowSkeleton stopAnimation={freeze} />
+                        </div>
+                        <div className="form-group mb0">
+                            <Row className="align-items-center">
+                                <Col sm={5} xs={6} className="text-left">
+                                    <PrefCompanyLocalizationSkelBar
+                                        className="pref-company-localization-sk-bar--field-label-left"
+                                        stopAnimation={freeze}
+                                    />
+                                </Col>
+                                <Col sm={5} xs={6} className="pl0 pr3">
+                                    <PrefCompanyLocalizationSkelBar
+                                        className="pref-company-localization-sk-bar--dropdown"
+                                        stopAnimation={freeze}
+                                    />
+                                </Col>
+                            </Row>
+                        </div>
+                    </Col>
+                    <Col sm={5} xs={6}>
+                        <PrefCompanyLocalizationSkelBar
+                            className="pref-company-localization-sk-bar--section-title pref-company-localization-sk-bar--section-title-job"
+                            stopAnimation={freeze}
+                        />
+                        <LocalizationJobServiceRowSkeleton stopAnimation={freeze} />
+                        <LocalizationJobServiceRowSkeleton stopAnimation={freeze} />
+                        <LocalizationJobServiceRowSkeleton stopAnimation={freeze} />
+                    </Col>
                 </Row>
                 {showNoData ? <PrefSubPageNoDataOverlay /> : null}
             </div>
-            <div className="buttons-holder pref-sk-buttons mt-3">
-                <Row>
-                    <Col className="d-flex justify-content-end gap-3">
-                        <CommonSkeleton box width={72} height={36} stopAnimation={freeze} />
-                        <CommonSkeleton box width={88} height={36} stopAnimation={freeze} />
-                    </Col>
-                </Row>
+            <div className="buttons-holder pref-company-localization-sk-actions">
+                <PrefCompanyLocalizationSkelBar
+                    className="pref-company-localization-sk-bar--action-btn pref-company-localization-sk-bar--action-btn-back"
+                    stopAnimation={freeze}
+                />
+                <PrefCompanyLocalizationSkelBar
+                    className="pref-company-localization-sk-bar--action-btn pref-company-localization-sk-bar--action-btn-save"
+                    stopAnimation={freeze}
+                />
             </div>
         </>
     );
@@ -1459,25 +1889,229 @@ export const FormGeneratorRmModalSkeleton = () => (
     </>
 );
 
-/** Form generator — toolbar + grid skeleton. */
+const FormGeneratorListToolbarSkeleton = () => (
+    <div className="flex-row justify-content-end mt0 top-sub-heading pref-sk-form-generator-toolbar" aria-hidden="true">
+        <ul className="rs-list-group-horizontal">
+            <li>
+                <CommonSkeleton box height={32} width={210} stopAnimation />
+            </li>
+            <li className="ml15">
+                <CommonSkeleton box height={32} width={140} stopAnimation />
+            </li>
+            <li className="ml15">
+                <CommonSkeleton box height={32} width={220} stopAnimation />
+            </li>
+            <li className="ml15">
+                <CommonSkeleton circle width={32} height={32} stopAnimation />
+            </li>
+        </ul>
+    </div>
+);
+
+/** Form builder list — toolbar + grid skeleton (matches FormGenerator/index.jsx). */
+export const FormGeneratorListSkeleton = () => (
+    <>
+        <FormGeneratorListToolbarSkeleton />
+        <div className="pref-form-generator-grid-skeleton" aria-hidden="true">
+            <GridLoadingSkeleton rows={10} columns={4} isLoading={false} wrapperClassName="p0" hideLeftBorder />
+        </div>
+    </>
+);
+
+const FgEditorShimmer = ({ style = {}, className = '' }) => (
+    <span className={`skeleton-shimmer d-block ${className}`.trim()} style={style} aria-hidden="true" />
+);
+
+const FormGeneratorEditorHeaderBandSkeleton = () => (
+    <ul
+        className="d-flex rsp-header-band form-generator-header-band bg-white pref-fg-editor-header-band"
+        aria-hidden="true"
+    >
+        <li>
+            <FgEditorShimmer style={{ width: 80, height: 28 }} />
+        </li>
+        <li>
+            <FgEditorShimmer style={{ width: 200, height: 28 }} />
+        </li>
+        <li className="position-absolute right110">
+            <FgEditorShimmer style={{ width: 32, height: 32, borderRadius: 4 }} />
+        </li>
+        <li className="position-absolute right60">
+            <FgEditorShimmer style={{ width: 32, height: 32, borderRadius: 4 }} />
+        </li>
+        <li className="position-absolute right10">
+            <FgEditorShimmer style={{ width: 32, height: 32, borderRadius: 4 }} />
+        </li>
+    </ul>
+);
+
+const FormGeneratorEditorToolbarSkeleton = () => (
+    <div
+        className="rs-builder-elements-holder w-auto d-flex flex-column flex-xl-row align-items-center justify-content-between gap-3 py0 px10 pref-fg-editor-toolbar"
+        aria-hidden="true"
+    >
+        <div className="d-flex flex-wrap gap-2 flex-grow-1 pref-fg-editor-toolbar__items">
+            {Array.from({ length: 8 }, (_, index) => (
+                <FgEditorShimmer key={index} style={{ width: 150, height: 65, borderRadius: 4 }} />
+            ))}
+        </div>
+        <div className="d-flex gap-2 pref-fg-editor-toolbar__actions">
+            <FgEditorShimmer style={{ width: 80, height: 32, borderRadius: 4 }} />
+            <FgEditorShimmer style={{ width: 180, height: 32, borderRadius: 4 }} />
+        </div>
+    </div>
+);
+
+const FormGeneratorEditorFieldRowSkeleton = () => (
+    <div className="pref-fg-editor-field-row">
+        <Row className="align-items-center m0">
+            <Col sm={3}>
+                <FgEditorShimmer style={{ width: '55%', height: 30 }} />
+            </Col>
+            <Col sm={8}>
+                <FgEditorShimmer style={{ width: '100%', height: 48, borderRadius: 4 }} />
+            </Col>
+        </Row>
+    </div>
+);
+
+const FormGeneratorEditorCanvasSkeleton = () => (
+    <div className="box-design css-scrollbar form-layout-container pref-fg-editor-canvas" aria-hidden="true">
+        <div className="rs-builder-elements-dropped-wrapper rsbedw-form-builder p19 pref-fg-editor-canvas__inner">
+            <FgEditorShimmer
+                className="pref-fg-editor-form-header"
+                style={{ width: '100%', height: 99, borderRadius: '7px 7px 0 0' }}
+            />
+            <div className="pref-fg-editor-canvas__fields">
+                {Array.from({ length: 6 }, (_, index) => (
+                    <FormGeneratorEditorFieldRowSkeleton key={index} />
+                ))}
+            </div>
+        </div>
+    </div>
+);
+
+const FormGeneratorEditorSidebarSkeleton = () => (
+    <div className="rs-form-styles-wrapper css-scrollbar box-design mt0 p0 pref-fg-editor-sidebar" aria-hidden="true">
+        <div className="pref-fg-editor-sidebar__header border-bottom">
+            <FgEditorShimmer style={{ width: 120, height: 18 }} />
+        </div>
+        <div className="pref-fg-editor-sidebar__body">
+            <div className="pref-fg-editor-sidebar__section">
+                <div className="pref-fg-editor-sidebar__section-title">
+                    <FgEditorShimmer style={{ width: 56, height: 14 }} />
+                </div>
+                <div className="pref-fg-editor-sidebar__layout-grid">
+                    {Array.from({ length: 3 }, (_, index) => (
+                        <FgEditorShimmer key={index} className="pref-fg-editor-sidebar__layout-card" />
+                    ))}
+                </div>
+            </div>
+
+            <div className="pref-fg-editor-sidebar__section">
+                <div className="pref-fg-editor-sidebar__section-title">
+                    <FgEditorShimmer style={{ width: 56, height: 14 }} />
+                </div>
+                <FgEditorShimmer className="pref-fg-editor-sidebar__input" />
+                <div className="pref-fg-editor-sidebar__field-row">
+                    <FgEditorShimmer className="pref-fg-editor-sidebar__field-half" />
+                    <FgEditorShimmer className="pref-fg-editor-sidebar__field-half" />
+                </div>
+                <div className="pref-fg-editor-sidebar__field-row pref-fg-editor-sidebar__field-row--split">
+                    <FgEditorShimmer className="pref-fg-editor-sidebar__inline-label" />
+                    <div className="pref-fg-editor-sidebar__align-group">
+                        {Array.from({ length: 3 }, (_, index) => (
+                            <FgEditorShimmer key={index} className="pref-fg-editor-sidebar__align-btn" />
+                        ))}
+                    </div>
+                </div>
+                {Array.from({ length: 2 }, (_, index) => (
+                    <div key={index} className="pref-fg-editor-sidebar__field-row pref-fg-editor-sidebar__field-row--split">
+                        <FgEditorShimmer className="pref-fg-editor-sidebar__inline-label" />
+                        <FgEditorShimmer className="pref-fg-editor-sidebar__color-input" />
+                    </div>
+                ))}
+            </div>
+
+            <div className="pref-fg-editor-sidebar__section">
+                <div className="pref-fg-editor-sidebar__section-title">
+                    <FgEditorShimmer style={{ width: 88, height: 14 }} />
+                </div>
+                <FgEditorShimmer className="pref-fg-editor-sidebar__upload" />
+            </div>
+        </div>
+    </div>
+);
+
+/** Form builder editor — header band, toolbar, canvas + properties sidebar (matches FormGenerator.jsx). */
+export const FormGeneratorEditorSkeleton = () => (
+    <div className="pref-fg-editor-shell">
+        <FormGeneratorEditorHeaderBandSkeleton />
+        <FormGeneratorEditorToolbarSkeleton />
+        <div className="mx10 pref-fg-editor-main">
+            <Row>
+                <Col md={9}>
+                    <FormGeneratorEditorCanvasSkeleton />
+                </Col>
+                <Col md={3} className="pl0">
+                    <FormGeneratorEditorSidebarSkeleton />
+                </Col>
+            </Row>
+        </div>
+    </div>
+);
+
+/** Create form — form type tab selection (matches AddFormGenerator/index.jsx before tab pick). */
+export const FormGeneratorAddSkeleton = () => (
+    <div className="planning-layout fromGenerator pref-fg-add-skeleton" aria-hidden="true">
+        <div className="communication-create clearfix">
+            <div className="rs-camp-tabs-holder">
+                <TabBarViewSkeleton
+                    tabCount={3}
+                    colClass="col-sm-4"
+                    scopeClass="pref-fg-add-tabs-skeleton"
+                    tabsRowClass="rs-tabs row rst-left-space mb0 mini w-100 m-0"
+                    omitColClass={false}
+                />
+            </div>
+        </div>
+    </div>
+);
+
+/** Brand-owned form — label offset sm=1 / field sm=6 rows. */
+const BrandOwnedFormRowSkeleton = () => (
+    <div className="form-group">
+        <Row className='align-items-center'>
+            <Col sm={{ offset: 1, span: 3 }}>
+                <CommonSkeleton box height={14} width="72%" stopAnimation mainClass="ms-auto d-block" />
+            </Col>
+            <Col sm={6}>
+                <CommonSkeleton box height={32} width="100%" stopAnimation />
+            </Col>
+        </Row>
+    </div>
+);
+
+/** Brand-owned form — form name + platform card (matches BrandOwnedForm/index.jsx). */
+export const BrandOwnedFormSkeleton = () => (
+    <>
+        <div className="box-design bd-top-border pref-brand-owned-form-skeleton">
+            <div className="form-group mt30">
+                <BrandOwnedFormRowSkeleton />
+                <BrandOwnedFormRowSkeleton />
+            </div>
+        </div>
+        <div className="buttons-holder pref-sk-brand-owned-form-actions">
+            <CommonSkeleton box width={80} height={36} stopAnimation />
+            <CommonSkeleton box width={72} height={36} stopAnimation />
+        </div>
+    </>
+);
+
+/** Template gallery › form generator — toolbar + grid skeleton. */
 export const TemplateGalleryFormGeneratorSkeleton = () => (
     <>
-        <div className="flex-row justify-content-end mt0 top-sub-heading" aria-hidden="true">
-            <ul className="rs-list-group-horizontal">
-                <li>
-                    <CommonSkeleton box height={32} width={210} stopAnimation />
-                </li>
-                <li className="ml15">
-                    <CommonSkeleton box height={32} width={140} stopAnimation />
-                </li>
-                <li className="ml15">
-                    <CommonSkeleton box height={32} width={220} stopAnimation />
-                </li>
-                <li className="ml15">
-                    <CommonSkeleton circle width={32} height={32} stopAnimation />
-                </li>
-            </ul>
-        </div>
+        <FormGeneratorListToolbarSkeleton />
         <div className="pref-tg-form-generator-grid-skeleton" aria-hidden="true">
             <GridLoadingSkeleton rows={6} columns={5} isLoading={false} wrapperClassName="p0" hideLeftBorder />
         </div>
@@ -2355,13 +2989,22 @@ const CommunicationSettingsSmtpGridTableMarkup = () => (
     </div>
 );
 
-const CommunicationSettingsSmtpHeadingSkeleton = () => (
+const CommunicationSettingsSmtpHeadingSkeleton = ({ showAddAction = false } = {}) => (
     <div className="rs-sub-heading pref-cs-smtp-heading">
         <div className="align-items-center d-flex justify-content-between pref-cs-smtp-heading__row mb19">
             <PrefCsSkelBar className="pref-cs-smtp-heading__title" />
+            {showAddAction ? (
+                <div className="pref-cs-smtp-heading__actions lh0" aria-hidden="true">
+                    <PrefCsSkelBar className="pref-cs-smtp-heading__action pref-cs-skel-bar--circle" />
+                </div>
+            ) : null}
         </div>
     </div>
 );
+
+CommunicationSettingsSmtpHeadingSkeleton.propTypes = {
+    showAddAction: PropTypes.bool,
+};
 
 /** Kendo grid placeholder (inside live SMTP|Domain tab panel). */
 export const CommunicationSettingsSmtpTableSkeleton = () => (
@@ -2389,8 +3032,8 @@ export const CommunicationSettingsFrequencyCapFormSkeleton = () => (
     <div className="box-design bd-top-border pref-cs-frequency-cap-form-skeleton mt40" aria-hidden="true">
         {Array.from({ length: 3 }, (_, index) => (
             <div key={`fc-field-${index}`} className="form-group mt20">
-                <Row>
-                    <Col sm={4} className="text-right d-flex justify-content-end">
+                <Row className='align-items-end'>
+                    <Col sm={4} className="text-right d-flex justify-content-end align-items-center">
                         <CommonSkeleton box height={14} width={100} stopAnimation />
                     </Col>
                     <Col sm={6}>
@@ -2744,7 +3387,6 @@ export const CommunicationSettingsGoalsBenchmarkEditSkeletonGate = ({
             <style>{preferencesSkeletonCriticalCss}</style>
             <style>{communicationSettingsSkeletonCriticalCss}</style>
             <div className="preferences-skeleton-scope pref-cs-goals-benchmark-skeleton-scope communication-settings-goals-benchmark-skeleton">
-                <GoalsBenchmarkCommunicationGoalsToolbarSkeleton />
                 <CommunicationSettingsGoalsBenchmarkEditFormSkeleton />
             </div>
         </>
@@ -2772,55 +3414,71 @@ export const GoalsBenchmarkEditRouteSkeleton = () => (
 /** Mail › SMTP — `rsv-tabs-content` › box › `tabs-right-align` › `res-tabber` › inner tabs + `res-tabs-content mt20`. */
 export const CommunicationSettingsSmtpInnerContentSkeleton = ({
     showInnerTabs = true,
+    showHeading = true,
+    showAddAction = false,
     innerTabCount = 2,
+    omitOuterRoot = false,
 }) => {
     const panelBody = (
         <div
             className={`pref-cs-smtp-panel-body${showInnerTabs ? '' : ' pref-cs-smtp-panel-body--standalone'
                 }`}
         >
-            <CommunicationSettingsSmtpHeadingSkeleton />
+            {showHeading ? (
+                <CommunicationSettingsSmtpHeadingSkeleton showAddAction={showAddAction} />
+            ) : null}
             <CommunicationSettingsSmtpTableSkeleton />
         </div>
     );
 
-    return (
-        <div className="rsv-tabs-content pref-cs-smtp-root" aria-hidden="true">
-            <div className="pref-cs-smtp-panel">
-                {showInnerTabs ? (
-                    <div className="tabs-right-align pageSub_tab pref-cs-smtp-inner-tabs-shell">
-                        <div className="res-tabber pref-cs-smtp-inner-tabber">
-                            <ul className="pref-cs-inner-tabs res-tabs row mb0 mini list-unstyled" aria-hidden="true">
-                                {Array.from({ length: innerTabCount }, (_, index) => (
-                                    <li
-                                        key={`pref-cs-inner-tab-${index}`}
-                                        className="tabDefault col-md-2 tabTransparent pref-cs-inner-tabs__item"
-                                    >
-                                        <PrefCsSkelBar
-                                            className={`pref-cs-inner-tabs__pill${index % 2 === 0
-                                                    ? ' pref-cs-inner-tabs__pill--narrow'
-                                                    : ' pref-cs-inner-tabs__pill--wide'
-                                                }`}
-                                        />
-                                    </li>
-                                ))}
-                            </ul>
-                            <div className="res-tabs-content tabs-content mt20 pref-cs-smtp-tab-body">
-                                {panelBody}
-                            </div>
+    const panel = (
+        <div className="pref-cs-smtp-panel">
+            {showInnerTabs ? (
+                <div className="tabs-right-align pageSub_tab pref-cs-smtp-inner-tabs-shell">
+                    <div className="res-tabber pref-cs-smtp-inner-tabber">
+                        <ul className="pref-cs-inner-tabs res-tabs row mb0 mini list-unstyled" aria-hidden="true">
+                            {Array.from({ length: innerTabCount }, (_, index) => (
+                                <li
+                                    key={`pref-cs-inner-tab-${index}`}
+                                    className="tabDefault col-md-2 tabTransparent pref-cs-inner-tabs__item"
+                                >
+                                    <PrefCsSkelBar
+                                        className={`pref-cs-inner-tabs__pill${index % 2 === 0
+                                                ? ' pref-cs-inner-tabs__pill--narrow'
+                                                : ' pref-cs-inner-tabs__pill--wide'
+                                            }`}
+                                    />
+                                </li>
+                            ))}
+                        </ul>
+                        <div className="res-tabs-content tabs-content mt20 pref-cs-smtp-tab-body">
+                            {panelBody}
                         </div>
                     </div>
-                ) : (
-                    panelBody
-                )}
-            </div>
+                </div>
+            ) : (
+                panelBody
+            )}
+        </div>
+    );
+
+    if (omitOuterRoot) {
+        return <div aria-hidden="true">{panel}</div>;
+    }
+
+    return (
+        <div className="rsv-tabs-content pref-cs-smtp-root" aria-hidden="true">
+            {panel}
         </div>
     );
 };
 
 CommunicationSettingsSmtpInnerContentSkeleton.propTypes = {
     showInnerTabs: PropTypes.bool,
+    showHeading: PropTypes.bool,
+    showAddAction: PropTypes.bool,
     innerTabCount: PropTypes.number,
+    omitOuterRoot: PropTypes.bool,
 };
 
 /** Vertical tabs + icon sub-tabs + Kendo panel — Bootstrap row matches live `rs-vertical-tabs-wrapper`. */
@@ -2830,9 +3488,9 @@ export const CommunicationSettingsChannelSkeleton = ({
     showInnerTabs: showInnerTabsProp,
 }) => {
     const resolvedSubTabCount = subTabCount ?? CS_CHANNEL_SUB_TAB_COUNT[channel] ?? CS_MAIL_SUB_TAB_COUNT;
-    const mailInnerTabsVisible = useMailInnerTabsSkeletonVisibility();
-    const showInnerTabs =
-        showInnerTabsProp ?? (channel === 'mail' ? mailInnerTabsVisible : true);
+    const innerTabsVisible = useCommunicationSettingsInnerTabsSkeletonVisibility(channel);
+    const showInnerTabs = showInnerTabsProp ?? innerTabsVisible;
+    const showAddAction = useCommunicationSettingsAddActionSkeletonVisibility(channel);
     const innerTabCount = channel === 'notification' ? 3 : 2;
 
     return (
@@ -2872,6 +3530,7 @@ export const CommunicationSettingsChannelSkeleton = ({
   }}
 >                        <CommunicationSettingsSmtpInnerContentSkeleton
                             showInnerTabs={showInnerTabs}
+                            showAddAction={showAddAction}
                             innerTabCount={innerTabCount}
                         />
                     </div>
@@ -2894,9 +3553,9 @@ CommunicationSettingsChannelSkeleton.propTypes = {
  */
 const CommunicationSettingsChannelLazyFallback = ({ channel = 'mail', showInnerTabs: showInnerTabsProp }) => {
     const tabCount = CS_CHANNEL_SUB_TAB_COUNT[channel] ?? CS_MAIL_SUB_TAB_COUNT;
-    const mailInnerTabsVisible = useMailInnerTabsSkeletonVisibility();
-    const showInnerTabs =
-        showInnerTabsProp ?? (channel === 'mail' ? mailInnerTabsVisible : true);
+    const innerTabsVisible = useCommunicationSettingsInnerTabsSkeletonVisibility(channel);
+    const showInnerTabs = showInnerTabsProp ?? innerTabsVisible;
+    const showAddAction = useCommunicationSettingsAddActionSkeletonVisibility(channel);
     const innerTabCount = channel === 'notification' ? 3 : 2;
 
     return (
@@ -2915,6 +3574,7 @@ const CommunicationSettingsChannelLazyFallback = ({ channel = 'mail', showInnerT
   }}
 >                      <CommunicationSettingsSmtpInnerContentSkeleton
                         showInnerTabs={showInnerTabs}
+                        showAddAction={showAddAction}
                         innerTabCount={innerTabCount}
                     />
                 </div>
@@ -2936,31 +3596,75 @@ export const CommunicationSettingsNotificationTabLoadingBlock = () => (
 );
 
 /** Lazy icon sub-tab (SMTP, Sub/Un-sub, WhatsApp, VMS, …) — full box panel under live icon sub-tabs. */
-export const CommunicationSettingsInnerTabLoadingBlock = ({ embedded = false } = {}) => (
-    <>
-        <style>{communicationSettingsSkeletonCriticalCss}</style>
-        <div
-            className={
-                embedded
-                    ? 'pref-cs-inner-tab-skeleton-embedded'
-                    : 'tabs-content res-tabs-content pref-cs-mail-tabs-content box-design bd-top-border'
-            }
-            style={
-                embedded
-                    ? undefined
-                    : {
-                          borderTopLeftRadius: 0,
-                          borderTopRightRadius: 0,
-                      }
-            }
-        >
-            <CommunicationSettingsSmtpInnerContentSkeleton showInnerTabs={!embedded} />
-        </div>
-    </>
+const CommunicationSettingsInnerTabLoadingBlockBody = ({
+    embedded = false,
+    showInnerTabs: showInnerTabsProp,
+    showHeading: showHeadingProp,
+    showAddAction: showAddActionProp,
+}) => {
+    const innerTabsFromNav = useCommunicationSettingsInnerTabsSkeletonVisibility();
+    const showInnerTabs =
+        !embedded && (showInnerTabsProp !== undefined ? showInnerTabsProp : innerTabsFromNav);
+    const showHeading = showHeadingProp !== undefined ? showHeadingProp : true;
+    const showAddAction = showAddActionProp === true;
+
+    const skeletonPanel = (
+        <CommunicationSettingsSmtpInnerContentSkeleton
+            showInnerTabs={showInnerTabs}
+            showHeading={showHeading}
+            showAddAction={showAddAction}
+            omitOuterRoot={!embedded}
+        />
+    );
+
+    return (
+        <>
+            <style>{communicationSettingsSkeletonCriticalCss}</style>
+            {embedded ? (
+                <div className="pref-cs-inner-tab-skeleton-embedded">{skeletonPanel}</div>
+            ) : (
+                <div className="rsv-tabs-content pref-cs-inner-tab-lazy-shell" aria-hidden="true">
+                    <div
+                        className="box-design bd-top-border pref-cs-mail-tabs-content"
+                        style={{
+                            borderTopLeftRadius: 0,
+                            borderTopRightRadius: 0,
+                        }}
+                    >
+                        {skeletonPanel}
+                    </div>
+                </div>
+            )}
+        </>
+    );
+};
+
+CommunicationSettingsInnerTabLoadingBlockBody.propTypes = {
+    embedded: PropTypes.bool,
+    showInnerTabs: PropTypes.bool,
+    showHeading: PropTypes.bool,
+    showAddAction: PropTypes.bool,
+};
+
+export const CommunicationSettingsInnerTabLoadingBlock = ({
+    embedded = false,
+    showInnerTabs,
+    showHeading,
+    showAddAction,
+} = {}) => (
+    <CommunicationSettingsInnerTabLoadingBlockBody
+        embedded={embedded}
+        showInnerTabs={showInnerTabs}
+        showHeading={showHeading}
+        showAddAction={showAddAction}
+    />
 );
 
 CommunicationSettingsInnerTabLoadingBlock.propTypes = {
     embedded: PropTypes.bool,
+    showInnerTabs: PropTypes.bool,
+    showHeading: PropTypes.bool,
+    showAddAction: PropTypes.bool,
 };
 
 const PrefCsEditFieldSkeleton = () => (
@@ -4178,6 +4882,36 @@ const TemplateGalleryFormGeneratorBodySkeleton = () => (
     </Container>
 );
 
+const FormGeneratorBodySkeleton = () => (
+    <Container fluid>
+        <div className="page-content pc-form-generator">
+            <Container className="px0">
+                <FormGeneratorListSkeleton />
+            </Container>
+        </div>
+    </Container>
+);
+
+const FormGeneratorEditorBodySkeleton = () => <FormGeneratorEditorSkeleton />;
+
+const FormGeneratorAddBodySkeleton = () => (
+    <Container fluid>
+        <div className="page-content">
+            <Container className="px0">
+                <FormGeneratorAddSkeleton />
+            </Container>
+        </div>
+    </Container>
+);
+
+const BrandOwnedFormBodySkeleton = () => (
+    <Container className="col-sm-12 px0">
+        <div className="rsv-tabs-content position-relative mt7">
+            <BrandOwnedFormSkeleton />
+        </div>
+    </Container>
+);
+
 const TemplateGalleryAdsBodySkeleton = () => (
     <Container fluid>
         <div className="page-content pc-template-gallery-ads">
@@ -4305,7 +5039,7 @@ const AlertsNotificationsBodySkeleton = () => (
 /** Notifications list — date range toolbar (matches AllNotifications). */
 export const NotificationsToolbarSkeleton = () => (
     <div className="flex-row mt0 top-sub-heading pref-sk-notifications-toolbar" aria-hidden="true">
-        <div className="fr flex-right tsh-icons w-100">
+        <div className="fr flex-right tsh-icons w-100" style={{marginBottom:'15px'}}>
             <ul className="rs-list-group-horizontal jc-right d-flex align-items-center list-unstyled m0 p0">
                 <li>
                     <CommonSkeleton box height={32} width={280} stopAnimation />
@@ -4447,7 +5181,12 @@ const PreferencesSubPageBodySkeleton = ({ variant }) => {
             <Container fluid>
                 <div className="page-content pc-company-localization">
                     <Container className="px0">
-                        <CompanyLocalizationSkeleton />
+                        <Row className="mt21">
+                            <Col sm={12}>
+                                <CompanyAssignRoleWizardChromeSkeleton showHeader={false} />
+                                <CompanyLocalizationSkeleton />
+                            </Col>
+                        </Row>
                     </Container>
                 </div>
             </Container>
@@ -4469,6 +5208,10 @@ const PreferencesSubPageBodySkeleton = ({ variant }) => {
     if (variant === PREFERENCES_SUBPAGE_VARIANT.TG_TABBED_GALLERY) return <TemplateGalleryInnerTabbedBodySkeleton />;
     if (variant === PREFERENCES_SUBPAGE_VARIANT.TG_LANDING_GALLERY) return <TemplateGalleryLandingInnerBodySkeleton />;
     if (variant === PREFERENCES_SUBPAGE_VARIANT.TG_FORM_GENERATOR) return <TemplateGalleryFormGeneratorBodySkeleton />;
+    if (variant === PREFERENCES_SUBPAGE_VARIANT.FORM_GENERATOR) return <FormGeneratorBodySkeleton />;
+    if (variant === PREFERENCES_SUBPAGE_VARIANT.FORM_GENERATOR_EDITOR) return <FormGeneratorEditorBodySkeleton />;
+    if (variant === PREFERENCES_SUBPAGE_VARIANT.FORM_GENERATOR_ADD) return <FormGeneratorAddBodySkeleton />;
+    if (variant === PREFERENCES_SUBPAGE_VARIANT.BRAND_OWNED_FORM) return <BrandOwnedFormBodySkeleton />;
     if (variant === PREFERENCES_SUBPAGE_VARIANT.TG_ADS) return <TemplateGalleryAdsBodySkeleton />;
     if (variant === PREFERENCES_SUBPAGE_VARIANT.TG_WHATSAPP) return <TemplateGalleryWhatsappBodySkeleton />;
     if (variant === PREFERENCES_SUBPAGE_VARIANT.DATA_CATALOGUE) return <DataCatalogueBodySkeleton />;
@@ -4520,8 +5263,9 @@ const PreferencesSubPageRouteSkeleton = ({
     withAppShell = false,
     ariaLabel = 'Loading preferences',
 }) => {
-    const { pathname } = useLocation();
-    const variant = variantProp ?? resolvePreferencesSubPageVariant(pathname);
+    const { pathname, search } = useLocation();
+    const variant = variantProp ?? resolvePreferencesSubPageVariant(pathname, search);
+    const isFormGeneratorEditor = variant === PREFERENCES_SUBPAGE_VARIANT.FORM_GENERATOR_EDITOR;
     const isConsumptions = variant === PREFERENCES_SUBPAGE_VARIANT.CONSUMPTIONS;
     const isConsumptionChannel = variant === PREFERENCES_SUBPAGE_VARIANT.CONSUMPTION_CHANNEL;
     const isDataCatalogue =
@@ -4558,6 +5302,8 @@ const PreferencesSubPageRouteSkeleton = ({
             {isDataExchange ? <style>{dataExchangeSkeletonCriticalCss}</style> : null}
             {isCommunicationSettings ? (
                 <PreferencesSubPageBodySkeleton variant={variant} />
+            ) : isFormGeneratorEditor ? (
+                <PreferencesSubPageBodySkeleton variant={variant} />
             ) : (
                 <>
                     <RSPageHeaderSkeleton
@@ -4582,7 +5328,7 @@ const PreferencesSubPageRouteSkeleton = ({
     }
 
     const holderClass = [
-        'page-content-holder',
+        isFormGeneratorEditor ? 'pref-fg-editor-skeleton-scope' : 'page-content-holder',
         'preferences-skeleton-scope',
         'preferences-subpage-skeleton-scope',
         isDataCatalogue ? 'data-catalogue' : '',

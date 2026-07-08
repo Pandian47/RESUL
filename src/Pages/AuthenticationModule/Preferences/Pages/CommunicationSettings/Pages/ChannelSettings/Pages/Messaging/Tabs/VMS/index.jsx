@@ -1,8 +1,9 @@
 import { truncateTitle } from 'Utils/modules/displayCore';
 import { DELETE, EDIT } from 'Constants/GlobalConstant/Placeholders';
 import { circle_plus_fill_edge_large, circle_plus_fill_edge_medium, delete_medium, pencil_edit_medium } from 'Constants/GlobalConstant/Glyphicons';
-import { Fragment, useCallback, useEffect, useState } from 'react';
+import { Fragment, useCallback, useEffect, useLayoutEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
+import useQueryParams from 'Hooks/useQueryParams';
 
 import KendoGrid from 'Components/RSKendoGrid';
 import RSTooltip from 'Components/RSTooltip';
@@ -19,6 +20,9 @@ import { CommunicationSettingsSmtpTableSkeleton } from 'Components/Skeleton/Comp
 
 const VMS = () => {
     const dispatch = useDispatch();
+    const queryState = useQueryParams('/preferences/communication-settings');
+    const addVmsFromComm =
+        queryState?.from === 'CreateCommunication' && queryState?.mode === 'add';
 
     const { permissions } = usePermission();
     const { addAccess, updateAccess, deleteAccess } = permissions || {};
@@ -38,6 +42,12 @@ const VMS = () => {
     useEffect(() => {
         dispatch(getVMSData({ clientId, userId, departmentId }, setIsGridLoading));
     }, []);
+
+    useLayoutEffect(() => {
+        if (addVmsFromComm) {
+            setCreate(true);
+        }
+    }, [addVmsFromComm]);
 
     useEffect(() => {
         return () => {
@@ -59,7 +69,11 @@ const VMS = () => {
         <div className="rsv-tabs-content">
             <>
                 {!!create ? (
-                    <Create handleCreateComponent={handleCreateComponent} create={create} />
+                    <Create
+                        handleCreateComponent={handleCreateComponent}
+                        create={create}
+                        addVmsFromComm={addVmsFromComm}
+                    />
                 ) : (
                     <Fragment>
                         <div className="box-design bd-top-border">

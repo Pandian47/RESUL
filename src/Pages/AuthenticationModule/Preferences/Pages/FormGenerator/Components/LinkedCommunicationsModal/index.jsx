@@ -24,7 +24,6 @@ const LinkedCommunicationsModal = ({ props, show, handleClose, confirm, data }) 
             body={
                 <Container>
                     <ul className="rs-list-alt-bg forms-linkedcomm-popup css-scrollbar">
-                        <li>{data?.linkedCommunications}</li>
                         {data?.formCampaignUsed?.map((item, index) => {
                             return (
                                 <li key={index}>

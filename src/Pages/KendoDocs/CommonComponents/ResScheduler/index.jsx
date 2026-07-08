@@ -70,16 +70,10 @@ const ResScheduler = ({
 
      let getUtc_TimeData = utcTime_Data != null ? true : false
 
-     useEffect(() => {
-        if (isSplitABScheduler) return;
-        if (utcTime_Data != null) return;
-        dispatch(getUtcTimeNow());
-    }, [dispatch, isSplitABScheduler, utcTime_Data]);
-
     const ensureUtcTime = () => {
-        if (!utcTimeData?.utcTime) {
-            dispatch(getUtcTimeNow());
-        }
+         dispatch(getUtcTimeNow(false, {
+            force: true
+        }));
     };
 
     let utcTimeData ;
@@ -486,7 +480,7 @@ const currentUTCdateTime = utcTimeData?.utcTime ? new Date(utcTimeData.utcTime.r
                 rules={scheduleRule}
                 clearErrors={clearErrors}
                 handleChange={handleDateTimeChange}
-                onPickerOpen={isSplitABScheduler ? ensureUtcTime : undefined}
+                onPickerOpen={ensureUtcTime}
                 handleRemoveVal={() => {
                     setValue(schedulerName, '');
                     handleRemoveMDCFlow();
@@ -570,7 +564,7 @@ const currentUTCdateTime = utcTimeData?.utcTime ? new Date(utcTimeData.utcTime.r
                     clearErrors(schedulerName);
                     let dlight = timeZoneId === val?.timeZoneID ? isDayLight : false
                     setValue(daylightSavingsName, dlight);
-                    dispatch(getUtcTimeNow());
+                    dispatch(getUtcTimeNow(false, { force: true }));
                 }}
             />
             <span>

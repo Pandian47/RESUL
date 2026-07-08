@@ -92,6 +92,7 @@ const List = ({ tab, tabConfig, handleCGTGValidated }) => {
     const campaignType = campaignDetails?.campaignType;
     const { failureApiErrors } = useSelector(({ globalstate }) => globalstate);
     const value = channelDetails?.[tab]?.contentDetail?.listquality;
+    const channelId = channelDetails?.[tab]?.channelId;
     const listtype = channelDetails?.[tab]?.contentDetail?.listquality?.listTypes;
     const listTypes = Array.isArray(listtype) ? [...new Set(listtype)] : [];
     const listAllowed =
@@ -103,7 +104,6 @@ const List = ({ tab, tabConfig, handleCGTGValidated }) => {
     const splitType = channelDetails?.[tab]?.contentDetail?.content?.[0]?.splitType;
     const advanceFieldList = channelDetails?.[tab]?.contentDetail?.listquality?.advancedFieldList;
     //const channelId = getChannelId(tab?.toLowerCase())?.id;
-    const channelId = channelDetails?.[tab]?.channelId;
     const statusId = state?.campaignStatusId || null;
     const preCampJobStatus = channelDetails?.[tab]?.preCampJobStatus;
     const disableFrequencyCap_AdvAnalytics = channelId === 14 || channelId === 8;
@@ -933,13 +933,11 @@ const List = ({ tab, tabConfig, handleCGTGValidated }) => {
                                         <RSTooltip text={FREQUENCY_CAP} position="top" className="lh0">
                                             <i
                                                 className={`${!disableFrequencyCap_AdvAnalytics ? '' : 'click-off'}
-                                                ${listAllowed ? '' : 'click-off'} ${
-                                                    campaignDetails?.isServiceMandatory ? 'click-off' : ''
-                                                } ${
-                                                    selectFrequency?.length !== 0 && frequencyCapList
+                                                ${listAllowed ? '' : 'click-off'} ${campaignDetails?.isServiceMandatory ? 'click-off' : ''
+                                                    } ${selectFrequency?.length !== 0 && frequencyCapList
                                                         ? `${user_calender_large} icon-lg color-primary-blue`
                                                         : `${user_calender_large} icon-lg color-secondary-grey`
-                                                }`}
+                                                    }`}
                                                 onClick={() => {
                                                     setShow((prev) => ({
                                                         ...prev,
@@ -950,7 +948,7 @@ const List = ({ tab, tabConfig, handleCGTGValidated }) => {
                                         </RSTooltip>
                                     </li>
 
-                                    {state?.campaignType !== 'T' && (channelId === 1 || channelId === 2 ||  channelId === 21 || channelId === 41)  && splitType === '' && (
+                                    {state?.campaignType !== 'T' && (channelId === 1 || channelId === 2 || channelId === 21 || channelId === 41 || channelId === 8 || channelId === 14) && splitType === '' && (
                                         <li>
                                             <RSTooltip
                                                 text={CONTROL_GROUP_TARGET}
@@ -959,13 +957,12 @@ const List = ({ tab, tabConfig, handleCGTGValidated }) => {
                                             >
                                                 <i
                                                     className={`
-                                                            ${listAllowed ? '' : 'click-off'}
+                                                            ${(listAllowed) ? '' : 'click-off'}
                                                             ${campaignDetails?.isServiceMandatory ? 'click-off' : ''} 
-                                                       ${
-                                                           isCgTgEnabled[tab]
-                                                               ? `${user_cgtg_large} icon-lg color-primary-blue`
-                                                               : `${user_cgtg_large} icon-lg color-secondary-grey`
-                                                       }
+                                                       ${isCgTgEnabled[tab]
+                                                            ? `${user_cgtg_large} icon-lg color-primary-blue`
+                                                            : `${user_cgtg_large} icon-lg color-secondary-grey`
+                                                        }
                                                     `}
                                                     onClick={() => {
                                                         setShow((prev) => ({

@@ -24,6 +24,7 @@ const ADUserModal = ({ handleClose, show: showModal }) => {
                     tabData={tabData(handleClose)}
                     className="rs-tabs row rst-right-align"
                     componentClassName={'mt30'}
+                    disableSlidingIndicator
                 />
             }
         />

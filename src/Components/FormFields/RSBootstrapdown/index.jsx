@@ -6,6 +6,7 @@ import { Dropdown, Form } from 'react-bootstrap';
 import RSTooltip from 'Components/RSTooltip';
 import { SEARCH } from 'Constants/GlobalConstant/Placeholders';
 import { truncateTitle } from 'Utils/modules/displayCore';
+import { hasDropdownDisplayLabel } from 'Utils/modules/stringUtils';
 import NoDataAvailableRender from 'Components/FormFields/Component/NoDataAvailableRender';
 
 /** Popper — escape RSModal overflow:hidden shell (z-index matches ResKendoDropdown) */
@@ -29,6 +30,14 @@ export const RS_BOOTSTRAP_DROPDOWN_POPPER_CONFIG = {
             },
         },
     ],
+};
+
+/**
+ * Advance-search panel uses framer-motion (`transform`). `strategy: 'fixed'` misplaces menus —
+ * use default absolute positioning with the same overflow/flip modifiers.
+ */
+export const RS_ADVANCE_SEARCH_DROPDOWN_POPPER_CONFIG = {
+    modifiers: RS_BOOTSTRAP_DROPDOWN_POPPER_CONFIG.modifiers,
 };
 
 const OBJECT_ROW_ID_EXCLUDED_KEYS = new Set(['menuLabel']);
@@ -137,7 +146,8 @@ const RSBootstrapDropdown = ({
     disabled = false,
     footerContent = null,
     isLoading = false,
-    tooltipClassName = ''
+    tooltipClassName = '',
+    popperConfig = RS_BOOTSTRAP_DROPDOWN_POPPER_CONFIG,
 }) => {
     const [title, setTitle] = useState(defaultItem);
     const titleRef = useRef(null);
@@ -154,13 +164,25 @@ const RSBootstrapDropdown = ({
     const isControlledShow = controlledShow !== undefined;
     const menuShow = isControlledShow ? controlledShow : internalOpen;
 
+    const displayableMenus = useMemo(() => {
+        if (!Array.isArray(menus)) return [];
+        return menus.filter((item) => {
+            if (item == null) return false;
+            if (!isObject) return hasDropdownDisplayLabel(item, null);
+            const menuLabel = _get(item, 'menuLabel', null);
+            if (menuLabel != null && String(menuLabel).trim() !== '') return true;
+            if (fieldKey) return hasDropdownDisplayLabel(item, fieldKey);
+            return hasDropdownDisplayLabel(item, 'name');
+        });
+    }, [menus, isObject, fieldKey]);
+
     const footerNode = footer ?? footerContent;
 
     useEffect(() => {
-        if (isCustomDefaultIcon && activeItem === null && Array.isArray(menus) && menus.length > 0) {
-            setActiveItem(menus[0]);
+        if (isCustomDefaultIcon && activeItem === null && displayableMenus.length > 0) {
+            setActiveItem(displayableMenus[0]);
         }
-    }, [isCustomDefaultIcon, menus, activeItem]);
+    }, [isCustomDefaultIcon, displayableMenus, activeItem]);
 
     const handleMenuToggle = useCallback(
         (nextOpen, meta) => {
@@ -176,13 +198,13 @@ const RSBootstrapDropdown = ({
 
     // ── flat hierarchical data (non-fullUI) — builds ordered flat list ──────
     const processedData = useMemo(() => {
-        if (!isHierarchical || !menus) return menus;
-        if (!Array.isArray(menus)) return menus;
+        if (!isHierarchical || !displayableMenus) return displayableMenus;
+        if (!Array.isArray(displayableMenus)) return displayableMenus;
 
         const childrenMap = {};
         const roots = [];
 
-        menus.forEach((item) => {
+        displayableMenus.forEach((item) => {
             if (item == null) return;
             const pid = item.parentId;
             if (!pid) {
@@ -205,20 +227,20 @@ const RSBootstrapDropdown = ({
 
         processNode(roots, 0);
         return flattened;
-    }, [menus, isHierarchical]);
+    }, [displayableMenus, isHierarchical]);
 
     // ── tree data for isFullHierarchyUI (nested node objects) ───────────────
     const treeData = useMemo(() => {
-        if (!isFullHierarchyUI || !menus || !Array.isArray(menus)) return [];
+        if (!isFullHierarchyUI || !displayableMenus || !Array.isArray(displayableMenus)) return [];
 
-        let targetMenus = menus;
+        let targetMenus = displayableMenus;
 
         // Filter with ancestor preservation when search is active
         const activeQuery = (filterable && filterValue) || (showSearch && searchText);
         if (activeQuery) {
             const lower = activeQuery.toLowerCase();
             const matchingIds = new Set();
-            menus.forEach((item) => {
+            displayableMenus.forEach((item) => {
                 if (item == null) return;
                 const label = isObject ? _get(item, fieldKey, '') : item;
                 if (String(label ?? '').toLowerCase().includes(lower)) {
@@ -228,14 +250,14 @@ const RSBootstrapDropdown = ({
             const finalSet = new Set();
             const addWithAncestors = (id) => {
                 if (!id || finalSet.has(id)) return;
-                const item = menus.find((m) => m?.id === id);
+                const item = displayableMenus.find((m) => m?.id === id);
                 if (item) {
                     finalSet.add(id);
                     if (item.parentId) addWithAncestors(item.parentId);
                 }
             };
             matchingIds.forEach((id) => addWithAncestors(id));
-            targetMenus = menus.filter((m) => finalSet.has(m?.id));
+            targetMenus = displayableMenus.filter((m) => finalSet.has(m?.id));
         }
 
         const map = {};
@@ -264,11 +286,11 @@ const RSBootstrapDropdown = ({
         });
 
         return roots;
-    }, [menus, isFullHierarchyUI, filterable, filterValue, showSearch, searchText, isObject, fieldKey]);
+    }, [displayableMenus, isFullHierarchyUI, filterable, filterValue, showSearch, searchText, isObject, fieldKey]);
 
     // ── filtered list for legacy flat rendering ──────────────────────────────
     const filteredMenus = useMemo(() => {
-        const source = isHierarchical && processedData ? processedData : menus || [];
+        const source = isHierarchical && processedData ? processedData : displayableMenus || [];
         const query = showSearch ? searchText : filterable ? filterValue : '';
         if (!query) return source;
         return source.filter((item) => {
@@ -287,7 +309,7 @@ const RSBootstrapDropdown = ({
                 )}`.trim();
             return haystack.toLowerCase().includes(query.toLowerCase());
         });
-    }, [menus, searchText, filterValue, showSearch, filterable, isObject, fieldKey, processedData, isHierarchical]);
+    }, [displayableMenus, searchText, filterValue, showSearch, filterable, isObject, fieldKey, processedData, isHierarchical]);
 
     const resolvedRowIdKey = useMemo(() => {
         if (idKey != null && String(idKey).trim() !== '') return String(idKey).trim();
@@ -298,8 +320,8 @@ const RSBootstrapDropdown = ({
     const isSearchEnabled = useMemo(
         () =>
             showSearch
-            || (filterable && (menus?.length > 5 || isHierarchical || isFullHierarchyUI)),
-        [showSearch, filterable, menus?.length, isHierarchical, isFullHierarchyUI],
+            || (filterable && (displayableMenus?.length > 5 || isHierarchical || isFullHierarchyUI)),
+        [showSearch, filterable, displayableMenus?.length, isHierarchical, isFullHierarchyUI],
     );
 
     const dropdownScrollMaxHeight = maxHeightnone ? '' : isSearchEnabled ? '215px' : '210px';
@@ -499,7 +521,7 @@ const RSBootstrapDropdown = ({
 
                 <Dropdown.Menu
                     renderOnMount
-                    popperConfig={RS_BOOTSTRAP_DROPDOWN_POPPER_CONFIG}
+                    popperConfig={popperConfig}
                     className={`rs-bootstrap-dropdown-menu ${popupSettings?.popupClass ?? ''}`.trim()}
                     style={{ '--rs-dropdown-item-count': filteredMenus?.length || 0, zIndex: 1101 }}
                 >
@@ -525,10 +547,10 @@ const RSBootstrapDropdown = ({
                     )}
 
                     {/* Kendo-style search (filterable) */}
-                    {filterable && !showSearch && (menus?.length > 5 || isHierarchical || isFullHierarchyUI) && (
+                    {filterable && !showSearch && (displayableMenus?.length > 5 || isHierarchical || isFullHierarchyUI) && (
                         <div className="k-list-filter">
-                            <span className="k-searchbox k-input k-input-md k-rounded-md k-input-solid border-bottom pb5">
-                                <span className="k-input-icon position-absolute top2 right0 icon-md color-secondary-grey icon-rs-circle-zoom-fill-edge-medium" />
+                            <span className="k-searchbox k-input k-input-md k-rounded-md k-input-solid">
+                                <span className="k-input-icon position-absolute top-3 right0 icon-md color-secondary-grey icon-rs-circle-zoom-fill-edge-medium" />
                                 <input
                                     type="text"
                                     className="k-input-inner"
@@ -713,6 +735,7 @@ RSBootstrapDropdown.propTypes = {
     controlledShow: PropTypes.bool,
     disabled: PropTypes.bool,
     tooltipClassName: PropTypes.string,
+    popperConfig: PropTypes.object,
 };
 
 export default memo(RSBootstrapDropdown);

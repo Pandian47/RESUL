@@ -113,7 +113,13 @@ export const isDateFormatLabel = (label) => {
     const text = String(label ?? '').trim();
     if (!text || isTimeFormatLabel(text)) return false;
     if (ISO_DATE_LABEL_REGEX.test(text)) return true;
-    if (standardizeDateFormat(text)) return true;
+
+    try {
+        if (standardizeDateFormat(text)) return true;
+    } catch {
+        return false;
+    }
+
     return moment(text, INSIGHT_DATE_PARSE_FORMATS, true).isValid();
 };
 
@@ -167,14 +173,16 @@ export const formatInsightDateLabel = (label) => {
 
 /** Format date-like labels individually (supports mixed labels e.g. dates + "Others"). */
 export const normalizeInsightValues = (values, column) => {
-    if (!Array.isArray(values)) return values;
+    if (!Array.isArray(values)) return [];
 
     const shouldFormatDates =
-        isDateRelatedColumn(column) || values.some((v) => isDateFormatLabel(v?.label));
+        isDateRelatedColumn(column) ||
+        values.some((v) => isDateFormatLabel(v?.label));
 
     if (!shouldFormatDates) return values;
 
     return values.map((v) => {
+        if (v == null || typeof v !== 'object') return v;
         const formatted = formatInsightDateLabel(v?.label);
         if (formatted === v?.label) return v;
         return { ...v, label: formatted };

@@ -6,7 +6,6 @@ import { getChannelId } from 'Utils/modules/communicationChannels';
 import { formatName, numberWithCommas, showPercentage } from 'Utils/modules/formatters';
 import { email_xlarge, menu_dot_medium, mobile_sms_xlarge, notification_xlarge, user_xlarge } from 'Constants/GlobalConstant/Glyphicons';
 import { memo, useEffect, useMemo, useRef, useState } from 'react';
-import ReactDOM from 'react-dom';
 import { Col, Row } from 'react-bootstrap';
 import { useTranslation } from 'react-i18next';
 import { useDispatch, useSelector } from 'react-redux';
@@ -330,7 +329,6 @@ const Overview = ({ show = {}, handleInfo = () => {} }) => {
 
     const hasChartData = bindAudience.length > 0;
     const notificationSummary = handleWebMobileNotificationCount();
-    const canRenderPortal = typeof document !== 'undefined' && Boolean(document?.body);
 
     const renderOverviewChartSkeleton = () => {
         if (selectedChartType === 'MultiChart') {
@@ -543,59 +541,29 @@ const Overview = ({ show = {}, handleInfo = () => {} }) => {
                     </Col>
                 </Row>
             </Col>
-            {show?.profileComplete && canRenderPortal && (
-                <>
-                    {ReactDOM.createPortal(
-                        <div className="overlayCSS">
-                            <div className="fade modal-backdrop"></div>
-                            <ProfileCompleteness
-                            show={Boolean(show?.profileComplete && canRenderPortal)}
-                                chartData={tempMDMValue}
-                                recommendationJson={recommendationJson ?? {}}
-                                handleClose={(status) => {
-                                    if (!status) handleInfo?.('profileComplete', false);
-                                }}
-                            />
-                        </div>,
-                        document.body,
-                    )}
-                </>
-            )}
-            {show?.emailInfo && canRenderPortal && (
-                <>
-                    {ReactDOM.createPortal(
-                        <div className="overlayCSS">
-                            <div className="fade modal-backdrop show"></div>
-                            <EmailInfo
-                            show={Boolean(show?.emailInfo && canRenderPortal)}
-                                chartData={tempMDMValue}
-                                handleClose={(status) => {
-                                    if (!status) handleInfo?.('emailInfo', false);
-                                }}
-                                chartType={chartData?.type ?? ''}
-                            />
-                        </div>,
-                        document.body,
-                    )}
-                </>
-            )}
-            {show?.mobileInfo && canRenderPortal && (
-                <>
-                    {ReactDOM.createPortal(
-                        <div className="overlayCSS">
-                            <div className="fade modal-backdrop show"></div>
-                            <MobileInfo
-                            show={Boolean(show?.mobileInfo && canRenderPortal)}
-                                chartData={tempMDMValue}
-                                handleClose={(status) => {
-                                    if (!status) handleInfo?.('mobileInfo', false);
-                                }}
-                            />
-                        </div>,
-                        document.body,
-                    )}
-                </>
-            )}
+            <ProfileCompleteness
+                show={Boolean(show?.profileComplete)}
+                chartData={tempMDMValue}
+                recommendationJson={recommendationJson ?? {}}
+                handleClose={(status) => {
+                    if (!status) handleInfo?.('profileComplete', false);
+                }}
+            />
+            <EmailInfo
+                show={Boolean(show?.emailInfo)}
+                chartData={tempMDMValue}
+                handleClose={(status) => {
+                    if (!status) handleInfo?.('emailInfo', false);
+                }}
+                chartType={chartData?.type ?? ''}
+            />
+            <MobileInfo
+                show={Boolean(show?.mobileInfo)}
+                chartData={tempMDMValue}
+                handleClose={(status) => {
+                    if (!status) handleInfo?.('mobileInfo', false);
+                }}
+            />
             {/* {show.notificationInfo && (
                 <div className="overlayCSS">
                     <div className="fade modal-backdrop show"></div>
@@ -621,40 +589,20 @@ const Overview = ({ show = {}, handleInfo = () => {} }) => {
                 />
                 </div>
             )} */}
-            {show?.notificationInfo && canRenderPortal && (
-                <>
-                    {ReactDOM.createPortal(
-                        <div className="overlayCSS">
-                            <div className="fade modal-backdrop show"></div>
-                            <NotificationInfo
-                            show={Boolean(show?.notificationInfo && canRenderPortal)}
-                                chartData={tempMDMValue?.pushNotificationsInfo ?? {}}
-                                handleClose={(status) => {
-                                    if (!status) handleInfo?.('notificationInfo', false);
-                                }}
-                            />
-                        </div>,
-                        document.body,
-                    )}
-                </>
-            )}
-            {show?.socialInfo && canRenderPortal && (
-                <>
-                    {ReactDOM.createPortal(
-                        <div className="overlayCSS">
-                            <div className="fade modal-backdrop show"></div>
-                            <SocialMedia
-                            show={Boolean(show?.socialInfo && canRenderPortal)}
-                                chartData={tempMDMValue?.socialMediaInfo ?? {}}
-                                handleClose={(status) => {
-                                    if (!status) handleInfo?.('socialInfo', false);
-                                }}
-                            />
-                        </div>,
-                        document.body,
-                    )}
-                </>
-            )}
+            <NotificationInfo
+                show={Boolean(show?.notificationInfo)}
+                chartData={tempMDMValue?.pushNotificationsInfo ?? {}}
+                handleClose={(status) => {
+                    if (!status) handleInfo?.('notificationInfo', false);
+                }}
+            />
+            <SocialMedia
+                show={Boolean(show?.socialInfo)}
+                chartData={tempMDMValue?.socialMediaInfo ?? {}}
+                handleClose={(status) => {
+                    if (!status) handleInfo?.('socialInfo', false);
+                }}
+            />
         </Row>
     );
 };

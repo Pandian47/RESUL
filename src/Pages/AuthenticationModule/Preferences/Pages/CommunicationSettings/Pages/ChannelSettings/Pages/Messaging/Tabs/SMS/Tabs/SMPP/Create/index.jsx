@@ -47,7 +47,9 @@ const DEFAULT_SENDER_DETAIL = {
 const ADD_SENDER_COMM_QUERY_KEYS_TO_CLEAR = {
     backNavigationDetails: null,
     backAction: null,
-    addType: null,
+    mode: null,
+    from: null,
+    campaignType: null,
 };
 
 // ─── Component ─────────────────────────────────────────────────────────────
@@ -429,8 +431,8 @@ const SMPPCreate = ({ type, handleCancel, config, setFailedApi }) => {
                 ...extraReturnState,
             };
             validateIsCustomNavigate(queryState, resolvedNavigationState, navigate, () => {
-                handleCancel(true)
-            });
+                handleCancel(true);
+            }, { dispatch });
             return;
         }
 

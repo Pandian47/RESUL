@@ -13,6 +13,23 @@
   display: block;
 }
 
+.rs-builder-elements-content-wrapper {
+  .rsbecw-row .rs-pop-view {
+    > .rs-tooltip-wrapper.pop,
+    > .res-tooltip-wrapper.pop {
+      display: none;
+    }
+
+    &:hover {
+      > .rs-tooltip-wrapper.pop,
+      > .res-tooltip-wrapper.pop {
+        display: block;
+        z-index: 2222;
+      }
+    }
+  }
+}
+
 .outLine:hover {
   outline: 1px solid $primary-blue;
 }

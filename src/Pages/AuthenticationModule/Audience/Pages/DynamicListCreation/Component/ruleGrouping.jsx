@@ -3,6 +3,7 @@ import {
     handleCustomNavigationDetails,
     NOTIFICATION_TAB_ID,
 } from 'Utils/modules/navigation';
+import { encodeUrl } from 'Utils/modules/crypto';
 import { selectIcon } from 'Utils/modules/display';
 import { formatName } from 'Utils/modules/formatters';
 import { onlyNumbers } from 'Utils/modules/inputValidators';
@@ -12,9 +13,9 @@ import { circle_question_mark_mini, delete_medium, mandatory_mini, map_medium, r
 import React, { Fragment, memo, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { Col, Row } from 'react-bootstrap';
 import { useFormContext, useFieldArray, useWatch } from 'react-hook-form';
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { getSessionId } from 'Reducers/globalState/selector';
-import { buildDynamicListSessionKey } from 'Reducers/audience/dynamicList/request';
+import { buildDynamicListSessionKey, getTrrComm_ChannelValues } from 'Reducers/audience/dynamicList/request';
 import { findIndex as _findIndex, get as _get } from 'Utils/modules/lodashReplacements';
 
 import { useNavigate } from 'react-router-dom';
@@ -22,6 +23,12 @@ import {
     MatchTypeCheck,
     RULE_ATTRIBUTES_LENGTH_CONFIG,
     buildFieldTriggerValuesKey,
+    formatFieldTriggerValuesData,
+    getAudienceBaseFilterValues,
+    getAudienceBaseValuesFromFullJson,
+    applyFullAttributeJSONToDynamicListState,
+    resolveAudienceBaseFieldName,
+    isAudienceBaseDropdownFieldType,
     periodRangeValues,
     repeatedGroupValuesCheck,
     repeatedValuesCheck,
@@ -29,6 +36,8 @@ import {
     shouldSkipTriggerAttributeValuesApi,
     shouldFetchTriggerAttributeValuesForRule,
     validateDuplicateTriggerSource,
+    COMMUNICATION_NAME_TRIGGER_ID,
+    buildChannelOptionsFromCommunicationChannels,
 } from '../constant';
 
 
@@ -56,6 +65,9 @@ import { RSPrimaryButton, RSSecondaryButton } from 'Components/Buttons';
 import { ScriptBlock } from 'Assets/Images';
 
 import NewAttributeBtn from 'Pages/AuthenticationModule/Audience/Pages/AddImportAudience/Components/CustomHeaderColumn/NewAttributeBtn';
+import { getAttributeValues } from 'Reducers/audience/targetListCreation/request';
+import { getDynamicListFullAttributeJSONValues } from 'Reducers/audience/dynamicList/request';
+import { parseAudienceJson } from 'Pages/AuthenticationModule/Audience/audienceDefaults';
 
 const RuleGrouping = ({
     index,
@@ -64,6 +76,7 @@ const RuleGrouping = ({
     isClickOff = false,
 }) => {
     const navigate = useNavigate();
+    const dispatch = useDispatch();
     const { departmentId, clientId, userId } = useSelector((state) => getSessionId(state));
     const {
         control,
@@ -171,15 +184,22 @@ const RuleGrouping = ({
         mode: 'create',
         loaderConfig: fieldLoaderConfig,
     });
+    const audienceBaseOptionsAPI = useApiLoader({
+        autoFetch: false,
+        mode: 'create',
+        loaderConfig: fieldLoaderConfig,
+    });
     const isPagesLoading = triggerPagesAPI.isLoading;
     const isRuleTypeListLoading = ruleTypeListAPI.isLoading;
-
+    const isRuleGroupLoading = isPagesLoading || isRuleTypeListLoading;
+    const isInteractionDisabled = isClickOff || isRuleGroupLoading;
     useEffect(() => {
         return () => {
             triggerPagesAPI.reset();
             ruleTypeListAPI.reset();
+            audienceBaseOptionsAPI.reset();
         };
-    }, [triggerPagesAPI.reset, ruleTypeListAPI.reset]);
+    }, [triggerPagesAPI.reset, ruleTypeListAPI.reset, audienceBaseOptionsAPI.reset]);
     useEffect(() => {
         if (sourceData?.length) {
             // setModifiedSourceData([...sourceData, { isDDLExist: 0, triggerId: 1000, triggerName: 'Location' }]);  //6303
@@ -451,7 +471,14 @@ const RuleGrouping = ({
                 i !== currentIdx && attr?.attributeName?.value && formatName(attr.attributeName.value) === 'geofence',
         );
         if (geofenceAlreadySelectedElsewhere) {
-            return baseData.filter((item) => formatName(item?.value) !== 'geofence');
+            baseData = baseData.filter((item) => formatName(item?.value) !== 'geofence');
+        }
+        const beaconAlreadySelectedElsewhere = (rule?.RuleAttributes || []).some(
+            (attr, i) =>
+                i !== currentIdx && attr?.attributeName?.value && formatName(attr.attributeName.value) === 'beacon',
+        );
+        if (beaconAlreadySelectedElsewhere) {
+            baseData = baseData.filter((item) => formatName(item?.value) !== 'beacon');
         }
         return baseData;
     };
@@ -471,6 +498,10 @@ const RuleGrouping = ({
                 return false;
             }
 
+            if (TriggerName?.triggerId === COMMUNICATION_NAME_TRIGGER_ID) {
+                return true;
+            }
+
             const fieldType = selectedRuleType?.fieldType ?? selectedRuleType?.fieldtype;
             const normalizedValue = formatName(selectedRuleType?.value);
             const storageKey = buildFieldTriggerValuesKey(fldname, fieldType, 1);
@@ -484,12 +515,19 @@ const RuleGrouping = ({
                 return (
                     triggerValues?.[selectedRuleType?.value] ??
                     triggerValues?.Geofence ??
+                    triggerValues?.Beacon ??
                     null
                 );
             };
 
             const isGeofence = normalizedValue === 'geofence';
             if (isGeofence) {
+                const loadedValues = getLoadedValues();
+                return !loadedValues?.length && !fieldTriggerEntry?.isLoading;
+            }
+
+            const isBeacon = normalizedValue === 'beacon';
+            if (isBeacon) {
                 const loadedValues = getLoadedValues();
                 return !loadedValues?.length && !fieldTriggerEntry?.isLoading;
             }
@@ -526,6 +564,138 @@ const RuleGrouping = ({
         [RuleAttributes?.length, TriggerName?.triggerId, ListState?.fieldTriggerValues],
     );
 
+    const handleAudienceBaseApi = useCallback(
+        async (selectedRuleType, fldname) => {
+            const fieldNameKey = resolveAudienceBaseFieldName(selectedRuleType);
+            const fieldType = selectedRuleType?.fieldType ?? selectedRuleType?.fieldtype ?? 'T';
+            if (!fldname || !fieldNameKey || !isAudienceBaseDropdownFieldType(fieldType)) {
+                return;
+            }
+
+            const payload = {
+                attributeName: fieldNameKey,
+                fieldType,
+                departmentId,
+                clientId,
+                userId,
+                partnerID: 0,
+                levelNo: 1,
+            };
+            const storageKey = buildFieldTriggerValuesKey(fldname, fieldType, 1);
+
+            const applyOptions = (options = []) => {
+                dispatchState({
+                    type: 'UPDATE_FIELD_TRIGGER_VALUES',
+                    payload: {
+                        fieldName: storageKey,
+                        isLoading: false,
+                        triggerValues: formatFieldTriggerValuesData(
+                            { ...payload, fieldType: 'T' },
+                            options,
+                        ),
+                    },
+                });
+            };
+
+            const fromFilterLabels = getAudienceBaseFilterValues(ListState?.filterLabels?.[fieldNameKey]);
+            if (fromFilterLabels.length) {
+                applyOptions(fromFilterLabels);
+                return;
+            }
+
+            const fromStoredFullJson = getAudienceBaseValuesFromFullJson(
+                ListState?.fullAttributeJSONValues,
+                fieldNameKey,
+            );
+            if (fromStoredFullJson.length) {
+                applyOptions(fromStoredFullJson);
+                return;
+            }
+
+            dispatchState({
+                type: 'UPDATE_FIELD_TRIGGER_VALUES',
+                payload: { fieldName: storageKey, isLoading: true },
+            });
+
+            try {
+                let fullJsonResponse = null;
+                if (!audienceBaseOptionsAPI.isFetching) {
+                    fullJsonResponse = await audienceBaseOptionsAPI.refetch({
+                        fetcher: () =>
+                            dispatch(
+                                getDynamicListFullAttributeJSONValues({
+                                    payload: {
+                                        clientId,
+                                        userId,
+                                        departmentId,
+                                    },
+                                    loading: false,
+                                }),
+                            ),
+                        mode: 'create',
+                        loaderConfig: fieldLoaderConfig,
+                        params: { fieldNameKey },
+                    });
+                }
+
+                const liveFullJsonValues = applyFullAttributeJSONToDynamicListState(
+                    fullJsonResponse,
+                    dispatchState,
+                );
+                const fromLiveFullJson = getAudienceBaseValuesFromFullJson(
+                    liveFullJsonValues,
+                    fieldNameKey,
+                );
+                if (fromLiveFullJson.length) {
+                    applyOptions(fromLiveFullJson);
+                    return;
+                }
+
+                const response = await dispatch(
+                    getAttributeValues(
+                        {
+                            attributeName: fieldNameKey,
+                            departmentId,
+                            clientId,
+                            userId,
+                            partnerID: 0,
+                        },
+                        dispatchState,
+                        fieldNameKey,
+                        null,
+                        false,
+                    ),
+                );
+
+                let options = [];
+                if (response?.status) {
+                    try {
+                        const parsedAudienceBaseData = parseAudienceJson(response?.data, {});
+                        const nextLevelParseAudienceBaseData = parseAudienceJson(parsedAudienceBaseData, {});
+                        options = Object.keys(nextLevelParseAudienceBaseData);
+                    } catch {
+                        const attrsValue = parseAudienceJson(response?.data, {});
+                        options = Object.keys(parseAudienceJson(attrsValue, {}));
+                    }
+                }
+
+                applyOptions(options);
+            } catch {
+                applyOptions([]);
+            }
+        },
+        [
+            ListState?.filterLabels,
+            ListState?.fullAttributeJSONValues,
+            audienceBaseOptionsAPI,
+            clientId,
+            departmentId,
+            dispatch,
+            dispatchState,
+            userId,
+        ],
+    );
+
     const getTriggerAttributeValuesForRuleType = useCallback(
         (selectedRuleType, fldname, overrides = {}) => {
             if (!selectedRuleType?.value || !fldname) {
@@ -536,7 +706,32 @@ const RuleGrouping = ({
                 overrides.triggerSource ?? TriggerName ?? getValues(`${fieldName}.TriggerName`);
             const triggerId = triggerSource?.triggerId;
 
-            if (!triggerId || shouldSkipTriggerAttributeValuesApi(triggerId)) {
+            if (!triggerId) {
+                return;
+            }
+
+            if (triggerId === COMMUNICATION_NAME_TRIGGER_ID) {
+                const payload = {
+                    departmentId,
+                    clientId,
+                    userId,
+                    triggerSourceId: triggerId,
+                    id: selectedRuleType?.id,
+                };
+                dispatch(getTrrComm_ChannelValues({ payload, loading: false })).then((res) => {
+                    const options = res?.status
+                        ? buildChannelOptionsFromCommunicationChannels(res?.data)
+                        : [];
+                    dispatchState({
+                        type: 'UPDATE',
+                        field: 'communicationChannelOptions',
+                        payload: options,
+                    });
+                });
+                return;
+            }
+
+            if (shouldSkipTriggerAttributeValuesApi(triggerId)) {
                 return;
             }
 
@@ -591,6 +786,8 @@ const RuleGrouping = ({
             getValues,
             ListState,
             dispatchTriggerAttributeValues,
+            dispatch,
+            dispatchState,
         ],
     );
 
@@ -633,7 +830,7 @@ const RuleGrouping = ({
             </div>
             <Row className="mb30 dynamiclistError">
                 <Col sm={2}>Match type</Col>
-                <Col sm={2} className={`mr76 ${isClickOff ? 'click-off pe-none' : ''}`}>
+                <Col sm={2} className={`mr76 ${isInteractionDisabled ? 'click-off pe-none' : ''}`}>
                     <div className="d-flex align-items-end h32">
                         <RSRadioButton
                             control={control}
@@ -718,7 +915,7 @@ const RuleGrouping = ({
                                         textField={'triggerName'}
                                         dataItemKey={'triggerId'}
                                         data={modifiedSourceData}
-                                        className={`${isClickOff ? 'click-off pe-none' : ''}`}
+                                        className={`${isInteractionDisabled ? 'click-off pe-none' : ''}`}
                                         handleChange={async (e) => {
                                             const selectedValue = e?.value ?? e?.target?.value;
                                             if (
@@ -786,7 +983,7 @@ const RuleGrouping = ({
                                                         : SELECT_INPUT_Domain,
                                             }}
                                             data={triggerPagesOptions}
-                                            className={`${isClickOff ? 'click-off pe-none' : ''}`}
+                                            className={`${isInteractionDisabled ? 'click-off pe-none' : ''}`}
                                             isLoading={isPagesLoading}
                                             handleChange={(e) => {
                                                 ruleTypeListAPI.refetch({
@@ -795,7 +992,7 @@ const RuleGrouping = ({
                                                     loaderConfig: fieldLoaderConfig,
                                                 });
                                             }}
-                                            disabled={!!pages}
+                                            disabled={!!pages || isPagesLoading}
                                             footer={
                                                 TriggerName?.triggerName === 'Mobile App' ||
                                                     TriggerName?.triggerName === 'Website' ? (
@@ -806,27 +1003,28 @@ const RuleGrouping = ({
                                                                 : ADD_WEB_DOMAIN
                                                         }
                                                         handleModalAttribute={() => {
-                                                            TriggerName?.triggerName === 'Mobile App'
-                                                                ? navigate('/preferences/communication-settings', {
-                                                                    state: createCommunicationSettingsNavState('notification', {
-                                                                        mode: 'add',
-                                                                        subfrom: 'MP',
-                                                                        notificationTabId: NOTIFICATION_TAB_ID.MOBILE,
-                                                                        backAction: window.location.search,
-                                                                        tabValueName: 'notification',
-                                                                        tabValue: 'mobile',
-                                                                    }, locationState, getValues),
-                                                                })
-                                                                : navigate('/preferences/communication-settings', {
-                                                                    state: createCommunicationSettingsNavState('notification', {
-                                                                        mode: 'add',
-                                                                        subfrom: 'WP',
-                                                                        notificationTabId: NOTIFICATION_TAB_ID.WEB,
-                                                                        backAction: window.location.search,
-                                                                        tabValueName: 'notification',
-                                                                        tabValue: 'web',
-                                                                    }, locationState, getValues),
-                                                                });
+                                                            const isMobileApp =
+                                                                TriggerName?.triggerName === 'Mobile App';
+                                                            const navState = createCommunicationSettingsNavState(
+                                                                'notification',
+                                                                {
+                                                                    mode: 'add',
+                                                                    subfrom: isMobileApp ? 'MP' : 'WP',
+                                                                    notificationTabId: isMobileApp
+                                                                        ? NOTIFICATION_TAB_ID.MOBILE
+                                                                        : NOTIFICATION_TAB_ID.WEB,
+                                                                    ...(isMobileApp
+                                                                        ? { mobileTabId: 'appsList' }
+                                                                        : { webTabId: 'web' }),
+                                                                    backAction: window.location.search,
+                                                                },
+                                                                locationState,
+                                                                getValues,
+                                                            );
+                                                            navigate(
+                                                                `/preferences/communication-settings?q=${encodeUrl(navState)}`,
+                                                                { state: {} },
+                                                            );
                                                         }}
                                                     />
                                                 ) : null
@@ -840,7 +1038,7 @@ const RuleGrouping = ({
                             <Col sm={2} className="pl0">
                                 <div className="fg-icons mt9">
                                     <RSTooltip text={RESET} position="top">
-                                        <div className={`${isClickOff ? 'click-off pe-none' : ''}`}>
+                                        <div className={`${isInteractionDisabled ? 'click-off pe-none' : ''}`}>
                                             <i
                                                 onClick={() => {
                                                     setShowReset({
@@ -879,7 +1077,7 @@ const RuleGrouping = ({
 
                             const commonProps = {
                                 attribute: currentAttr,
-                                isClickOff,
+                                isClickOff: isInteractionDisabled,
                                 index: idx,
                                 name: `${fieldName}.RuleAttributes[${idx}]`,
                                 fieldName,
@@ -958,7 +1156,7 @@ const RuleGrouping = ({
                                                     isLoading={isRuleTypeListLoading}
                                                     // data={triggerAttributes[TriggerName.triggerId]}
                                                     data={handleDropDownValuesFormOrEventBrite(idx)}
-                                                    className={`${isClickOff ? 'click-off pe-none' : ''}`}
+                                                    className={`${isInteractionDisabled ? 'click-off pe-none' : ''}`}
                                                     rules={{
                                                         required: SELECT_Rule_Type,
                                                         validate: (value) =>
@@ -1064,6 +1262,8 @@ const RuleGrouping = ({
                                                                     skipCache: true,
                                                                 },
                                                             );
+                                                        } else if (TriggerName?.triggerId === 14) {
+                                                            handleAudienceBaseApi(selectedRuleType, ruleAttributePath);
                                                         } else if (
                                                             shouldFetchTriggerValuesForRuleType(
                                                                 selectedRuleType,
@@ -1141,7 +1341,7 @@ const RuleGrouping = ({
                                         className={`triggerAddRemoveIcon pl0 gap-2 d-flex gap-3 ${isCustomEventsContains ? 'pt30' : 'rule-type-icons-offset'
                                             }`}
                                     >
-                                        <div className="trigger-action-icons d-flex align-items-center mt7 gap-2">
+                                        <div className="trigger-action-icons d-flex align-items-center gap-2">
                                             {RuleAttributes[idx]?.attributeName?.value === 'Location URL' && (
                                                 <i
                                                     className={`${map_medium} icon-md color-primary-blue`}
@@ -1197,7 +1397,7 @@ const RuleGrouping = ({
                                                     position="top"
                                                     className="lh0"
                                                 >
-                                                    <div className={`${isClickOff ? 'click-off pe-none' : ''}`}>
+                                                    <div className={`${isInteractionDisabled ? 'click-off pe-none' : ''}`}>
                                                         <i
                                                             className={`${selectIcon(idx)} ${RuleAttributes?.length > RULE_ATTRIBUTES_LENGTH_CONFIG &&
                                                                 !idx

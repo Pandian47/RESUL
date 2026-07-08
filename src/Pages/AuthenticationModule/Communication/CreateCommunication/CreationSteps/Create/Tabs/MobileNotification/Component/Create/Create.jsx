@@ -980,9 +980,10 @@ const Create = ({ isSplit, fieldName }) => {
 
                                         <RSTabber
                                             defaultClass={`col-md-2 tabTransparent `}
-                                            dynamicTab={`mb0 mini mt3`}
+                                            dynamicTab={`mb-25 mini mt3 float-end`}
                                             activeClass={`active`}
                                             className="rs-tabs row rsamp-dropdown"
+                                            wrapperClassName="mt-5"
                                             componentClassName={`mobilepush_frame_wrapper windows ${selectedPreviewTab === 'andriod' ? 'mobile' : 'ios'} w-100`}
                                             defaultTab={0}
                                             callBack={(tab, index) => {

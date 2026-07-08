@@ -9,7 +9,7 @@ import { DUPLICATE_VALUE, ENTER_CONVERSION_URL, ENTER_VALID_CONVERSION_URL, SELE
 import { ANALYTIC_PLATFORM, CANCEL, CONVERSION, DOMAIN, ENGAGEMENT, GOAL, IGNORE_WEB_ANALYTICS, NEXT, OK, SAVE } from 'Constants/GlobalConstant/Placeholders';
 import { circle_plus_fill_medium, circle_question_mark_mini } from 'Constants/GlobalConstant/Glyphicons';
 import { Fragment, createContext, useEffect, useState } from 'react';
-import { get as _get ,map as _map} from 'Utils/modules/lodashReplacements';
+import { get as _get, map as _map } from 'Utils/modules/lodashReplacements';
 
 import { useDispatch, useSelector } from 'react-redux';
 import { Row, Col } from 'react-bootstrap';
@@ -42,7 +42,7 @@ import AuthoringChannelEditSkeletonGate, {
     useAuthoringChannelEditLoader,
     useAuthoringChannelSaveLoader,
 } from 'Components/Skeleton/pages/communication/authoring';
-import { availableTabs, getPreCampaignStatus } from '../../../constant';
+import { availableTabs, getPreCampaignStatus, shouldPromptSkipChannelConfirmation } from '../../../constant';
 import RSConfirmationModal from 'Components/ConfirmationModal';
 import RSCheckbox from 'Components/FormFields/RSCheckbox';
 import { getConversionTypeList } from 'Reducers/communication/createCommunication/plan/request';
@@ -54,8 +54,8 @@ import WebFieldTrack from '../../../Component/WebFieldTrackModal';
 import { showTabsSmartlink } from 'Reducers/communication/createCommunication/smartlink/reducer';
 import { AUTHORING_FIELD_LOADER_CONFIG } from 'Components/Skeleton/pages/communication/authoring';
 export const webAnalyticsContext = createContext({
-    setShowWFTM: () => {},
-    handleEditEvent: () => {},
+    setShowWFTM: () => { },
+    handleEditEvent: () => { },
     waMode: 'create',
     formListLoader: null,
     goalTypeLoader: null,
@@ -190,7 +190,7 @@ const WebAnalytics = () => {
     const [statusIDCheck, setstatusIDCheck] = useState(state?.statusId || null);
     const isWebAnalyticsClickOff =
         checkTrigger(state?.campaignType, state?.endDate) ||
-        !statusIdCheck(statusIDCheck || state?.statusId);
+        !statusIdCheck(statusIDCheck || state?.statusId, state?.campaignType, undefined);
 
     useEffect(() => {
         if (!isDirty && Object.keys(dirtyFields)?.length > 0) {
@@ -289,267 +289,267 @@ const WebAnalytics = () => {
                 ? AUTHORING_EDIT_API_LOADER_CONFIG
                 : AUTHORING_FIELD_LOADER_CONFIG;
             try {
-            const response = savedChannel
-                ? await runEditFetch(
-                      () => dispatch(getWebAnalyticsData({ payload, loading: false })),
-                      { releaseAfterFetch: false },
-                  )
-                : await dispatch(getWebAnalyticsData({ payload, loading: false }));
-            const { status, data } = response || {};
-            if (status) {
-                // debugger;
+                const response = savedChannel
+                    ? await runEditFetch(
+                        () => dispatch(getWebAnalyticsData({ payload, loading: false })),
+                        { releaseAfterFetch: false },
+                    )
+                    : await dispatch(getWebAnalyticsData({ payload, loading: false }));
+                const { status, data } = response || {};
+                if (status) {
+                    // debugger;
 
-                const { webAnalyticsCampaign } = data;
+                    const { webAnalyticsCampaign } = data;
 
-                let engagementFieldTrackData = null;
-                let conversionFieldTrackData = null;
+                    let engagementFieldTrackData = null;
+                    let conversionFieldTrackData = null;
 
-                const engagementFieldTrackInfo = webAnalyticsCampaign?.engagement?.data?.[0]?.urls?.[0]?.fieldTrackInfo;
-                if (engagementFieldTrackInfo && engagementFieldTrackInfo.trim() !== '') {
-                    try {
-                        engagementFieldTrackData = JSON.parse(engagementFieldTrackInfo);
-                    } catch (e) {
+                    const engagementFieldTrackInfo = webAnalyticsCampaign?.engagement?.data?.[0]?.urls?.[0]?.fieldTrackInfo;
+                    if (engagementFieldTrackInfo && engagementFieldTrackInfo.trim() !== '') {
+                        try {
+                            engagementFieldTrackData = JSON.parse(engagementFieldTrackInfo);
+                        } catch (e) {
+                        }
                     }
-                }
 
-                const conversionFieldTrackInfo = webAnalyticsCampaign?.conversion?.data?.[0]?.urls?.[0]?.fieldTrackInfo;
-                if (conversionFieldTrackInfo && conversionFieldTrackInfo.trim() !== '') {
-                    try {
-                        conversionFieldTrackData = JSON.parse(conversionFieldTrackInfo);
-                    } catch (e) {
+                    const conversionFieldTrackInfo = webAnalyticsCampaign?.conversion?.data?.[0]?.urls?.[0]?.fieldTrackInfo;
+                    if (conversionFieldTrackInfo && conversionFieldTrackInfo.trim() !== '') {
+                        try {
+                            conversionFieldTrackData = JSON.parse(conversionFieldTrackInfo);
+                        } catch (e) {
+                        }
                     }
-                }
 
-                const webFieldTrackData = {
-                    engagement: engagementFieldTrackData || parseWebFieldTrackEvent?.engagement || {},
-                    conversion: conversionFieldTrackData || parseWebFieldTrackEvent?.conversion || {},
-                };
-
-                localStorage.setItem('__webFieldTrackEventData', JSON.stringify(webFieldTrackData));
-                setWebFieldTrackEditData(webFieldTrackData);
-                setstatusIDCheck(state?.statusId);
-                let domainData = await getDomainListData(webAnalyticsCampaign?.domainType, nestedLoaderConfig);
-                const ress = getInputType(
-                    webAnalyticsCampaign?.conversion?.conversionTypes?.map(
-                        (item) => item?.ConversionName || item?.conversionName,
-                    ),
-                );
-                let formList = { status: false, data: [] };
-                if (ress?.includes('Forms')) {
-                    formList = await formListLoader.refetch({
-                        fetcher: async () =>
-                            dispatch(
-                                getWebAnalyticsFormList({
-                                    payload: { clientId, departmentId, userId },
-                                    loading: false,
-                                }),
-                            ),
-                        loaderConfig: nestedLoaderConfig,
-                    });
-                }
-                let domainsList = await getWADomainList(nestedLoaderConfig);
-                let tempDomainType = domainsList?.filter(
-                    (item) => item?.domainType === webAnalyticsCampaign?.domainType,
-                );
-                let tempDomain = domainData?.filter(
-                    (action) => webAnalyticsCampaign?.domainUrlList?.[0]?.domainNameURL === action?.value,
-                );
-
-                let tempGoalEngagementList =
-                    webAnalyticsCampaign?.engagement?.engagementTypes?.length > 0
-                        ? await getGoalType('E', nestedLoaderConfig)
-                        : [];
-
-                let tempGoalConversionList =
-                    webAnalyticsCampaign?.conversion?.conversionTypes?.length > 0
-                        ? await getGoalType('C', nestedLoaderConfig)
-                        : [];
-                let tempEngagementTypes = webAnalyticsCampaign?.engagement?.engagementTypes?.map((item) => {
-                    let temp = tempGoalEngagementList?.filter(
-                        (list) => parseInt(list?.ConversionTypeID, 10) === parseInt(item?.engagementTypeId, 10),
-                    )?.[0];
-                    tempGoalEngagementList?.filter(
-                        (tempList) =>
-                            Number(tempList.ConversionTypeID) ===
-                            Number(webAnalyticsCampaign?.conversion?.conversionTypes[0]?.conversiontypeId),
-                    );
-                    return temp;
-                });
-                let tempGoalEngagement = tempGoalEngagementList?.length !== 0;
-                let tempGoalConversion = tempGoalConversionList?.length !== 0;
-                setGoalDefault({
-                    isEngagement: tempGoalEngagement,
-                    isConverison: tempGoalConversion,
-                });
-                let tempContent = getInputType(tempEngagementTypes?.map((item) => item?.ConversionName));
-                setContentTypes((prev) => ({
-                    ...prev,
-                    engagement: tempContent,
-                }));
-
-                // let tempConversionTypes = webAnalyticsCampaign?.conversion?.conversionTypes?.map((item) => {
-                //     let temp = tempGoalConversionList?.filter(
-                //         (list) => list?.ConversionTypeID === item?.conversiontypeId,
-                //     )?.[0];
-                //     return temp;
-                // });
-                let tempConversionTypes = tempGoalConversionList?.filter((tempList) =>
-                    webAnalyticsCampaign?.conversion?.conversionTypes
-                        ?.map((item) => Number(item.conversionTypeId))
-                        .includes(Number(tempList.ConversionTypeID)),
-                );
-
-                let tempContentConversion = getInputType(
-                    tempConversionTypes?.map((item) => item?.ConversionName),
-                );
-                setContentTypes((prev) => ({
-                    ...prev,
-                    conversion: tempContentConversion,
-                }));
-                let tempEngagementCustomEvents = [];
-                let tempEngagementForm = '';
-                let tempEngagementFormAction = '';
-                let tempEngagementPages = [];
-                let tempEngagementData =
-                    webAnalyticsCampaign?.engagement?.data?.length !== 0
-                        ? webAnalyticsCampaign?.engagement?.data?.map((item) => {
-                              if (item?.type === 'CustomEvent') {
-                                  // Avoid [''] when EventName is empty
-                                  tempEngagementCustomEvents = (item?.EventName || '')
-                                      .split(',')
-                                      .map((v) => v.trim())
-                                      .filter(Boolean);
-                              } else if (item?.type === 'form') {
-                                  tempEngagementForm = formList?.status
-                                      ? formList?.data?.filter((form) => form?.formId === item?.formId)
-                                      : '';
-                                  tempEngagementFormAction = item?.actionName;
-                              } else {
-                                  tempEngagementPages = item?.urls?.map((url) => ({ url: url?.pageurl }));
-                              }
-                          })
-                        : [];
-                let tempConversionCustomEvents = [];
-                let tempConversionForm = '';
-                let tempConversionFormAction = '';
-                let tempConversionPages = [];
-                let tempConversionData =
-                    webAnalyticsCampaign?.conversion?.data?.length !== 0
-                        ? webAnalyticsCampaign?.conversion?.data?.map((item) => {
-                              if (item?.type === 'CustomEvent') {
-                                  // Avoid [''] when EventName is empty
-                                  tempConversionCustomEvents = (item?.EventName || '')
-                                      .split(',')
-                                      .map((v) => v.trim())
-                                      .filter(Boolean);
-                              } else if (item?.type === 'form') {
-                                  tempConversionForm = formList?.status
-                                      ? formList?.data?.filter((form) => form?.formId === item?.formId)
-                                      : '';
-                                  tempConversionFormAction = item?.actionName;
-                              } else {
-                                  tempConversionPages = item?.urls?.map((url) => ({ url: url?.pageurl }));
-                              }
-                          })
-                        : [];
-                let formValues = tempConversionForm?.length !== 0 ? await getFormValues(tempConversionForm?.[0]) : [];
-
-                let tempConversionCustomValues = webAnalyticsCampaign?.conversion?.conversionValue?.attributeName;
-                // let tempConversionPricing = !!webAnalyticsCampaign?.conversion?.conversionValue?.currency
-                //     ? currencyMasterList?.filter(
-                //           (item) =>
-                //               item?.currencyFormat + item?.currenySymbol ===
-                //               webAnalyticsCampaign?.conversion?.conversionValue?.currency,
-                //       )?.[0]
-                //     : '';
-                let tempConversionPricing = !!webAnalyticsCampaign?.conversion?.conversionValue?.currency
-                    ? currencyMasterList?.filter(
-                          (item) => item.currencyID === webAnalyticsCampaign?.conversion?.conversionValue?.currency,
-                      )?.[0]
-                    : '';
-                let tempConversionManualValue = !!webAnalyticsCampaign?.conversion?.conversionValue?.manualValue
-                    ? webAnalyticsCampaign?.conversion?.conversionValue?.manualValue
-                    : '';
-                let tempConversionValueType = webAnalyticsCampaign?.conversion?.conversionValue?.type;
-                let tempConversionCustomEventsValue = '';
-                if (tempConversionValueType === 'Form') {
-                    // let formValues = await getFormValues(tempConversionForm?.[0]);
-                    tempConversionCustomEventsValue = formValues?.filter((item) => item === tempConversionCustomValues);
-                } else {
-                    tempConversionCustomEventsValue = tempConversionCustomValues;
-                }
-                // let tempDomainName = domainData?.filter(
-                //     (action) => webAnalyticsCampaign?.domainUrlList?.[0]?.analyticsSettingId === action?.domainNameURL,
-                // );
-
-                // let tempconversionData = conversionData?.filter(
-                //     (action) => webAnalyticsCampaign?.conversionCategoryId === action?.conversionCategoryId,
-                // );
-                // let tempSubFormData = WebAnalytics?.webAnalyticsFormList?.filter(
-                //     (action) => webAnalyticsCampaign?.subscriptionFormId === action?.formId,
-                // );
-                // let tempeventTrackingData = webAnalyticsCampaign?.conversionURL[0]?.primaryGoal.map((item) => {
-                //     return {
-                //         conversionUrl: item,
-                //         isDelete: false,
-                //     };
-                // });
-                // let tempeventSecGoalData = webAnalyticsCampaign?.conversionURL[0]?.secondaryGoal.map((item) => {
-                //     return {
-                //         conversionUrl: item,
-                //         isDelete: false,
-                //     };
-                // });
-
-                if (
-                    tempDomain &&
-                    tempDomainType
-                    // tempDomainName &&
-                    // tempconversionData &&
-                    // tempSubFormData &&
-                    // tempeventTrackingData &&
-                    // tempeventSecGoalData
-                ) {
-                    // const temp = {};
-                    // temp.analyticsPlatform = tempDomain[0];
-                    // temp.domain = tempDomainName[0];
-                    // temp.conversionCategory = tempconversionData[0];
-                    // temp.subscriptionForm = tempSubFormData[0];
-                    // temp.eventTracking = tempeventTrackingData;
-                    // temp.eventSecGoal = tempeventSecGoalData;
-
-                    // console.log(temp, '::temp');
-                    let editForm = {
-                        isEdit: true,
-                        analyticsPlatform: tempDomainType?.[0],
-                        domain: tempDomain?.[0],
-                        goalEngagement: tempGoalEngagement,
-                        goalConversion: tempGoalConversion,
-                        engagementType: tempEngagementTypes,
-                        conversionType: tempConversionTypes,
-                        conversionCategory: '',
-                        engagementSubscriptionForm: tempEngagementForm?.[0] || '',
-                        engagementAction: tempEngagementFormAction || '',
-                        engagementCustomEvents: tempEngagementCustomEvents || [],
-                        engagementCategory: '',
-                        conversionSubscriptionForm: tempConversionForm?.[0] || '',
-                        conversionAction: tempConversionFormAction || '',
-                        engagementPages: tempEngagementPages?.length === 0 ? [{ url: '' }] : tempEngagementPages,
-                        conversionPages: tempConversionPages?.length === 0 ? [{ url: '' }] : tempConversionPages,
-                        conversionPricing: tempConversionPricing,
-                        conversionCustomEventsValue: tempConversionCustomEventsValue,
-                        conversionManualType: !!tempConversionManualValue,
-                        conversionManualValue: tempConversionManualValue,
-                        conversionCustomEvents: tempConversionCustomEvents || [],
-                        engagementUrl: [],
-                        eventTracking: [{ eventname: '', trackingType: '', inputType: '', description: '' }],
-                        eventSecGoal: [{ conversionUrl: '', isDelete: false }],
+                    const webFieldTrackData = {
+                        engagement: engagementFieldTrackData || parseWebFieldTrackEvent?.engagement || {},
+                        conversion: conversionFieldTrackData || parseWebFieldTrackEvent?.conversion || {},
                     };
-                    
-                    reset((formState) => ({ ...formState, ...editForm }));
-                    // webFieldTrackEditData is already set above with processed data from webAnalyticsCampaign
+
+                    localStorage.setItem('__webFieldTrackEventData', JSON.stringify(webFieldTrackData));
+                    setWebFieldTrackEditData(webFieldTrackData);
+                    setstatusIDCheck(state?.statusId);
+                    let domainData = await getDomainListData(webAnalyticsCampaign?.domainType, nestedLoaderConfig);
+                    const ress = getInputType(
+                        webAnalyticsCampaign?.conversion?.conversionTypes?.map(
+                            (item) => item?.ConversionName || item?.conversionName,
+                        ),
+                    );
+                    let formList = { status: false, data: [] };
+                    if (ress?.includes('Forms')) {
+                        formList = await formListLoader.refetch({
+                            fetcher: async () =>
+                                dispatch(
+                                    getWebAnalyticsFormList({
+                                        payload: { clientId, departmentId, userId },
+                                        loading: false,
+                                    }),
+                                ),
+                            loaderConfig: nestedLoaderConfig,
+                        });
+                    }
+                    let domainsList = await getWADomainList(nestedLoaderConfig);
+                    let tempDomainType = domainsList?.filter(
+                        (item) => item?.domainType === webAnalyticsCampaign?.domainType,
+                    );
+                    let tempDomain = domainData?.filter(
+                        (action) => webAnalyticsCampaign?.domainUrlList?.[0]?.domainNameURL === action?.value,
+                    );
+
+                    let tempGoalEngagementList =
+                        webAnalyticsCampaign?.engagement?.engagementTypes?.length > 0
+                            ? await getGoalType('E', nestedLoaderConfig)
+                            : [];
+
+                    let tempGoalConversionList =
+                        webAnalyticsCampaign?.conversion?.conversionTypes?.length > 0
+                            ? await getGoalType('C', nestedLoaderConfig)
+                            : [];
+                    let tempEngagementTypes = webAnalyticsCampaign?.engagement?.engagementTypes?.map((item) => {
+                        let temp = tempGoalEngagementList?.filter(
+                            (list) => parseInt(list?.ConversionTypeID, 10) === parseInt(item?.engagementTypeId, 10),
+                        )?.[0];
+                        tempGoalEngagementList?.filter(
+                            (tempList) =>
+                                Number(tempList.ConversionTypeID) ===
+                                Number(webAnalyticsCampaign?.conversion?.conversionTypes[0]?.conversiontypeId),
+                        );
+                        return temp;
+                    });
+                    let tempGoalEngagement = tempGoalEngagementList?.length !== 0;
+                    let tempGoalConversion = tempGoalConversionList?.length !== 0;
+                    setGoalDefault({
+                        isEngagement: tempGoalEngagement,
+                        isConverison: tempGoalConversion,
+                    });
+                    let tempContent = getInputType(tempEngagementTypes?.map((item) => item?.ConversionName));
+                    setContentTypes((prev) => ({
+                        ...prev,
+                        engagement: tempContent,
+                    }));
+
+                    // let tempConversionTypes = webAnalyticsCampaign?.conversion?.conversionTypes?.map((item) => {
+                    //     let temp = tempGoalConversionList?.filter(
+                    //         (list) => list?.ConversionTypeID === item?.conversiontypeId,
+                    //     )?.[0];
+                    //     return temp;
+                    // });
+                    let tempConversionTypes = tempGoalConversionList?.filter((tempList) =>
+                        webAnalyticsCampaign?.conversion?.conversionTypes
+                            ?.map((item) => Number(item.conversionTypeId))
+                            .includes(Number(tempList.ConversionTypeID)),
+                    );
+
+                    let tempContentConversion = getInputType(
+                        tempConversionTypes?.map((item) => item?.ConversionName),
+                    );
+                    setContentTypes((prev) => ({
+                        ...prev,
+                        conversion: tempContentConversion,
+                    }));
+                    let tempEngagementCustomEvents = [];
+                    let tempEngagementForm = '';
+                    let tempEngagementFormAction = '';
+                    let tempEngagementPages = [];
+                    let tempEngagementData =
+                        webAnalyticsCampaign?.engagement?.data?.length !== 0
+                            ? webAnalyticsCampaign?.engagement?.data?.map((item) => {
+                                if (item?.type === 'CustomEvent') {
+                                    // Avoid [''] when EventName is empty
+                                    tempEngagementCustomEvents = (item?.EventName || '')
+                                        .split(',')
+                                        .map((v) => v.trim())
+                                        .filter(Boolean);
+                                } else if (item?.type === 'form') {
+                                    tempEngagementForm = formList?.status
+                                        ? formList?.data?.filter((form) => form?.formId === item?.formId)
+                                        : '';
+                                    tempEngagementFormAction = item?.actionName;
+                                } else {
+                                    tempEngagementPages = item?.urls?.map((url) => ({ url: url?.pageurl }));
+                                }
+                            })
+                            : [];
+                    let tempConversionCustomEvents = [];
+                    let tempConversionForm = '';
+                    let tempConversionFormAction = '';
+                    let tempConversionPages = [];
+                    let tempConversionData =
+                        webAnalyticsCampaign?.conversion?.data?.length !== 0
+                            ? webAnalyticsCampaign?.conversion?.data?.map((item) => {
+                                if (item?.type === 'CustomEvent') {
+                                    // Avoid [''] when EventName is empty
+                                    tempConversionCustomEvents = (item?.EventName || '')
+                                        .split(',')
+                                        .map((v) => v.trim())
+                                        .filter(Boolean);
+                                } else if (item?.type === 'form') {
+                                    tempConversionForm = formList?.status
+                                        ? formList?.data?.filter((form) => form?.formId === item?.formId)
+                                        : '';
+                                    tempConversionFormAction = item?.actionName;
+                                } else {
+                                    tempConversionPages = item?.urls?.map((url) => ({ url: url?.pageurl }));
+                                }
+                            })
+                            : [];
+                    let formValues = tempConversionForm?.length !== 0 ? await getFormValues(tempConversionForm?.[0]) : [];
+
+                    let tempConversionCustomValues = webAnalyticsCampaign?.conversion?.conversionValue?.attributeName;
+                    // let tempConversionPricing = !!webAnalyticsCampaign?.conversion?.conversionValue?.currency
+                    //     ? currencyMasterList?.filter(
+                    //           (item) =>
+                    //               item?.currencyFormat + item?.currenySymbol ===
+                    //               webAnalyticsCampaign?.conversion?.conversionValue?.currency,
+                    //       )?.[0]
+                    //     : '';
+                    let tempConversionPricing = !!webAnalyticsCampaign?.conversion?.conversionValue?.currency
+                        ? currencyMasterList?.filter(
+                            (item) => item.currencyID === webAnalyticsCampaign?.conversion?.conversionValue?.currency,
+                        )?.[0]
+                        : '';
+                    let tempConversionManualValue = !!webAnalyticsCampaign?.conversion?.conversionValue?.manualValue
+                        ? webAnalyticsCampaign?.conversion?.conversionValue?.manualValue
+                        : '';
+                    let tempConversionValueType = webAnalyticsCampaign?.conversion?.conversionValue?.type;
+                    let tempConversionCustomEventsValue = '';
+                    if (tempConversionValueType === 'Form') {
+                        // let formValues = await getFormValues(tempConversionForm?.[0]);
+                        tempConversionCustomEventsValue = formValues?.filter((item) => item === tempConversionCustomValues);
+                    } else {
+                        tempConversionCustomEventsValue = tempConversionCustomValues;
+                    }
+                    // let tempDomainName = domainData?.filter(
+                    //     (action) => webAnalyticsCampaign?.domainUrlList?.[0]?.analyticsSettingId === action?.domainNameURL,
+                    // );
+
+                    // let tempconversionData = conversionData?.filter(
+                    //     (action) => webAnalyticsCampaign?.conversionCategoryId === action?.conversionCategoryId,
+                    // );
+                    // let tempSubFormData = WebAnalytics?.webAnalyticsFormList?.filter(
+                    //     (action) => webAnalyticsCampaign?.subscriptionFormId === action?.formId,
+                    // );
+                    // let tempeventTrackingData = webAnalyticsCampaign?.conversionURL[0]?.primaryGoal.map((item) => {
+                    //     return {
+                    //         conversionUrl: item,
+                    //         isDelete: false,
+                    //     };
+                    // });
+                    // let tempeventSecGoalData = webAnalyticsCampaign?.conversionURL[0]?.secondaryGoal.map((item) => {
+                    //     return {
+                    //         conversionUrl: item,
+                    //         isDelete: false,
+                    //     };
+                    // });
+
+                    if (
+                        tempDomain &&
+                        tempDomainType
+                        // tempDomainName &&
+                        // tempconversionData &&
+                        // tempSubFormData &&
+                        // tempeventTrackingData &&
+                        // tempeventSecGoalData
+                    ) {
+                        // const temp = {};
+                        // temp.analyticsPlatform = tempDomain[0];
+                        // temp.domain = tempDomainName[0];
+                        // temp.conversionCategory = tempconversionData[0];
+                        // temp.subscriptionForm = tempSubFormData[0];
+                        // temp.eventTracking = tempeventTrackingData;
+                        // temp.eventSecGoal = tempeventSecGoalData;
+
+                        // console.log(temp, '::temp');
+                        let editForm = {
+                            isEdit: true,
+                            analyticsPlatform: tempDomainType?.[0],
+                            domain: tempDomain?.[0],
+                            goalEngagement: tempGoalEngagement,
+                            goalConversion: tempGoalConversion,
+                            engagementType: tempEngagementTypes,
+                            conversionType: tempConversionTypes,
+                            conversionCategory: '',
+                            engagementSubscriptionForm: tempEngagementForm?.[0] || '',
+                            engagementAction: tempEngagementFormAction || '',
+                            engagementCustomEvents: tempEngagementCustomEvents || [],
+                            engagementCategory: '',
+                            conversionSubscriptionForm: tempConversionForm?.[0] || '',
+                            conversionAction: tempConversionFormAction || '',
+                            engagementPages: tempEngagementPages?.length === 0 ? [{ url: '' }] : tempEngagementPages,
+                            conversionPages: tempConversionPages?.length === 0 ? [{ url: '' }] : tempConversionPages,
+                            conversionPricing: tempConversionPricing,
+                            conversionCustomEventsValue: tempConversionCustomEventsValue,
+                            conversionManualType: !!tempConversionManualValue,
+                            conversionManualValue: tempConversionManualValue,
+                            conversionCustomEvents: tempConversionCustomEvents || [],
+                            engagementUrl: [],
+                            eventTracking: [{ eventname: '', trackingType: '', inputType: '', description: '' }],
+                            eventSecGoal: [{ conversionUrl: '', isDelete: false }],
+                        };
+
+                        reset((formState) => ({ ...formState, ...editForm }));
+                        // webFieldTrackEditData is already set above with processed data from webAnalyticsCampaign
+                    }
                 }
-            }
             } finally {
                 if (savedChannel) {
                     finishEditSkeleton();
@@ -647,7 +647,7 @@ const WebAnalytics = () => {
         localStorage.removeItem('__webFieldTrackEventData');
         localStorage.removeItem('savedChannel');
         if (tempTabs?.length === tempTabs.findIndex((id) => tabAnalyticsState.tabName == id) + 1) {
-                        const status = getPreCampaignStatus(savedChannelsId);
+            const status = getPreCampaignStatus(savedChannelsId);
             if (status) {
                 navigate('/communication', {
                     replace: true,
@@ -692,7 +692,7 @@ const WebAnalytics = () => {
             const WebSecAnalyticsSettingsState = getFieldState(`eventSecGoal`);
             let validationState = eventSecGoalWatch.findIndex((list) => {
                 let values = Object.values(list);
-                                // if (list.conversionUrl === '') {
+                // if (list.conversionUrl === '') {
                 //     return true;
                 // }
                 if (WEBSITE_REGEX.test(list?.conversionUrl)) {
@@ -792,6 +792,16 @@ const WebAnalytics = () => {
         return true;
     };
     const formSubmitHandler = async (data, type) => {
+        // Click-off: never call save API — buttons should navigate only.
+        if (isWebAnalyticsClickOff) {
+            if (type === 'save') {
+                dispatch(resetCreateCommunication());
+                navigate('/communication', { replace: true, state: { index: 0 } });
+            } else {
+                handleNavigation();
+            }
+            return;
+        }
         // debugger;
         let checkResult = [];
         let checkGoals = '';
@@ -876,9 +886,9 @@ const WebAnalytics = () => {
                 } else if (type === 'url') {
                     window.open(
                         tempConversionURL +
-                            '/?_sdxFormId=123&path=' +
-                            window.location.pathname +
-                            window.location.search,
+                        '/?_sdxFormId=123&path=' +
+                        window.location.pathname +
+                        window.location.search,
                     );
                     setAlert_flag(true);
                 } else {
@@ -983,7 +993,7 @@ const WebAnalytics = () => {
         try {
             const response = await dispatch(saveWebAnalyticsCaptureFields({ payload: apiPayload }));
             if (response?.status) {
-                            } else {
+            } else {
             }
         } catch (error) {
         }
@@ -1069,261 +1079,257 @@ const WebAnalytics = () => {
     return (
         <webAnalyticsContext.Provider value={contextValue}>
             <AuthoringChannelEditSkeletonGate channelId={6} isLoading={showEditSkeleton && isSavedChannel}>
-            <FormProvider {...methods}>
-                <form
-                    onSubmit={handleSubmit((data) => formSubmitHandler(data, 'form'))}
-                    className="rsv-tabs-content tab-content position-relative"
-                >
-                    <div
-                        className={`box-design bd-top-border ${
-                            checkTrigger(state?.campaignType, state?.endDate)
-                                ? 'pe-none click-off'
-                                : !statusIdCheck(statusIDCheck || state?.statusId)
-                                ? 'pe-none click-off'
-                                : ''
-                        }`}
+                <FormProvider {...methods}>
+                    <form
+                        onSubmit={handleSubmit((data) => formSubmitHandler(data, 'form'))}
+                        className="rsv-tabs-content tab-content position-relative"
                     >
-                        {/* { !smartLink1 && ( */}
-                        {!tabSmartLink_Flag &&
-                            tabSmartLink_Flag !== null &&
-                            statusIdCheck(statusIDCheck || state?.statusId) && (
-                                <SmartLinkEnable
-                                    secondaryButton
-                                    onSave={() => setIsSmartLink(false)}
-                                    onReject={() => {
-                                        dispatch(showTabsSmartlink(true));
-                                        setIsSmartLink(false);
-                                    }}
-                                    ignoreButton
-                                    onIgnore={() => {
-                                        handleNavigation();
-                                    }}
-                                />
-                            )}
-                        <div className="form-group mt20">
-                            <Row>
-                                <Col sm={{ offset: 1, span: 2 }} className="pr0">
-                                    <label className="control-label-left">{ANALYTIC_PLATFORM}</label>
-                                </Col>
-                                <Col sm={6} id="rs_WebAnalytics_analyticsplatform">
-                                    <RSKendoDropDownList
-                                        control={control}
-                                        name={'analyticsPlatform'}
-                                        label={ANALYTIC_PLATFORM}
-                                        rules={{
-                                            required: SELECT_ANALYTICS_PLATFORM,
-                                        }}
-                                        required
-                                        isLoading={analyticsListLoader.isLoading}
-                                        data={
-                                            !!WebAnalytics?.webAnalyticsList?.length
-                                                ? WebAnalytics?.webAnalyticsList
-                                                : []
-                                        }
-                                        textField={'analyticsDomainName'}
-                                        dataItemKey={'analyticsDomainId'}
-                                        handleChange={(e) => {
-                                            getDomainListData(e.value.domainType);
-                                            // fetchConversionCategory(e.value.analyticsDomainId);
-                                        }}
-                                    />
-                                </Col>
-                            </Row>
-                        </div>
-                        {!!analyticsPlatform && (
-                            <div className="form-group">
+                        <div
+                            className={`box-design bd-top-border ${checkTrigger(state?.campaignType, state?.endDate)
+                                    ? 'pe-none click-off'
+                                    : !statusIdCheck(statusIDCheck || state?.statusId, state?.campaignType, undefined)
+                                        ? 'pe-none click-off'
+                                        : ''
+                                }`}
+                        >
+                            <SmartLinkEnable
+                                secondaryButton={false}
+                                requiresWebSmartLink
+                                isChannelLoading={showEditSkeleton && isSavedChannel}
+                                onSave={() => setIsSmartLink(false)}
+                                onReject={() => {
+                                    dispatch(showTabsSmartlink(true));
+                                    setIsSmartLink(false);
+                                }}
+                                ignoreButton
+                                onIgnore={() => {
+                                    handleNavigation();
+                                }}
+                            />
+                            <div className="form-group mt20">
                                 <Row>
-                                    <Col sm={{ offset: 3, span: 6 }} id="rs_WebAnalytics_Domain">
+                                    <Col sm={{ offset: 1, span: 2 }} className="pr0">
+                                        <label className="control-label-left">{ANALYTIC_PLATFORM}</label>
+                                    </Col>
+                                    <Col sm={6} id="rs_WebAnalytics_analyticsplatform">
                                         <RSKendoDropDownList
                                             control={control}
-                                            label={DOMAIN}
-                                            name={'domain'}
-                                            textField={'value'}
-                                            dataItemKey={'id'}
-                                            required
-                                            isLoading={domainLoader.isLoading}
-                                            data={domains || []}
+                                            name={'analyticsPlatform'}
+                                            label={ANALYTIC_PLATFORM}
                                             rules={{
-                                                required: SELECT_DOMAIN,
+                                                required: SELECT_ANALYTICS_PLATFORM,
+                                            }}
+                                            required
+                                            isLoading={analyticsListLoader.isLoading}
+                                            data={
+                                                !!WebAnalytics?.webAnalyticsList?.length
+                                                    ? WebAnalytics?.webAnalyticsList
+                                                    : []
+                                            }
+                                            textField={'analyticsDomainName'}
+                                            dataItemKey={'analyticsDomainId'}
+                                            handleChange={(e) => {
+                                                getDomainListData(e.value.domainType);
+                                                // fetchConversionCategory(e.value.analyticsDomainId);
                                             }}
                                         />
-                                        <div className="fg-icons d-flex lh0 float-end">
-                                            <RSPPophover text={DOMAIN_HOVER_TEXT}>
-                                                <i
-                                                    className={`${circle_question_mark_mini} icon-xs color-primary-blue position-relative top-1`}
-                                                    id="circle_question_mark"
-                                                />
-                                            </RSPPophover>
-                                            {/* <RSTooltip text={'Add domain name'}>
+                                    </Col>
+                                </Row>
+                            </div>
+                            {!!analyticsPlatform && (
+                                <div className="form-group">
+                                    <Row>
+                                        <Col sm={{ offset: 3, span: 6 }} id="rs_WebAnalytics_Domain">
+                                            <RSKendoDropDownList
+                                                control={control}
+                                                label={DOMAIN}
+                                                name={'domain'}
+                                                textField={'value'}
+                                                dataItemKey={'id'}
+                                                required
+                                                isLoading={domainLoader.isLoading}
+                                                data={domains || []}
+                                                rules={{
+                                                    required: SELECT_DOMAIN,
+                                                }}
+                                            />
+                                            <div className="fg-icons d-flex lh0 float-end">
+                                                <RSPPophover text={DOMAIN_HOVER_TEXT}>
+                                                    <i
+                                                        className={`${circle_question_mark_mini} icon-xs color-primary-blue position-relative top-1`}
+                                                        id="circle_question_mark"
+                                                    />
+                                                </RSPPophover>
+                                                {/* <RSTooltip text={'Add domain name'}>
                                                 <i
                                                     className={`${circle_plus_fill_medium} icon-md color-primary-blue top2 `}
                                                     id="rs_data_circle_plus_fill"
                                                 />
                                             </RSTooltip> */}
-                                        </div>
-                                    </Col>
-                                </Row>
-                            </div>
-                        )}
-                        {!!analyticsPlatform && domain && (
-                            <div className="form-group">
-                                <Row>
-                                    <Col sm={{ offset: 1, span: 2 }}>
-                                        <label className="control-label-left">{GOAL}</label>
-                                    </Col>
-                                    <Col sm={2} className={isEngagement ? 'click-off' : ''}>
-                                        <RSCheckbox
-                                            control={control}
-                                            name={'goalEngagement'}
-                                            labelName={ENGAGEMENT}
-                                            checked={goalDefault?.isEngagement}
-                                            handleChange={(e) => {
-                                                if (e?.target?.checked) getGoalType('E');
-                                                setGoalDefault((prev) => ({
-                                                    ...prev,
-                                                    isEngagement: e?.target?.checked,
-                                                }));
-                                                if (
-                                                    (goalEngagement && goalEngagement) ||
-                                                    (goalEngagement && !goalConversion)
-                                                ) {
-                                                    setDefaultTab(0);
-                                                }
-                                                if (!e?.target?.checked) {
-                                                    goalContentFields?.forEach((fieldName) => {
-                                                        setValue(`engagement${fieldName}`, '');
-                                                        clearErrors(`engagement${fieldName}`);
-                                                    });
-                                                }
-                                            }}
-                                        />
-                                    </Col>
-                                    <Col sm={2} className={isConverison ? 'click-off' : ''}>
-                                        <RSCheckbox
-                                            control={control}
-                                            name={'goalConversion'}
-                                            labelName={CONVERSION}
-                                            checked={goalDefault?.isConverison}
-                                            handleChange={(e) => {
-                                                if (e?.target?.checked) getGoalType('C');
-                                                setGoalDefault((prev) => ({
-                                                    ...prev,
-                                                    isConverison: e?.target?.checked,
-                                                }));
-                                                if (goalConversion && !goalEngagement) {
-                                                    setDefaultTab(1);
-                                                } else if (goalConversion && goalEngagement) {
-                                                    setDefaultTab(0);
-                                                }
-                                                if (!e?.target?.checked) {
-                                                    goalContentFields?.forEach((fieldName) => {
-                                                        setValue(`conversion${fieldName}`, '');
-                                                        clearErrors(`conversion${fieldName}`);
-                                                    });
-                                                }
-                                            }}
-                                        />
-                                    </Col>
-                                </Row>
-                            </div>
-                        )}
-                        {!!analyticsPlatform && domain && (goalEngagement || goalConversion) && (
-                            <div className="no-scroll-rs-content-tabs">
-                                <RSTabber
-                                    className="res-content-tabs-split"
-                                    // defaultClass={`col-md-6 `}
-                                    dynamicTab={`mb0 mini`}
-                                    componentClassName={'mt41 w-100'}
-                                    activeClass={`active`}
-                                    //heading={deliveryType}
-                                    // heading={''}
-                                    flatTabs
-                                    // refresh
-                                    noMarginLeftRight
-                                    // isRefreshConfirmation={true}
-                                    defaultTab={
-                                        goalDefaultTab
-                                        // isEdit
-                                        //     ? defaultTab
-                                        // goalEngagement ? 0 : goalConversion ? 1 : goalConversion && goalEngagement && 0
-                                    }
-                                    // defaultTab={defaultTab}
-                                    // disableOtherTabs={currentPage !== null}
-
-                                    tabData={[
-                                        {
-                                            id: 'engagment',
-                                            text:
-                                                state?.primaryGoal === 'Reach'
-                                                    ? 'Engagement'
-                                                    : state?.primaryGoal === 'Engagement'
-                                                    ? 'Engagement (Primary)'
-                                                    : state?.secondaryGoal === 'Engagement'
-                                                    ? 'Engagement (Secondary)'
-                                                    : 'Engagement',
-                                            component: () => (
-                                                <GoalContent
-                                                    key={`engagement`}
-                                                    name={'engagement'}
-                                                    conversionData={conversionData}
-                                                    goal={goal}
-                                                    url={engagementPages?.url}
-                                                    isAppAnalytics={false}
-                                                    contentTypes={contentTypes}
-                                                    setContentTypes={setContentTypes}
-                                                    editEventList={
-                                                        webFieldTrackEditData?.engagement?.elementArray || []
+                                            </div>
+                                        </Col>
+                                    </Row>
+                                </div>
+                            )}
+                            {!!analyticsPlatform && domain && (
+                                <div className="form-group">
+                                    <Row>
+                                        <Col sm={{ offset: 1, span: 2 }}>
+                                            <label className="control-label-left">{GOAL}</label>
+                                        </Col>
+                                        <Col sm={2} className={isEngagement ? 'click-off' : ''}>
+                                            <RSCheckbox
+                                                control={control}
+                                                name={'goalEngagement'}
+                                                labelName={ENGAGEMENT}
+                                                checked={goalDefault?.isEngagement}
+                                                handleChange={(e) => {
+                                                    if (e?.target?.checked) getGoalType('E');
+                                                    setGoalDefault((prev) => ({
+                                                        ...prev,
+                                                        isEngagement: e?.target?.checked,
+                                                    }));
+                                                    if (
+                                                        (goalEngagement && goalEngagement) ||
+                                                        (goalEngagement && !goalConversion)
+                                                    ) {
+                                                        setDefaultTab(0);
                                                     }
-                                                    handleEditEvent={handleEditEvent}
-                                                />
-                                            ),
-                                            disable: !goalEngagement,
-                                        },
-                                        {
-                                            id: 'conversion',
-                                            text:
-                                                state?.primaryGoal === 'Reach'
-                                                    ? 'Conversion'
-                                                    : state?.primaryGoal === 'Conversion'
-                                                    ? 'Conversion (Primary)'
-                                                    : state?.secondaryGoal === 'Conversion'
-                                                    ? 'Conversion (Secondary)'
-                                                    : 'Conversion',
-                                            component: () => (
-                                                <GoalContent
-                                                    key={`conversion`}
-                                                    name={'conversion'}
-                                                    conversionData={conversionData}
-                                                    goal={goal}
-                                                    isAppAnalytics={false}
-                                                    url={conversionPages?.url}
-                                                    contentTypes={contentTypes}
-                                                    setContentTypes={setContentTypes}
-                                                    editEventList={
-                                                        webFieldTrackEditData?.conversion?.elementArray || []
+                                                    if (!e?.target?.checked) {
+                                                        goalContentFields?.forEach((fieldName) => {
+                                                            setValue(`engagement${fieldName}`, '');
+                                                            clearErrors(`engagement${fieldName}`);
+                                                        });
                                                     }
-                                                    handleEditEvent={handleEditEvent}
-                                                />
-                                            ),
-                                            disable: !goalConversion,
+                                                }}
+                                            />
+                                        </Col>
+                                        <Col sm={2} className={isConverison ? 'click-off' : ''}>
+                                            <RSCheckbox
+                                                control={control}
+                                                name={'goalConversion'}
+                                                labelName={CONVERSION}
+                                                checked={goalDefault?.isConverison}
+                                                handleChange={(e) => {
+                                                    if (e?.target?.checked) getGoalType('C');
+                                                    setGoalDefault((prev) => ({
+                                                        ...prev,
+                                                        isConverison: e?.target?.checked,
+                                                    }));
+                                                    if (goalConversion && !goalEngagement) {
+                                                        setDefaultTab(1);
+                                                    } else if (goalConversion && goalEngagement) {
+                                                        setDefaultTab(0);
+                                                    }
+                                                    if (!e?.target?.checked) {
+                                                        goalContentFields?.forEach((fieldName) => {
+                                                            setValue(`conversion${fieldName}`, '');
+                                                            clearErrors(`conversion${fieldName}`);
+                                                        });
+                                                    }
+                                                }}
+                                            />
+                                        </Col>
+                                    </Row>
+                                </div>
+                            )}
+                            {!!analyticsPlatform && domain && (goalEngagement || goalConversion) && (
+                                <div className="no-scroll-rs-content-tabs">
+                                    <RSTabber
+                                        className="res-content-tabs-split"
+                                        // defaultClass={`col-md-6 `}
+                                        dynamicTab={`mb0 mini`}
+                                        componentClassName={'mt41 w-100'}
+                                        activeClass={`active`}
+                                        //heading={deliveryType}
+                                        // heading={''}
+                                        flatTabs
+                                        // refresh
+                                        noMarginLeftRight
+                                        // isRefreshConfirmation={true}
+                                        defaultTab={
+                                            goalDefaultTab
+                                            // isEdit
+                                            //     ? defaultTab
+                                            // goalEngagement ? 0 : goalConversion ? 1 : goalConversion && goalEngagement && 0
+                                        }
+                                        // defaultTab={defaultTab}
+                                        // disableOtherTabs={currentPage !== null}
 
-                                            // disable: type,
-                                        },
-                                    ]}
-                                    callBack={(data, tabIndex) => {
-                                        if (id === 'conversion' && goal.C?.length === 0) {
-                                            getGoalType('C');
-                                        }
-                                        if (id === 'engagement' && goal.C?.length === 0) {
-                                            getGoalType('E');
-                                        }
-                                        setValue('goalDefaultTab', tabIndex);
-                                        // console.log('Data :::: ', data, tabIndex);
-                                    }}
-                                />
-                            </div>
-                        )}
-                        {/* {goalEngagement && !!analyticsPlatform && (
+                                        tabData={[
+                                            {
+                                                id: 'engagment',
+                                                text:
+                                                    state?.primaryGoal === 'Reach'
+                                                        ? 'Engagement'
+                                                        : state?.primaryGoal === 'Engagement'
+                                                            ? 'Engagement (Primary)'
+                                                            : state?.secondaryGoal === 'Engagement'
+                                                                ? 'Engagement (Secondary)'
+                                                                : 'Engagement',
+                                                component: () => (
+                                                    <GoalContent
+                                                        key={`engagement`}
+                                                        name={'engagement'}
+                                                        conversionData={conversionData}
+                                                        goal={goal}
+                                                        url={engagementPages?.url}
+                                                        isAppAnalytics={false}
+                                                        contentTypes={contentTypes}
+                                                        setContentTypes={setContentTypes}
+                                                        editEventList={
+                                                            webFieldTrackEditData?.engagement?.elementArray || []
+                                                        }
+                                                        handleEditEvent={handleEditEvent}
+                                                    />
+                                                ),
+                                                disable: !goalEngagement,
+                                            },
+                                            {
+                                                id: 'conversion',
+                                                text:
+                                                    state?.primaryGoal === 'Reach'
+                                                        ? 'Conversion'
+                                                        : state?.primaryGoal === 'Conversion'
+                                                            ? 'Conversion (Primary)'
+                                                            : state?.secondaryGoal === 'Conversion'
+                                                                ? 'Conversion (Secondary)'
+                                                                : 'Conversion',
+                                                component: () => (
+                                                    <GoalContent
+                                                        key={`conversion`}
+                                                        name={'conversion'}
+                                                        conversionData={conversionData}
+                                                        goal={goal}
+                                                        isAppAnalytics={false}
+                                                        url={conversionPages?.url}
+                                                        contentTypes={contentTypes}
+                                                        setContentTypes={setContentTypes}
+                                                        editEventList={
+                                                            webFieldTrackEditData?.conversion?.elementArray || []
+                                                        }
+                                                        handleEditEvent={handleEditEvent}
+                                                    />
+                                                ),
+                                                disable: !goalConversion,
+
+                                                // disable: type,
+                                            },
+                                        ]}
+                                        callBack={(data, tabIndex) => {
+                                            if (id === 'conversion' && goal.C?.length === 0) {
+                                                getGoalType('C');
+                                            }
+                                            if (id === 'engagement' && goal.C?.length === 0) {
+                                                getGoalType('E');
+                                            }
+                                            setValue('goalDefaultTab', tabIndex);
+                                            // console.log('Data :::: ', data, tabIndex);
+                                        }}
+                                    />
+                                </div>
+                            )}
+                            {/* {goalEngagement && !!analyticsPlatform && (
                         <Fragment>
                             <div className="form-group">
                                 <Row>
@@ -1461,7 +1467,7 @@ const WebAnalytics = () => {
                             </Row>
                         </div>
                     )} */}
-                        {/* {goalEngagement && !!analyticsPlatform && (
+                            {/* {goalEngagement && !!analyticsPlatform && (
                         <EventTracking
                             events={events}
                             setAlert_flag={setAlert_flag}
@@ -1469,7 +1475,7 @@ const WebAnalytics = () => {
                             handleSubmit={handleSubmit((data) => formSubmitHandler(data, 'url'))}
                         />
                     )} */}
-                        {/* {goalConversion && !!analyticsPlatform && (
+                            {/* {goalConversion && !!analyticsPlatform && (
                         <EventTracking
                             events={events}
                             setAlert_flag={setAlert_flag}
@@ -1477,7 +1483,7 @@ const WebAnalytics = () => {
                             handleSubmit={handleSubmit((data) => formSubmitHandler(data, 'url'))}
                         />
                     )} */}
-                        {/* {(state?.secondaryGoal === 'Engagement' || state?.secondaryGoal === 'Conversion') &&
+                            {/* {(state?.secondaryGoal === 'Engagement' || state?.secondaryGoal === 'Conversion') &&
                         !!analyticsPlatform && (
                             <div className="form-group">
                                 <Row>
@@ -1530,74 +1536,90 @@ const WebAnalytics = () => {
                                 </Row>
                             </div>
                         )} */}
-                    </div>
-                    <div className="buttons-holder">
-                        <RSSecondaryButton
-                            onClick={() => {
-                                dispatch(resetCreateCommunication());
-                                navigate('/communication', {
-                                    replace: true,
-                                    state: {
-                                        index: 0,
-                                    },
-                                });
-                                localStorage.removeItem('savedChannel');
-                                localStorage.removeItem('__webFieldTrackEventData');
-                            }}
-                            id="rs_WebAnalytics_cancel"
-                        >
-                            {CANCEL}
-                        </RSSecondaryButton>
-                        <RSSecondaryButton
-                            className="color-primary-blue"
-                            //type="submit"
-                            onClick={() => {
-                                handleSubmit((data) => formSubmitHandler(data, 'save'))();
-                            }}
-                            id="rs_WebAnalytics_Save"
-                            isLoading={isSaveLoading}
-                            blockBodyPointerEvents
-                            disabledClass={isSubmitting ? 'pe-none click-off' : ''}
-                        >
-                            {SAVE}
-                        </RSSecondaryButton>
-                        <RSPrimaryButton
-                            isLoading={isNextLoading}
-                            blockBodyPointerEvents
-                            disabledClass={isSubmitting ? 'pe-none click-off' : ''}
-                            onClick={() => {
-                                // debugger;
-                                // if (!isValid) trigger();
-                                if (!isDirty && !isValid) {
-                                    setNavigate_confirm(true);
-                                } else {
-                                    handleSubmit((data) => formSubmitHandler(data, 'form', false))();
-                                }
-                                // if (isValid) {
-                                //     handleSubmit((data) => formSubmitHandler(data, 'form', false))();
-                                // } else {
-                                //     trigger();
-                                // }
-                            }}
-                            id="rs_WebAnalytics_next"
-                        >
-                            {NEXT}
-                        </RSPrimaryButton>
-                    </div>
-                </form>
-                <RSConfirmationModal
-                    show={navigate_confirm}
-                    text={IGNORE_WEB_ANALYTICS}
-                    primaryButtonText={OK}
-                    handleClose={() => {
-                        setNavigate_confirm(false);
-                    }}
-                    handleConfirm={() => {
-                        setNavigate_confirm(false);
-                        window.setTimeout(() => handleNavigation(), 0);
-                    }}
-                />
-            </FormProvider>
+                        </div>
+                        <div className="buttons-holder">
+                            <RSSecondaryButton
+                                onClick={() => {
+                                    dispatch(resetCreateCommunication());
+                                    navigate('/communication', {
+                                        replace: true,
+                                        state: {
+                                            index: 0,
+                                        },
+                                    });
+                                    localStorage.removeItem('savedChannel');
+                                    localStorage.removeItem('__webFieldTrackEventData');
+                                }}
+                                id="rs_WebAnalytics_cancel"
+                            >
+                                {CANCEL}
+                            </RSSecondaryButton>
+                            <RSSecondaryButton
+                                className="color-primary-blue"
+                                //type="submit"
+                                onClick={() => {
+                                    // Click-off: skip save API, leave Create like Cancel/list flow.
+                                    if (isWebAnalyticsClickOff) {
+                                        dispatch(resetCreateCommunication());
+                                        navigate('/communication', {
+                                            replace: true,
+                                            state: { index: 0 },
+                                        });
+                                        return;
+                                    }
+                                    handleSubmit((data) => formSubmitHandler(data, 'save'))();
+                                }}
+                                id="rs_WebAnalytics_Save"
+                                isLoading={isSaveLoading}
+                                blockBodyPointerEvents
+                                disabledClass={isSubmitting ? 'pe-none click-off' : ''}
+                            >
+                                {SAVE}
+                            </RSSecondaryButton>
+                            <RSPrimaryButton
+                                isLoading={isNextLoading}
+                                blockBodyPointerEvents
+                                disabledClass={isSubmitting ? 'pe-none click-off' : ''}
+                                onClick={() => {
+                                    // Click-off: navigate only — no validation / saveWebAnalyticsChannel.
+                                    if (isWebAnalyticsClickOff) {
+                                        handleNavigation();
+                                        return;
+                                    }
+                                    if (!shouldPromptSkipChannelConfirmation()) {
+                                        handleNavigation();
+                                        return;
+                                    }
+                                    if (!isDirty && !isValid) {
+                                        setNavigate_confirm(true);
+                                    } else {
+                                        handleSubmit((data) => formSubmitHandler(data, 'form', false))();
+                                    }
+                                    // if (isValid) {
+                                    //     handleSubmit((data) => formSubmitHandler(data, 'form', false))();
+                                    // } else {
+                                    //     trigger();
+                                    // }
+                                }}
+                                id="rs_WebAnalytics_next"
+                            >
+                                {NEXT}
+                            </RSPrimaryButton>
+                        </div>
+                    </form>
+                    <RSConfirmationModal
+                        show={navigate_confirm}
+                        text={IGNORE_WEB_ANALYTICS}
+                        primaryButtonText={OK}
+                        handleClose={() => {
+                            setNavigate_confirm(false);
+                        }}
+                        handleConfirm={() => {
+                            setNavigate_confirm(false);
+                            window.setTimeout(() => handleNavigation(), 0);
+                        }}
+                    />
+                </FormProvider>
             </AuthoringChannelEditSkeletonGate>
 
             {isShowWFTM && (

@@ -2388,14 +2388,14 @@ export const AUDIENCE_TOOLTIP_TEXT = (
     <Fragment>
         <ul className="rs-tooltip-text-multi">
             <li>
-                <b>Known user: </b>
+                <p className='d-inline-block font-bold fs13 mr5'>Known user:</p>
                 <span>
                     Returning Visitor who has given consent but the generated token hasn't been associated with a brand
                     ID
                 </span>
             </li>
             <li>
-                <b>Identified: </b>
+                <p className='d-inline-block font-bold fs13 mr5'>Identified:</p>
                 <span>
                     Visitor who has given consent and the generated token has been associated with their brand ID
                 </span>

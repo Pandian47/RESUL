@@ -1,6 +1,6 @@
 import { getUserCurrentFormat } from 'Utils/modules/dateTime';
-import { EDIT } from 'Constants/GlobalConstant/Placeholders';
-import { pencil_edit_medium } from 'Constants/GlobalConstant/Glyphicons';
+import { EDIT, VIEW } from 'Constants/GlobalConstant/Placeholders';
+import { pencil_edit_medium, eye_medium } from 'Constants/GlobalConstant/Glyphicons';
 import { memo, useEffect, useMemo, useRef } from 'react';
 import RSModal from 'Components/RSModal';
 import KendoGrid from 'Components/RSKendoGrid';
@@ -63,6 +63,7 @@ const IntegratedSystemsConnectionsModal = ({
     const isRowEditing =
       editingRowKey != null &&
       (editingRowKey === dataItem?.remoteSettingId || editingRowKey === dataItem?._gridRowKey);
+    const isOneTime = dataItem?.scheduleFrequency?.toString()?.toLowerCase() === 'one time';
     const runEdit = (e) => {
       e?.stopPropagation?.();
       e?.preventDefault?.();
@@ -86,11 +87,11 @@ const IntegratedSystemsConnectionsModal = ({
                 <div className="segment_loader" />
               </div>
             ) : (
-              <RSTooltip text={EDIT} position="top">
+              <RSTooltip text={isOneTime ? VIEW : EDIT} position="top">
                 <div className="d-inline-flex align-items-center justify-content-center">
                   <i
-                    id={`rs_integrated_systems_row_edit_${dataItem?._gridRowKey}`}
-                    className={`${pencil_edit_medium} color-primary-blue icon-md`}
+                    id={`rs_integrated_systems_row_${isOneTime ? 'view' : 'edit'}_${dataItem?._gridRowKey}`}
+                    className={`${isOneTime ? eye_medium : pencil_edit_medium} color-primary-blue icon-md`}
                   />
                 </div>
               </RSTooltip>

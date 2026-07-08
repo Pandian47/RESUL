@@ -644,6 +644,7 @@ export const INITIAL_STATE = {
     showSchedulerModal: false,
     isScheduled: false,
     sentCommunicationModal: false,
+    isLivePreview: false,
     isNavigationConfirmation: false,
     isSmartLink: false,
     testSentCommunicationModal: false,

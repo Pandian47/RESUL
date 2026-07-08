@@ -292,7 +292,7 @@ const NewUser = ({ onAuthLoadingChange = () => {} }) => {
                             <RSPrimaryButton
                                 id="rs_NewUser_Signup"
                                 type="submit"
-                                className={`${!formValid || !isCaptchaValid || signUpLoader.isLoading ? 'click-off' : ''}`}
+                                disabledClass={`${!formValid || !isCaptchaValid || signUpLoader.isLoading ? 'pe-none click-off' : ''}`}
                                 isLoading={signUpLoader.isLoading}
                                 blockBodyPointerEvents
                             >

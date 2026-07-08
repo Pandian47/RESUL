@@ -21,8 +21,7 @@ const AdUserAzureFormSkeleton = () => (
             {Array.from({ length: 4 }, (_, index) => (
                 <Col md={6} key={index}>
                     <div className="form-group">
-                        <CommonSkeleton box height={12} width="45%" stopAnimation mainClass="mb-2" />
-                        <CommonSkeleton box height={32} width="100%" stopAnimation />
+                        <CommonSkeleton box height={24} width="100%" stopAnimation />
                     </div>
                 </Col>
             ))}

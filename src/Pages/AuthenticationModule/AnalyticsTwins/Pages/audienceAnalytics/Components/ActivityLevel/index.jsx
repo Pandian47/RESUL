@@ -60,7 +60,7 @@ const ActivityLevel = () => {
                 {isActivityLoading || !hasOverviewSettled ? (
                     <A360ActivityLevelBodySkeleton />
                 ) : hasActivityData ? (
-                  <ul className="activityLevelBlock">
+                   <ul className="activityLevelBlock" key={overView?.recipientCount}>
                                           <li>
                                               <h1>
                                                   {overView?.reachCount}

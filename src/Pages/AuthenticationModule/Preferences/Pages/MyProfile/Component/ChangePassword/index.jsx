@@ -251,20 +251,9 @@ const ChangePasswordModal = ({ handleClose, show: showModal, phoneNo, dialCode }
                                                 ? CANNOT_BE_SAME_AS_CURRENT_PASSWORD
                                                 : true,
                                     }}
+                                    smallText= {MIN_8_CHARACTERS}
+                                    rightTooltip = {PASSWORD_MAX_15_CHARACTERS}
                                 />
-                                <small>
-                                    {MIN_8_CHARACTERS}{' '}
-                                    <RSPPophover
-                                        position="top"
-                                        pophover={PASSWORD_MAX_15_CHARACTERS}
-                                        popover_overlay_class={'modalOverlayZindexCSS'}
-                                    >
-                                        <i
-                                            className={` ${circle_question_mark_mini} color-primary-blue icon-xs position-relative top2`}
-                                            id="circle_question_mark"
-                                        ></i>
-                                    </RSPPophover>
-                                </small>
                             </div>
                             <div className="form-group rs-modal-no-footer-button">
                                 <RSInput

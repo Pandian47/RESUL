@@ -276,7 +276,7 @@ const LivePreviewModal = ({
                         <small className="align-items-center d-flex position-relative top-5">
                             to me
                             <span>
-                                <i className={`${caret_mini} fs10 color-primary-grey pointer-event-none`}></i>
+                                <i className={`${caret_mini} fs10 color-primary-grey pointer-event-none pl5`}></i>
                             </span>
                         </small>
                     </div>

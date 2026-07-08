@@ -353,7 +353,7 @@ export const getPreviewData = (mySql) => {
 
 export const finalPayload_mySQL = (mySql, getValues, type) => {
     const {
-        data: { sourceName, remoteDataSourceID },
+        data: { sourceName, remoteDataSourceID, remoteSettingId },
     } = type;
     const { ipAddress, userName, password, databaseName, portNumber, instanceName, updatedCycle, primaryKey, foreignKey } = getValues();
     const tableName = Object.entries(mySql).map(([key, res]) => {
@@ -393,7 +393,8 @@ export const finalPayload_mySQL = (mySql, getValues, type) => {
         host: ipAddress,
         port: portNumber,
         dbName: databaseName,
-
+        connectorName: sourceName,
+        remoteSettingId: remoteSettingId || 0,
         friendlyName: instanceName,
         listType: 5,
         sourceType: remoteDataSourceID,
@@ -417,7 +418,7 @@ export const finalPayload_oracle = (mySql, getValues, type) => {
         foreignKey,
     } = getValues();
     const {
-        data: { sourceName, remoteDataSourceID },
+        data: { sourceName, remoteDataSourceID,remoteSettingId },
     } = type;
 
     const rightAtt = [];
@@ -451,6 +452,7 @@ export const finalPayload_oracle = (mySql, getValues, type) => {
         port: portNumber,
         connectorName: sourceName,
         connectorId: remoteDataSourceID,
+        remoteSettingId: remoteSettingId || 0,
         serverName: '',
         databaseName: '',
         friendlyName: instanceName,
@@ -477,7 +479,7 @@ export const finalPayload_snowflake = (mySql, getValues, type) => {
         schema,
     } = getValues();
     const {
-        data: { sourceName, remoteDataSourceID },
+        data: { sourceName, remoteDataSourceID,remoteSettingId },
     } = type;
 
     const rightAtt = [];
@@ -509,6 +511,7 @@ export const finalPayload_snowflake = (mySql, getValues, type) => {
         schema: schema,
         connectorName: sourceName,
         connectorId: remoteDataSourceID,
+        remoteSettingId: remoteSettingId || 0,
         serverName: '',
         friendlyName: instanceName,
         databaseName: '',
@@ -522,7 +525,7 @@ export const finalPayload_snowflake = (mySql, getValues, type) => {
 export const finalPayload_hubspot = (mySql, getValues, type, tabledata) => {
     const { instanceName, updatedCycle, accesstoken, hubid, connection } = getValues();
     const {
-        data: { sourceName, remoteDataSourceID },
+        data: { sourceName, remoteDataSourceID, remoteSettingId },
     } = type;
 
     const tableName = Object.keys(mySql);
@@ -553,6 +556,7 @@ export const finalPayload_hubspot = (mySql, getValues, type, tabledata) => {
         accessToken: accesstoken,
         connectorName: sourceName,
         connectorId: remoteDataSourceID,
+        remoteSettingId: remoteSettingId || 0,
         scheduleFrequency: updatedCycle.typeId,
         listType: 5,
         sourceType: '2',
@@ -565,7 +569,7 @@ export const finalPayload_hubspot = (mySql, getValues, type, tabledata) => {
 export const finalPayload_salesForce = (mySql, getValues, type, tabledata) => {
     const { userName, password, instanceName, updatedCycle, securityToken } = getValues();
     const {
-        data: { sourceName, remoteDataSourceID },
+        data: { sourceName, remoteDataSourceID,remoteSettingId },
     } = type;
 
     const tableName = Object.keys(mySql);
@@ -620,6 +624,7 @@ export const finalPayload_salesForce = (mySql, getValues, type, tabledata) => {
         securityToken: securityToken,
         connectorName: sourceName,
         connectorId: remoteDataSourceID,
+        remoteSettingId: remoteSettingId || 0,
         serverName: '',
         databaseName: '',
         friendlyName: instanceName,
@@ -639,7 +644,7 @@ export const finalPayload_shopify = (mySql, getValues, type, tabledata) => {
         accesstoken,
     } = getValues();
     const {
-        data: { sourceName, remoteDataSourceID },
+        data: { sourceName, remoteDataSourceID,remoteSettingId },
     } = type;
 
     const tableName = Object.keys(mySql);
@@ -684,6 +689,7 @@ export const finalPayload_shopify = (mySql, getValues, type, tabledata) => {
         accessToken: accesstoken,
         shopName: shopName,
         connectorId: remoteDataSourceID,
+        remoteSettingId: remoteSettingId || 0,
         connectorName: sourceName,
         serverName: '',
         databaseName: '',
@@ -702,7 +708,7 @@ export const finalPayload_pipeDrive = (mySql, getValues, type, tabledata) => {
         updatedCycle,
     } = getValues();
     const {
-        data: { sourceName, remoteDataSourceID },
+        data: { sourceName, remoteDataSourceID,remoteSettingId },
     } = type;
 
     const tableName = Object.keys(mySql);
@@ -734,6 +740,7 @@ export const finalPayload_pipeDrive = (mySql, getValues, type, tabledata) => {
         connectorId: remoteDataSourceID,
         connectorName: sourceName,
         friendlyName: instanceName,
+        remoteSettingId: remoteSettingId || 0,
         listType: 5,
         sourceType: '2',
         scheduleFrequency: updatedCycle.typeId,
@@ -755,7 +762,7 @@ export const finalPayload_cassandra = (mySql, getValues, type, tabledata) => {
         password,
     } = getValues();
     const {
-        data: { sourceName, remoteDataSourceID },
+        data: { sourceName, remoteDataSourceID,remoteSettingId },
     } = type;
 
     const tableName = Object.keys(mySql);
@@ -788,6 +795,7 @@ export const finalPayload_cassandra = (mySql, getValues, type, tabledata) => {
         port: portNumber,
         keyspaces: databaseName,
         connectorId: remoteDataSourceID,
+        remoteSettingId: remoteSettingId || 0,
         connectorName: sourceName,
         friendlyName: instanceName,
         listType: 5,
@@ -810,7 +818,7 @@ export const finalPayload_aeroSpike = (mySql, getValues, type, tabledata) => {
         password,
     } = getValues();
     const {
-        data: { sourceName, remoteDataSourceID },
+        data: { sourceName, remoteDataSourceID,remoteSettingId },
     } = type;
 
     const tableName = Object.keys(mySql);
@@ -843,6 +851,7 @@ export const finalPayload_aeroSpike = (mySql, getValues, type, tabledata) => {
         port: portNumber,
         namespace: databaseName,
         connectorId: remoteDataSourceID,
+        remoteSettingId: remoteSettingId || 0,
         connectorName: sourceName,
         friendlyName: instanceName,
         listType: 5,
@@ -865,7 +874,7 @@ export const finalPayload_mongodb = (mySql, getValues, type, tabledata) => {
         password,
     } = getValues();
     const {
-        data: { sourceName, remoteDataSourceID },
+        data: { sourceName, remoteDataSourceID,remoteSettingId },
     } = type;
 
     const rightAtt = [];
@@ -897,6 +906,7 @@ export const finalPayload_mongodb = (mySql, getValues, type, tabledata) => {
         port: portNumber,
         database: databaseName,
         connectorId: remoteDataSourceID,
+        remoteSettingId: remoteSettingId || 0,
         connectorName: sourceName,
         friendlyName: instanceName,
         listType: 5,
@@ -909,7 +919,7 @@ export const finalPayload_mongodb = (mySql, getValues, type, tabledata) => {
 export const finalPayload_storehippo = (mySql, getValues, type, tabledata) => {
     const { instanceName, updatedCycle, shopName, accesstoken } = getValues();
     const {
-        data: { sourceName, remoteDataSourceID },
+        data: { sourceName, remoteDataSourceID,remoteSettingId },
     } = type;
 
     const rightAtt = [];
@@ -938,6 +948,7 @@ export const finalPayload_storehippo = (mySql, getValues, type, tabledata) => {
         shopName: shopName,
         accessKey: accesstoken,
         connectorId: remoteDataSourceID,
+        remoteSettingId: remoteSettingId || 0,
         connectorName: sourceName,
         listType: 5,
         sourceType: '2',
@@ -950,7 +961,7 @@ export const finalPayload_storehippo = (mySql, getValues, type, tabledata) => {
 export const finalPayload_postgresql = (mySql, getValues, type, tabledata) => {
     const { instanceName, userName, password, updatedCycle, ipAddress, schema, databaseName, portNumber } = getValues();
     const {
-        data: { sourceName, remoteDataSourceID },
+        data: { sourceName, remoteDataSourceID,remoteSettingId },
     } = type;
 
     const tableName = Object.keys(mySql);
@@ -985,6 +996,7 @@ export const finalPayload_postgresql = (mySql, getValues, type, tabledata) => {
         database: databaseName,
         port: portNumber,
         connectorId: remoteDataSourceID,
+        remoteSettingId: remoteSettingId || 0,
         connectorName: sourceName,
         listType: 5,
         sourceType: '2',
@@ -998,7 +1010,7 @@ export const finalPayload_dataBricks = (mySql, getValues, type, tabledata) => {
     const { instanceName, resource, httpPath, updatedCycle, accesstoken, schema, databaseName, portNumber } =
         getValues();
     const {
-        data: { sourceName, remoteDataSourceID },
+        data: { sourceName, remoteDataSourceID,remoteSettingId },
     } = type;
 
     const tableName = Object.keys(mySql);
@@ -1032,6 +1044,7 @@ export const finalPayload_dataBricks = (mySql, getValues, type, tabledata) => {
         database: databaseName,
         schema: schema,
         connectorId: remoteDataSourceID,
+        remoteSettingId: remoteSettingId || 0,
         connectorName: sourceName,
         listType: 5,
         sourceType: '2',
@@ -1045,7 +1058,7 @@ export const finalPayload_eventbrite = (mySql, getValues, type, tabledata) => {
     const { instanceName, userName, password, updatedCycle, ipAddress, schema, databaseName, portNumber, accesstoken } =
         getValues();
     const {
-        data: { sourceName, remoteDataSourceID },
+        data: { sourceName, remoteDataSourceID,remoteSettingId },
     } = type;
 
     const tableName = Object.keys(mySql);
@@ -1074,6 +1087,7 @@ export const finalPayload_eventbrite = (mySql, getValues, type, tabledata) => {
     return {
         authToken: accesstoken,
         connectorId: remoteDataSourceID,
+        remoteSettingId: remoteSettingId || 0,
         connectorName: sourceName,
         listType: 5,
         sourceType: '2',
@@ -1099,7 +1113,7 @@ export const finalPayload_bigCommerce = (mySql, getValues, type, tabledata) => {
         shopName,
     } = getValues();
     const {
-        data: { sourceName, remoteDataSourceID },
+        data: { sourceName, remoteDataSourceID,remoteSettingId },
     } = type;
 
     const tableName = Object.keys(mySql);
@@ -1129,6 +1143,7 @@ export const finalPayload_bigCommerce = (mySql, getValues, type, tabledata) => {
         storeHash: storehash,
         shopName: shopName,
         connectorId: remoteDataSourceID,
+        remoteSettingId: remoteSettingId || 0,
         connectorName: sourceName,
         listType: 5,
         sourceType: '2',
@@ -1154,7 +1169,7 @@ export const finalPayload_prestashop = (mySql, getValues, type, tabledata) => {
         resource,
     } = getValues();
     const {
-        data: { sourceName, remoteDataSourceID },
+        data: { sourceName, remoteDataSourceID,remoteSettingId },
     } = type;
 
     const tableName = Object.keys(mySql);
@@ -1183,6 +1198,7 @@ export const finalPayload_prestashop = (mySql, getValues, type, tabledata) => {
         prestashopUrl: shopName,
         apiKey: resource,
         connectorId: remoteDataSourceID,
+        remoteSettingId: remoteSettingId || 0,
         connectorName: sourceName,
         listType: 5,
         sourceType: '2',
@@ -1249,7 +1265,7 @@ export const finalPayload_blackBaud = (mySql, getValues, type, tabledata) => {
 export const finalPayload_magento = (mySql, getValues, type, tabledata) => {
     const { instanceName, userName, password, updatedCycle, accesstoken, resource } = getValues();
     const {
-        data: { sourceName, remoteDataSourceID },
+        data: { sourceName, remoteDataSourceID,remoteSettingId },
     } = type;
 
     const tableName = Object.keys(mySql);
@@ -1280,6 +1296,7 @@ export const finalPayload_magento = (mySql, getValues, type, tabledata) => {
         magentoUrl: resource,
         accessToken: accesstoken,
         connectorId: remoteDataSourceID,
+        remoteSettingId: remoteSettingId || 0,
         connectorName: sourceName,
         listType: 5,
         sourceType: '2',
@@ -1293,7 +1310,7 @@ export const finalPayload_magento = (mySql, getValues, type, tabledata) => {
 export const finalPayload_leadSquare = (mySql, getValues, type, tabledata) => {
     const { instanceName, apiHost, accessKey, userName, updatedCycle, secretKey } = getValues();
     const {
-        data: { sourceName, remoteDataSourceID },
+        data: { sourceName, remoteDataSourceID,remoteSettingId },
     } = type;
 
     const tableName = Object.keys(mySql);
@@ -1323,6 +1340,7 @@ export const finalPayload_leadSquare = (mySql, getValues, type, tabledata) => {
         accessKey: accessKey,
         secretKey: secretKey,
         connectorId: remoteDataSourceID,
+        remoteSettingId: remoteSettingId || 0,
         connectorName: sourceName,
         listType: 5,
         sourceType: '2',
@@ -1335,7 +1353,7 @@ export const finalPayload_leadSquare = (mySql, getValues, type, tabledata) => {
 export const finalPayload_cNl = (mySql, getValues, type, tabledata) => {
     const { instanceName, accesstoken, userName, updatedCycle } = getValues();
     const {
-        data: { sourceName, remoteDataSourceID },
+        data: { sourceName, remoteDataSourceID,remoteSettingId },
     } = type;
 
     const tableName = Object.keys(mySql);
@@ -1363,6 +1381,7 @@ export const finalPayload_cNl = (mySql, getValues, type, tabledata) => {
     return {
         apiKey: accesstoken,
         connectorId: remoteDataSourceID,
+        remoteSettingId: remoteSettingId || 0,
         connectorName: sourceName,
         listType: 5,
         sourceType: '2',
@@ -1375,7 +1394,7 @@ export const finalPayload_cNl = (mySql, getValues, type, tabledata) => {
 export const finalPayload_wooCommerce = (mySql, getValues, type, tabledata) => {
     const { instanceName, apiHost, accessKey, userName, updatedCycle, secretKey } = getValues();
     const {
-        data: { sourceName, remoteDataSourceID },
+        data: { sourceName, remoteDataSourceID,remoteSettingId },
     } = type;
 
     const tableName = Object.keys(mySql);
@@ -1405,6 +1424,7 @@ export const finalPayload_wooCommerce = (mySql, getValues, type, tabledata) => {
         consumerKey: accessKey,
         consumerSecret: secretKey,
         connectorId: remoteDataSourceID,
+        remoteSettingId: remoteSettingId || 0,
         connectorName: sourceName,
         listType: 5,
         sourceType: '2',
@@ -1418,7 +1438,7 @@ export const finalPayload_wooCommerce = (mySql, getValues, type, tabledata) => {
 export const finalPayload_wix = (mySql, getValues, type, tabledata) => {
     const { instanceName, apiHost, authId, siteId, updatedCycle, secretKey } = getValues();
     const {
-        data: { sourceName, remoteDataSourceID },
+        data: { sourceName, remoteDataSourceID,remoteSettingId },
     } = type;
 
     const tableName = Object.keys(mySql);
@@ -1447,6 +1467,7 @@ export const finalPayload_wix = (mySql, getValues, type, tabledata) => {
         authId: authId,
         siteId: siteId,
         connectorId: remoteDataSourceID,
+        remoteSettingId: remoteSettingId || 0,
         connectorName: sourceName,
         listType: 5,
         sourceType: '2',
@@ -1651,7 +1672,7 @@ export const finalPayload_googleBigQuery = (mySql, getValues, type, tabledata) =
         getValues();
 
     const {
-        data: { sourceName, remoteDataSourceID },
+        data: { sourceName, remoteDataSourceID,remoteSettingId },
     } = type;
 
     const tableName = Object.keys(mySql);
@@ -1681,6 +1702,7 @@ export const finalPayload_googleBigQuery = (mySql, getValues, type, tabledata) =
         datasetInfo: datasetInfo,
         projectName: projectName,
         connectorId: remoteDataSourceID,
+        remoteSettingId: remoteSettingId || 0,
         connectorName: sourceName,
         columnName: columnName,
         listType: 5,
@@ -1694,7 +1716,7 @@ export const finalPayload_Insightly = (mySql, getValues, type, tabledata) => {
     const { resource, updatedCycle, instanceName } = getValues();
 
     const {
-        data: { sourceName, remoteDataSourceID },
+        data: { sourceName, remoteDataSourceID,remoteSettingId },
     } = type;
 
     const tableName = Object.keys(mySql);
@@ -1722,6 +1744,7 @@ export const finalPayload_Insightly = (mySql, getValues, type, tabledata) => {
     return {
         apiKey: resource,
         connectorId: remoteDataSourceID,
+        remoteSettingId: remoteSettingId || 0,
         connectorName: sourceName,
         columnName: columnName,
         listType: 5,
@@ -1853,6 +1876,7 @@ export const finalPayload_Prestodb = (mySql, getValues, type, tabledata) => {
         catalog: catalog,
         schema: schema,
         connectorId: 159,
+        remoteSettingId: remoteSettingId || 0,
         connectorName: 'PrestoDB',
         departmentId: 1,
         listType: 5,
@@ -1899,6 +1923,7 @@ export const finalPayload_Commercetools = (mySql, getValues, type, tabledata) =>
         projectKey: projectName,
         authHost: resource,
         connectorId: remoteDataSourceID,
+        remoteSettingId: remoteSettingId || 0,
         connectorName: sourceName,
         columnName: columnName,
         listType: 5,
@@ -1942,6 +1967,7 @@ export const finalPayload_GoogleSheets = (mySql, getValues, type, tabledata) => 
         spreadsheetId: spreadsheetId,
         credentialsPath: jsonFilePath,
         connectorId: remoteDataSourceID,
+        remoteSettingId: remoteSettingId || 0,
         connectorName: sourceName,
         columnName: columnName,
         listType: 5,

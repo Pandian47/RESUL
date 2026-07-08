@@ -17,7 +17,7 @@ import { BootstrapDropdown } from 'Components/RSBootstrapDropDown';
 import ResTemplateCardShell from 'CommonComponents/ResTemplateCard';
 
 import Carousel from 'react-bootstrap/Carousel';
-import { duplicateGalleryCommunication, getGalleryDetails } from 'Reducers/communication/gallery/request';
+import { duplicateGalleryCommunication, getGalleryDetails,mdcDuplicateGalleryCommunication } from 'Reducers/communication/gallery/request';
 import { deleteArchiveCommunication, unarchiveCommunication } from 'Reducers/communication/listing/request';
 import { useDispatch, useSelector } from 'react-redux';
 import { getSessionId } from 'Reducers/globalState/selector';
@@ -74,6 +74,7 @@ const Card = ({ list, handleInfoGallery, infoData, infoFactLoading = false, curr
     });
     const [isDuplicating, setIsDuplicating] = useState(false);
     const [showArchiveModal, setShowArchiveModal] = useState(false);
+    const [isPreviewDetailLoading, setIsPreviewDetailLoading] = useState(false);
     const galleryEditLoader = useApiLoader({ autoFetch: false, loaderConfig: GALLERY_FIELD_LOADER_CONFIG });
 
     const imgRef = useRef(null);
@@ -160,23 +161,41 @@ const Card = ({ list, handleInfoGallery, infoData, infoFactLoading = false, curr
     const isCarousal = scrollList?.length > 1 || (hasMultipleCarousels() && list?.deliveryMethod === 'S' && list?.channelId === 41);
 
     const handleSelectedDetails = async (itemSelected) => {
-        let payload = {
+        if (isPreviewDetailLoading) return;
+
+        const payload = {
             departmentId,
             clientId,
             userId,
             campaignId: list?.campaignId,
             blastguid: itemSelected.blastScheduleGuid,
         };
-        const response = await dispatch(getGalleryDetails({ payload }));
-        if (response?.status) {
-            setPopupStatus((pre) => ({ ...pre, status: true, popupValue: response?.data }));
-        } else {
+
+        setIsPreviewDetailLoading(true);
+        try {
+            const response = await dispatch(getGalleryDetails({ payload, loading: false }));
+            if (response?.status) {
+                setPopupStatus((pre) => ({ ...pre, status: true, popupValue: response?.data }));
+            }
+        } finally {
+            setIsPreviewDetailLoading(false);
         }
     };
+
+    const renderPreviewDetailLoader = () =>
+        isPreviewDetailLoading ? (
+            <div className="gallery-preview-detail-loader" aria-live="polite" aria-busy="true">
+                <div className="gallery-preview-detail-loader__content">
+                    <span className="segment_loader" aria-hidden="true" />
+                    <p>Loading preview</p>
+                </div>
+            </div>
+        ) : null;
 
 
 
     const handleDuplicate = async (newCampaignName) => {
+         let fetchAPI =  list?.deliveryMethod === 'M' ? mdcDuplicateGalleryCommunication : duplicateGalleryCommunication;
         setIsDuplicating(true);
         try {
             const payload = {
@@ -187,7 +206,7 @@ const Card = ({ list, handleInfoGallery, infoData, infoFactLoading = false, curr
                 campaignName: newCampaignName || '',
             };
             const response = await dispatch(
-                duplicateGalleryCommunication({
+                fetchAPI({
                     payload,
                 }),
             );
@@ -206,7 +225,7 @@ const Card = ({ list, handleInfoGallery, infoData, infoFactLoading = false, curr
     const disbledItems = (() => {
         if (list?.deliveryMethod === 'M') {
             if (list?.statusId == 9 || list?.statusId == 5) {
-                return ['Edit', 'Duplicate'];
+                return ['Edit'];
             }
             return ['Duplicate'];
         } else if (list?.statusId == 9) {
@@ -333,12 +352,13 @@ const Card = ({ list, handleInfoGallery, infoData, infoFactLoading = false, curr
                 : scrollList?.map((selecteditems, slideIndex) => (
                       <Carousel.Item key={selecteditems?.blastScheduleGuid}>
                           <div
-                              className={`gl-body listing-preview-scroll ${[2, 21, 14, 8, 41]?.includes(list?.channelId) ? 'border-0' : ''} ${list?.channelId === 1 ? 'p0 cp' : list?.channelId === 7 ? 'border-0 p0' : ''} `}
+                              className={`gl-body listing-preview-scroll ${[2, 21, 14, 8, 41]?.includes(list?.channelId) ? 'border-0' : ''} ${list?.channelId === 1 ? 'p0 cp' : list?.channelId === 7 ? 'border-0 p0' : ''} ${list?.channelId === 1 && isPreviewDetailLoading ? 'pe-none' : ''}`}
                               onClick={() => {
                                   list?.channelId === 1 && handleSelectedDetails(selecteditems);
                               }}
                           >
                               <div className="gl-img-scroll-container">
+                                  {list?.channelId === 1 && renderPreviewDetailLoader()}
                                   <div
                                       className={`${list?.channelId === 21 ? 'whatsapp-bg-wrapper' : list?.channelId === 41 || list?.channelId === 7 ? '' : 'gl-img'} ${shouldScroll ? 'scrollable' : 'non-scrollable'} ${list?.channelId === 2 ? 'd-block' : ''}`}
                                   >
@@ -626,6 +646,9 @@ const Card = ({ list, handleInfoGallery, infoData, infoFactLoading = false, curr
                                                                         showAsHtml: useHtmlIframe,
                                                                         isModalPreview: true,
                                                                     }}
+                                                                    onGalleryPreviewClick={() =>
+                                                                        handleSelectedDetails(selecteditems)
+                                                                    }
                                                                 />
                                                             );
                                                         })()

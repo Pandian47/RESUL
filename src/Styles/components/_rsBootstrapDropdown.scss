@@ -629,3 +629,15 @@
 .modal.show .modal-body:has(.rs-bootstrap-dropdown .rs-dropdown.show) {
     overflow: visible !important;
 }
+
+.rs-bootstrap-dropdown .rs-bootstrap-dropdown-menu .k-list-filter {
+    padding: 0;
+     .k-input.k-input-solid {
+       border:  none;
+        padding-top: 3px;
+    .k-input-inner {
+        padding-top: 0;
+        border-bottom: 1px solid $tertiary-grey;
+    }
+     }
+}

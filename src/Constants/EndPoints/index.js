@@ -10,7 +10,7 @@ export const WEBLIVESOCKETURL = 'https://websoc.resu.io';
 export const MOBILELIVESOCKETURL = 'https://soc.resu.io';
 export const PREVIOUSVERSIONURL = 'https://run.resulticks.com/v48/';
 
-export const baseURL = BASEURLRUN;
+export const baseURL =   BASEURLRUN;
 export const GET_MASTER_DATA = 'AccountSetup/GetMasterData';
 export const GET_IP_ADDRESS_DATA = 'AccountSetup/GetIPData';
 export const GET_BU_DATA = 'User/GetDepartmentList';
@@ -290,6 +290,7 @@ export const STOP_DYNAMIC_LIST_SCHEDULE = 'Audience/Stopdynamiclistfrequency';
 export const DYNAMIC_TIME_ZONE_DETAILS = 'Audience/GetTimezoneDetails';
 export const GET_GEO_FENCES_LISTS = 'MobilePush/GetGeoFencesLists';
 export const GET_GEO_FENCE_DETAILS_BY_ID = 'MobilePush/GetGeoFenceDetailsByID';
+export const GET_COMMUNICATION_BYCHANNEL = 'Audience/Getcommunicationchannel';
 // RFA
 export const RFA_DYNAMIC_LIST_APPROVE = 'Audience/ApproveDynamicListRequest';
 export const RFA_DYNAMIC_LIST_REJECT = 'Audience/DynamicListRejectRequest';
@@ -329,6 +330,7 @@ export const GET_COMMUNICATION_LIST_EXTENSION = 'Communication/CommunicationList
 export const GET_CAMPAINGN_STATUS = 'Communication/GetCampaignStatus';
 export const GET_CAMPAINGN_STATUS_EXTENSION = 'Communication/GetCampaignStatusExtensionByID ';
 export const DUPLICATE_COMMUNICATION = 'Communication/DuplicateCommunication';
+export const MDC_DUPLICATE_COMMUNICATION = 'Communication/MDCDuplicateCommunication';
 export const SHOW_SELECTED_DETAILS = 'Communication/GetEDMDetails';
 export const DELETE_CHANNEL = 'Communication/DeleteChannel'; // Not used
 export const DELETE_BY_CHANNEL = 'Communication/DeletebyChannel'; // Not used
@@ -877,6 +879,14 @@ export const DELETE_REGION_BY_ID = 'CommunicationSettings/DeleteRegionByID';
 export const CHECK_GEOFENCE_NAME_EXISTS = 'CommunicationSetting/IsExistGeoFence';
 export const SAVE_GEOFENCE = 'CommunicationSetting/SaveGeoFence';
 export const CHECK_VALID_GEOFENCE = 'CommunicationSetting/CheckValidGeoFence';
+
+// CS - Beacons
+export const GET_BEACON_LISTS = 'CommunicationSetting/GetBeaconLists';
+export const GET_BEACON_BY_ID = 'CommunicationSetting/GetBeaconById';
+export const SAVE_BEACON_DETAILS = 'CommunicationSetting/SaveBeaconDetails';
+export const SAVE_BEACON_DETAILS_BULK = 'CommunicationSetting/SaveBeaconDetails';
+export const CHECK_BEACON_EXISTS = 'CommunicationSetting/CheckBeaconExists';
+export const UPDATE_BEACON_STATUS = 'CommunicationSetting/UpdateBeaconStatus';
 
 //CS - Mobile push settings
 export const REMOVE_APPSTORE = 'CommunicationSetting/DeleteAppStore';

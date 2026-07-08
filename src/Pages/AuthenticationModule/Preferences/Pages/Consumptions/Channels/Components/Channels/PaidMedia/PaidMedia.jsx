@@ -1,14 +1,13 @@
 import { csv_download_large, download_medium } from 'Constants/GlobalConstant/Glyphicons';
 import { encodeUrl } from 'Utils/modules/crypto';
 import { getUserCurrentFormat, getYYMM, getYYMMDD } from 'Utils/modules/dateTime';
-import { truncateTitle } from 'Utils/modules/displayCore';
 import { downloadCSVcommasFile } from 'Utils/modules/download';
 import { numberWithCommas } from 'Utils/modules/formatters';
 import { HorizontalSkeleton } from 'Components/Skeleton/Skeleton';
 import { Fragment, useEffect, useState } from 'react';
 import { map as _map } from 'Utils/modules/lodashReplacements';
 import KendoGrid from 'Components/RSKendoGrid';
-
+import TruncateCell from 'Components/RSKendoGrid/TruncateCell';
 
 import RSTooltip from 'Components/RSTooltip';
 import { globalStateSelector } from 'Utils/Selectors/app';
@@ -287,68 +286,53 @@ const ConsumptionPaidMedia = () => {
                                         filter: 'text',
                                         cell: ({ dataItem, field }) => {
                                             return (
-                                                <td>
-                                                    <div className="d-flex justify-content-between">
-                                                        <span
-                                                            className="cursor-pointer link-underline-hover color-primary-black cp"
-                                                            onClick={() => {
-                                                                dispatch(
-                                                                    updateAnalyticsDetail({
-                                                                        channelName: consumptionChannel?.lable,
-                                                                        campaignId: dataItem?.campaignID,
-                                                                        from: 'analytics',
-                                                                        blastId: dataItem?.blastShortCode,
-                                                                        channelId: 10,
-                                                                        currIndex:
-                                                                            dataItem?.deliveryMethod ===
-                                                                            'Multi dimension'
-                                                                                ? dataItem?.mdcLevel - 1
-                                                                                : 0,
-                                                                        subChannelId: dataItem?.subChannelID,
-                                                                    }),
-                                                                );
-                                                                const state = {
-                                                                    channelName: consumptionChannel?.lable,
-                                                                    campaignId: dataItem?.campaignID,
-                                                                    channelId: 10,
-                                                                    iswinnerSplit: dataItem?.iswinnerSplit,
-                                                                    iswinnerSplitType: dataItem?.iswinnerSplitType,
-                                                                    subChannelId: dataItem?.subChannelID,
-                                                                    isSplitAB: dataItem?.isSplitAB
-                                                                };
-                                                                const encryptState = encodeUrl(state);
-                                                                navigate(
-                                                                    `/analytics/detail-analytics?q=${encryptState}`,
-                                                                    {
-                                                                        state,
-                                                                    },
-                                                                );
-                                                                // navigate(`/analytics/detail-analytics`, {
-                                                                //     state: {
-                                                                //         channelName: consumptionChannel?.lable,
-                                                                //         campaignId: dataItem?.campaignID,
-                                                                //     },
-                                                                // });
-                                                            }}
-                                                        >
-                                                            {/* <td> */}
-                                                            {dataItem?.[field]?.length > 23 ? (
-                                                                <RSTooltip
-                                                                    text={`${dataItem?.[field]}`}
-                                                                    position="top"
-                                                                    className="color-primary-black"
-                                                                    innerContent={false}
-                                                                >
-                                                                    <span className="color-primary-black">
-                                                                        {truncateTitle(dataItem?.[field], 23)}
-                                                                    </span>
-                                                                </RSTooltip>
-                                                            ) : (
-                                                                <span className="m0">{dataItem?.[field]}</span>
-                                                            )}
-                                                            {/* </td> */}
-                                                        </span>
-                                                    </div>
+                                                <td
+                                                    className="cursor-pointer link-underline-hover color-primary-black cp"
+                                                    onClick={() => {
+                                                        dispatch(
+                                                            updateAnalyticsDetail({
+                                                                channelName: consumptionChannel?.lable,
+                                                                campaignId: dataItem?.campaignID,
+                                                                from: 'analytics',
+                                                                blastId: dataItem?.blastShortCode,
+                                                                channelId: 10,
+                                                                currIndex:
+                                                                    dataItem?.deliveryMethod ===
+                                                                    'Multi dimension'
+                                                                        ? dataItem?.mdcLevel - 1
+                                                                        : 0,
+                                                                subChannelId: dataItem?.subChannelID,
+                                                            }),
+                                                        );
+                                                        const state = {
+                                                            channelName: consumptionChannel?.lable,
+                                                            campaignId: dataItem?.campaignID,
+                                                            channelId: 10,
+                                                            iswinnerSplit: dataItem?.iswinnerSplit,
+                                                            iswinnerSplitType: dataItem?.iswinnerSplitType,
+                                                            subChannelId: dataItem?.subChannelID,
+                                                            isSplitAB: dataItem?.isSplitAB,
+                                                        };
+                                                        const encryptState = encodeUrl(state);
+                                                        navigate(
+                                                            `/analytics/detail-analytics?q=${encryptState}`,
+                                                            {
+                                                                state,
+                                                            },
+                                                        );
+                                                        // navigate(`/analytics/detail-analytics`, {
+                                                        //     state: {
+                                                        //         channelName: consumptionChannel?.lable,
+                                                        //         campaignId: dataItem?.campaignID,
+                                                        //     },
+                                                        // });
+                                                    }}
+                                                >
+                                                    <TruncateCell
+                                                        value={dataItem?.[field] ?? ''}
+                                                        noTable={true}
+                                                        wrapperClassName="m0"
+                                                    />
                                                 </td>
                                             );
                                         },
@@ -468,20 +452,11 @@ const ConsumptionPaidMedia = () => {
                                         filter: 'text',
                                         cell: ({ dataItem }) => (
                                             <td>
-                                                {dataItem?.campaignType?.length > 20 ? (
-                                                    <RSTooltip
-                                                        text={dataItem?.campaignType}
-                                                        position="top"
-                                                        className="d-inline-block"
-                                                        innerContent={false}
-                                                    >
-                                                        <span className="m0">
-                                                            {truncateTitle(dataItem?.campaignType, 20)}
-                                                        </span>
-                                                    </RSTooltip>
-                                                ) : (
-                                                    <span className="m0">{dataItem?.campaignType}</span>
-                                                )}
+                                                <TruncateCell
+                                                    value={dataItem?.campaignType ?? ''}
+                                                    noTable={true}
+                                                    wrapperClassName="m0"
+                                                />
                                             </td>
                                         ),
                                     },

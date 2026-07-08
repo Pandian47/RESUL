@@ -48,6 +48,7 @@ import {
     getSubjectLineAnalysis,
 } from 'Reducers/communication/createCommunication/Create/request';
 import UnsubscriptionPreviewModal from '../UnsubscriptionPreviewModal';
+import { clearTemplateGalleryCache } from '../Template/Template';
 import { AUTHORING_FIELD_LOADER_CONFIG } from 'Components/Skeleton/pages/communication/authoring';
 import useApiLoader from 'Hooks/useApiLoader';
 
@@ -129,9 +130,10 @@ const SplitABTab = ({ fieldName, isSplit = true, isSubjectLineEnable }) => {
     } = useFormContext();
 
     useEffect(() => {
-        unsubscriptionListHydratedRef.current = false;
+        const list = emailList(store.getState()).unSubscriptionList;
+        unsubscriptionListHydratedRef.current = Boolean(list?.length);
         unsubscriptionFetchPromiseRef.current = null;
-    }, [clientId, userId, departmentId]);
+    }, [clientId, userId, departmentId, store]);
 
     useEffect(() => {
         if (unSubscriptionList?.length) {
@@ -640,7 +642,7 @@ const SplitABTab = ({ fieldName, isSplit = true, isSubjectLineEnable }) => {
                             maxLength={MAX_LENGTH150}
                             required />
 
-                        <small className="bottom5 position-absolute right15">
+                        <small className="bottom3 position-absolute right15">
                             {subjectValue?.length}/{MAX_LENGTH150}
                         </small>
                     </Col>
@@ -733,9 +735,11 @@ const SplitABTab = ({ fieldName, isSplit = true, isSubjectLineEnable }) => {
                             disableOtherTabs
                             isRefreshConfirmation
                             // ccTabs
+                            componentClassName='bg-white'
                             defaultTab={currentPage}
                             tabData={isSplit ? SPLITAB_EMAIL_TAB_CONFIG(fieldName, isClickOff) : EMAIL_TAB_CONFIG(isClickOff)}
                             onRefresh={() => {
+                                clearTemplateGalleryCache();
                                 dispatch(updateTemplate([]));
                                 if (isSplit) {
                                     reset(

@@ -114,6 +114,11 @@ $res-tab-active-delay: 0.06s;
     }
 
 .res-tabs-with-heading {
+    li{
+        h4{
+            margin:0;
+        }
+    }
     h4 {
         margin-top: 35px;
         margin-bottom: 0;

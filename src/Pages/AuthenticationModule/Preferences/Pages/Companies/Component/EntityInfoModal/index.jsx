@@ -2,7 +2,9 @@ import { GET_BU_DATA } from 'Constants/EndPoints';
 import { memo, useEffect, useMemo, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import RSModal from 'Components/RSModal';
+import { CommonSkeleton } from 'Components/Skeleton/Components/SkeletonOverall';
 import { getmasterData } from 'Utils/modules/masterData';
+import request from 'Utils/Http';
 import { getEntityInfo } from 'Reducers/preferences/Companies/request';
 import { getSessionId } from 'Reducers/globalState/selector';
 
@@ -27,6 +29,51 @@ const TYPE_COLOR = {
     3: '#f7931e', // LOC
     4: '#3ab2ac'  // BU(s)
 };
+
+const ENTITY_INFO_ROW_COUNT = 5;
+
+const TREE_SKELETON_ROWS = [
+    { indent: 0, typeWidth: 36, nameWidth: 120 },
+    { indent: 0, typeWidth: 36, nameWidth: 100 },
+    { indent: 0, typeWidth: 36, nameWidth: 110 },
+    { indent: 0, typeWidth: 36, nameWidth: 90 },
+    { indent: 0, typeWidth: 36, nameWidth: 130, hasArrow: true },
+    { indent: 24, typeWidth: 36, nameWidth: 110 },
+    { indent: 0, typeWidth: 36, nameWidth: 80 },
+];
+
+const EntityInfoModalSkeleton = () => (
+    <div className="cim-body cim-modal-skeleton" aria-hidden="true">
+        <div className="cim-panel">
+            <h4 className="cim-panel-header">Entity Info</h4>
+            <div className="cim-entity-list">
+                {Array.from({ length: ENTITY_INFO_ROW_COUNT }, (_, idx) => (
+                    <div key={idx} className="cim-entity-row">
+                        <CommonSkeleton box height={20} width={90} stopAnimation />
+                        <CommonSkeleton box height={20} width={72} stopAnimation />
+                    </div>
+                ))}
+            </div>
+        </div>
+
+        <div className="cim-panel">
+            <h4 className="cim-panel-header">Full Hierarchy Path</h4>
+                <div className="cim-tree-wrapper css-scrollbar">
+                {TREE_SKELETON_ROWS.map((row, idx) => (
+                    <div
+                        key={idx}
+                        className="cim-tree-skeleton-row"
+                        style={{ paddingLeft: row.indent }}
+                    >
+                        {row.hasArrow && <CommonSkeleton box height={12} width={12} stopAnimation />}
+                        <CommonSkeleton box height={20} width={row.typeWidth} stopAnimation />
+                        <CommonSkeleton box height={20} width={row.nameWidth} stopAnimation />
+                    </div>
+                ))}
+            </div>
+        </div>
+    </div>
+);
 
 // Recursive Tree Node Component
 const TreeNode = ({ node, selectedCompanyId, departmentsMap, onToggleExpand, expandedNodes }) => {
@@ -105,18 +152,23 @@ const EntityInfoModal = ({ show, handleClose, companyName, clientId, companiesLi
     const dispatch = useDispatch();
     const { userId } = useSelector((state) => getSessionId(state));
     const [infoData, setInfoData] = useState(null);
+    const [isEntityInfoLoading, setIsEntityInfoLoading] = useState(false);
     const [departmentsMap, setDepartmentsMap] = useState({});
     const [expandedNodes, setExpandedNodes] = useState({});
 
     // Fetch entity info when modal opens
     useEffect(() => {
         if (show && clientId) {
+            setIsEntityInfoLoading(true);
+            setInfoData(null);
             dispatch(getEntityInfo({ clientId }, (res) => {
+                setIsEntityInfoLoading(false);
                 if (res?.status && res?.data) {
                     setInfoData(res.data);
                 }
             }));
         } else {
+            setIsEntityInfoLoading(false);
             setInfoData(null);
             setDepartmentsMap({});
             setExpandedNodes({});
@@ -295,11 +347,11 @@ const EntityInfoModal = ({ show, handleClose, companyName, clientId, companiesLi
             // Fetch LOB/BU data for this LHQ
             try {
                 const res = await dispatch(
-                    post({
+                    request.post({
                         url: GET_BU_DATA,
                         payload: { userId, clientId: nodeId },
-                        loading: false
-                    })
+                        loading: false,
+                    }),
                 );
                 if (res?.data?.status) {
                     setDepartmentsMap(prev => ({
@@ -329,12 +381,12 @@ const EntityInfoModal = ({ show, handleClose, companyName, clientId, companiesLi
         lhqIds.forEach(id => {
             if (!departmentsMap[id]) {
                 dispatch(
-                    post({
+                    request.post({
                         url: GET_BU_DATA,
                         payload: { userId, clientId: id },
-                        loading: false
-                    })
-                ).then(res => {
+                        loading: false,
+                    }),
+                ).then((res) => {
                     if (res?.data?.status) {
                         setDepartmentsMap(prev => ({
                             ...prev,
@@ -372,11 +424,13 @@ const EntityInfoModal = ({ show, handleClose, companyName, clientId, companiesLi
 
     const bodyContent = (
         <div>
-            <div className="cim-body">
-                {/* Left Panel: Entity Info */}
-                <div className="cim-panel">
-                    <h4 className="cim-panel-header">Entity Info</h4>
-                    {infoData ? (
+            {isEntityInfoLoading ? (
+                <EntityInfoModalSkeleton />
+            ) : (
+                <div className="cim-body">
+                    {/* Left Panel: Entity Info */}
+                    <div className="cim-panel">
+                        <h4 className="cim-panel-header">Entity Info</h4>
                         <div className="cim-entity-list">
                             {entityInfo.map((row, i) => (
                                 <div key={i} className={`cim-entity-row ${i % 2 !== 0 ? 'alt' : ''}`}>
@@ -385,33 +439,29 @@ const EntityInfoModal = ({ show, handleClose, companyName, clientId, companiesLi
                                 </div>
                             ))}
                         </div>
-                    ) : (
-                        <div className="d-flex align-items-center justify-content-center h-75 py-5">
-                            <span className="text-muted">Loading entity info...</span>
-                        </div>
-                    )}
-                </div>
+                    </div>
 
-                {/* Right Panel: Full Hierarchy Path */}
-                <div className="cim-panel">
-                    <h4 className="cim-panel-header">Full Hierarchy Path</h4>
-                    <div className="cim-tree-wrapper css-scrollbar">
-                        {treeData ? (
-                            <TreeNode
-                                node={treeData}
-                                selectedCompanyId={clientId}
-                                departmentsMap={departmentsMap}
-                                onToggleExpand={handleToggleExpand}
-                                expandedNodes={expandedNodes}
-                            />
-                        ) : (
-                            <div className="d-flex align-items-center justify-content-center h-75 py-5">
-                                <span className="text-muted">Loading hierarchy...</span>
-                            </div>
-                        )}
+                    {/* Right Panel: Full Hierarchy Path */}
+                    <div className="cim-panel">
+                        <h4 className="cim-panel-header">Full Hierarchy Path</h4>
+                        <div className="cim-tree-wrapper css-scrollbar">
+                            {treeData ? (
+                                <TreeNode
+                                    node={treeData}
+                                    selectedCompanyId={clientId}
+                                    departmentsMap={departmentsMap}
+                                    onToggleExpand={handleToggleExpand}
+                                    expandedNodes={expandedNodes}
+                                />
+                            ) : (
+                                <div className="d-flex align-items-center justify-content-center h-75 py-5">
+                                    <span className="text-muted">No hierarchy available</span>
+                                </div>
+                            )}
+                        </div>
                     </div>
                 </div>
-            </div>
+            )}
 
             {/* Bottom Legend */}
             <ul className="rs-legend justify-content-end mt0">

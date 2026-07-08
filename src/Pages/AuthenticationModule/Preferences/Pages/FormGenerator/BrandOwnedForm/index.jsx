@@ -1,6 +1,6 @@
 import { HTTPS_REGEX, MAX_LENGTH50, URLPATTERN } from 'Constants/GlobalConstant/Regex';
 import { DOMAIN_NOT_ONBOARDED, ENTER_PAGE_URL, ENTER_SECURED_WEBSITE } from 'Constants/GlobalConstant/ValidationMessage';
-import { ARE_YOU_SURE_WANT_TO_RESET, BRAND_FORM_PAGE_URL, BRAND_OWNED_FORM, CANCEL, CLICK_TO_CONFIGURE, EDIT, OK, PAGE_URL, PLATFORM, PLATFORMNAME, RESET, RESET_PLATFORM, SAVE, SAVE_FORM_NAME, UPDATE, WAITING_FOR_EVENT_SET } from 'Constants/GlobalConstant/Placeholders';
+import { ARE_YOU_SURE_WANT_TO_RESET, BRAND_FORM_PAGE_URL, BRAND_OWNED_FORM, CANCEL, CLICK_TO_CONFIGURE, EDIT, OK, PAGE_URL, PLATFORM, PLATFORMNAME, RESET, RESET_PLATFORM, SAVE, SAVE_FORM_NAME, UPDATE, WAITING_FOR_EVENT_SET,FORM_NAME } from 'Constants/GlobalConstant/Placeholders';
 import { event_tracking_medium, pencil_edit_medium, restart_medium } from 'Constants/GlobalConstant/Glyphicons';
 import { useEffect, useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
@@ -37,6 +37,8 @@ import { buildPayload, buildAppFieldTrackPayload } from './Components/WebFieldTr
 import ListNameExists from 'Components/ListNameExists';
 import useQueryParams from 'Hooks/useQueryParams';
 import { MOBILE_BRAND_OWN_FORM_INITIAL_STATE } from './Components/AppFieldTrack/constant';
+import PreferencesSubPageSkeletonGate from 'Components/Skeleton/Components/PreferencesSubPageSkeletonGate';
+import { PREFERENCES_SUBPAGE_VARIANT } from 'Components/Skeleton/Components/PreferencesSubPageRouteSkeleton';
 
 const normalizeBrandFormDeviceToken = (value) =>
     value == null || value === '' ? '' : String(value).toLowerCase().replace(/\s+/g, '');
@@ -82,6 +84,9 @@ const BrandOwnedForm = () => {
     const [isFormNameValid, setIsFormNameValid] = useState(false);
     const [currentFormId, setCurrentFormId] = useState(0);
     const skipNextMobileFetchRef = useRef(false);
+    const fromId = useQueryParams('/preferences/form-generator');
+    const isEditMode = parseInt(fromId?.recipientFormId, 10) > 0;
+    const [isPageBootstrapping, setIsPageBootstrapping] = useState(isEditMode);
     const { departmentId, clientId, userId, departmentName } = useSelector((state) => getSessionId(state));
 
     const platFormList = [
@@ -126,7 +131,7 @@ const BrandOwnedForm = () => {
 
     const getData = async () => {
         const { status, data } = await disPatch(
-            GetMobilePush({ clientId, userId, departmentId }, { loading: true }),
+            GetMobilePush({ clientId, userId, departmentId }, { loading: false }),
         );
         // console.log('data: ', data);
         let finalAppList;
@@ -269,10 +274,14 @@ const BrandOwnedForm = () => {
                             }
         }
     };
-    const fromId = useQueryParams('/preferences/form-generator');
     useEffect(() => {
         async function getEdit() {
-            if (!!fromId) {
+            if (!fromId?.recipientFormId) {
+                setIsPageBootstrapping(false);
+                return;
+            }
+
+            try {
                 let payload = { departmentId, clientId, userId, recipientFormId: fromId?.recipientFormId || 0 };
                 let { data, status } = await disPatch(getFormData(payload));
                 if (status) {
@@ -377,6 +386,8 @@ const BrandOwnedForm = () => {
                     }
                     setEnableSave(true);
                 }
+            } finally {
+                setIsPageBootstrapping(false);
             }
         }
         getEdit();
@@ -461,7 +472,12 @@ const BrandOwnedForm = () => {
                 rightCommonMenus={false}
                 isHeaderLine
             />
-            <Container className="col-12">
+            <Container className="col-sm-12 px0">
+                <PreferencesSubPageSkeletonGate
+                    variant={PREFERENCES_SUBPAGE_VARIANT.BRAND_OWNED_FORM}
+                    isLoading={isPageBootstrapping}
+                    ariaLabel="Loading brand-owned form"
+                >
                 <FormProvider {...methods}>
                     <form className="rsv-tabs-content position-relative">
                         <div className={`box-design bd-top-border`}>
@@ -675,6 +691,7 @@ const BrandOwnedForm = () => {
                                 </div>
                     </form>
                 </FormProvider>
+                </PreferencesSubPageSkeletonGate>
                 <RSModal
                     show={showTrackingAgreement}
                     handleClose={() => setShowTrackingAgreement(false)}

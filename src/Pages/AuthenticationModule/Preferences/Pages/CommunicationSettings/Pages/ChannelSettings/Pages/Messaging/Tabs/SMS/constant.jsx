@@ -2,7 +2,9 @@ import { ENTER_SENDER_ID } from 'Constants/GlobalConstant/ValidationMessage';
 import { lazy } from 'react';
 import Papa from 'papaparse';
 import RSTooltip from 'Components/RSTooltip';
-import { renderEmbeddedLazyInner } from '../../../../constant';
+import { renderEmbeddedLazyInner, SMS_INNER_TAB_CONFIG } from '../../../../constant';
+
+export { SMS_INNER_TAB_CONFIG };
 
 const SMPP = lazy(() => import('./Tabs/SMPP'));
 const KeywordManagement = lazy(() => import('./Tabs/KeywordManagement'));
@@ -11,17 +13,20 @@ const SMSTemplate = lazy(() => import('./Tabs/Template'));
 
 export const SMS_VENDOR_FORM_ACTIONS_PORTAL_ID = 'pref-cs-sms-vendor-form-actions';
 
-export const getSMPPTabConfig = (isKeywordManagementEnabled = false) => [
-    { id: 1001, text: 'Vendor', disable: false, component: renderEmbeddedLazyInner(SMPP) },
-    { id: 1004, text: 'Templates', disable: false, component: renderEmbeddedLazyInner(SMSTemplate) },
-    {
-        id: 1002,
-        text: 'Keyword management',
-        disable: !isKeywordManagementEnabled,
-        component: renderEmbeddedLazyInner(KeywordManagement),
-    },
-    { id: 1003, text: 'Lifetime cap', disable: true, component: renderEmbeddedLazyInner(LifetimeCap) },
-];
+const SMS_TAB_COMPONENTS = {
+    vendor: renderEmbeddedLazyInner(SMPP),
+    templates: renderEmbeddedLazyInner(SMSTemplate),
+    keywordManagement: renderEmbeddedLazyInner(KeywordManagement),
+    lifetimeCap: renderEmbeddedLazyInner(LifetimeCap),
+};
+
+export const getSMPPTabConfig = (isKeywordManagementEnabled = false) =>
+    SMS_INNER_TAB_CONFIG.filter((tab) => tab.id !== 'quiet-hours-sms').map((tab) => ({
+        id: tab.id,
+        text: tab.text,
+        disable: tab.id === 'keywordManagement' ? !isKeywordManagementEnabled : (tab.disable ?? false),
+        component: SMS_TAB_COMPONENTS[tab.id],
+    }));
 
 export const ACTION_INITIAL_STATE = {
     showGrid: true,

@@ -72,7 +72,7 @@ const handleExcelEditFlow = async (responseData, methods, setCurrentComponent, d
             ...userDetails,
         };
 
-        const res = await dispatch(getChildListings(payload));
+        const res = await dispatch(getChildListings(payload, { isAudience: true }));
         catTypeList = res?.data || [];
     }
 
@@ -119,7 +119,7 @@ const handleCsvEditFlow = async (responseData, methods, setCurrentComponent, dis
             ...userDetails,
         };
 
-        const res = await dispatch(getChildListings(payload));
+        const res = await dispatch(getChildListings(payload, { isAudience: true }));
         catTypeList = res?.data || [];
     }
 
@@ -166,7 +166,7 @@ const handleSftpEditFlow = async (responseData, methods, setCurrentComponent, di
             ...userDetails,
         };
 
-        const res = await dispatch(getChildListings(payload, { loading: false }));
+        const res = await dispatch(getChildListings(payload, { loading: false, isAudience: true }));
         catTypeList = res?.data || [];
     }
 

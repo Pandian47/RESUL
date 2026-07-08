@@ -39,6 +39,8 @@ const DefaultVariant = ({
     extraClassName,
     leftspace = false,
     customTooltipName,
+    disableAddMenu = false,
+    disableRemoveMenu = false,
     isCreateCommunication = false,
     deliverytext_center = false,
     customIconsize = 'md',
@@ -48,12 +50,13 @@ const DefaultVariant = ({
     isFormRefresh = false,
     noHeader = false,
     disableWrapperTransition = false,
+    disableSlidingIndicator = false,
 }) => {
     const { selectedIdx, tabconfig, setSelectedIndex } = useTabState({
         defaultTab,
         tabData,
         callBack,
-        preserveNullDefault: isCreateCommunication,
+        preserveNullDefault: isCreateCommunication || defaultTab === null,
     });
     const handleSelect = (index, isForceUpdate = false) => {
         setSelectedIndex(index, isForceUpdate);
@@ -96,12 +99,22 @@ const DefaultVariant = ({
 
             const handle = requestAnimationFrame(updateIndicator);
 
+            // Execute delayed layout updates to handle modal animations, flex layouts, or skeletons loading
+            const t1 = setTimeout(updateIndicator, 50);
+            const t2 = setTimeout(updateIndicator, 150);
+            const t3 = setTimeout(updateIndicator, 350);
+            const t4 = setTimeout(updateIndicator, 700);
+
             const ro = new ResizeObserver(updateIndicator);
             ro.observe(ulEl);
 
             window.addEventListener('resize', updateIndicator);
             return () => {
                 cancelAnimationFrame(handle);
+                clearTimeout(t1);
+                clearTimeout(t2);
+                clearTimeout(t3);
+                clearTimeout(t4);
                 ro.disconnect();
                 window.removeEventListener('resize', updateIndicator);
             };
@@ -110,7 +123,8 @@ const DefaultVariant = ({
         return { indicatorStyle, isTransparent };
     };
 
-    const isSlidingEnabled = shouldEnableSlidingIndicator(className, dynamicTab);
+    const isSlidingEnabled =
+        !disableSlidingIndicator && shouldEnableSlidingIndicator(className, dynamicTab);
 
     const ulRef1 = useRef(null);
     const { indicatorStyle: style1, isTransparent: trans1 } = useTabIndicator(
@@ -121,6 +135,16 @@ const DefaultVariant = ({
     );
 
     const ulRef2 = useRef(null);
+    const holderRef = useRef(null);
+    const tabContentRef = useRef(null);
+    const [isInsideModal, setIsInsideModal] = useState(false);
+
+    useEffect(() => {
+        const scopeEl = holderRef.current ?? tabContentRef.current;
+        if (!scopeEl) return;
+        setIsInsideModal(Boolean(scopeEl.closest('.modal, .rs-modal')));
+    }, [heading?.length]);
+
     const { indicatorStyle: style2, isTransparent: trans2 } = useTabIndicator(
         ulRef2,
         selectedIdx,
@@ -150,6 +174,8 @@ const DefaultVariant = ({
         clear,
         onClear,
         customTooltipName,
+        disableAddMenu,
+        disableRemoveMenu,
         isCreateCommunication,
         customIconsize,
         singleTab,
@@ -172,6 +198,7 @@ const DefaultVariant = ({
                     )}
                 >
                     <div
+                        ref={holderRef}
                         className={mapResTabberClasses(
                             `row rstwh-holder ${flatTabs ? 'rs-flat-tabs' : ''} ${
                                 cTabsBig ? 'rs-camp-tabs-big' : ''
@@ -188,7 +215,11 @@ const DefaultVariant = ({
                                     animate={{ height: 'auto', opacity: 1 }}
                                     exit={{ height: 0, opacity: 0 }}
                                     transition={{ duration: 0.28, ease: [0.4, 0, 0.2, 1] }}
-                                    style={{ overflow: 'hidden', minHeight: 0 }}
+                                    style={
+                                        isInsideModal
+                                            ? { minHeight: 0 }
+                                            : { overflow: 'hidden', minHeight: 0 }
+                                    }
                                     className="col-sm-12"
                                 >
                                     <div className="ctabs-big-label mb30">
@@ -263,7 +294,11 @@ const DefaultVariant = ({
                                     animate={{ height: 'auto', opacity: 1 }}
                                     exit={{ height: 0, opacity: 0 }}
                                     transition={{ duration: 0.28, ease: [0.4, 0, 0.2, 1] }}
-                                    style={{ overflow: 'hidden' }}
+                                    style={
+                                        isInsideModal
+                                            ? { minHeight: 0 }
+                                            : { overflow: 'hidden' }
+                                    }
                                 >
                                     {tabData?.map((tab, ind) => (
                                         <li key={ind}>{tab?.infocontent}</li>
@@ -272,11 +307,11 @@ const DefaultVariant = ({
                             )}
                         </AnimatePresence>
                         
-                        <TabContentTransition selectedIdx={selectedIdx}>
+                       
+                    </div>
+                    <TabContentTransition selectedIdx={selectedIdx} disableOverflowClip={isInsideModal} className={componentClassName} animate={isCreateCommunication}>
                             {renderTabPanel(tabconfig?.[selectedIdx])}
                         </TabContentTransition>
-                    </div>
-
                     {/*
                      * Tab panel content area.
                      * TabContentTransition fades content in/out when the selected tab
@@ -325,14 +360,14 @@ const DefaultVariant = ({
                     {isLoginScreen ? (
                         <div className="login-cont">
                             <div className={`${mapResTabberClasses('tabs-content')} ${componentClassName}`.trim()}>
-                                <TabContentTransition selectedIdx={selectedIdx}>
+                                <TabContentTransition selectedIdx={selectedIdx} disableOverflowClip={isInsideModal} animate={isCreateCommunication}>
                                     {renderTabPanel(tabconfig?.[selectedIdx])}
                                 </TabContentTransition>
                             </div>
                         </div>
                     ) : (
-                        <div className={`${mapResTabberClasses('tabs-content')} ${componentClassName}`.trim()}>
-                            <TabContentTransition selectedIdx={selectedIdx}>
+                        <div ref={tabContentRef} className={`${mapResTabberClasses('tabs-content')} ${componentClassName}`.trim()}>
+                            <TabContentTransition selectedIdx={selectedIdx} disableOverflowClip={isInsideModal} animate={isCreateCommunication}>
                                 {renderTabPanel(tabconfig?.[selectedIdx])}
                             </TabContentTransition>
                         </div>

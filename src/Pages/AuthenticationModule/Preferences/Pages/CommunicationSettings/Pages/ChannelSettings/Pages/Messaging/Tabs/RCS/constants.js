@@ -1,5 +1,7 @@
 export const RCS_FORM_ACTIONS_PORTAL_ID = 'pref-cs-rcs-form-actions';
 
+export { RCS_INNER_TAB_CONFIG } from '../../../../constant';
+
 export const ACTION_INITIAL_STATE = {
     showGrid: true,
     rcsAction: {

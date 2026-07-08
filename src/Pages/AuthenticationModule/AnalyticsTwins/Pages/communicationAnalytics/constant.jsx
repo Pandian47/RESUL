@@ -258,6 +258,7 @@ export const COMMUNICATION_SUMMARY_REQUEST_KEYS = [
     'sortBy',
     'timezoneid',
     'pagination',
+    'isGoldenCampaign',
 ];
 
 export function pickCommunicationSummaryRequestPayload(p) {
@@ -292,6 +293,7 @@ export function pickCommunicationSummaryRequestPayload(p) {
     out.channelType = toInt(out.channelType);
     out.statusId = toInt(out.statusId);
     out.productType = toInt(out.productType);
+    out.isGoldenCampaign = Boolean(out.isGoldenCampaign);
 
     return out;
 }

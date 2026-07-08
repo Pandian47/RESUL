@@ -1,4 +1,4 @@
-import { DUPLICATE_COMMUNICATION, GET_GALLERY_LIST, GET_INFO_LIST, SHOW_SELECTED_DETAILS } from 'Constants/EndPoints';
+import { DUPLICATE_COMMUNICATION, GET_GALLERY_LIST, GET_INFO_LIST, SHOW_SELECTED_DETAILS,MDC_DUPLICATE_COMMUNICATION } from 'Constants/EndPoints';
 import request from 'Utils/Http';
 
 import { updateGallery, setLoading, setFailure } from './reducer';
@@ -59,7 +59,7 @@ export const duplicateGalleryCommunication =
                 request.post({
                     url: DUPLICATE_COMMUNICATION,
                     payload,
-                    loading: true,
+                    loading: false,
                     ok: ({ data }) => {
                         const { status, message = 'No data available' } = data;
                         // if (status) {
@@ -73,15 +73,30 @@ export const duplicateGalleryCommunication =
                 }),
             );
         };
-
-export const getGalleryDetails =
+export const mdcDuplicateGalleryCommunication =
     ({ payload }) =>
+        async (dispatch) => {
+            return dispatch(
+                request.post({
+                    url: MDC_DUPLICATE_COMMUNICATION,
+                    payload,
+                    loading: false,
+                    ok: ({ data }) => {
+                  
+                    },
+                    isFailureCheck: true,
+                    fail: (err) => {},
+                }),
+            );
+        };
+export const getGalleryDetails =
+    ({ payload, loading = true }) =>
         async (dispatch) => {
             return dispatch(
                 request.post({
                     url: SHOW_SELECTED_DETAILS,
                     payload,
-                    loading: true,
+                    loading,
                 }),
             );
         };

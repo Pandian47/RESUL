@@ -243,7 +243,7 @@ body.rs-body-scroll-lock {
     z-index: 10001;
     opacity: 0;
     visibility: hidden;
-    transition: opacity 0.5s ease-out, visibility 0.25s ease-out;
+    transition: opacity 0.25s ease-out, visibility 0.25s ease-out;
 }
 .modal-backdrop.show {
     opacity: 1;

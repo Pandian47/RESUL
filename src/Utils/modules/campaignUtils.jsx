@@ -1,6 +1,37 @@
 
 
 import { getEnvironment } from './environment';
+import { decryptWithAES, decodeLargeState } from './crypto';
+
+const parseRouteQueryState = (param) => {
+    if (!param) return null;
+    try {
+        const result = decodeLargeState(param);
+        if (result) return result;
+        const normalizedParam = param.replaceAll(' ', '+');
+        const decryptedState = decryptWithAES(decodeURIComponent(normalizedParam));
+        const parsed = JSON.parse(decryptedState);
+        if (parsed?.__v === 2 && parsed?.__sid) return null;
+        return parsed;
+    } catch {
+        return null;
+    }
+};
+
+let cachedRouteSearch = '';
+let cachedRouteQueryState;
+
+export const getCampaignStatusIdFromRoute = () => {
+    if (typeof window === 'undefined') return null;
+    const search = window.location.search;
+    if (search === cachedRouteSearch && cachedRouteQueryState !== undefined) {
+        return cachedRouteQueryState?.statusId ?? null;
+    }
+    const param = new URLSearchParams(search).get('q');
+    cachedRouteSearch = search;
+    cachedRouteQueryState = parseRouteQueryState(param);
+    return cachedRouteQueryState?.statusId ?? null;
+};
 
 export function checkIsEmptyArryObj(value) {
     if (value) {
@@ -113,7 +144,15 @@ export function getCityTime(gmtOffset, add15Mins = true) {
         })
         .replace(/,/g, '');
 }
+export const COMPLETED_CAMPAIGN_STATUS_ID = 9;
+
+export const isCompletedCampaign = (statusId) =>
+    Number(statusId) === COMPLETED_CAMPAIGN_STATUS_ID;
+
 export function statusIdCheck(param = null, campaignType = 'S', campaignDetails) {
+    if (isCompletedCampaign(getCampaignStatusIdFromRoute())) {
+        return false;
+    }
     const contentStatusId = campaignDetails?.content?.[0]?.statusId || 0;
     const triggerStatusId = campaignDetails?.triggerPlayPauseStatus || 0;
     if (campaignType === 'T') {

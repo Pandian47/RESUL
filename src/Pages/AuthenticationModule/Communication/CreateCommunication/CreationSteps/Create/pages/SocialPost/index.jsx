@@ -1,5 +1,5 @@
 import RSTabbar from 'Components/RSTabber';
-import { SOCIAL_POST_TAB_CONFIG } from '../../constant';
+import { SOCIAL_POST_TAB_CONFIG, shouldShowAuthoringTabChangeConfirmation } from '../../constant';
 import { useDispatch, useSelector } from 'react-redux';
 import { updateTab } from 'Reducers/communication/createCommunication/Create/reducer';
 
@@ -17,7 +17,7 @@ const SocialPost = () => {
             activeClass={`active`}
             defaultTab={currentIndex}
             tabData={SOCIAL_POST_TAB_CONFIG}
-            isTabChangeConfirmation={isDirty}
+            isTabChangeConfirmation={shouldShowAuthoringTabChangeConfirmation(isDirty)}
             callBack={(tabs, index) => {
                 if (currentIndex !== index) {
                     dispatch(

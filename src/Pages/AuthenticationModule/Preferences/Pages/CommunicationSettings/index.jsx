@@ -16,6 +16,7 @@ import {
     update_isBUEnableAds,
 } from 'Reducers/preferences/CommunicationSettings/reducer';
 import useQueryParams from 'Hooks/useQueryParams';
+import { updateQueryParams } from 'Utils/modules/urlQuery';
 
 import {
     endCommunicationSettingsRouteSkeletonBootstrap,

@@ -1,10 +1,46 @@
 import { checkIsBrandExists } from 'Utils/modules/brandStorage';
-import { onlyNumbersDecimalWithoutSpecialCharacters, onlyNumbers, charNumDotWithoutSpecialCharacters } from 'Utils/modules/inputValidators';
+import {
+    onlyNumbersDecimalWithoutSpecialCharacters,
+    onlyNumbers,
+    charNumDotWithoutSpecialCharacters,
+} from 'Utils/modules/inputValidators';
 import { INITIAL_STATE, STATE_REDUCER, getDisableStatus, getListType } from './constant';
-import { IPADDRESS_REGEX, MAX_LENGTH15, MAX_LENGTH250, MAX_LENGTH75, PORTNUMBER_REGEX, PORT_LENGTH } from 'Constants/GlobalConstant/Regex';
-import { ENTER_FOLDER_PATH, ENTER_FRIENDLY_NAME, ENTER_PASSWORD, ENTER_USERNAME, ENTER_VALID_IP_ADDRESS, ENTER_VALID_PORT_NUMBER, IP_ADDRESS as IP_ADDRESS_MSG, PORT_NUMBER as PORT_NUMBER_MSG, SELECT_CAT_TYPE, SELECT_LIST_TYPE, SELECT_SOURCE, UPDATE_CYCLE as UPDATE_CYCLE_MSG } from 'Constants/GlobalConstant/ValidationMessage';
-import { ARE_YOU_SURE_WANT_TO_RESET, ATTRIBUTE_MAPPING, AUDIENCE_FILE_STORED, FOLDER_PATH, FRIENDLY_NAME, FTP as FTP_LABEL, IMPORT_PREFERENCES, IMPORT_PREFERENCE_LABEL, IP_ADDRESS, LIST_TYPE, PASSWORD, PORT_NUMBER, RESET, SFTP, SOURCE, UPDATE_CYCLE, USER_NAME } from 'Constants/GlobalConstant/Placeholders';
-import { restart_medium } from 'Constants/GlobalConstant/Glyphicons';
+import {
+    IPADDRESS_REGEX,
+    MAX_LENGTH15,
+    MAX_LENGTH250,
+    MAX_LENGTH75,
+    PORTNUMBER_REGEX,
+    PORT_LENGTH,
+} from 'Constants/GlobalConstant/Regex';
+import {
+    ENTER_FOLDER_PATH,
+    ENTER_FRIENDLY_NAME,
+    ENTER_PASSWORD,
+    ENTER_USERNAME,
+    ENTER_VALID_IP_ADDRESS,
+    ENTER_VALID_PORT_NUMBER,
+    IP_ADDRESS as IP_ADDRESS_MSG,
+    PORT_NUMBER as PORT_NUMBER_MSG,
+    SELECT_LIST_TYPE,
+    SELECT_SOURCE,
+    UPDATE_CYCLE as UPDATE_CYCLE_MSG,
+} from 'Constants/GlobalConstant/ValidationMessage';
+import {
+    ARE_YOU_SURE_WANT_TO_RESET,
+    AUDIENCE_FILE_STORED,
+    CHILD_ATTRIBUTE,
+    FOLDER_PATH,
+    FRIENDLY_NAME,
+    IP_ADDRESS,
+    LIST_TYPE,
+    PASSWORD,
+    PORT_NUMBER,
+    RESET,
+    USER_NAME,
+    UPDATE_CYCLE,
+} from 'Constants/GlobalConstant/Placeholders';
+import { restart_medium, settings_medium } from 'Constants/GlobalConstant/Glyphicons';
 import { useEffect, useReducer, useState } from 'react';
 import { Row, Col } from 'react-bootstrap';
 import { useFormContext } from 'react-hook-form';
@@ -18,12 +54,12 @@ import { FRIENDLYNAME_RULES } from 'Pages/AuthenticationModule/Audience/audience
 import { setConnectionStatus } from 'Reducers/audience/addAudience/reducer';
 import { getSessionId } from 'Reducers/globalState/selector';
 import ConfirmationPopup from '../CSV/Components/ConfirmationPopup/ConfirmationPopup';
+import ChildAttrModal from '../ChildAttrModal';
 import RSTooltip from 'Components/RSTooltip';
 import { getUpdateCycleFrequency } from 'Reducers/remoteDataSource/request';
 import { updateCycleFrequency } from 'Reducers/RemoteDataSource/reducer';
 import RSConfirmationModal from 'Components/ConfirmationModal';
 import ListNameExists from 'Components/ListNameExists';
-import AttributeMappingSection from '../AttributeMappingSection';
 import useApiLoader, { LOADER_TYPE } from 'Hooks/useApiLoader';
 
 const FTP = ({ audRefData }) => {
@@ -38,6 +74,9 @@ const FTP = ({ audRefData }) => {
         trigger,
     } = useFormContext();
     const [isReset, setIsReset] = useState({
+        show: false,
+    });
+    const [childAttrModal, setChildAttrModal] = useState({
         show: false,
     });
     const { updateCycleList } = useSelector(({ remoteDataSourceReducer }) => remoteDataSourceReducer);
@@ -93,6 +132,10 @@ const FTP = ({ audRefData }) => {
             payload: !state.show,
             field: 'show',
         });
+    };
+
+    const openChildAttributeModal = () => {
+        setChildAttrModal({ show: true });
     };
 
     useEffect(() => {
@@ -181,11 +224,7 @@ const FTP = ({ audRefData }) => {
                     </Col>
                     {listType && (
                         <Col md={1} className="pl0">
-                            <RSTooltip
-                                position="top"
-                                className="d-inline-flex lh0 position-relative top6"
-                                text={RESET}
-                            >
+                            <RSTooltip position="top" className="d-inline-flex lh0 position-relative top6" text={RESET}>
                                 <i
                                     id="rs_data_refresh"
                                     className={`${restart_medium} icon-md color-primary-blue`}
@@ -196,16 +235,25 @@ const FTP = ({ audRefData }) => {
                                     }}
                                 />{' '}
                             </RSTooltip>
+                            {listType === 'Target list' && (
+                                <RSTooltip
+                                    position="top"
+                                    className="d-inline-flex lh0 position-relative top6 ml10"
+                                    text={CHILD_ATTRIBUTE}
+                                >
+                                    <i
+                                        id="rs_child_attribute"
+                                        className={`${settings_medium} icon-md color-primary-blue cursor-pointer`}
+                                        onClick={() => {
+                                            openChildAttributeModal();
+                                        }}
+                                    />
+                                </RSTooltip>
+                            )}
                         </Col>
                     )}
                 </Row>
             </div>
-            <AttributeMappingSection
-                mappingFieldName="catType"
-                mappingSelectLabel={ATTRIBUTE_MAPPING}
-                mappingRules={{ required: SELECT_CAT_TYPE }}
-                newCategoryRules={{ required: 'Enter a category name' }}
-            />
 
             {listType && (
                 <>
@@ -476,6 +524,10 @@ const FTP = ({ audRefData }) => {
                 }}
                 handleConfirm={() => handleCloseModal()}
             />
+            {childAttrModal?.show && <ChildAttrModal
+                show={childAttrModal?.show}
+                onClose={() => setChildAttrModal({ show: false })}
+            />}
         </>
     );
 };

@@ -2,6 +2,7 @@ import { encodeUrl } from 'Utils/modules/crypto';
 import { addTabKey } from '../../constants';
 import { MAX_LENGTH75, MIN_LENGTH } from 'Constants/GlobalConstant/Regex';
 import { ENTER_SNAPSHOT_NAME } from 'Constants/GlobalConstant/ValidationMessage';
+import { GOLDEN_CAMPAIGN } from 'Constants/GlobalConstant/Placeholders';
 import { alert_large, download_medium, goals_benchmark_large, pdf_download_large, snapshot_large, star_fill_large, star_large, thumps_up_xlarge } from 'Constants/GlobalConstant/Glyphicons';
 import { useContext, useEffect, useMemo, useState } from 'react';
 import RSTooltip from 'Components/RSTooltip';
@@ -221,7 +222,7 @@ const HeaderIcons = ({
                     ) : null}
                     <RSTooltip
                         position="top"
-                        text={golden.status ? 'Golden communication' : 'Set as golden communication'}
+                        text={golden.status ? GOLDEN_CAMPAIGN : 'Set as {GOLDEN_CAMPAIGN}'}
                     >
                         <i
                             className={`${golden.status ? star_fill_large : star_large}  ${

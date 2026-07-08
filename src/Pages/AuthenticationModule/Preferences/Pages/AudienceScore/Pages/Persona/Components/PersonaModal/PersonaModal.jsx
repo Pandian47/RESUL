@@ -48,7 +48,6 @@ const PersonaModal = ({ show, handleClose, setIsShowPersona }) => {
         watch,
         formState: { isValid, isDirty },
     } = methods;
-    console.log('watch: ', watch());
     const attributes = getValues();
     const { filterLists } = attributes;
 

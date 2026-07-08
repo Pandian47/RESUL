@@ -157,6 +157,17 @@ export const getUrlFormat = (previewImage) => {
     return '';
 };
 
+/** Resolve media format when URL has no file extension (e.g. CDN paths). */
+export const getUrlFormatForMedia = (previewImage, mediaType) => {
+    const fromUrl = getUrlFormat(previewImage);
+    if (fromUrl) return fromUrl;
+    if (!previewImage || !mediaType) return '';
+    if (mediaType === 'image') return 'image';
+    if (mediaType === 'video') return 'video';
+    if (mediaType === 'document' || mediaType === 'pdf') return 'doc';
+    return '';
+};
+
 export const getMediaFormatFromUrl = (url) => {
     if (!url || typeof url !== 'string') return '';
     if (url.startsWith('data:image')) return 'image';

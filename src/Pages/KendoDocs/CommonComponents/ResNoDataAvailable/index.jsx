@@ -21,7 +21,7 @@ const ResNoDataAvailable = ({
                         aria-hidden
                     />
                 )}
-                <p className='color-primary-black m0'>{message}</p>
+                <p>{message}</p>
             </>
         )}
        </div>

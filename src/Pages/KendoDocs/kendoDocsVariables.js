@@ -175,8 +175,17 @@ export const resolveKendoPopupAppendTo = (triggerEl, wrapperSelector) => {
     );
 };
 
-export const applyKendoPortaledPopupShellStyles = (animationContainer, anchorEl) => {
+/** Minimum popup width when a Kendo list shows the empty-state message (e.g. narrow Channel field). */
+export const KENDO_EMPTY_LIST_POPUP_MIN_WIDTH = 200;
+
+export const applyKendoPortaledPopupShellStyles = (
+    animationContainer,
+    anchorEl,
+    options = {},
+) => {
     if (!animationContainer) return;
+
+    const { minPopupWidth } = options;
 
     animationContainer.style.zIndex = '1101';
     animationContainer.style.overflow = 'visible';
@@ -204,20 +213,38 @@ export const applyKendoPortaledPopupShellStyles = (animationContainer, anchorEl)
     const triggerWidth = Math.round(widthSource.getBoundingClientRect().width);
     if (triggerWidth <= 0) return;
 
-    const syncPopupWidth = (node, width) => {
+    const syncPopupWidth = (node, width, widthOptions = {}) => {
         if (!node) return;
+
+        const resolvedMinWidth = widthOptions.minWidth;
         node.style.width = width;
-        node.style.minWidth = '0';
-        node.style.maxWidth = width;
+        node.style.minWidth = resolvedMinWidth != null ? `${resolvedMinWidth}px` : '0';
+
+        if (resolvedMinWidth != null) {
+            node.style.maxWidth = 'none';
+        } else if (typeof width === 'string' && width.endsWith('%')) {
+            node.style.maxWidth = '100%';
+        } else {
+            node.style.maxWidth = width;
+        }
+
         node.style.boxSizing = 'border-box';
     };
 
-    const popupWidth = isAppendedToAnchor ? '100%' : `${triggerWidth}px`;
-    syncPopupWidth(animationContainer, popupWidth);
-    syncPopupWidth(childContainer, '100%');
+    const effectiveTriggerWidth = minPopupWidth
+        ? Math.max(triggerWidth, minPopupWidth)
+        : triggerWidth;
+    const effectiveMinWidth = minPopupWidth
+        ? Math.max(triggerWidth, minPopupWidth)
+        : undefined;
+    const popupWidth = isAppendedToAnchor ? '100%' : `${effectiveTriggerWidth}px`;
+    const widthOptions = effectiveMinWidth != null ? { minWidth: effectiveMinWidth } : {};
+
+    syncPopupWidth(animationContainer, popupWidth, widthOptions);
+    syncPopupWidth(childContainer, '100%', widthOptions);
 
     animationContainer.querySelectorAll('.k-popup, .k-list-container').forEach((node) => {
-        syncPopupWidth(node, '100%');
+        syncPopupWidth(node, '100%', widthOptions);
     });
 };
 

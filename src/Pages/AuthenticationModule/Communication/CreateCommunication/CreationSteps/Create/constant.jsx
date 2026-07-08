@@ -1,3 +1,4 @@
+import { statusIdCheck, isCompletedCampaign, getCampaignStatusIdFromRoute } from 'Utils/modules/campaignUtils';
 import { updateQueryParams } from 'Utils/modules/urlQuery';
 import { isValidDate } from 'Utils/modules/uiToast';
 import { convertUserTimezoneToTarget } from 'Utils/modules/dateTime';
@@ -65,14 +66,14 @@ export const AUDIENCE_TOOLTIP_TEXT = (
     <Fragment>
         <ul className="rs-tooltip-text-multi">
             <li>
-                <b>Known user: </b>
+                <p className='d-inline-block font-bold fs13 mr5'>Known user:</p>
                 <span>
                     Returning Visitor who has given consent but the generated token hasn't been associated with a brand
                     ID
                 </span>
             </li>
             <li>
-                <b>Identified: </b>
+                <p className='d-inline-block font-bold fs13 mr5'>Identified:</p>
                 <span>
                     Visitor who has given consent and the generated token has been associated with their brand ID
                 </span>
@@ -405,6 +406,9 @@ export const isPastCommunicationPlanDuration = ({
 };
 
 export const getPastPlanDurationBlockedState = ({ location = {}, timezone, currentUtcTime } = {}) => {
+    if (isCompletedCampaign(getCampaignStatusIdFromRoute())) {
+        return false;
+    }
     const profileGmtOffset = getProfileTimezoneGmtOffset();
     return isPastCommunicationPlanDuration({
         campaignType: location?.campaignType,
@@ -424,6 +428,9 @@ export const validatePastPlanDurationOnSubmit = ({
     splitTest = false,
     splitTabList = [],
 }) => {
+    if (isCompletedCampaign(getCampaignStatusIdFromRoute())) {
+        return false;
+    }
     const profileGmtOffset = getProfileTimezoneGmtOffset();
     const isPast = isPastCommunicationPlanDuration({
         campaignType: location?.campaignType,
@@ -1056,6 +1063,49 @@ export function getCreateCommNotificationSubTabIndexFromEditSource(mainChannelId
     return null;
 }
 
+function hasExplicitNotificationSubTabIntent(location) {
+    const search = typeof window !== 'undefined' ? window.location.search : '';
+    const params = new URLSearchParams(search);
+    const channelIdParam = params.get('channelId');
+    const typeIdParam = params.get('typeId');
+    return channelIdParam === '8' || channelIdParam === '14' || Boolean(typeIdParam?.length);
+}
+
+/** True when edit opened from a non-notification channel — location.currentIndex is another vertical's sub-tab. */
+function isLocationIndexPollutedByNonNotificationEdit(location) {
+    const mainEdit = Number(_get(location, 'editSourceChannelId', NaN));
+    if (!Number.isFinite(mainEdit) || mainEdit === 8 || mainEdit === 14) return false;
+    return !hasExplicitNotificationSubTabIntent(location);
+}
+
+/** Default Web (0) vs Mobile (1) from plan analyticsTypes (6/16) or saved channel ids (8/14). */
+export function getDefaultNotificationSubTabIndexFromPlan(location) {
+    const analyticsTypes = _get(location, 'analyticsTypes', []) || [];
+    const channels = _get(location, 'channels', []) || [];
+    const hasWeb = analyticsTypes.includes(6) || channels.includes(8);
+    const hasMobile = analyticsTypes.includes(16) || channels.includes(14);
+    if (hasWeb && !hasMobile) return 0;
+    if (hasMobile && !hasWeb) return 1;
+    return 0;
+}
+
+/** When plan allows only Web or only Mobile, snap index to that tab (create + edit). */
+export function coerceNotificationSubTabIndexToPlan(fromIndex, location) {
+    const analyticsTypes = _get(location, 'analyticsTypes', []) || [];
+    const channels = _get(location, 'channels', []) || [];
+    const hasWeb = analyticsTypes.includes(6) || channels.includes(8);
+    const hasMobile = analyticsTypes.includes(16) || channels.includes(14);
+
+    if (hasWeb && !hasMobile) return 0;
+    if (hasMobile && !hasWeb) return 1;
+
+    const idx = Number(fromIndex);
+    if (!Number.isNaN(idx) && idx >= 0 && idx <= NOTIFICATION_TAB_CONFIG.length - 1) {
+        return idx;
+    }
+    return getDefaultNotificationSubTabIndexFromPlan(location);
+}
+
 function peekCreateCommNotificationRawIndexFromLocation(location) {
     const search = typeof window !== 'undefined' ? window.location.search : '';
     const qparam = new URLSearchParams(search);
@@ -1078,6 +1128,7 @@ export function resolveNotificationSubTabIndexFromSharedState({
     const mainEdit = Number(_get(location, 'editSourceChannelId', NaN));
     const subEdit = Number(_get(location, 'editSourceSubChannelId', 0)) || 0;
     const isEditNotificationChannel = Number.isFinite(mainEdit) && (mainEdit === 8 || mainEdit === 14);
+    const indexPollutedByEdit = isLocationIndexPollutedByNonNotificationEdit(location);
 
     const rawLocationCurrentIndex = _get(location, 'currentIndex', null);
     const peekRaw = peekCreateCommNotificationRawIndexFromLocation(location);
@@ -1090,7 +1141,8 @@ export function resolveNotificationSubTabIndexFromSharedState({
     const peekForeign =
         verticalTabType === CREATE_COMM_NOTIFICATION_VERTICAL_TYPE &&
         peekInRange &&
-        isSharedCreateCommIndexForeignToVertical('notification', peekNum, tabsState, notificationReduxIndex);
+        (indexPollutedByEdit ||
+            isSharedCreateCommIndexForeignToVertical('notification', peekNum, tabsState, notificationReduxIndex));
 
     if (verticalTabType === CREATE_COMM_NOTIFICATION_VERTICAL_TYPE && isEditNotificationChannel) {
         const fromEdit = getCreateCommNotificationSubTabIndexFromEditSource(mainEdit, subEdit);
@@ -1113,14 +1165,14 @@ export function resolveNotificationSubTabIndexFromSharedState({
     if (channelId) {
         fromIndex = channelId == 8 ? 0 : channelId == 14 ? 1 : fromIndex;
     }
-    const channels = _get(location, 'channels', []) || [];
     const rawNum = Number(fromIndex);
     const inNotificationRange =
         fromIndex != null && !Number.isNaN(rawNum) && rawNum >= 0 && rawNum <= maxNotificationIdx;
     const sharedForeign =
         verticalTabType === CREATE_COMM_NOTIFICATION_VERTICAL_TYPE &&
         inNotificationRange &&
-        isSharedCreateCommIndexForeignToVertical('notification', rawNum, tabsState, notificationReduxIndex);
+        (indexPollutedByEdit ||
+            isSharedCreateCommIndexForeignToVertical('notification', rawNum, tabsState, notificationReduxIndex));
     if (
         fromIndex == null ||
         Number.isNaN(rawNum) ||
@@ -1128,16 +1180,27 @@ export function resolveNotificationSubTabIndexFromSharedState({
         rawNum > maxNotificationIdx ||
         sharedForeign
     ) {
-        if (notificationReduxIndex != null && !Number.isNaN(Number(notificationReduxIndex))) {
-            fromIndex = Number(notificationReduxIndex);
-        } else if (channels.includes(8) && !channels.includes(14)) {
-            fromIndex = 0;
-        } else if (channels.includes(14) && !channels.includes(8)) {
-            fromIndex = 1;
+        const planDefault = getDefaultNotificationSubTabIndexFromPlan(location);
+        const analyticsTypes = _get(location, 'analyticsTypes', []) || [];
+        const channels = _get(location, 'channels', []) || [];
+        const hasWeb = analyticsTypes.includes(6) || channels.includes(8);
+        const hasMobile = analyticsTypes.includes(16) || channels.includes(14);
+        const planAllowsBoth = hasWeb && hasMobile;
+
+        if (planAllowsBoth) {
+            const reduxIdx = Number(notificationReduxIndex);
+            if (Number.isFinite(reduxIdx) && reduxIdx >= 0 && reduxIdx <= maxNotificationIdx) {
+                fromIndex = reduxIdx;
+            } else {
+                fromIndex = planDefault;
+            }
         } else {
-            fromIndex = 0;
+            fromIndex = planDefault;
         }
     }
+
+    fromIndex = coerceNotificationSubTabIndexToPlan(fromIndex, location);
+
     return {
         fromIndex: Number(fromIndex),
         rawLocationCurrentIndex,
@@ -1890,7 +1953,7 @@ export const AudienceFieldRenderComponent = ({
                                 let checkIsValidChannelEnv =true;// getEnvironment() === 'RUN' && ['whatsapp', 'rcs']?.includes(type?.toLowerCase()) ? false : true
                                 if (
                                     isCTGTConfirm &&
-                                    !audience &&
+                                    !errors?.[name || 'audience'] &&
                                     !handleTwoStateCheckSame(SegmentIdList, checkAudienceState) && checkIsValidChannelEnv
                                 ) {
                                     setIsCGTGModal(isCTGTConfirm);
@@ -2201,6 +2264,20 @@ export const handleCGTGModalCheck = (statusId) => {
         return false
     }
 }
+
+/** Completed campaign (status 9) — read-only authoring; no confirmation modals. */
+export const shouldShowAuthoringTabChangeConfirmation = (isDirty) =>
+    Boolean(isDirty) && statusIdCheck();
+
+export const shouldPromptSkipChannelConfirmation = () => statusIdCheck();
+
+/** Read-only / completed — Next navigates only; no save, validation, or confirmation popups. */
+export const shouldBypassAuthoringChannelSubmit = (isClickOff = false) =>
+    Boolean(isClickOff) || !shouldPromptSkipChannelConfirmation();
+
+/** Email footer warning before save/next — skip when authoring is read-only or completed. */
+export const shouldPromptEmailFooterConfirmation = (isClickOff = false) =>
+    !shouldBypassAuthoringChannelSubmit(isClickOff);
 
 export const resolveLocalBlastDateTime = ({
     campaignType,

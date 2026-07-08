@@ -33,6 +33,8 @@ RSTabbar.propTypes = {
     add: PropTypes.bool,
     onAddMenu: PropTypes.func,
     onRemoveMenu: PropTypes.func,
+    disableAddMenu: PropTypes.bool,
+    disableRemoveMenu: PropTypes.bool,
     isRefreshConfirmation: PropTypes.bool,
     isClearConfirmation: PropTypes.bool,
     isHeadingBlock: PropTypes.bool,
@@ -47,6 +49,8 @@ RSTabbar.propTypes = {
     deliverytext_center: PropTypes.bool,
     noHeader: PropTypes.bool,
     disableWrapperTransition: PropTypes.bool,
+    disableSlidingIndicator: PropTypes.bool,
+    wrapperClassName: PropTypes.string,
 };
 
 export default memo(RSTabbar);

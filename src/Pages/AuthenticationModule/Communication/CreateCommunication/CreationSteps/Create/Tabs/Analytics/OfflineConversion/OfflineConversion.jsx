@@ -35,7 +35,7 @@ import {
 import { useNavigate } from 'react-router-dom';
 import RSConfirmationModal from 'Components/ConfirmationModal';
 import { useDispatch, useSelector } from 'react-redux';
-import { availableTabs, hasMismatchedChannelAudienceForOfflineConversion } from '../../../constant';
+import { availableTabs, hasMismatchedChannelAudienceForOfflineConversion , shouldPromptSkipChannelConfirmation} from '../../../constant';
 
 import { getSessionId } from 'Reducers/globalState/selector';
 import {
@@ -764,6 +764,10 @@ const OfflineConversion = () => {
                         disabledClass={isSubmitting ? 'pe-none click-off' : ''}
                         onClick={() => {
                             if (!isDirty && !isValid) {
+                                if (!shouldPromptSkipChannelConfirmation()) {
+                                    handleNavigation();
+                                    return;
+                                }
                                 setNavigate_confirm(true);
                             } else {
                                 handleSubmit((data) => formSubmitHandler(data, 'form', false))();

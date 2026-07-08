@@ -4,12 +4,18 @@ import { circle_arrow_down_medium, circle_arrow_up_medium, circle_plus_fill_edge
 import { useEffect, useState } from 'react';
 import { Accordion, Col, Row } from 'react-bootstrap';
 import { useFieldArray, useFormContext } from 'react-hook-form';
+import { useDispatch, useSelector } from 'react-redux';
 import RSKendoDropDownList from 'Components/FormFields/RSKendoDropdown';
 import RSTooltip from 'Components/RSTooltip';
 
+import { getSessionId } from 'Reducers/globalState/selector';
+import { getDataAttributes } from 'Reducers/preferences/datacatalogue/request';
 import EventTrackModal from './EventTrackModal';
 import AppBrandownFormTable from './AppBrandOwnFormTable';
 const AppFieldTrack = ({ updateData, appDeviceList, appList, isAppEdit, editData, onRefresh }) => {
+    const dispatch = useDispatch();
+    const { departmentId, clientId, userId } = useSelector((state) => getSessionId(state));
+    const { dataCatalogueAttrs } = useSelector(({ dataCatalogueReducer }) => dataCatalogueReducer);
     const [activeIndex, setActiveIndex] = useState(0);
 
     const [isShow, setShow] = useState(false);
@@ -17,6 +23,7 @@ const AppFieldTrack = ({ updateData, appDeviceList, appList, isAppEdit, editData
     const [selectedApp, setSelectedApp] = useState([]);
     const [deviceTypeName, setDeviceTypeName] = useState('');
     const [eventsSocketData, setEventSocketData] = useState({});
+    const [editModalLoadingIndex, setEditModalLoadingIndex] = useState(null);
     const { control, setValue, getValues, reset, resetField, watch } = useFormContext();
 
     const { fields, append } = useFieldArray({ control, name: 'mobileForm' });
@@ -53,10 +60,29 @@ const AppFieldTrack = ({ updateData, appDeviceList, appList, isAppEdit, editData
         setShowEvent(fileteItem);
         updateData({ eventsSocketData: eventsSocketData?.eventsSocketData, events: fileteItem });
     };
+
+    const handleOpenEventModal = async (index) => {
+        if (editModalLoadingIndex != null) return;
+
+        setEditModalLoadingIndex(index);
+        try {
+            if (!dataCatalogueAttrs?.length) {
+                await dispatch(
+                    getDataAttributes({ departmentId, clientId, userId }, false, false, 'BrandForm'),
+                );
+            }
+            setValue(`mobileForm[${index}].modalShow`, true);
+        } finally {
+            setEditModalLoadingIndex(null);
+        }
+    };
+
     return (
         <>
             <Accordion className="form-group no-box-shadow" defaultActiveKey="0">
                 {fields.map((fields, index) => {
+                    const isRowModalLoading = editModalLoadingIndex === index;
+
                     return (
                         <Accordion.Item eventKey="0" key={index}>
                             <Accordion.Header 
@@ -130,15 +156,20 @@ const AppFieldTrack = ({ updateData, appDeviceList, appList, isAppEdit, editData
                                         <Col sm={1} className={`fg-icons-wrapper d-flex`}>
                                             {isAppEdit || getValues(`mobileForm[${index}].events`)?.length ? (
                                                 <div className="fg-icons d-flex mr15">
-                                                    <RSTooltip text={EDIT} className='lh0'>
-                                                        <i
-                                                            className={`${pencil_edit_medium} icon-md color-primary-blue`}
-                                                            onClick={() => {
-                                                                
-                                                                // setShow(true);
-                                                                setValue(`mobileForm[${index}].modalShow`, true);
-                                                            }}
-                                                        />
+                                                    <RSTooltip
+                                                        text={isRowModalLoading ? 'Loading...' : EDIT}
+                                                        className="lh0"
+                                                    >
+                                                        <span className="d-inline-flex align-items-center justify-content-center icon-md lh0">
+                                                            {isRowModalLoading ? (
+                                                                <span className="segment_loader" aria-hidden="true" />
+                                                            ) : (
+                                                                <i
+                                                                    className={`${pencil_edit_medium} icon-md color-primary-blue cp`}
+                                                                    onClick={() => handleOpenEventModal(index)}
+                                                                />
+                                                            )}
+                                                        </span>
                                                     </RSTooltip>
                                                 </div>
                                             ) : null}
@@ -153,22 +184,26 @@ const AppFieldTrack = ({ updateData, appDeviceList, appList, isAppEdit, editData
                                                         />
                                                     </RSTooltip>
                                                 ) : (
-                                                    <RSTooltip text={CLICK_TO_CONFIGURE} className='lh0'>
-                                                        <div
-                                                            className={`${
+                                                    <RSTooltip
+                                                        text={isRowModalLoading ? 'Loading...' : CLICK_TO_CONFIGURE}
+                                                        className="lh0"
+                                                    >
+                                                        <span
+                                                            className={`d-inline-flex align-items-center justify-content-center icon-md lh0 ${
                                                                 !watch(`mobileForm[${index}].appName`)
                                                                     ? 'pe-none click-off'
                                                                     : ''
                                                             }`}
                                                         >
-                                                            <i
-                                                                className={`${event_tracking_medium} icon-md color-primary-blue`}
-                                                                onClick={() => {
-                                                                                                                                        // setShow(true);
-                                                                    setValue(`mobileForm[${index}].modalShow`, true);
-                                                                }}
-                                                            />
-                                                        </div>
+                                                            {isRowModalLoading ? (
+                                                                <span className="segment_loader" aria-hidden="true" />
+                                                            ) : (
+                                                                <i
+                                                                    className={`${event_tracking_medium} icon-md color-primary-blue cp`}
+                                                                    onClick={() => handleOpenEventModal(index)}
+                                                                />
+                                                            )}
+                                                        </span>
                                                     </RSTooltip>
                                                 )}
                                             </div>

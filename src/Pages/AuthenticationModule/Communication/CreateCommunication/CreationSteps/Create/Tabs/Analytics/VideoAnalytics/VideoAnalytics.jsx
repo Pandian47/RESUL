@@ -20,7 +20,7 @@ import { useNavigate } from 'react-router-dom';
 import { resetCreateCommunication, updateTab } from 'Reducers/communication/createCommunication/create/reducer';
 import RSConfirmationModal from 'Components/ConfirmationModal';
 import { useDispatch, useSelector } from 'react-redux';
-import { availableTabs } from '../../../constant';
+import { availableTabs , shouldPromptSkipChannelConfirmation} from '../../../constant';
 import { getSessionId } from 'Reducers/globalState/selector';
 import {
     getAllVideoAnalyticsContent,
@@ -308,7 +308,11 @@ const VideoAnalytics = () => {
                     disabledClass={isSubmitting ? 'pe-none click-off' : ''}
                     onClick={() => {
                         if (!isDirty && !isValid) {
-                            setNavigate_confirm(true);
+                            if (!shouldPromptSkipChannelConfirmation()) {
+                                    handleNavigation();
+                                    return;
+                                }
+                                setNavigate_confirm(true);
                         } else {
                             handleSubmit((data) => formSubmitHandler(data, 'form', false))();
                         }

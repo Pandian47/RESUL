@@ -254,12 +254,12 @@ footer.rs-page-footer-wrapper.login {
 }
 .rs-bootstrap-dropdown.rs-bootstrap-dropdown-with-icon.login-existing-user-dropdown {
     .dropdown-menu[x-placement='bottom-start'] {
-        // margin-top: -5px !important;
+        margin-top: 2px !important;
         margin-left: 0 !important;
         box-shadow: none;
-        border-radius: 10px;
+        border-radius: var(--globalDropdownRadius);
         overflow: hidden;
-        width: 100%;
+        width: 177px;
         // border-top-color: $secondary_blue;
         padding: 0;
         border-top-width: 1px;
@@ -299,7 +299,7 @@ footer.rs-page-footer-wrapper.login {
         margin-bottom: 0;
     }
     .dropdown-toggle {
-        height: 27px;
+        height: 30px;
         color: $secondary-black !important;
         &::after {
             border-top-color: $secondary-grey !important;
@@ -320,6 +320,10 @@ footer.rs-page-footer-wrapper.login {
         border-bottom: 1px solid $secondary-grey;
         z-index: 3;
     }
+}
+.login-info-container.row { 
+    margin-top: 30px;
+    width: 100%;
 }
 @media only screen and (min-width: 1367px) and (-webkit-min-device-pixel-ratio: 1) {
     .login-panel {
@@ -544,3 +548,5 @@ html:has(.login-bg-img) {
         padding-left: 0;
     }
 }
+
+

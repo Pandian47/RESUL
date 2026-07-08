@@ -1,6 +1,5 @@
 import { encodeUrl } from 'Utils/modules/crypto';
 import { getUserCurrentFormat, getYYMM, getYYMMDD } from 'Utils/modules/dateTime';
-import { truncateTitle } from 'Utils/modules/displayCore';
 import { downloadCSVcommasFile } from 'Utils/modules/download';
 import { numberWithCommas } from 'Utils/modules/formatters';
 import { HorizontalSkeleton } from 'Components/Skeleton/Skeleton';
@@ -8,7 +7,6 @@ import { csv_download_large, trophy_medium } from 'Constants/GlobalConstant/Glyp
 import { Fragment, cloneElement, useCallback, useEffect, useMemo, useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import KendoGrid from 'Components/RSKendoGrid';
-import RSTooltip from 'Components/RSTooltip';
 import { map as _map } from 'Utils/modules/lodashReplacements';
 import { getSessionId } from 'Reducers/globalState/selector';
 import {
@@ -21,7 +19,7 @@ import { updateAnalyticsDetail } from 'Reducers/analytics/communicationAnalytics
 
 import ConsumptionChannelHeader from '../../ConsumptionChannelHeader/ConsumptionChannelHeader';
 import { numericParentSumCell, commonConsumptionColumns } from '../../../../constant';
-import TruncatedCell from 'Components/RSKendoGrid/TruncateCell';
+import TruncateCell from 'Components/RSKendoGrid/TruncateCell';
 import {getFirstDayOfMonth, getCurrentDateOfMonth} from 'Utils/modules/dateTime.jsx'
 
 const ConsumptionWhatsApp = () => {
@@ -226,62 +224,45 @@ const ConsumptionWhatsApp = () => {
                             : baseSplitType || dataItem?.splitType || dataItem?.[field] || '';
 
                         return (
-                            <td>
-                                <div className="d-flex justify-content-between">
-                                    <span
-                                        className="cursor-pointer link-underline-hover color-primary-black"
-                                        onClick={() => {
-                                            const splitName = dataItem?.iswinnerSplit
-                                                ? 'Actual communication'
-                                                : baseSplitType ? `Split ${baseSplitType}` : '';
-                                            dispatch(
-                                                updateAnalyticsDetail({
-                                                    channelName: consumptionChannel?.lable,
-                                                    campaignId: dataItem?.campaignID,
-                                                    from: 'analytics',
-                                                    blastId: dataItem?.blastShortCode,
-                                                    channelId: 21,
-                                                    currIndex:
-                                                        dataItem?.deliveryMethod === 'Multi dimension'
-                                                            ? dataItem?.mdcLevel - 1
-                                                            : 0,
-                                                }),
-                                            );
-                                            const state = {
-                                                channelName: consumptionChannel?.lable,
-                                                campaignId: dataItem?.campaignID,
-                                                channelId: 21,
-                                                iswinnerSplit: dataItem?.iswinnerSplit,
-                                                iswinnerSplitType: dataItem?.iswinnerSplitType,
-                                                isSplitAB: true,
-                                                splitName,
-                                                iswinnerBlastId: dataItem?.iswinnerSplit
-                                                    ? dataItem?.blastShortCode
-                                                    : '',
-                                                groupWinnerSplitType: dataItem?.groupWinnerSplitType || '',
-                                            };
-                                            const encryptState = encodeUrl(state);
-                                            navigate(`/analytics/detail-analytics?q=${encryptState}`, {
-                                                state,
-                                            });
-                                        }}
-                                    >
-                                        {displayValue?.length > 25 ? (
-                                            <RSTooltip
-                                                text={`${displayValue}`}
-                                                position="top"
-                                                className="color-primary-black"
-                                                innerContent={false}
-                                            >
-                                                <span className="color-primary-black">
-                                                    {truncateTitle(displayValue, 25)}
-                                                </span>
-                                            </RSTooltip>
-                                        ) : (
-                                            <span className="m0">{displayValue}</span>
-                                        )}
-                                    </span>
-                                </div>
+                            <td
+                                className="cursor-pointer link-underline-hover color-primary-black"
+                                onClick={() => {
+                                    const splitName = dataItem?.iswinnerSplit
+                                        ? 'Actual communication'
+                                        : baseSplitType ? `Split ${baseSplitType}` : '';
+                                    dispatch(
+                                        updateAnalyticsDetail({
+                                            channelName: consumptionChannel?.lable,
+                                            campaignId: dataItem?.campaignID,
+                                            from: 'analytics',
+                                            blastId: dataItem?.blastShortCode,
+                                            channelId: 21,
+                                            currIndex:
+                                                dataItem?.deliveryMethod === 'Multi dimension'
+                                                    ? dataItem?.mdcLevel - 1
+                                                    : 0,
+                                        }),
+                                    );
+                                    const state = {
+                                        channelName: consumptionChannel?.lable,
+                                        campaignId: dataItem?.campaignID,
+                                        channelId: 21,
+                                        iswinnerSplit: dataItem?.iswinnerSplit,
+                                        iswinnerSplitType: dataItem?.iswinnerSplitType,
+                                        isSplitAB: true,
+                                        splitName,
+                                        iswinnerBlastId: dataItem?.iswinnerSplit
+                                            ? dataItem?.blastShortCode
+                                            : '',
+                                        groupWinnerSplitType: dataItem?.groupWinnerSplitType || '',
+                                    };
+                                    const encryptState = encodeUrl(state);
+                                    navigate(`/analytics/detail-analytics?q=${encryptState}`, {
+                                        state,
+                                    });
+                                }}
+                            >
+                                <TruncateCell value={displayValue ?? ''} noTable={true} wrapperClassName="m0" />
                             </td>
                         );
                     },
@@ -441,84 +422,63 @@ const ConsumptionWhatsApp = () => {
                 cell: ({ dataItem, field }) => {
                     if (isParentRow(dataItem)) {
                         return (
-                            <td>
-                                <div className="d-flex justify-content-between">
-                                    <span
-                                        className={`cursor-pointer link-underline-hover color-primary-black ${
-                                            dataItem?.expanded ? 'font-semi-bold' : ''
-                                        }`}
-                                    >
-                                        {dataItem?.[field]?.length > 15 ? (
-                                            <RSTooltip text={`${dataItem?.[field]}`} position="top" innerContent={false}>
-                                                <span className="m0">{truncateTitle(dataItem?.[field], 15)}</span>
-                                            </RSTooltip>
-                                        ) : (
-                                            <span className="m0">{dataItem?.[field]}</span>
-                                        )}
-                                    </span>
-                                    {/* {dataItem?.expandDetails?.length > 0 && (
-                                        <div>
-                                            <i
-                                                onClick={handleExpandClick}
-                                                className={`k-icon ${dataItem?.expanded ? 'k-i-minus' : 'k-i-plus'}`}
-                                                style={{ pointerEvents: 'auto' }}
-                                            ></i>
-                                        </div>
-                                    )} */}
-                                </div>
+                            <td
+                                className={`cursor-pointer link-underline-hover color-primary-black ${
+                                    dataItem?.expanded ? 'font-semi-bold' : ''
+                                }`}
+                            >
+                                <TruncateCell
+                                    value={dataItem?.[field] ?? ''}
+                                    noTable={true}
+                                    wrapperClassName="m0"
+                                />
                             </td>
                         );
                     }
 
                     return (
-                        <td>
-                            <div className="d-flex justify-content-between">
-                                <span
-                                    className="cursor-pointer link-underline-hover color-primary-black"
-                                    onClick={() => {
-                                        const baseSplitType = dataItem?.splitType?.split(' - ')?.[0]?.trim();
-                                        const splitName = dataItem?.iswinnerSplit
-                                            ? 'Actual communication'
-                                            : baseSplitType ? `Split ${baseSplitType}` : '';
-                                        dispatch(
-                                            updateAnalyticsDetail({
-                                                channelName: consumptionChannel?.lable,
-                                                campaignId: dataItem?.campaignID,
-                                                from: 'analytics',
-                                                blastId: dataItem?.blastShortCode,
-                                                channelId: 21,
-                                                currIndex:
-                                                    dataItem?.deliveryMethod === 'Multi dimension'
-                                                        ? dataItem?.mdcLevel - 1
-                                                        : 0,
-                                            }),
-                                        );
-                                        const state = {
-                                            channelName: consumptionChannel?.lable,
-                                            campaignId: dataItem?.campaignID,
-                                            channelId: 21,
-                                            iswinnerSplit: dataItem?.iswinnerSplit,
-                                            iswinnerSplitType: dataItem?.iswinnerSplitType,
-                                            isSplitAB: true,
-                                            splitName,
-                                            iswinnerBlastId: dataItem?.iswinnerSplit
-                                                ? dataItem?.blastShortCode
-                                                : '',
-                                            groupWinnerSplitType: dataItem?.groupWinnerSplitType || '',
-                                        };
-                                        const encryptState = encodeUrl(state);
-                                        navigate(`/analytics/detail-analytics?q=${encryptState}`, { state });
-                                    }}
-                                >
-                                    {dataItem?.[field]?.length > 15 ? (
-                                        <RSTooltip text={`${dataItem?.[field]}`} position="top" innerContent={false}>
-                                            <span className="m0">{truncateTitle(dataItem?.[field], 15)}</span>
-                                        </RSTooltip>
-                                    ) : (
-                                        <span className="m0">{dataItem?.[field]}</span>
-                                    )}
-                                </span>
-                            </div>
+                        <td
+                            className="cursor-pointer link-underline-hover color-primary-black"
+                            onClick={() => {
+                                const baseSplitType = dataItem?.splitType?.split(' - ')?.[0]?.trim();
+                                const splitName = dataItem?.iswinnerSplit
+                                    ? 'Actual communication'
+                                    : baseSplitType ? `Split ${baseSplitType}` : '';
+                                dispatch(
+                                    updateAnalyticsDetail({
+                                        channelName: consumptionChannel?.lable,
+                                        campaignId: dataItem?.campaignID,
+                                        from: 'analytics',
+                                        blastId: dataItem?.blastShortCode,
+                                        channelId: 21,
+                                        currIndex:
+                                            dataItem?.deliveryMethod === 'Multi dimension'
+                                                ? dataItem?.mdcLevel - 1
+                                                : 0,
+                                    }),
+                                );
+                                const state = {
+                                    channelName: consumptionChannel?.lable,
+                                    campaignId: dataItem?.campaignID,
+                                    channelId: 21,
+                                    iswinnerSplit: dataItem?.iswinnerSplit,
+                                    iswinnerSplitType: dataItem?.iswinnerSplitType,
+                                    isSplitAB: true,
+                                    splitName,
+                                    iswinnerBlastId: dataItem?.iswinnerSplit
+                                        ? dataItem?.blastShortCode
+                                        : '',
+                                    groupWinnerSplitType: dataItem?.groupWinnerSplitType || '',
+                                };
+                                const encryptState = encodeUrl(state);
+                                navigate(`/analytics/detail-analytics?q=${encryptState}`, { state });
+                            }}
+                        >
+                            <TruncateCell
+                                value={dataItem?.[field] ?? ''}
+                                noTable={true}
+                                wrapperClassName="m0"
+                            />
                         </td>
                     );
                 },
@@ -613,7 +573,7 @@ const ConsumptionWhatsApp = () => {
                         value = dataItem?.[field] || '';
                     }
 
-                    return <TruncatedCell value={value || ''} />;
+                    return <TruncateCell value={value || ''} />;
                 },
             },
             {
@@ -657,13 +617,7 @@ const ConsumptionWhatsApp = () => {
 
                     return (
                         <td>
-                            {value?.length > 15 ? (
-                                <RSTooltip text={value} position="top" innerContent={false}>
-                                    <span className="m0">{truncateTitle(value, 15)}</span>
-                                </RSTooltip>
-                            ) : (
-                                <span className="m0">{value}</span>
-                            )}
+                            <TruncateCell value={value ?? ''} noTable={true} wrapperClassName="m0" />
                         </td>
                     );
                 },

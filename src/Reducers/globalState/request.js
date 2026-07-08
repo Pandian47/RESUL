@@ -12,6 +12,9 @@ import {
 import { getUserDetails } from 'Utils/modules/crypto';
 import { formatName } from 'Utils/modules/formatters';
 import { updateDepartmentList } from 'Utils/modules/brandStorage';
+import { getUtcTimeData } from 'Reducers/globalState/selector';
+
+let utcTimeInFlight = null;
 
 const normalizeDepartmentResponse = (value) => {
     if (Array.isArray(value)) return value;
@@ -62,7 +65,7 @@ export const getIpAddressData =
         );
     };
 export const getUserListCampaign =
-    ({ payload ,loading = true}) =>
+    ({ payload ,loading = false}) =>
     async (dispatch) => {
         return dispatch(
             request.post({
@@ -306,19 +309,37 @@ export const requestKeyPersonOTP = (payload, setMessage, resend = false, loading
     );
 };
 
-export const getUtcTimeNow = (loading = false) => async (dispatch) => {
-    return dispatch(
-        request.post({
-            url: GET_UTC_TIME_NOW,
-            loading: loading,
-            ok: ({ data }) => {
-                dispatch(updateUtcTimeData(data));
-            },
-            fail: (err) => {
+export const getUtcTimeNow =
+    (loading = false, { force = false } = {}) =>
+    async (dispatch, getState) => {
+        const existing = getUtcTimeData(getState());
+        if (!force && existing?.utcTime) {
+            return existing;
+        }
+
+        if (utcTimeInFlight) {
+            return utcTimeInFlight;
+        }
+
+        const requestPromise = dispatch(
+            request.post({
+                url: GET_UTC_TIME_NOW,
+                loading: loading,
+                ok: ({ data }) => {
+                    dispatch(updateUtcTimeData(data));
+                },
+                fail: (err) => {
                             },
-        }),
-    );
-};
+            }),
+        );
+
+        utcTimeInFlight = requestPromise;
+        return requestPromise.finally(() => {
+            if (utcTimeInFlight === requestPromise) {
+                utcTimeInFlight = null;
+            }
+        });
+    };
 
 export const getActiveDSTTimezones = (loading = false) => async (dispatch) => {
     return dispatch(

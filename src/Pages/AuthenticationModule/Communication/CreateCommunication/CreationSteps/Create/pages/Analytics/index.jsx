@@ -7,7 +7,7 @@ import RSTabbar from 'Components/RSTabber';
 
 import { ignoreList } from './constant';
 
-import { ANALYTICS_TAB_CONFIG, areAllChannelAudiencesAdhoc } from '../../constant';
+import { ANALYTICS_TAB_CONFIG, areAllChannelAudiencesAdhoc, shouldShowAuthoringTabChangeConfirmation } from '../../constant';
 import { updateTab } from 'Reducers/communication/createCommunication/Create/reducer';
 import { useNavigate } from 'react-router-dom';
 import useQueryParams from 'Hooks/useQueryParams';
@@ -77,7 +77,7 @@ const Analytics = () => {
             activeClass={`active`}
             defaultTab={currentTab}
             tabData={tabs}
-            isTabChangeConfirmation={isDirty}
+            isTabChangeConfirmation={shouldShowAuthoringTabChangeConfirmation(isDirty)}
             callBack={(tabs, index) => {
                 if (currentTab !== index) {
                     dispatch(

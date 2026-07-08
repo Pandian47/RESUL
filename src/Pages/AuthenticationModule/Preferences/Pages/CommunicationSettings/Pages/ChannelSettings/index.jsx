@@ -2,7 +2,7 @@ import { useEffect, useLayoutEffect, useState } from 'react';
 import RSTabbar from 'Components/RSTabber';
 
 import useQueryParams from 'Hooks/useQueryParams';
-import { VERTICAL_TAB_CONFIG, resolveVerticalTabState } from './constant';
+import { VERTICAL_TAB_CONFIG, resolveVerticalTabState, syncVerticalChannelTabQuery } from './constant';
 import { useLocation } from 'react-router-dom';
 import { update_isBUEnablePush, update_isBUEnableAds } from 'Reducers/preferences/CommunicationSettings/reducer';
 import { useDispatch } from 'react-redux';
@@ -33,6 +33,7 @@ const ChannelSettings = () => {
                     //  defaultTab={0}
                     defaultTab={tabState}
                     callBack={(_, index) => {
+                        syncVerticalChannelTabQuery(index);
                         dispatch(update_isBUEnablePush(index));
                         dispatch(update_isBUEnableAds(index));
                     }}

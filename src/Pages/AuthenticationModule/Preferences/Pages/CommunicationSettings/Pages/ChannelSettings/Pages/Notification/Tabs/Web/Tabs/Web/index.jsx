@@ -9,6 +9,7 @@ import Goal from '../Goal/Grid';
 import Create from '../Goal/Create';
 import { useLocation } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
+import useQueryParams from 'Hooks/useQueryParams';
 
 import { update_disableBU } from 'Reducers/preferences/CommunicationSettings/reducer';
 const Web = () => {
@@ -19,9 +20,11 @@ const Web = () => {
     const [useStepperView, setUseStepperView] = useState(false);
     const value = { setGridCreate, gridCreate, useStepperView, setUseStepperView };
     const { state } = useLocation();
+    const queryState = useQueryParams('/preferences/communication-settings');
+    const navState = { ...queryState, ...state };
 
     useEffect(() => {
-        if (state?.type === false) {
+        if (navState?.type === false) {
             setGridCreate((prev) => ({
                 ...prev,
                 showGrid: false,
@@ -34,21 +37,7 @@ const Web = () => {
                     show: true,
                 },
             }));
-        } else if (state?.from === 'WN') {
-            setGridCreate((prev) => ({
-                ...prev,
-                showGrid: false,
-                pushWebAction: {
-                    edit: {
-                        editState: [],
-                        isEdit: false,
-                    },
-                    create: true,
-                    show: true,
-                },
-            }));
-        }
-        else if (state?.mode === 'add') {
+        } else if (navState?.from === 'WN') {
             setGridCreate((prev) => ({
                 ...prev,
                 showGrid: false,
@@ -62,7 +51,21 @@ const Web = () => {
                 },
             }));
         }
-    }, [state]);
+        else if (navState?.mode === 'add') {
+            setGridCreate((prev) => ({
+                ...prev,
+                showGrid: false,
+                pushWebAction: {
+                    edit: {
+                        editState: [],
+                        isEdit: false,
+                    },
+                    create: true,
+                    show: true,
+                },
+            }));
+        }
+    }, [queryState, state]);
     const handleErrClose = () => {
         if (failedApi === 'GetWebPushbyID') {
             setGridCreate(ACTION_INITIAL_STATE)

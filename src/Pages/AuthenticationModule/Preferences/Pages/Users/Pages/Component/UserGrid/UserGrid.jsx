@@ -31,6 +31,8 @@ import {
 import { updateUserLoadingState, updateUsersData } from 'Reducers/preferences/users/reducer';
 import { updateCurrentPageConfig } from 'Reducers/globalState/reducer';
 import { getUsersCount } from 'Reducers/preferences/users/selectors';
+import RSSkeletonTable from 'Components/RSSkeleton/RSSkeletonTable';
+
 const UserListing = ({
     companies = false,
     fromUserManagement = false,
@@ -217,11 +219,11 @@ const UserListing = ({
 
     if (!gridIsLoading && Array.isArray(users) && users.length === 0) {
         return (
-            <CustomSkeleton
-                isError={true}
-                count={5}
-                height={60}
-                text={
+            <RSSkeletonTable
+                count={7}
+                isAlertIcon={false}
+                text
+                message={
                     !fromUserManagement ? (
                         <>{NO_RECORDS_FOUND}</>
                     ) : (

@@ -1,40 +1,26 @@
-import { useState } from 'react';
-import { Grid, GridColumn } from '@progress/kendo-react-grid';
-import { process } from '@progress/kendo-data-query';
-
+import KendoGrid from 'Components/RSKendoGrid';
 import { SAVE_PREVIEW_GRID_CONFIG } from '../../constant';
 
-const MappingPreviewGrid = ({ data = [] }) => {
-    const [dataState, setDataState] = useState({
-        take: SAVE_PREVIEW_GRID_CONFIG.take,
-        skip: SAVE_PREVIEW_GRID_CONFIG.skip,
-    });
+const MAPPING_PREVIEW_COLUMNS = [
+    { field: 'sourceColumnName', title: 'Source header', width: 240 },
+    { field: 'destinationColumnName', title: 'Mapped attribute', width: 240 },
+];
 
-    const processed = process(data, dataState);
-
-    return (
-        <div className="rs-kendo-grid-table rs-kendo-scrollable-grid">
-            <Grid
-                data={processed.data}
-                total={processed.total}
-                skip={dataState.skip}
-                take={dataState.take}
-                onDataStateChange={(event) => setDataState(event.dataState)}
-                pageable={{
-                    info: true,
-                    pageSizes: SAVE_PREVIEW_GRID_CONFIG.pageSizes,
-                    previousNext: true,
-                    buttonCount: 4,
-                    className: 'rs-kendo-pager',
-                }}
-                sortable={false}
-                scrollable="scrollable"
-            >
-                <GridColumn field="sourceColumnName" title="Source header" width={240} />
-                <GridColumn field="destinationColumnName" title="Mapped attribute" width={240} />
-            </Grid>
-        </div>
-    );
-};
+const MappingPreviewGrid = ({ data = [] }) => (
+    <KendoGrid
+        data={data}
+        column={MAPPING_PREVIEW_COLUMNS}
+        sortable={false}
+        scrollable="scrollable"
+        pageable
+        noBoxShadow
+        isDataStateRequired={false}
+        config={{
+            take: SAVE_PREVIEW_GRID_CONFIG.take,
+            skip: SAVE_PREVIEW_GRID_CONFIG.skip,
+        }}
+        settings={{ total: data.length }}
+    />
+);
 
 export default MappingPreviewGrid;

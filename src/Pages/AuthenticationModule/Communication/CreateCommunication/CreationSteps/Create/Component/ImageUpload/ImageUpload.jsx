@@ -1370,7 +1370,7 @@ const ImageUpload = ({
                                                 isUploaded ||
                                                 !!selectedFile ||
                                                 (trimmedUrl.length > 0 && !inputUrlState.invalid);
-                                            return ` ${modalFieldBlocked ? 'pe-none click-off' : ''} ${
+                                            return ` ${modalFieldBlocked || isProcessing ? 'pe-none click-off' : ''} ${
                                                 canUseUpload ? '' : 'pe-none click-off'
                                             }`;
                                         })()}

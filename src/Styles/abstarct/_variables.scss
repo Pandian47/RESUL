@@ -329,6 +329,7 @@ $theme-radius-size-sm: var(--globalBorderRadius);
     --sentimentColor: #5ba529;
     // --editorbgcolor: #000;
     --globalBorderRadius: 10px;
+    --globalDropdownRadius: var(--globalBorderRadius);
     --borderRadiusTabDropMenu: 7px;
     --preferencesPrefCardSpace: 21px;
     --brandform-image-height: 83vh;

@@ -53,14 +53,14 @@ const VARIANT_COMPONENTS = {
 };
 
 const ResTabber = (props) => {
-    const { variant = 'default', features, tabData = [], ...rest } = props;
+    const { variant = 'default', features, tabData = [], wrapperClassName = '', ...rest } = props;
     const normalizedProps = normalizeTabberProps({ variant, features, tabData, ...rest });
 
     const resolvedVariant = VARIANT_COMPONENTS[variant] ? variant : 'default';
     const VariantComponent = VARIANT_COMPONENTS[resolvedVariant];
 
     return (
-        <div className="res-tabber">
+        <div className={`res-tabber ${wrapperClassName}`}>
             <VariantComponent tabData={tabData} {...normalizedProps} />
         </div>
     );
@@ -124,6 +124,8 @@ ResTabber.propTypes = {
     expandIcon: PropTypes.func,
     hideTabs: PropTypes.bool,
     containerClass: PropTypes.string,
+    wrapperClassName: PropTypes.string,
+    disableSlidingIndicator: PropTypes.bool,
 };
 
 export default memo(ResTabber);

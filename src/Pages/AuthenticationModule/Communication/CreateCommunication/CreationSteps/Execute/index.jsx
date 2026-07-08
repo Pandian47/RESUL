@@ -47,7 +47,9 @@ const Execute = () => {
     const [defaultTab, setDefaultTab] = useState(0);
     const [subSegLevel, setSubSegLevel] = useState(1);
     const [roiContent, setRoiContent] = useState(() => isCommunicationExecuteRoiActive(state1));
-    const isExecuteContentLoading = !roiContent && (isCampaignAnalyzeListLoading || tabConfig.length === 0);
+    const isExecuteContentLoading = !roiContent && isCampaignAnalyzeListLoading;
+    const hasNoExecuteChannelData =
+        !roiContent && !isCampaignAnalyzeListLoading && tabConfig.length === 0;
     const [subSegList, setSubSegList] = useState([]);
     const [cgtgValidatedChannels, setCgtgValidatedChannels] = useState({});
     const [showCGTGWarning, setShowCGTGWarning] = useState(false);
@@ -80,16 +82,32 @@ const Execute = () => {
 
         const res = await dispatch(getCampaignAnalyzeList({ payload }));
 
+        const resetEmptyExecuteState = (campaignPayload = {}) => {
+            setTabConfig([]);
+            setTabData('');
+            setSubSegList([]);
+            dispatch(update_campaign_details({ field: 'campaignDetails', data: campaignPayload }));
+        };
+
         if (res?.status) {
-            // debugger
-            const { channelDetails, isSubSegmentEnabled = false } = res?.data;
+            if (!res?.data) {
+                resetEmptyExecuteState({});
+                return;
+            }
+
+            const { channelDetails = [], isSubSegmentEnabled = false } = res.data;
+
+            if (!channelDetails?.length) {
+                resetEmptyExecuteState(res.data);
+                return;
+            }
 
             if (isSubSegmentEnabled) {
-                handleSubsegmentData(res?.data);
+                handleSubsegmentData(res.data);
             } else {
                 let tempArr = [];
 
-                for (var i = 0; i < channelDetails?.length; i++) {
+                for (var i = 0; i < channelDetails.length; i++) {
                     let tabName = TAB_HEADER_CONFIG[channelDetails[i]?.channelId];
                     tempArr.push({
                         index: i,
@@ -105,11 +123,11 @@ const Execute = () => {
                 let tabName = TAB_HEADER_CONFIG[tempArr[0]?.id];
                 setTabData(tabName);
                 let tempData = {
-                    ...res?.data,
+                    ...res.data,
                     //campaignType: types[campaignType],
                 };
                 dispatch(update_campaign_details({ field: 'campaignDetails', data: tempData }));
-                let channelContentDetails = [...channelDetails];
+                let channelContentDetails = [...(channelDetails || [])];
                 for (var i = 0; i < channelContentDetails?.length; i++) {
                     let name = TAB_HEADER_CONFIG[channelContentDetails[i]?.channelId];
                     dispatch(update_channel_details({ field: name, data: channelContentDetails[i] }));
@@ -117,15 +135,13 @@ const Execute = () => {
                 }
             }
         } else {
-            setTabConfig([]);
-            setTabData('');
+            resetEmptyExecuteState({});
             dispatch(
                 update_failures_API_Errors({
                     field: 'GetCampaignAnalyzeList',
                     message: res?.message || 'No data available',
                 }),
             );
-            dispatch(update_campaign_details({ field: 'campaignDetails', data: {} }));
         }
     };
     const getSubSegments = (campDetails) => {
@@ -149,13 +165,20 @@ const Execute = () => {
         );
     };
     function handleSubsegmentData(campDetails) {
+        if (!campDetails?.channelDetails?.length) {
+            setTabConfig([]);
+            setTabData('');
+            setSubSegList([]);
+            dispatch(update_campaign_details({ field: 'campaignDetails', data: campDetails ?? {} }));
+            return;
+        }
         dispatch(update_campaign_details({ field: 'campaignDetails', data: campDetails }));
         setSubSegList(getSubSegments(campDetails));
         getSubSegmentData(campDetails, 1);
     }
     function getSubSegmentData(campDetails, id) {
         let tempArr = [];
-        let channelContentDetails = [...campDetails?.channelDetails];
+        let channelContentDetails = [...(campDetails?.channelDetails || [])];
         for (var i = 0; i < channelContentDetails?.length; i++) {
             let name = TAB_HEADER_CONFIG[channelContentDetails[i]?.channelId];
             const filteredContent = {
@@ -266,6 +289,24 @@ const Execute = () => {
                                 </>
                             ) : isExecuteContentLoading ? (
                                 <ExecutePageLoadingSkeletonBlock />
+                            ) : hasNoExecuteChannelData ? (
+                                <>
+                                    <RSProgressSteps stepsData={planningStepsExecute} isRoiCompleted={roiContent} />
+                                    <CampaignInfoCard type="execute" />
+                                    <ExecuteContent
+                                        isEmptyChannelData
+                                        tab={tabData}
+                                        setRoiContent={setRoiContent}
+                                        tabConfig={tabConfig}
+                                        subSegLevel={subSegLevel}
+                                        validateCGTGForAllChannels={validateCGTGForAllChannels}
+                                        setShowCGTGWarning={setShowCGTGWarning}
+                                        setPendingCGTGChannel={setPendingCGTGChannel}
+                                        setDefaultTab={setDefaultTab}
+                                        setTabData={setTabData}
+                                        handleCGTGValidated={handleCGTGValidated}
+                                    />
+                                </>
                             ) : (
                                 <>
                                     <RSProgressSteps stepsData={planningStepsExecute} isRoiCompleted={roiContent} />

@@ -1,5 +1,5 @@
 import { useEffect, useState, cloneElement, isValidElement } from 'react';
-import { DropdownButton, Dropdown } from 'react-bootstrap';
+import { Dropdown } from 'react-bootstrap';
 import Proptypes from 'prop-types';
 import RSTooltip from '../RSTooltip';
 import { normalizeDisplayText } from 'Utils/modules/stringUtils';
@@ -91,15 +91,18 @@ export const BootstrapDropdown = ({
             style={{ '--rs-dropdown-item-count': safeData.length }}
         >
             {errorMessage && <div className="validation-message">{errorMessage}</div>}
-            <DropdownButton
+            <Dropdown
                 align={`${alignRight ? 'end' : 'start'}`}
-                variant=""
                 className={`rs-dropdown ${className} ${fontSize}`}
-                title={sanitizeDropdownTitle(title)}
-                renderMenuOnMount
-                popperConfig={RS_BOOTSTRAP_DROPDOWN_POPPER_CONFIG}
-                {...(isCustomToggle && { show: show, onClick: props.handleClick })}
+                {...(isCustomToggle && { show: show })}
             >
+                <Dropdown.Toggle
+                    variant=""
+                    {...(isCustomToggle && { onClick: props.handleClick })}
+                >
+                    {sanitizeDropdownTitle(title)}
+                </Dropdown.Toggle>
+                <Dropdown.Menu renderOnMount popperConfig={RS_BOOTSTRAP_DROPDOWN_POPPER_CONFIG}>
                 <div className={isScroll ? 'css-scrollbar custome-dropdown-scroll' : ''}>
                     {safeData.map((item, index) => {
                         return (
@@ -159,7 +162,8 @@ export const BootstrapDropdown = ({
                         {footer}
                     </>
                 )}
-            </DropdownButton>
+                </Dropdown.Menu>
+            </Dropdown>
         </div>
     );
 };

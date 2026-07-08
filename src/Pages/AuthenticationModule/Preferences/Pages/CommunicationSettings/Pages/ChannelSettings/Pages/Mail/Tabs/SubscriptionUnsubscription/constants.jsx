@@ -1,16 +1,14 @@
 import Subscription from './Tabs/Subscription';
 import { map as _map } from 'Utils/modules/lodashReplacements';
+import { SUB_UNSUB_INNER_TAB_CONFIG } from '../../../../constant';
 // import UnSubscription from './Tabs/UnSubscription';
 
-export const SUB_UNSUB_TABBER_CONFIG = [
-    {
-        id: 1001,
-        text: 'Subscription',
-        disable: false,
-        component: () => <Subscription tabname="Subscription" />,
-    },
-    { id: 1002, text: 'Unsubscription', disable: false, component: () => <Subscription tabname="Unsubscription" /> },
-];
+export const SUB_UNSUB_TABBER_CONFIG = SUB_UNSUB_INNER_TAB_CONFIG.map((tab) => ({
+    id: tab.id,
+    text: tab.text,
+    disable: false,
+    component: () => <Subscription tabname={tab.text} />,
+}));
 
 export const SUB_STATE = {
     defaultValues: {

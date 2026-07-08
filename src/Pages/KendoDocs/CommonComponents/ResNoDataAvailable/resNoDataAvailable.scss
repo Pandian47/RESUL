@@ -34,9 +34,25 @@ $nodata-shadow: 0 0 5px 0 rgb(0 0 0 / 5%), 0 0 5px 0 rgb(0 0 0 / 5%);
 }
 
 // Kendo list popup empty state (portaled) — ResKendoDropdown & ResMultiSelect
-.k-animation-container 
-.k-child-animation-container .k-popup{
+.k-animation-container:has(.res-nodata-bar) {
+    min-width: 200px !important;
+    max-width: none !important;
+
+    .k-child-animation-container,
+    .k-popup,
+    .k-list-container {
+        min-width: 200px !important;
+        width: 100% !important;
+        max-width: none !important;
+    }
+
     .res-nodata-bar {
-        min-height: 170px ;
+        min-height: 170px;
+        width: 100%;
+
+        > div {
+            justify-content: center;
+            white-space: nowrap;
+        }
     }
 }

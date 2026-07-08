@@ -196,7 +196,13 @@ const Preview = ({ show, handleClose, type, dispatchState, primaryDropDown }) =>
             isbackEnable: location?.isBack ? true : false,
             identity: location?.fromBack || '',
             referenceRid: location?.data?.remoteSettingId || 0,
+            remoteSettingId: location?.data?.remoteSettingId || 0,
+            editHistoryId: location?.data?.editHistoryId || 0,
         };
+        const isEditFlow = location?.mode === 'edit';
+        if (isEditFlow) {
+            payload.isEdit = true;
+        }
         let connectionRequest =
             type?.data.remoteDataSourceID === 28 ||
             type?.data.remoteDataSourceID === 45 ||
@@ -245,6 +251,9 @@ const Preview = ({ show, handleClose, type, dispatchState, primaryDropDown }) =>
                         location?.data?.remoteSettingId ||
                         0,
                 };
+                if (isEditFlow) {
+                    dedupePayload.isEdit = true;
+                }
                 await dispatch(updateDedupeRDS({ payload: dedupePayload }));
             }
             if (type?.data.remoteDataSourceID === 40) {
@@ -258,6 +267,8 @@ const Preview = ({ show, handleClose, type, dispatchState, primaryDropDown }) =>
                     from: 'manual entry',
                     data: { audienceData: { arr: columname, data }, type },
                     isAudience: location?.isAudience,
+                    mode: location?.mode,
+                    isEdit: isEditFlow,
                 };
                 const encryptState = encodeUrl(state);
                 navigate(`${url}?q=${encryptState}`, {

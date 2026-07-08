@@ -274,10 +274,21 @@ const DetailedStatus = ({
             };
         }
 
+        // API sometimes omits splitType for split rows — derive the label from the
+        // row order (Split A/B/C/D) so a grouped split never renders an empty/"undefined" label.
+        if (content?.isGrouping && typeof splitIndex === 'number') {
+            return {
+                name: `Split ${SplitTypes(splitIndex)}`,
+                color: splitColors[splitIndex] || '#666666',
+                isWinner: false,
+            };
+        }
+
         return null;
     }, [
         content?.splitTypes,
         content?.splitType,
+        content?.isGrouping,
         content?.iswinnerSplit,
         content?.iswinnerSplitType,
         splitIndex,

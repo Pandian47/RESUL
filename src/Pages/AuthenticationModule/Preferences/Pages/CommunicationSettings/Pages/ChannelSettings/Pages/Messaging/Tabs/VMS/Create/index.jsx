@@ -1,11 +1,15 @@
 import { MAX_LENGTH15, MAX_LENGTH50 } from 'Constants/GlobalConstant/Regex';
 import { SELECT_PROVIDER } from 'Constants/GlobalConstant/ValidationMessage';
 import { BROADCAST_API, CANCEL, PASSWORD, SAVE, SELECT, TEMPLATE_API, USER_NAME, VOICE_MESSAGING_SERVICE } from 'Constants/GlobalConstant/Placeholders';
-import { useCallback, useEffect } from 'react';
+import { useCallback, useEffect, useRef } from 'react';
 import { useForm } from 'react-hook-form';
 import { Col, Row } from 'react-bootstrap';
 import { useDispatch, useSelector } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
 import { isNumber as _isNumber } from 'Utils/modules/lodashReplacements';
+import { updateQueryParams } from 'Utils/modules/urlQuery';
+import { validateIsCustomNavigate } from 'Utils/modules/navigation';
+import useQueryParams from 'Hooks/useQueryParams';
 
 import RSKendoDropdown from 'Components/FormFields/RSKendoDropdown';
 import RSInput from 'Components/FormFields/RSInput';
@@ -22,8 +26,19 @@ import { CommunicationSettingsEditSkeletonGate } from 'Components/Skeleton/Compo
 
 
 
-const CMSCreate = ({ create, handleCreateComponent }) => {
+const ADD_VMS_COMM_QUERY_KEYS_TO_CLEAR = {
+    backNavigationDetails: null,
+    backAction: null,
+    mode: null,
+    from: null,
+    campaignType: null,
+};
+
+const CMSCreate = ({ create, handleCreateComponent, addVmsFromComm }) => {
     const dispatch = useDispatch();
+    const navigate = useNavigate();
+    const queryState = useQueryParams('/preferences/communication-settings');
+    const isNavigatingBackToCommRef = useRef(false);
     const { clientId, userId, departmentId } = useSelector((state) => getSessionId(state));
     const providers = useSelector((state) => state.communicationSettingsReducer?.settingsProviders ?? []);
 
@@ -84,6 +99,25 @@ const CMSCreate = ({ create, handleCreateComponent }) => {
         bootstrapPage();
     }, [bootstrapPage]);
 
+    const handleReturn = () => {
+        if (addVmsFromComm) {
+            isNavigatingBackToCommRef.current = true;
+            validateIsCustomNavigate(queryState, queryState, navigate, () => {
+                handleCreateComponent();
+            }, { dispatch });
+            return;
+        }
+        handleCreateComponent();
+    };
+
+    useEffect(() => {
+        return () => {
+            if (addVmsFromComm && !isNavigatingBackToCommRef.current) {
+                updateQueryParams(ADD_VMS_COMM_QUERY_KEYS_TO_CLEAR);
+            }
+        };
+    }, [addVmsFromComm]);
+
     const handleSave = async (data) => {
         if (saveApi.isFetching) return;
         let payload = {
@@ -101,7 +135,7 @@ const CMSCreate = ({ create, handleCreateComponent }) => {
             mode: 'create',
         });
         const { status } = res || {};
-        if (status) handleCreateComponent('save');
+        if (status) handleReturn();
     };
 
     return (
@@ -193,7 +227,7 @@ const CMSCreate = ({ create, handleCreateComponent }) => {
                             blockInteraction={isSaveLoading}
                             onClick={() => {
                                 if (isSaveLoading) return;
-                                handleCreateComponent();
+                                handleReturn();
                             }}
                         >
                             {CANCEL}

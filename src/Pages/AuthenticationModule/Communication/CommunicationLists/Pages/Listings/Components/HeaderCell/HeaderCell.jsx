@@ -43,9 +43,16 @@ import {
     COMMUNICATION_ADVANCE_SEARCH_EXCLUDE_NAME_CHIP_KEYS,
     COMMUNICATION_LISTING_DEFAULT_INITIAL_ACTIVE_FILTERS,
 } from 'Constants/AdvanceSearch';
+import { GOLDEN_CAMPAIGN } from 'Constants/GlobalConstant/Placeholders';
 
 /** Same options as RESUL-Proto `GRID_DROPDOWN_DATA` (corrected spelling); default selection = My communications. */
-export const LISTING_SCOPE_DROPDOWN_DATA = ['All communications', 'My communications','Golden communications'];
+export const LISTING_SCOPE_DROPDOWN_DATA = ['All communications', 'My communications',GOLDEN_CAMPAIGN];
+
+const LISTING_SCOPE = {
+    ALL: 'all',
+    MY: 'my',
+    GOLDEN: 'golden',
+};
 
 /** Debounce for CommunicationlistSearchName (name suggestions only). */
 const LISTING_NAME_SUGGEST_DEBOUNCE_MS = 400;
@@ -100,7 +107,9 @@ const HeaderCell = ({ requestPayload, setRequestPayload, setCampaignData, setFor
     });
     const [searchDate, setSearchDate] = useState({});
     const [searchText, setSearchText] = useState('');
-    const [currentFilters, setCurrentFilters] = useState({});
+    const [currentFilters, setCurrentFilters] = useState(() => ({
+        ...COMMUNICATION_LISTING_DEFAULT_INITIAL_ACTIVE_FILTERS,
+    }));
     const [myCommunicationsOnly, setMyCommunicationsOnly] = useState(true);
     const myCommunicationsOnlyRef = useRef(true);
     const [isGoldenCampaignOnly, setIsGoldenCampaignOnly] = useState(false);
@@ -134,6 +143,87 @@ const HeaderCell = ({ requestPayload, setRequestPayload, setCampaignData, setFor
         () => `${persistListingFiltersKey}:my-comm`,
         [persistListingFiltersKey],
     );
+    const persistListingScopeKey = useMemo(
+        () => `${persistListingFiltersKey}:scope`,
+        [persistListingFiltersKey],
+    );
+    const persistListingDateKey = useMemo(
+        () => `${persistListingFiltersKey}:date-range`,
+        [persistListingFiltersKey],
+    );
+
+    const applyListingScope = useCallback((scope) => {
+        const isMy = scope === LISTING_SCOPE.MY;
+        const isGolden = scope === LISTING_SCOPE.GOLDEN;
+        setMyCommunicationsOnly(isMy);
+        myCommunicationsOnlyRef.current = isMy;
+        setIsGoldenCampaignOnly(isGolden);
+        isGoldenCampaignOnlyRef.current = isGolden;
+    }, []);
+
+    const readListingScopeFromStorage = useCallback(() => {
+        try {
+            const rawScope = localStorage.getItem(persistListingScopeKey);
+            if (
+                rawScope === LISTING_SCOPE.ALL ||
+                rawScope === LISTING_SCOPE.MY ||
+                rawScope === LISTING_SCOPE.GOLDEN
+            ) {
+                return rawScope;
+            }
+            const legacyMyComm = localStorage.getItem(persistListingMyCommKey);
+            if (legacyMyComm === 'true') return LISTING_SCOPE.MY;
+            if (legacyMyComm === 'false') return LISTING_SCOPE.ALL;
+        } catch {
+            /* ignore */
+        }
+        return LISTING_SCOPE.MY;
+    }, [persistListingMyCommKey, persistListingScopeKey]);
+
+    const persistListingScope = useCallback(
+        (scope) => {
+            try {
+                localStorage.setItem(persistListingScopeKey, scope);
+            } catch {
+                /* ignore */
+            }
+        },
+        [persistListingScopeKey],
+    );
+
+    const readListingDateFromStorage = useCallback(() => {
+        try {
+            const raw = localStorage.getItem(persistListingDateKey);
+            if (raw) {
+                const parsed = JSON.parse(raw);
+                if (parsed?.startDate && parsed?.endDate) {
+                    return parsed;
+                }
+            }
+        } catch {
+            /* ignore */
+        }
+        const rawStartDate = getTimezoneAdjustedStartDate();
+        const rawEndDate = getTimezoneAdjustedEndDate();
+        return {
+            startDate: getYYMMDD(rawStartDate),
+            endDate: getYYMMDD(rawEndDate),
+            rawStartDate,
+            rawEndDate,
+            selectedType: 'Last 30 days',
+        };
+    }, [persistListingDateKey]);
+
+    const persistListingDateRange = useCallback(
+        (dates) => {
+            try {
+                localStorage.setItem(persistListingDateKey, JSON.stringify(dates));
+            } catch {
+                /* ignore */
+            }
+        },
+        [persistListingDateKey],
+    );
 
     const syncMyCommunicationsScopeFromStorage = useCallback(() => {
         const next = resolveMyCommunicationsScopeFromStorage({
@@ -150,29 +240,65 @@ const HeaderCell = ({ requestPayload, setRequestPayload, setCampaignData, setFor
 
     useLayoutEffect(() => {
         if (!clientId || departmentId == null) return;
-        try {
-            const rawMyComm = localStorage.getItem(persistListingMyCommKey);
-            if (rawMyComm === 'true' || rawMyComm === 'false') {
-                const v = rawMyComm === 'true';
-                setMyCommunicationsOnly(v);
-                myCommunicationsOnlyRef.current = v;
-                return;
-            }
-            setMyCommunicationsOnly(true);
-            myCommunicationsOnlyRef.current = true;
-        } catch {
-            /* ignore */
-        }
-    }, [persistListingFiltersKey, persistListingMyCommKey, clientId, departmentId]);
+        applyListingScope(readListingScopeFromStorage());
+        const dates = readListingDateFromStorage();
+        setSearchDate(dates);
+        searchDateRef.current = dates;
+    }, [
+        applyListingScope,
+        clientId,
+        departmentId,
+        readListingDateFromStorage,
+        readListingScopeFromStorage,
+    ]);
+
+    const listingInitialFetchDoneRef = useRef(false);
 
     useEffect(() => {
-        if (clientId == null || departmentId == null) return;
+        if (!clientId || departmentId == null || listingInitialFetchDoneRef.current) return;
+        listingInitialFetchDoneRef.current = true;
+
         try {
-            localStorage.setItem(persistListingMyCommKey, String(myCommunicationsOnly));
+            localStorage.removeItem(persistListingFiltersKey);
         } catch {
             /* ignore */
         }
-    }, [myCommunicationsOnly, persistListingMyCommKey, clientId, departmentId]);
+
+        const scope = readListingScopeFromStorage();
+        const dates = searchDateRef.current?.startDate ? searchDateRef.current : readListingDateFromStorage();
+        const defaultFilters = { ...COMMUNICATION_LISTING_DEFAULT_INITIAL_ACTIVE_FILTERS };
+        currentFiltersRef.current = defaultFilters;
+        setCurrentFilters(defaultFilters);
+        setFormState(defaultFilters);
+
+        const { pageSize } = requestPayloadRef.current || {};
+        const payload = buildSearchPayload({
+            filters: defaultFilters,
+            restPayload: {
+                startDate: dates.startDate,
+                endDate: dates.endDate,
+            },
+            name: '',
+            departmentId,
+            clientId,
+            userId,
+            pageSize,
+            myCommunicationsOnly: scope === LISTING_SCOPE.MY,
+            overrides: { isGoldenCampaign: scope === LISTING_SCOPE.GOLDEN },
+            advanceFilterConfig: advanceFilterConfigRef.current,
+        });
+        void getListRef.current(payload);
+    }, [clientId, departmentId, userId, persistListingFiltersKey, readListingDateFromStorage, readListingScopeFromStorage]);
+
+    useEffect(() => {
+        return () => {
+            try {
+                localStorage.removeItem(persistListingFiltersKey);
+            } catch {
+                /* ignore */
+            }
+        };
+    }, [persistListingFiltersKey]);
 
     useEffect(
         () => () => {
@@ -217,10 +343,9 @@ const HeaderCell = ({ requestPayload, setRequestPayload, setCampaignData, setFor
     getListRef.current = getList;
 
     handleMyCommunicationsToggleRef.current = async (checked, golden = false) => {
-        setMyCommunicationsOnly(checked);
-        myCommunicationsOnlyRef.current = checked;
-        setIsGoldenCampaignOnly(golden);
-        isGoldenCampaignOnlyRef.current = golden;
+        const scope = golden ? LISTING_SCOPE.GOLDEN : checked ? LISTING_SCOPE.MY : LISTING_SCOPE.ALL;
+        persistListingScope(scope);
+        applyListingScope(scope);
         const { pageSize, ...restRequestPayload } = requestPayloadRef.current;
         const payload = buildSearchPayload({
             filters: currentFiltersRef.current,
@@ -296,10 +421,8 @@ const HeaderCell = ({ requestPayload, setRequestPayload, setCampaignData, setFor
 
             if (hasPersistedAdvanceFilters(persistListingFiltersKey)) return;
 
-            myCommunicationsOnlyRef.current = true;
-            setMyCommunicationsOnly(true);
-            isGoldenCampaignOnlyRef.current = false;
-            setIsGoldenCampaignOnly(false);
+            persistListingScope(LISTING_SCOPE.MY);
+            applyListingScope(LISTING_SCOPE.MY);
 
             const nextFilters = { ...(currentFiltersRef.current || {}) };
             if (currentUser) {
@@ -326,7 +449,7 @@ const HeaderCell = ({ requestPayload, setRequestPayload, setCampaignData, setFor
             });
             await getListRef.current(payload);
         },
-        [departmentId, clientId, userId, persistListingFiltersKey, options.users],
+        [departmentId, clientId, userId, persistListingFiltersKey, options.users, applyListingScope, persistListingScope],
     );
 
     const buildFilterPayload = (overrides = {}) => {
@@ -344,15 +467,27 @@ const HeaderCell = ({ requestPayload, setRequestPayload, setCampaignData, setFor
             clientId,
             userId,
             pageSize,
-            overrides: { ...overrides, name: nameForSearch },
+            overrides: {
+                ...overrides,
+                name: nameForSearch,
+                isGoldenCampaign: isGoldenCampaignOnlyRef.current,
+            },
             myCommunicationsOnly: scopeMy,
             advanceFilterConfig: advanceFilterConfigRef.current,
         });
     };
 
-    const handleDatePickerChange = async ({ startDate, endDate }) => {
-        const dates = { startDate: getYYMMDD(startDate), endDate: getYYMMDD(endDate) };
+    const handleDatePickerChange = async ({ startDate, endDate, selectedType }) => {
+        const dates = {
+            startDate: getYYMMDD(startDate),
+            endDate: getYYMMDD(endDate),
+            rawStartDate: startDate,
+            rawEndDate: endDate,
+            selectedType: selectedType || '',
+        };
         setSearchDate(dates);
+        searchDateRef.current = dates;
+        persistListingDateRange(dates);
         const { pageSize } = requestPayload;
         const scopeMy = syncMyCommunicationsScopeFromStorage();
         const payload = buildPayload(
@@ -364,6 +499,7 @@ const HeaderCell = ({ requestPayload, setRequestPayload, setCampaignData, setFor
                 pageSize,
                 clientId,
                 userId: scopeMy ? userId : 0,
+                isGoldenCampaign: isGoldenCampaignOnlyRef.current,
                 createdBy:
                     scopeMy && !requestPayload?.createdBy
                         ? String(userId)
@@ -714,10 +850,8 @@ const HeaderCell = ({ requestPayload, setRequestPayload, setCampaignData, setFor
         setSearchValueSync((prev) => ({ rev: prev.rev + 1, value: '' }));
         setCurrentFilters({});
         setFormState({});
-        setMyCommunicationsOnly(true);
-        myCommunicationsOnlyRef.current = true;
-        setIsGoldenCampaignOnly(false);
-        isGoldenCampaignOnlyRef.current = false;
+        persistListingScope(LISTING_SCOPE.MY);
+        applyListingScope(LISTING_SCOPE.MY);
         const start = getTimezoneAdjustedStartDate();
         const { pageSize } = requestPayload;
         const payload = buildClearPayload({
@@ -821,6 +955,9 @@ const HeaderCell = ({ requestPayload, setRequestPayload, setCampaignData, setFor
                         onDatePickerClosed={handleDatePickerChange}
                         isTemplate
                         allowFutureDates={true}
+                        startDate={searchDate.rawStartDate}
+                        endDate={searchDate.rawEndDate}
+                        selectedDateText={searchDate.selectedType || ''}
                     />
                 }
                 auxiliaryRightControls={
@@ -829,7 +966,7 @@ const HeaderCell = ({ requestPayload, setRequestPayload, setCampaignData, setFor
                             data={LISTING_SCOPE_DROPDOWN_DATA}
                             defaultItem={
                                 isGoldenCampaignOnly
-                                    ? 'Golden communications'
+                                    ? GOLDEN_CAMPAIGN
                                     : myCommunicationsOnly
                                         ? 'My communications'
                                         : 'All communications'
@@ -838,7 +975,7 @@ const HeaderCell = ({ requestPayload, setRequestPayload, setCampaignData, setFor
                             containerClass="comm-listing-scope-dd"
                             className="comm-listing-scope-dd__rs"
                             onSelect={(item) => {
-                                const nextGolden = item === 'Golden communications';
+                                const nextGolden = item === GOLDEN_CAMPAIGN;
                                 const nextMy = item === 'My communications';
                                 void handleMyCommunicationsToggleRef.current(nextMy, nextGolden);
                             }}

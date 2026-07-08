@@ -186,6 +186,7 @@ export const PROTECTED_PAGE_LOADERS = {
     userInteraction: () => import('Pages/AuthenticationModule/Preferences/Pages/userInteractionFlow/index'),
     Genie: () => import('Pages/AuthenticationModule/genie'),
     KendoDocs: () => import('Pages/KendoDocs'),
+    RuntimeErrorLog: () => import('Pages/Internal/RuntimeErrorLog'),
 };
 
 /** @type {Record<string, PageLoader>} */

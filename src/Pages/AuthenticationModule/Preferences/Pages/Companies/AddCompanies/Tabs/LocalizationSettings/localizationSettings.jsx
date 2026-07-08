@@ -378,7 +378,7 @@ const LocalizationSettings = ({ back, isAgencyValue = false, companies }) => {
                         {' '}
                         <h4 className="mb30">{LOCALIZATION_SETTINGS}</h4>
                     </Row>
-                    <Row>
+                    <Row className='d-flex align-items-end'>
                         {isEnterprise && (
                             <Col sm={6} xs={6}>
                                 <div className="form-group mt4" id="rs_LocalizationSettings_Preferredregions">
@@ -541,7 +541,7 @@ const LocalizationSettings = ({ back, isAgencyValue = false, companies }) => {
                                                 isLocalization
                                                 updatedTags={(tags) => setValue('engagementTag', tags)}
                                                 customTagClass='rs-tags-wrapper-scroll'
-                                                noBorder
+                                                noBorder ={true}
                                             />
                                             {/* <h6>{CONVERSION}</h6> */}
                                             <RSTagsComponent
@@ -558,6 +558,7 @@ const LocalizationSettings = ({ back, isAgencyValue = false, companies }) => {
                                                 isLocalization
                                                 updatedTags={(tags) => setValue('conversionTag', tags)}
                                                 customTagClass='rs-tags-wrapper-scroll'
+                                                noBorder ={true}
                                             />
                                         </div>
                                         {/* <small className="mr25 mt5">Maximum of 10 conversion types can be added</small> */}
@@ -936,11 +937,11 @@ const LocalizationSettings = ({ back, isAgencyValue = false, companies }) => {
                                     </div>
                                 </Col>
                                 <Col sm={5} xs={6}>
-                                    <h4 className="mb15">{placeholder.JOB_SERVICE}</h4>
+                                    <h4 className="mb15">{JOB_SERVICE}</h4>
                                     <div className="form-group">
                                         <Row>
                                             <Col sm={5} xs={6} className="text-left">
-                                                <label className="control-label-left font-xsm">{placeholder.SINGLE_DIMENSION}</label>
+                                                <label className="control-label-left font-xsm">{SINGLE_DIMENSION}</label>
                                             </Col>
                                             <Col sm={7} xs={3}>
                                                 <RSInput
@@ -949,7 +950,7 @@ const LocalizationSettings = ({ back, isAgencyValue = false, companies }) => {
                                                     disabled
                                                     control={control}
                                                     name={'singleDimension'}
-                                                    placeholder={placeholder.HOURS}
+                                                    placeholder={HOURS}
                                                 />
                                             </Col>
                                         </Row>
@@ -957,7 +958,7 @@ const LocalizationSettings = ({ back, isAgencyValue = false, companies }) => {
                                     <div className="form-group">
                                         <Row>
                                             <Col sm={5} xs={6} className="text-left">
-                                                <label className="control-label-left font-xsm">{placeholder.MULTI_DIMENSION}</label>
+                                                <label className="control-label-left font-xsm">{MULTI_DIMENSION}</label>
                                             </Col>
                                             <Col sm={7} xs={3}>
                                                 <RSInput
@@ -966,7 +967,7 @@ const LocalizationSettings = ({ back, isAgencyValue = false, companies }) => {
                                                     control={control}
                                                     id="rs_LocalizationSettings_multiDimension"
                                                     name={'multiDimension'}
-                                                    placeholder={placeholder.HOURS}
+                                                    placeholder={HOURS}
                                                 />
                                             </Col>
                                         </Row>
@@ -974,7 +975,7 @@ const LocalizationSettings = ({ back, isAgencyValue = false, companies }) => {
                                     <div className="form-group">
                                         <Row>
                                             <Col sm={5} xs={6} className="text-left">
-                                                <label className="control-label-left font-xsm">{placeholder.EVENT_TRIGGER}</label>
+                                                <label className="control-label-left font-xsm">{EVENT_TRIGGER}</label>
                                             </Col>
                                             <Col sm={7} xs={3}>
                                                 <RSInput
@@ -983,7 +984,7 @@ const LocalizationSettings = ({ back, isAgencyValue = false, companies }) => {
                                                     control={control}
                                                     name={'eventTrigger'}
                                                     id="rs_LocalizationSettings_eventTrigger"
-                                                    placeholder={placeholder.HOURS}
+                                                    placeholder={HOURS}
                                                 />
                                             </Col>
                                         </Row>

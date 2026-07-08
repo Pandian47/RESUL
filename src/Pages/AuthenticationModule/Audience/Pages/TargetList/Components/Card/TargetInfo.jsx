@@ -337,7 +337,7 @@ const TargetInfo = ({ handleClose, audienceId, createdBy, bunchName, modifiedDat
                 component: () => (
                     <div className="pt20">
                         {items.length > 0 ? (
-                            <div className="sampleListDemographicsCharts d-flex flex-wrap mt16">
+                            <div className="sampleListDemographicsCharts d-flex flex-wrap">
                                 {items.map((item, index) => (
                                     <InsightChartPortlet
                                         key={`${tabKey}-chart-${index}`}
@@ -359,7 +359,7 @@ const TargetInfo = ({ handleClose, audienceId, createdBy, bunchName, modifiedDat
         if (
             !insightData ||
             typeof insightData !== 'object' ||
-            !Object.keys(insightData).length ||
+            !Object.keys(insightData)?.length ||
             insightData?.error ||
             !insightTabData.length
         ) {
@@ -368,12 +368,12 @@ const TargetInfo = ({ handleClose, audienceId, createdBy, bunchName, modifiedDat
         return (
             <div className="box-design no-box-shadow my25">
                 <div className="tabs-right-align pageSub_tab">
-                    <h4 className="m0 position-relative top25 left0">Insights</h4>
+                    <h4 className="m0 position-relative left0">Insights</h4>
                     <RSTabber
                         tabData={insightTabData}
                         defaultTab={0}
                         componentClassName="mt15"
-                        className="rs-tabs row"
+                        className="rs-tabs row justify-content-end float-right"
                         defaultClass={`col-md-2 tabTransparent`}
                         dynamicTab={`sp-mb-space-sm mini`}
                     />

@@ -93,6 +93,7 @@ export const TruncatedHeaderTitle = ({
     forceTooltip = false,
     className = '',
     tooltipPosition = 'top',
+    tooltipClassName = ''
 }) => {
     const fullTooltip = tooltipText ?? displayText;
     const { textRef, showTooltip } = useOverflowTruncation(displayText, forceTooltip);
@@ -114,7 +115,7 @@ export const TruncatedHeaderTitle = ({
             innerContent={false}
             tooltipOverlayClass="toolTipOverlayZindexCSS"
             wrapperTag="span"
-            className="rs-kendo-header-title-tooltip"
+            className={`rs-kendo-header-title-tooltip ${tooltipClassName}`}
             trigger={showTooltip ? ['hover', 'focus'] : []}
         >
             {textElement}
@@ -296,6 +297,7 @@ const TruncatedCell = ({
     tooltipText,
     /** Kendo Grid passes td props (includes column `className`) — required for alignment/styling */
     tdProps,
+    tooltipClassName='',
     className: cellClassName,
 }) => {
     const displayValue = formatCellValue(value);
@@ -316,6 +318,7 @@ const TruncatedCell = ({
             innerContent={false}
             tooltipOverlayClass="toolTipOverlayZindexCSS"
             wrapperTag="span"
+            className={tooltipClassName}
         >
             {textElement}
         </RSTooltip>

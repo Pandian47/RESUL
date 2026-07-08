@@ -52,7 +52,7 @@ import {
     updateTab,
     updateVerticalTab,
 } from 'Reducers/communication/createCommunication/Create/reducer';
-import { availableTabs, communicationChannels, getPreCampaignStatus } from '../../constant';
+import { availableTabs, communicationChannels, getPreCampaignStatus , shouldPromptSkipChannelConfirmation} from '../../constant';
 import { GetDigiPop_grid } from 'Reducers/preferences/CommunicationSettings/request';
 import { digipopType } from 'Pages/AuthenticationModule/Preferences/Pages/CommunicationSettings/Pages/ChannelSettings/Pages/Ads/Tabs/Digipop/constant';
 import RSRadioButton from 'Components/FormFields/RSRadioButton';
@@ -1097,6 +1097,10 @@ const DigipopCommunication = ({ type }) => {
                         disabledClass={isSubmitting ? 'pe-none click-off' : ''}
                         onClick={() => {
                             if (!isDirty && !isValid) {
+                                if (!shouldPromptSkipChannelConfirmation()) {
+                                    handleNavigation();
+                                    return;
+                                }
                                 setNavigate_confirm(true);
                             } else {
                                 handleSubmit((data) => onFormSubmit(data, 'next'))();

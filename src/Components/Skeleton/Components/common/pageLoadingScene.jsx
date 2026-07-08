@@ -53,8 +53,8 @@ export const pageLayoutSkeletonCriticalCss = `
 
 const SKELETON_NON_INTERACTIVE = { pointerEvents: 'auto', cursor: 'not-allowed' };
 
-const withSkeletonIconCursor = (icon) => (
-    <span style={{ display: 'inline-flex', lineHeight: 0, ...SKELETON_NON_INTERACTIVE }}>{icon}</span>
+const withSkeletonIconCursor = (icon, extraStyle = {}) => (
+    <span style={{ display: 'inline-flex', lineHeight: 0, ...SKELETON_NON_INTERACTIVE, ...extraStyle }}>{icon}</span>
 );
 
 const getMainNavItemStyle = (index, activeNavIndex) => {
@@ -212,18 +212,20 @@ export const MainNavBar = ({ inline = false, activeNavIndex: activeNavIndexProp 
         flexShrink: 0,
         ...SKELETON_NON_INTERACTIVE,
     };
-
-    const getHeaderActionItemStyle = (index) => ({
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        position: 'relative',
-        minWidth: index === 2 ? 'auto' : 44,
-        padding: index === 2 ? '6px 0 6px 6px' : 6,
-        borderLeft: index === 0 ? 'none' : '1px solid rgba(255, 255, 255, 0.35)',
-        boxSizing: 'border-box',
-        ...SKELETON_NON_INTERACTIVE,
-    });
+const getHeaderActionItemStyle = (index) => ({
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    position: 'relative',
+    minWidth: index === 2 ? 'auto' : 44,
+    padding: index === 2 ? '6px 0 6px 6px' : 6,
+    borderLeft: index === 0 ? 'none' : '1px solid rgba(255, 255, 255, 0.35)',
+    boxSizing: 'border-box',
+    ...(index === 1 && {
+        left: '-2px',
+    }),
+    ...SKELETON_NON_INTERACTIVE,
+});
 
     const notificationsIcon = withSkeletonIconCursor(
         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" aria-hidden="true" style={SKELETON_NON_INTERACTIVE}>
@@ -290,7 +292,9 @@ export const MainNavBar = ({ inline = false, activeNavIndex: activeNavIndexProp 
             <ul style={navStyle} aria-hidden="true">
                 {MAIN_NAV_ICON_SIZES.map((_, index) => (
                     <li key={index} style={getMainNavItemStyle(index, resolvedActiveNavIndex)}>
-                        {withSkeletonIconCursor(getNavIconSvg(index, resolvedActiveNavIndex === index))}
+                        {withSkeletonIconCursor(getNavIconSvg(index, resolvedActiveNavIndex === index), {
+                            ...(index === 1 && { position: 'relative', left: '-2px' }),
+                        })}
                     </li>
                 ))}
             </ul>

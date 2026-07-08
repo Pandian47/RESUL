@@ -5,7 +5,6 @@ import { RSPrimaryButton } from 'Components/Buttons';
 import content from 'Constants/GlobalConstant/Content/content.json';
 import { updateSessionModal } from 'Reducers/globalState/reducer';
 import { useDispatch } from 'react-redux';
-import { getMasterData } from 'Reducers/globalState/request';
 
 const DisablePluginModal = ({ show, handleConfirm }) => {
     const dispatch = useDispatch();
@@ -14,8 +13,6 @@ const DisablePluginModal = ({ show, handleConfirm }) => {
         handleConfirm();
         localStorage.setItem('sessionModal', false);
         dispatch(updateSessionModal(false));
-        const isMasterData = localStorage.getItem('masterData');
-        if (isMasterData === 'null' || isMasterData === undefined || isMasterData === null) dispatch(getMasterData(false));
     };
 
     return (

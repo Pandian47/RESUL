@@ -1,4 +1,15 @@
-import { ADHOCATTRIBUTES, ADHOCAUDIENCE, FILECOUNT, FILECOUNT_SL, FILECOUNT_TL, FILESIZE, MATCHLISTATTRIBUTES, MAX_LENGTH, SEEDLISTATTRIBUTES, SEEDLISTAUDIENCE } from 'Constants/GlobalConstant/Regex';
+import {
+    ADHOCATTRIBUTES,
+    ADHOCAUDIENCE,
+    FILECOUNT,
+    FILECOUNT_SL,
+    FILECOUNT_TL,
+    FILESIZE,
+    MATCHLISTATTRIBUTES,
+    MAX_LENGTH,
+    SEEDLISTATTRIBUTES,
+    SEEDLISTAUDIENCE,
+} from 'Constants/GlobalConstant/Regex';
 //PLACEHOLDER TEXT
 export const ENTER_EMAIL_ID = 'Select or enter email address'; //'Enter email address';
 export const ENTER_EMAIL = 'Enter email address'; //'Enter email address';
@@ -56,7 +67,8 @@ export const REQUEST_RECEIVED = 'Your request has been received.';
 export const DOWNLOAD_LINK_SENT = 'The Download link will be sent to your email shortly.';
 export const NEW_NUMBER = 'New mobile number';
 export const CURRENT_NUMBER = 'Current mobile number';
-export const PARENT_COMPANY_POP_HOVER = 'This is the business entity that owns and controls all the business units in this RESUL account.'
+export const PARENT_COMPANY_POP_HOVER =
+    'This is the business entity that owns and controls all the business units in this RESUL account.';
 export const MY_PROFILE = 'My profile';
 export const ZOOM_OUT = 'Zoom out';
 export const ZOOM_IN = 'Zoom in';
@@ -70,8 +82,7 @@ export const PERSONAL_DETAILS = 'Personal details';
 export const LOCALIZATION_DETAILS = 'Localization details';
 export const BROWSE = 'Browse';
 export const ALLOWED_FORMATS_IMAGE_SIZE = 'Allowed formats: .jpg, .jpeg,.png | maximum size: 500kb';
-export const ENTER_6_DIGIT_CODE_FROM_APP = 'Enter 6 digit code from app'
-
+export const ENTER_6_DIGIT_CODE_FROM_APP = 'Enter 6 digit code from app';
 
 export const COMMUNICATION_NAME = 'Communication name';
 export const COMMUNICATION_TYPE = 'Communication type';
@@ -99,7 +110,7 @@ export const AUTHORIZATION_KEY = 'Authorization key';
 export const SEVER_NAME_IP_ADDRESS = 'Server name/IP address';
 export const TITLE = 'Title';
 export const PUBLISH_URL = 'Published URL';
-export const ADD_NEW_MAIL_ADDRESS = 'Add a new email address'
+export const ADD_NEW_MAIL_ADDRESS = 'Add a new email address';
 export const COMM_REFERENCE_CONFIRM_CONTENT =
     'Please note the reset option cannot be revoked once it is saved except the priority. Do you want to proceed?';
 
@@ -240,18 +251,20 @@ export const AUDIENCE_IMPORT_SUMMARY = 'Audience import summary';
 export const DOWNLOAD_LINK_DATA_SHORTLY = 'We will be sending you the download link shortly.';
 export const UPLOAD_PARENT_ATTRIBUTES = 'To visualize audience insights, click';
 export const UPLOAD_PARENT_ATTRIBUTES_ADD_AUDIENCE = 'to upload your audience data.';
-export const NO_AUDIENCE_UPLOAD_FOUND = 'No audience upload found.'
+export const NO_AUDIENCE_UPLOAD_FOUND = 'No audience upload found.';
 export const NO_DATA_ATTRIBUTES_AVAILABLE = 'No data attributes available for this Business unit';
 export const CATEGORY_NAME_ALREADY_EXISTS = 'Category name already exists';
 export const AUDIENCE_LIST = 'Segment list';
 export const AUDIENCE_TYPE = 'Segment type';
-export const SEARCH_FILTERS_SAMPLE_RECORD = 'View the latest audience records. Filters and search only apply to the 200 most recent entries.';
+export const SEARCH_FILTERS_SAMPLE_RECORD =
+    'View the latest audience records. Filters and search only apply to the 200 most recent entries.';
 export const RESET = 'Reset';
 export const UPDATE_NEW_DATA = 'Update new data - if a match is found, overwrite the older record';
 export const CONTROL_GROUP_TARGET = 'Control group/target group';
 export const ONLY_PARENT_ATTRIBUTES = 'Only parent attributes are available to download';
 export const PARENT_AND_CHILD_ATTRIBUTES = 'Both parent & child attributes are available to download';
-export const SENSITIVE_DATA = 'When sensitive data is included in full segment list,downloads are available only through SFTP';
+export const SENSITIVE_DATA =
+    'When sensitive data is included in full segment list,downloads are available only through SFTP';
 export const TOKNOW_MORE = 'To know more about segment download limitations,contact your admin or SPOC';
 export const YOU_CAN_DOWNLOAD = 'You can download 4 target lists per session';
 export const THANK_YOU_YOUR_REQUEST = 'Thank you. Your request has been received.';
@@ -266,8 +279,6 @@ export const DYNAMIC_LIST_NOT_AVAILABLE_2 = 'to create your first Dynamic List';
 export const SEELCTED_DISPLAY_FIELDS = 'Select display fields';
 export const SELECT_AUDIENCE_FIELDS = 'Select audience fields';
 export const CHOOSE_ATTRIBUTES_TO_DISPLAY_IN_TABLE = 'Choose which attributes to display in the table';
-
-
 
 //Overview
 export const PROFILE_COMPLETENESS = 'Profile completeness';
@@ -323,7 +334,7 @@ export const ATTRIBUTE_MAPPING = 'Attribute mapping';
 export const NEW_CATEGORY_TYPE = 'New category type';
 export const CATEGORY_TYPE = 'Category type';
 export const CHOOSE_YOUR_FILE = 'Choose your file(s)';
-export const ACCEPTS_ONLY_CSV = (FILECOUNT,formatType='') =>
+export const ACCEPTS_ONLY_CSV = (FILECOUNT, formatType = '') =>
     `Only .CSV${formatType ? `,${formatType}` : ''} files. Max. ${FILECOUNT} file${FILECOUNT === 1 ? '' : 's'} allowed.`;
 export const I_AGREE = 'Agree & proceed';
 export const PROCEED = 'Proceed';
@@ -347,14 +358,14 @@ export const A_MAX_6_FILES =
     'A max. of 6 files are allowed for the import. Each file size should not be more than 10MB.';
 export const RECORD_MAY_TAKES_3 = 'The max. time to process 1 million records may takes 3 hrs.';
 export const SUPPRESSION_INPUT = 'The suppression input list will permit.';
-export const  NO_OF_COLUMN_HEADERS= 'No. of column headers'
-export const DUPLICATE_ROW_COUNT = 'Duplicate row count'
-export const ROW_LENGTH  = 'Row length'
-export const NO_OF_CELL_MISSING = 'No. of missing cell values'
-export const  TOTAL_SIZE = 'Total size'
-export const TOTAL_FILE_SIZE = 'Total file size'
-export const TOTAL_FILE_SIZES = 'Total file size(s)'
-export const COLUMN_HEADER_TEXT = 'The first row of the entered data will be treated as column headers.'
+export const NO_OF_COLUMN_HEADERS = 'No. of column headers';
+export const DUPLICATE_ROW_COUNT = 'Duplicate row count';
+export const ROW_LENGTH = 'Row length';
+export const NO_OF_CELL_MISSING = 'No. of missing cell values';
+export const TOTAL_SIZE = 'Total size';
+export const TOTAL_FILE_SIZE = 'Total file size';
+export const TOTAL_FILE_SIZES = 'Total file size(s)';
+export const COLUMN_HEADER_TEXT = 'The first row of the entered data will be treated as column headers.';
 
 //FTP
 export const FTP = 'FTP';
@@ -379,7 +390,7 @@ export const FOREIGN_KEY_HELP_TEXT =
     'A foreign key is a field (or collection of fields) in one table that uniquely identifies a row of another table.';
 export const EXTRACTION_VOLUME = 'Extraction volume';
 export const AUDIENCE_FILE_STORED = 'This refers to the path where audience data file is stored.';
-export const BRAND_ID_NOT_EXISTS  ='Brand ID does not exists';
+export const BRAND_ID_NOT_EXISTS = 'Brand ID does not exists';
 
 //Add import audience
 export const NEW_AUDIENCE_LIST = 'New segment list';
@@ -395,7 +406,7 @@ export const LIST_ANALYSIS = 'List analysis';
 export const NO_DATA_AVAILABEL = 'No data available';
 export const NOT_USED = 'Not used';
 export const USED = 'Used';
-export const ALL_AUDIENCE =  'All segments';
+export const ALL_AUDIENCE = 'All segments';
 export const SCHEDULED = 'Scheduled';
 export const IN_PROGRESS = 'In progress';
 export const COMPLETED = 'Completed';
@@ -416,7 +427,7 @@ export const AVG = 'Avg';
 export const PROJECTED = 'Projected';
 export const AVERAGE = 'Average';
 export const COMMUNICATION_SEND = 'Commu. sent';
-export const COMMS_LINKED = 'Comms linked'
+export const COMMS_LINKED = 'Comms linked';
 export const AVG_AUDIENCE = 'Average audience';
 export const SEG_AUDIENCE = 'Seg. audience: ';
 export const TOT_AUDIENCE = 'Total audience: ';
@@ -426,15 +437,16 @@ export const SEED_LIST_TITLE = 'Seed list: ';
 export const SUPPRESSION_LIST_TITLE = 'Suppression list: ';
 export const TARGET_LIST_TITLE = 'Target list: ';
 export const AD_HOC_LIST_TITLE = 'Ad-hoc list: ';
-export const ATTRIBUTE_COUNT = 'Attribute count: '
+export const ATTRIBUTE_COUNT = 'Attribute count: ';
 export const COMMUNICATION_LINKED = 'Communication linked';
 export const COMMUNICATIONS_LINKED = 'Communications linked';
 export const SEGMENT_COMMUNICATION_LINKED = 'Comms linked';
-export const LIST_ACQUISITON_INFO  = 'Displays the number of new, unique email IDs and mobile numbers added to the segment database each day.';
-export const MDM_OVERALL_PROFILE_COMPLETENESS_INFO = 'This score is based on the volume of data captured across predefined attributes. Configure them in  Data catalog → Classification.';
+export const LIST_ACQUISITON_INFO =
+    'Displays the number of new, unique email IDs and mobile numbers added to the segment database each day.';
+export const MDM_OVERALL_PROFILE_COMPLETENESS_INFO =
+    'This score is based on the volume of data captured across predefined attributes. Configure them in  Data catalog → Classification.';
 export const ADD_FIRST_COMMUNICATION_1 = 'Click';
 export const ADD_FIRST_COMMUNICATION_2 = 'to create your first RESUL communication';
-
 
 // Data-exchange
 export const IMPORT_PREFERENCE_RADIO_NEW_DATA = 'Update new data - if a match is found, overwrite the older record';
@@ -471,7 +483,7 @@ export const CLIENTSECRET = 'Client secret';
 export const RESOURCEURL = 'Resource URL';
 export const SHOPNAME = 'Shop name';
 export const STORENAME = 'Store name';
-export const RENAME = 'Rename'
+export const RENAME = 'Rename';
 export const STOREURL = 'Store URL';
 export const KEY = 'Key';
 export const HOST = 'Host';
@@ -512,7 +524,8 @@ export const TIMEINTERVAL = 'Time interval';
 // offer management
 export const OFFER_TYPE = 'Offer type';
 export const OFFERS = 'Offers';
-export const OFFER_LIST_VOLUME_ERROR_MSG  = 'Offer count is lower than the segment list size. Please update the offer volume or segment list.'
+export const OFFER_LIST_VOLUME_ERROR_MSG =
+    'Offer count is lower than the segment list size. Please update the offer volume or segment list.';
 export const CAF_NUMBER = 'Caf number';
 export const START_DATE = 'Start date';
 export const END_DATE = 'End date';
@@ -524,7 +537,7 @@ export const VOLUME_LENGTH = 'Code volume / Code length';
 export const ADD_OFFER_CODE = 'Offer code';
 export const NAME_OF_OFFER = 'Name of the offer';
 export const LENGTH = 'Length';
-export const CODE_VOLUME = 'Code volume'
+export const CODE_VOLUME = 'Code volume';
 export const FORMAT = 'Format';
 export const COMPOSE_USING = 'Compose using';
 export const CODE_PATTERN = 'Code pattern';
@@ -573,9 +586,9 @@ export const ATTRIBUTE_RULE = 'Attribute rule';
 export const ATTRIBUTE_VALUE = 'Attribute value';
 export const ATTRIBUTE = 'Attribute';
 export const MIN_DURATION = 'Select min. duration';
-export const MIN_DURATION_TEXT ='Min. duration';
+export const MIN_DURATION_TEXT = 'Min. duration';
 export const MIN_LENGTH = 'Select min. length';
-export const MIN_LENGTH_TEXT ='Min. length';
+export const MIN_LENGTH_TEXT = 'Min. length';
 export const TRACKING_TYPE = 'Tracking type';
 export const SCHEDULE = 'Schedule';
 export const DAY_LIGHT = 'Daylight saving';
@@ -600,7 +613,7 @@ export const COMMUNICATION_PERFOMANCE = 'Communication performance by';
 export const SPLIT_TEST = 'Perform split test by';
 export const CONTENT = 'Content';
 export const DURATION = 'Duration';
-export const PERIOD = 'Period'
+export const PERIOD = 'Period';
 export const APPROVAL_STATUS = 'Approval status';
 export const ONE_TIME = 'One time';
 export const BY_DAY = 'By day';
@@ -639,9 +652,11 @@ export const DAYLIGHT_SAVINGS = 'Daylight saving';
 export const ENTER_WEIGHT = 'Enter weight';
 export const N_GRAMS = 'Enter n-grams length';
 export const SINGLE_COLUMN = 'Single column sensitivity threshold';
-export const SINGLE_COLUMN_TOOLTIP = 'Select a number between 0 and 1 as a threshold for selecting the duplicates within each column. The lower the number, the more sensitive Intellicheck is to duplicates.'
+export const SINGLE_COLUMN_TOOLTIP =
+    'Select a number between 0 and 1 as a threshold for selecting the duplicates within each column. The lower the number, the more sensitive Intellicheck is to duplicates.';
 export const COMBINED = 'Combined sensitivity threshold';
-export const COMBINED_TOOLTIP ='Select a number between 0 and 1 as a threshold for selecting the duplicates within each column. The lower the number, the more sensitive Intellicheck is to duplicates.'
+export const COMBINED_TOOLTIP =
+    'Select a number between 0 and 1 as a threshold for selecting the duplicates within each column. The lower the number, the more sensitive Intellicheck is to duplicates.';
 export const COMMON = 'Common';
 export const BEST_OFFER = 'Next best offer';
 export const RECOMENDED_OFFER = 'Recommended offers';
@@ -730,6 +745,7 @@ export const CONVERSION_URL = 'Enter conversion URL';
 export const FORM_NAME = 'Enter form name';
 
 //New message
+export const AWAITING_VENDOR_RESPONSE = 'Awaiting vendor response';
 export const ENTER_EMAIL_MESSAGE = 'Enter email message';
 export const ENTER_SNAPSHOT_NAME = 'Enter snapshot name';
 export const DELIVERED_COUNT = 'Delivered count';
@@ -756,7 +772,6 @@ export const ENTER_NAME_HERE = 'Enter name here';
 export const SELECT_LEFT_ATTRIBUTES = 'Select attributes from the left panel';
 export const SELECT_RIGHT_ATTRIBUTES = 'Select attributes from the right panel';
 export const NO_ATTRIBUTES_FOUND = 'No attributes found';
-
 
 // Digipop
 
@@ -840,7 +855,8 @@ export const VALIDATING_KEY = 'Validating key...';
 export const SENDING_OTP = 'OTP Sending...';
 export const VALID_OTP = 'Valid OTP';
 export const CONFIRM = 'Confirm';
-export const REVIEW_COLUMN_MAPPING_BEFORE_CONFIRM = 'Review the source columns and mapped attributes before confirming.';
+export const REVIEW_COLUMN_MAPPING_BEFORE_CONFIRM =
+    'Review the source columns and mapped attributes before confirming.';
 export const BACK = 'Back';
 export const SUBMIT = 'Submit';
 export const SUBMITTING = 'Submitting...';
@@ -875,8 +891,7 @@ export const UPDATE_MOBILE_NUMBER = 'Update mobile number';
 export const CHANGE_PASSWORD = 'Change password';
 export const ARE_YOU_SURE_WANT_TO_CHANGE = 'Are you sure want to change the HQ';
 export const YOU_HAVE_ALREADY_CREATED = 'You have already created on GHQ';
-export const SPLIT_AB_TOOLTIP_TEXT =
-    'Minimum 100 contacts required for Split A/B testing.';
+export const SPLIT_AB_TOOLTIP_TEXT = 'Minimum 100 contacts required for Split A/B testing.';
 export const SUBSCRIBE = 'Subscribe';
 export const UNSUBSCRIBE = 'Unsubscribe';
 export const GOAL = 'Goal';
@@ -892,10 +907,16 @@ export const EVENT_TRIGGER = 'Event trigger';
 export const EVENT_TRIGGER_DESCRIPTION =
     'Execute automated communication triggers in response to pre-defined events and real-time audience actions';
 export const FRIENDLY_NAME_COMMA_SEPARATOR = 'Enter titles separated by commas (e.g., Mr, Ms, Dr)';
-export const MAXIMUM5_FRIENDLY_NAME_ALLOWED = 'Enter up to 5 tags separated by commas. A total of 75 characters are allowed.';
+export const MAXIMUM5_FRIENDLY_NAME_ALLOWED =
+    'Enter up to 5 tags separated by commas. A total of 75 characters are allowed.';
 export const MAXIMUM5_ATRIBUTES_ALLOWED = 'Maximum 5 attributes allowed';
 export const ARE_YOU_SURE_ARCHIVE = 'Are you sure you want to archive?';
 export const ARE_YOU_SURE_DELETE = 'Are you sure you want to delete?';
+export const CONFIRM_DELETION = 'Confirm Deletion';
+export const ARE_YOU_SURE_DELETE_DRAFT_COMMUNICATION = (channelName) =>
+    `Are you sure you want to delete this ${channelName} draft communication? This action cannot be undone.`;
+export const ARE_YOU_SURE_DELETE_SCHEDULED_COMMUNICATION = (channelName) =>
+    `Are you sure you want to delete this scheduled ${channelName} communication? It will no longer be sent. This action cannot be undone.`;
 export const ARE_YOU_SURE_DUPLICATE = 'Are you sure you want to duplicate this communication?';
 export const ARE_YOU_SURE_LOGOUT = 'Are you sure you want to logout?';
 export const ARE_YOU_SURE_REFRESH = 'Are you sure you want to refresh?';
@@ -906,10 +927,10 @@ export const UPCOMING_SCHEDULE_CANCELLED = 'All upcoming scheduled downloads wil
 export const COMMUNICATION_EXECUTION =
     'A new communication cannot be added as communication execution has commenced for this group.';
 export const CREATE_SMART_LINK = 'Would you like to create a Smart Link?';
-export const GENERATE_SMART_LINK = 'Generate Smart Link'
+export const GENERATE_SMART_LINK = 'Generate Smart Link';
 export const MANDATORY_SMARTLINK = 'To create push notifications, generate a Smart Link first.';
 export const MOBILE_SMARTLINK_MANDATORY = 'To continue, set up mobile Smart Link first.';
-export const PAID_MEDIA_SMARTLINK_MANDATORY = 'Generate a Smart Link to setup an ad.'
+export const PAID_MEDIA_SMARTLINK_MANDATORY = 'Generate a Smart Link to setup an ad.';
 export const NO_THANKS = 'No thanks';
 export const IGNORE = 'Ignore';
 export const COMMUNICATION_REFERENCE = 'Communication reference';
@@ -917,7 +938,7 @@ export const TAGS = 'Tags';
 export const TEST_COMMUNICATION_TOOLTIP =
     'This communication and its performance will not be considered for analytics and benchmarking in this solution.';
 export const SENDER_REPLY_EMAIL =
-    "Replies will be sent to the sender’s email by default. To use a different reply-to address, you can specify one here.";
+    'Replies will be sent to the sender’s email by default. To use a different reply-to address, you can specify one here.';
 export const REQUEST_APPROVAL_TEST_EMAIL = 'Test email';
 export const REQUEST_APPROVAL_CONCERNED_PERSON = 'Get the list approved by designated reviewers.';
 export const REQUEST_APPROVAL_REQUEST = 'Approval request';
@@ -930,14 +951,14 @@ export const APPROVAL_SETTINGS = 'Approval settings';
 export const ADD = 'Add';
 export const VIEW_REGION_MAP = 'View region map';
 export const UPLOAD_REGION_FILE = 'Upload region file';
-export const NO_APPROVER = 'This list has no assigned approver.'
+export const NO_APPROVER = 'This list has no assigned approver.';
 
 export const DELETE = 'Delete';
 export const GET_APPROVAL_FROM = 'Get approval from';
 export const FOLLOW_HIERARCHY = 'Follow hierarchy';
 export const MANDATORY = 'Mandatory';
 export const PIXELS_145 = ' .jpeg, .png formats with 145x145 pixels.';
-export const ACCEPTS_JPEG_PNG_FORMATS = 'Accepts .jpeg and .png formats'
+export const ACCEPTS_JPEG_PNG_FORMATS = 'Accepts .jpeg and .png formats';
 export const SCHEDULE_SPLIT_TEST = 'Schedule split test';
 export const START_IN_8HOURS = 'Example: Start in 8 hours';
 export const MUST_BE_2_DAYS = 'Must be 2 days before comm. end date.';
@@ -996,13 +1017,14 @@ export const AUTO_SCHEDULE_SPLITS = 'To set up auto-schedule, ensure all splits 
 export const LABLE_SPLIT_AB = 'Split A/B';
 export const GENERATE_QR_THAN_SAVE = 'Generate QR then save';
 export const SWITCHING_TABS_WILL_DESCARD = 'You will lose all the input here if you switch channel tabs now.';
-export const SWITCHING_TABS_WILL_DESCARD_NEW = 'Unsaved changes will be lost. Continue?'
+export const SWITCHING_TABS_WILL_DESCARD_NEW = 'Unsaved changes will be lost. Continue?';
 export const DO_YOU_WISH_TO_CONTINUE_NEW = 'Continue?';
 export const DO_YOU_WISH_TO_CONTINUE = 'Do you wish to continue?';
 export const SEND_TEST_RCS = 'Send test RCS message to';
-export const  MINIMUM_DIFFERENCE_SPLITS =  'A minimum difference of 5 minutes required between splits. ';
+export const MINIMUM_DIFFERENCE_SPLITS = 'A minimum difference of 5 minutes required between splits. ';
 export const QR_POPHOVER_TEXT = 'Shorten the URL to save space and make it easier for the audience to share.';
-export const DOWNLOAD_QR_POPHOVER_TEXT = 'To download the QR code in your desired dimensions, click Generate after adjusting the slider and then click Download.';
+export const DOWNLOAD_QR_POPHOVER_TEXT =
+    'To download the QR code in your desired dimensions, click Generate after adjusting the slider and then click Download.';
 
 // Status rs-legend
 export const DRAFT = 'Draft';
@@ -1106,8 +1128,8 @@ export const IMPORT_IS_IN_PROGRESS = 'Import is in progress.';
 export const SELECT_AN_OPTION = 'Select an option to continue.';
 export const CLICK_RETURN_TO_THE_MASTER = 'Click "Return to Master data management" to safely navigate to other pages.';
 export const IMPORT_AGAIN = 'Import again';
-export const VIEW_SYNC_HISTORY = 'View Sync status'
-export const UPLOAD_LISTS = 'View Uploaded Lists'
+export const VIEW_SYNC_HISTORY = 'View Sync status';
+export const UPLOAD_LISTS = 'View Uploaded Lists';
 export const RETUTN_TO_THE = 'Return to';
 export const MASTER_LIST = 'Master data management';
 export const TARGET_LIST = 'Target list';
@@ -1121,8 +1143,7 @@ export const SETTING_UP_ACCOUNT = 'Your account request has been successfully su
 export const CONTACT_US = 'Please contact us at';
 export const INVOICE_GENERATED = 'Invoice Generated';
 
-export const SETUP_GREETING_1 =
-    'Your account request has been successfully submitted.';
+export const SETUP_GREETING_1 = 'Your account request has been successfully submitted.';
 export const SETUP_GREETING_2 = `For assistance, feel free to contact us at​`;
 export const SETUP_GREETING_3 = `Our team will review your registration and notify you by email once access has been approved.`;
 export const SETUP_GREETING_4 = ` Need help? Contact `;
@@ -1161,8 +1182,8 @@ export const NOT_A_CLIENT = 'You are not a client';
 export const HEADER_QUATER_CHANGED = 'Your head quarter has been changed';
 export const UNEXPECTED_ERROR_HAPPENED = 'Unexpected Error Happened. Please try again later or click Retry button';
 export const RETRY = 'Retry';
-export const WELCOME_MAIL  = 'Welcome email';
-export const FARWELL_MAIL  = 'Farewell email';
+export const WELCOME_MAIL = 'Welcome email';
+export const FARWELL_MAIL = 'Farewell email';
 
 //Invoice
 export const ACCOUNT_NOT_ACTIVATED = 'account not activated';
@@ -1265,7 +1286,7 @@ export const ANALYTICS_PROGRESS_TEXT =
     'The communication analytics generation is under progress, Please check after some time...';
 export const ANALYTICS_CUSTOMER_QR_SCAN =
     'Analytics are currently unavailable because no customers have scanned the QR code yet.';
-export const CHANNEL_ANALYTICS ='Channel analytics';
+export const CHANNEL_ANALYTICS = 'Channel analytics';
 
 //Communication sent
 export const COMMUNICATION_SUCCESSFULLY_SENT = 'Communication is successfully sent for approval';
@@ -1312,8 +1333,7 @@ export const MORE_THAN_ADDITIONAL_CHARGES = `If the number of characters exceeds
 export const SMS_AUDIENCE_COUNT = `SMS/audience volume may vary if the content has multilingual unicode content.`;
 export const NOTE_EDIT_THE_PRESENT = `Note: Edit the text inside the curly braces, and ensure there is a space at both the beginning and end`;
 export const CHECK_START_DATE_AND_END_DATE = `The scheduled time must be within this communication's duration.`;
-export const PAST_COMMUNICATION_DURATION_SCHEDULE =
-    'Update communication dates in plan page to schedule.';
+export const PAST_COMMUNICATION_DURATION_SCHEDULE = 'Update communication dates in plan page to schedule.';
 export const SCHEDULE_GREATER_THAN_BLAST_WARNING =
     'You have chosen a schedule that is greater than the existing communication schedule. Please change the schedule or change your date.';
 export const START_DATE_EARLIEST_BLAST_BOUND = 'Channel dates mismatch comm. period.';
@@ -1340,21 +1360,22 @@ export const SITE = 'Site name';
 export const AUDIENCE_COUNT_ZERO = 'The audience size for the selected channel must be greater than zero.';
 export const AUDIENCE_COUNT_ZERO_ENABLE_AUTO_REFRESH =
     'Your audience count is zero. Please enable auto refresh to proceed.';
-export const NO_EVENTS_IN_MONTH= 'There are no events in this month.';
+export const NO_EVENTS_IN_MONTH = 'There are no events in this month.';
 export const NEW_COMMUNICATION_S = 'New communication(s)';
 export const ONGOING_COMMUNICATION_S = 'Ongoing communication(s)';
 
 export const ARE_YOU_SURE_WANT_TO_CHANGE_CONTENT = 'Are you sure you want to change from content target?';
 export const MAX_150_CHARACTERS = 'Max. 150 characters';
 export const BRAND_ID_UNPQUE_IDENTIFIER =
-    "Brand ID is a unique identifier for your business unit, used to import and match records accurately. Only one attribute can be set as the Brand ID, and this cannot be changed later.";
+    'Brand ID is a unique identifier for your business unit, used to import and match records accurately. Only one attribute can be set as the Brand ID, and this cannot be changed later.';
 export const AUDIENCE_LIST_WILL_BE_REMOVED = 'The selected segment list will be removed.';
 export const CANVAS_WILL_BE_RESET = 'Canvas will be reset based on your channel deletion.';
 export const DELETE_AUDIENCE_SEGMENTS = 'Deleting segment lists';
 export const RESET_CANVAS_FLOW = 'Reset canvas flow';
 export const ISANNUALREMINDER = 'Annual Reminder';
 export const ISTIME = 'Time';
-export const ISANNUALREMINDER_DESCRIPTION = 'Enable this flag to use the attribute for annual reminder campaigns, such as birthdays or other age-based messages. When enabled, only the day and month will be considered; the year will be ignored';
+export const ISANNUALREMINDER_DESCRIPTION =
+    'Enable this flag to use the attribute for annual reminder communications, such as birthdays or other age-based messages. When enabled, only the day and month will be considered; the year will be ignored';
 
 //CASupport
 export const SEVERITY = 'Severity';
@@ -1362,19 +1383,20 @@ export const SUBJECT = 'Subject ';
 
 //forms
 export const POSTBACK_URL = 'Postback URL';
-export const  CAPTCHA = 'Captcha'
-export const ENTER_CAPTCHA = 'Enter the captcha'
-export const API_REQUEST = 'API Request'
-export const WEB_SDK ='Web SDK'
-export const MOBILE_SDK ='Mobile SDK'
-export const EMBEDED_SCRIPT = 'Embeded script'
-export const GENERATE_HTML_SNIPPET = 'Generated Html snippet'
+export const CAPTCHA = 'Captcha';
+export const ENTER_CAPTCHA = 'Enter the captcha';
+export const API_REQUEST = 'API Request';
+export const WEB_SDK = 'Web SDK';
+export const MOBILE_SDK = 'Mobile SDK';
+export const EMBEDED_SCRIPT = 'Embeded script';
+export const GENERATE_HTML_SNIPPET = 'Generated Html snippet';
 
 export const PRIMARY_FOREIGN_KEY = 'No primary/foreign key or date time value found in this table';
 export const REQUIRED_VOLUME = 'Applying filter may impact the required volume';
 export const REFINE_AUDIENCE_SELECTION = 'Would you like to refine audience selection?';
 export const BARND_NAME_DOESNT_EXISTS = "Brand name doesn't exists'";
-export const ORM_PROFILE_CREATED = 'The new ORM profile is being created and you will be able to see the reports in 3-4 hours.';
+export const ORM_PROFILE_CREATED =
+    'The new ORM profile is being created and you will be able to see the reports in 3-4 hours.';
 export const IGNORE_WEB_ANALYTICS = 'Are you sure you want to ignore Web Analytics?';
 export const VMS_CONTENT = 'Please select any one vms content?';
 export const VOICE_MESSAGE = 'Send test voice message to';
@@ -1395,113 +1417,125 @@ export const MAX_WAVES = 'Max no.of waves';
 export const ENTER_HEADER = 'Header';
 export const ENTER__FOOTER = 'Footer';
 export const ARE_YOU_SURE_DELETE_FOOTER = 'Are you sure you want to delete "{name}" footer?';
-export const ARE_YOU_SURE_REMOVE_SCHEDULED = 'Are you sure you want to remove the scheduled time? If you have a multilevel channel, it will be deleted.';
+export const ARE_YOU_SURE_REMOVE_SCHEDULED =
+    'Are you sure you want to remove the scheduled time? If you have a multilevel channel, it will be deleted.';
 export const RESUL_AI_DETERMINE = "RESUL will optimize delivery time based on your audience's time propensities.";
 export const MANAGE_CATEGORIES = 'Manage categories';
 export const MANAGE_CATEGORY = 'Manage category';
 export const UP_TO_20_CATEGORIES = 'Up to 20 categories can be added';
-export const ENTER_TEMPLATE_CATEGORIES= 'Enter template categories';
-export const EDIT_CATEGORIES= 'Edit category';
-export const CATEGORIES_NAME= 'Category name';
-export const CATEGORIES_NAME_BE_3_CHARACTERS= 'Note: Category name must be 3-20 characters long and can only contain letters, numbers, and special characters (_-/&)';
+export const ENTER_TEMPLATE_CATEGORIES = 'Enter template categories';
+export const EDIT_CATEGORIES = 'Edit category';
+export const CATEGORIES_NAME = 'Category name';
+export const CATEGORIES_NAME_BE_3_CHARACTERS =
+    'Note: Category name must be 3-20 characters long and can only contain letters, numbers, and special characters (_-/&)';
 
 // 1.Communication
-export const TEST_COMMUNICATION= 'Test communication';
-export const SERVICE_MANDATORY_COMMUNICATION= 'Service/mandatory communication';
-export const COMMUNICATIONS_DELIVERED_RECIPIENTS= 'The communication will be sent to the entire audience regardless of scrubbing rules.';
-export const ENTER_KEYWORDS= 'Enter keywords';
-export const CLEAR_ALL_TAGS= 'Clear all tags';
-export const CLEAR_ALL_TEXT= 'Clear all text';
+export const TEST_COMMUNICATION = 'Test communication';
+export const SERVICE_MANDATORY_COMMUNICATION = 'Service/mandatory communication';
+export const COMMUNICATIONS_DELIVERED_RECIPIENTS =
+    'The communication will be sent to the entire audience regardless of scrubbing rules.';
+export const ENTER_KEYWORDS = 'Enter keywords';
+export const CLEAR_ALL_TAGS = 'Clear all tags';
+export const CLEAR_ALL_TEXT = 'Clear all text';
 export const LINKED_CATEGORIES_CLEAR_INFO =
     'Linked categories/subcategories are retained because they are associated with existing communication. The Clear action removes only unlinked items';
-export const CHOOSE_DELIVERY_METHOD= 'Choose delivery method';
-export const DELIVERY_METHOD= 'Delivery method';
-export const REMOVE= 'Remove';
-export const SECONDARY_GOAL_TYPE= 'Secondary goal type';
-export const ROI_APPLICABLE= 'ROI is only applicable to email and SMS.';
-export const CALCULATED_ROI= 'Calculated ROI will be shown before the pre-communication analytics.';
-export const OFF= 'OFF';
-export const SELECT_THE_LIST= 'Select the list';
-export const ALLOW_AUDIENCE= 'Allow the audience to be targeted during every session';
-export const SAME_CHANNEL= 'The selected dynamic list has already been used to create a communication using the same channel. Choose a different dynamic list or select another channel';
-export const EDIT_TIME_ZONE= 'Edit time zone';
-export const ANALYTICS_TOOTLTIP_TEXT = "Pick the analytics you want to use to understand the communication's performance. "
+export const CHOOSE_DELIVERY_METHOD = 'Choose delivery method';
+export const DELIVERY_METHOD = 'Delivery method';
+export const REMOVE = 'Remove';
+export const SECONDARY_GOAL_TYPE = 'Secondary goal type';
+export const ROI_APPLICABLE = 'ROI is only applicable to email and SMS.';
+export const CALCULATED_ROI = 'Calculated ROI will be shown before the pre-communication analytics.';
+export const OFF = 'OFF';
+export const SELECT_THE_LIST = 'Select the list';
+export const ALLOW_AUDIENCE = 'Allow the audience to be targeted during every session';
+export const SAME_CHANNEL =
+    'The selected dynamic list has already been used to create a communication using the same channel. Choose a different dynamic list or select another channel';
+export const EDIT_TIME_ZONE = 'Edit time zone';
+export const ANALYTICS_TOOTLTIP_TEXT =
+    "Pick the analytics you want to use to understand the communication's performance. ";
 
 // Add audience Ad-hoc list
-export const FILES = 'files'
-export const FILE = 'file'
-export const AD_HOC_LIST= 'Ad-hoc list rules:';
-export const EACH_FILE_CAN_CONTAIN= `Each file can contain up to ${ADHOCAUDIENCE} records, with a maximum of ${ADHOCATTRIBUTES} attributes per record.`;
-export const UPLOAD_CSV_FILES= `You can upload a maximum of ${FILECOUNT} CSV files.`;
-export const UPLOAD_CSV_FILES_EXCEL= `You can upload a maximum of ${FILECOUNT} excel files.`;
-export const EACH_FILES= `Each file must be ${FILESIZE} or smaller.`;
-export const ENSURE_CONSISTENT_UPLOAD_CSV_FILES= 'Ensure consistent column headers across all uploaded CSV files.';
-export const ENSURE_CONSISTENT_UPLOAD_CSV_FILES_EXCEL= `Ensure consistent column headers across all uploaded excel files.`;
-export const WILL_EXPIRE_120_DAYS= 'This list will expire in 120 days and cannot be reused after expiration.';
-export const SPACES_COLUMN_HEADERS= 'Spaces in column headers will be automatically replaced with underscores (e.g., “First Name” becomes “First_Name”).';
-export const ADHOCLIST_ONE_MILLON_RECORDS= 'Processing 1 million records may take up to 3 hours.';
+export const FILES = 'files';
+export const FILE = 'file';
+export const CHILD_ATTRIBUTE = 'Child attribute';
+export const AD_HOC_LIST = 'Ad-hoc list rules:';
+export const EACH_FILE_CAN_CONTAIN = `Each file can contain up to ${ADHOCAUDIENCE} records, with a maximum of ${ADHOCATTRIBUTES} attributes per record.`;
+export const UPLOAD_CSV_FILES = `You can upload a maximum of ${FILECOUNT} CSV files.`;
+export const UPLOAD_CSV_FILES_EXCEL = `You can upload a maximum of ${FILECOUNT} excel files.`;
+export const EACH_FILES = `Each file must be ${FILESIZE} or smaller.`;
+export const ENSURE_CONSISTENT_UPLOAD_CSV_FILES = 'Ensure consistent column headers across all uploaded CSV files.';
+export const ENSURE_CONSISTENT_UPLOAD_CSV_FILES_EXCEL = `Ensure consistent column headers across all uploaded excel files.`;
+export const WILL_EXPIRE_120_DAYS = 'This list will expire in 120 days and cannot be reused after expiration.';
+export const SPACES_COLUMN_HEADERS =
+    'Spaces in column headers will be automatically replaced with underscores (e.g., “First Name” becomes “First_Name”).';
+export const ADHOCLIST_ONE_MILLON_RECORDS = 'Processing 1 million records may take up to 3 hours.';
 export const ADHOCLIST_VALUES_RETAINED = `Duplicate values in the CSV file will not be removed. Note: Bad or spam email IDs may negatively impact your sender domain reputation.`;
-export const ADHOCLIST_VALUES_RETAINED_EXCEL = `Duplicate values in the excel file will not be removed. Note: Bad or spam email IDs may negatively impact your sender domain reputation.`
-export const SUPPRESSION_INPUT_LIST= 'Suppression input list rules:';
-export const SUPPRESSIONLIST_12_ATTRIBUTES= `Each file can contain up to ${ADHOCAUDIENCE} records, with a maximum of ${MATCHLISTATTRIBUTES} attributes per record.`;
-export const SUPPRESSION_CSV_FILES= `File size must not exceed ${FILESIZE}.`;
-export const SUPPRESSION_MULTIPLE_FILES= 'If uploading multiple CSV files, ensure consistent column headers across all files. Column headers must exactly match the corresponding existing attributes in the platform.';
-export const SUPPRESSION_MULTIPLE_FILES_EXCEL= 'If uploading multiple excel files, ensure consistent column headers across all files. Column headers must exactly match the corresponding existing attributes in the platform.';
-export const SUPPRESSION_UPLOAD_SV_FILES= `You may upload up to ${FILECOUNT_TL} CSV files per submission.`;
-export const SUPPRESSION_UPLOAD_SV_FILES_EXCEL= `You may upload up to ${FILECOUNT_TL} excel files per submission.`;
-export const MATCH_INPUT_LIST= 'Match input list rules:';
-export const MATCH_EACH_FILE_CONTAIN= `Each file can contain up to ${ADHOCAUDIENCE} records, with a maximum of ${MATCHLISTATTRIBUTES} attributes per record.`;
-export const MATCH_ENSURE_CONSISTENT= 'Column headers must match existing attributes and be consistent across all uploaded CSV files.';
-export const MATCH_ENSURE_CONSISTENT_EXCEL= 'Column headers must match existing attributes and be consistent across all uploaded excel files.';
-export const MATCH_CAN_UPLOAD= `You can upload up to ${FILECOUNT_TL} CSV files.`;
+export const ADHOCLIST_VALUES_RETAINED_EXCEL = `Duplicate values in the excel file will not be removed. Note: Bad or spam email IDs may negatively impact your sender domain reputation.`;
+export const SUPPRESSION_INPUT_LIST = 'Suppression input list rules:';
+export const SUPPRESSIONLIST_12_ATTRIBUTES = `Each file can contain up to ${ADHOCAUDIENCE} records, with a maximum of ${MATCHLISTATTRIBUTES} attributes per record.`;
+export const SUPPRESSION_CSV_FILES = `File size must not exceed ${FILESIZE}.`;
+export const SUPPRESSION_MULTIPLE_FILES =
+    'If uploading multiple CSV files, ensure consistent column headers across all files. Column headers must exactly match the corresponding existing attributes in the platform.';
+export const SUPPRESSION_MULTIPLE_FILES_EXCEL =
+    'If uploading multiple excel files, ensure consistent column headers across all files. Column headers must exactly match the corresponding existing attributes in the platform.';
+export const SUPPRESSION_UPLOAD_SV_FILES = `You may upload up to ${FILECOUNT_TL} CSV files per submission.`;
+export const SUPPRESSION_UPLOAD_SV_FILES_EXCEL = `You may upload up to ${FILECOUNT_TL} excel files per submission.`;
+export const MATCH_INPUT_LIST = 'Match input list rules:';
+export const MATCH_EACH_FILE_CONTAIN = `Each file can contain up to ${ADHOCAUDIENCE} records, with a maximum of ${MATCHLISTATTRIBUTES} attributes per record.`;
+export const MATCH_ENSURE_CONSISTENT =
+    'Column headers must match existing attributes and be consistent across all uploaded CSV files.';
+export const MATCH_ENSURE_CONSISTENT_EXCEL =
+    'Column headers must match existing attributes and be consistent across all uploaded excel files.';
+export const MATCH_CAN_UPLOAD = `You can upload up to ${FILECOUNT_TL} CSV files.`;
 export const MATCH_CAN_UPLOAD_EXCEL = `You can upload up to ${FILECOUNT_TL} excel files.`;
-export const SEED_LIST= 'Seed list rules:';
+export const SEED_LIST = 'Seed list rules:';
 export const MAXIMUM_1000_ATTRIBUTES = 'Maximum 1,000 attributes';
-export const ONLY_1_CSV= 'Only 1 CSV file can be uploaded at a time.';
-export const SEED_FILE_SIZE= 'File size must not exceed 10MB.';
-export const SEED_EACH_FILE= `Each file can contain up to ${SEEDLISTAUDIENCE} audience records, with a maximum of ${SEEDLISTATTRIBUTES} attributes per record.`;
-export const SEED_BUSINESS_UNIT= `A maximum of  ${FILECOUNT_SL} seed lists can be created per business unit.`;
-export const SEED_CSV_FILE= 'Each record must include a valid Email ID or Mobile Number.';
-export const SEED_NOTE= 'Avoid uploading invalid or spam-prone email addresses, as this can harm your sender domain reputation.';
+export const ONLY_1_CSV = 'Only 1 CSV file can be uploaded at a time.';
+export const SEED_FILE_SIZE = 'File size must not exceed 10MB.';
+export const SEED_EACH_FILE = `Each file can contain up to ${SEEDLISTAUDIENCE} audience records, with a maximum of ${SEEDLISTATTRIBUTES} attributes per record.`;
+export const SEED_BUSINESS_UNIT = `A maximum of  ${FILECOUNT_SL} seed lists can be created per business unit.`;
+export const SEED_CSV_FILE = 'Each record must include a valid Email ID or Mobile Number.';
+export const SEED_NOTE =
+    'Avoid uploading invalid or spam-prone email addresses, as this can harm your sender domain reputation.';
 
-export const DELETE_USER_ROLE= 'Confirmation';
-export const LOGOUT= 'Logout';
-export const ASSIGN_ROLE= 'Assign role';
-export const KEY_CONTACT= 'Key contact';
-export const ASSIGN_USER_ROLE= 'Assign user role';
-export const ADD_NEW_USER= 'Add new user';
-export const CHOOSE_TEMPLATE_BUILDER= 'Choose template builder';
-export const FORM_BUILDER= 'Form builder';
+export const DELETE_USER_ROLE = 'Confirmation';
+export const LOGOUT = 'Logout';
+export const ASSIGN_ROLE = 'Assign role';
+export const KEY_CONTACT = 'Key contact';
+export const ASSIGN_USER_ROLE = 'Assign user role';
+export const ADD_NEW_USER = 'Add new user';
+export const CHOOSE_TEMPLATE_BUILDER = 'Choose template builder';
+export const FORM_BUILDER = 'Form builder';
 export const ADVANCED_FORM_BUILDER = 'Advanced form';
-export const MORE= 'More';
-export const DUPLICATE= 'Duplicate';
-export const CSV_DOWNLOAD= 'Download CSV';
-export const ACTIONS= 'Actions';
-export const SELECT_FORM_FIELDS_TO_DOWNLOAD= 'Select form fields to download as CSV';
-export const NEWCONTACT_DOWNLOAD= 'New contact download as CSV';
-export const NEWCONTACT= 'New contact';
-export const FORM_FIELDS= 'Form fields';
-export const SCHEDULE_DOWNLOAD= 'Schedule download';
+export const MORE = 'More';
+export const DUPLICATE = 'Duplicate';
+export const CSV_DOWNLOAD = 'Download CSV';
+export const ACTIONS = 'Actions';
+export const SELECT_FORM_FIELDS_TO_DOWNLOAD = 'Select form fields to download as CSV';
+export const NEWCONTACT_DOWNLOAD = 'New contact download as CSV';
+export const NEWCONTACT = 'New contact';
+export const FORM_FIELDS = 'Form fields';
+export const SCHEDULE_DOWNLOAD = 'Schedule download';
 export const EXECUTE_ONCE_IMMEDIATELY = 'Execute once immediately.';
-export const ENTER_FORM_FIELDS= 'Enter form fields';
-export const FREQUENCY_EXCEEDS= 'Frequency exceeds the comm. period';
-export const EVERY= 'Every';
-export const DAY= 'Day';
-export const OF_EVERY= 'of every';
-export const THE= 'The';
-export const ADD_NEW_CATEGORY= 'Add new category';
-export const ALL_TEMPLATE= 'All template';
-export const FILTER_GROUP_NAME= 'Filter group name';
-export const CLASSIFICATION_NAME= 'Classification name';
-export const PERSONALISATION= 'Personalization';
-export const AVAILABLE_COLUMNS_ATTRIBUTES= 'Available columns/attributes';
-export const SELECTED_COLUMNS_ATTRIBUTES= 'Selected columns/attributes';
-export const AVAILABLE_ATTRIBUTES = 'Available attributes'
-export const SELECTED_ATTRIBUTES = 'Selected attributes'
-export const NO_ATTRIBUTES_AVAILABLE_TABLE= 'No attributes available for this table';
-export const YOUR_AUDIENCE_SCORE= 'Your audience score is based on:';
-export const EDIT_PERSONA= 'Edit persona';
-export const VIEW= 'View';
+export const ENTER_FORM_FIELDS = 'Enter form fields';
+export const FREQUENCY_EXCEEDS = 'Frequency exceeds the comm. period';
+export const EVERY = 'Every';
+export const DAY = 'Day';
+export const OF_EVERY = 'of every';
+export const THE = 'The';
+export const ADD_NEW_CATEGORY = 'Add new category';
+export const ALL_TEMPLATE = 'All template';
+export const FILTER_GROUP_NAME = 'Filter group name';
+export const CLASSIFICATION_NAME = 'Classification name';
+export const PERSONALISATION = 'Personalization';
+export const AVAILABLE_COLUMNS_ATTRIBUTES = 'Available columns/attributes';
+export const SELECTED_COLUMNS_ATTRIBUTES = 'Selected columns/attributes';
+export const AVAILABLE_ATTRIBUTES = 'Available attributes';
+export const SELECTED_ATTRIBUTES = 'Selected attributes';
+export const NO_ATTRIBUTES_AVAILABLE_TABLE = 'No attributes available for this table';
+export const YOUR_AUDIENCE_SCORE = 'Your audience score is based on:';
+export const EDIT_PERSONA = 'Edit persona';
+export const VIEW = 'View';
 export const CLAIM = 'Claim';
 export const CLAIM_OFFER = 'Claim offer';
 export const DETAILS = 'Details';
@@ -1522,99 +1556,104 @@ export const ALL_CATEGORIES = 'All categories';
 export const ALL_BRANDS = 'All brands';
 export const DISCOVER_AMAZING_OFFERS = 'Discover amazing offers';
 export const SEARCH_OFFERS_BRANDS = 'Search offers or brands';
-export const ADD_USER_ROLES= 'Add user roles';
-export const CONFIRMATION= 'Confirmation ';
-export const CG= 'CG';
-export const TG= 'TG';
-export const SAMPLE_LIST= 'Sample list';
-export const MAX_1000_RECORDS= 'Max.  1,000 records';
-export const FULL_SEGMENT_LIST= 'Full segment list';
-export const SHARE_LIST= 'Share list';
+export const ADD_USER_ROLES = 'Add user roles';
+export const CONFIRMATION = 'Confirmation ';
+export const CG = 'CG';
+export const TG = 'TG';
+export const SAMPLE_LIST = 'Sample list';
+export const MAX_1000_RECORDS = 'Max.  1,000 records';
+export const FULL_SEGMENT_LIST = 'Full segment list';
+export const SHARE_LIST = 'Share list';
 export const SHARED_RECORDS = 'The shared records will be in a hashed format';
 export const CHANNEL_LIST = 'Channel list';
 export const DATA_DESTINATION_LIST = 'Data destination list';
 export const ATTRIBUTE_CATEGORY = 'Attribute category';
 export const DATA_SERVICES = 'Data services';
-export const NO_DATA_AVAILABLE= 'No data attributes available for this list';
-export const MAX_5_ATTRIBUTES= 'Max. of 5 attributes are allowed';
-export const ADVANCED_DETAILS= 'Advanced details - Group by';
-export const NOTE= 'Note';
-export const ENSURE_NOTE= 'Ensure the first row of your file contains valid column names, as it will be used as the header row.';
-export const CSV_CHILD_ATTRIBUTE= 'Define the main category that groups related child attributes.';
-export const CSV_ATTRIBUTE_CATEGORY= 'Define a sub-category that falls under a parent attribute or category.';
-export const MORE_THAN_5_ATTRIBUTES= 'You cannot select more than 5 attributes.';
-export const DOWNLOAD_ADVANCED_DETAILS= 'Download option will be enabled once the Advanced details grid is displayed with data.';
-export const TARGETINFO_ADVANCED_DETAILS= 'Advanced details';
-export const LIST_VIEW= 'List view';
-export const CARD_VIEW= 'Card view';
-export const VIEW_THE_GRID= 'Click here to view the grid';
-export const NO_RECORD_FOUND= 'No record found';
-export const NO_RECORDS_FOUND= 'No records found';
-export const LIST_INFO= 'List info';
-export const DYNAMIC_COMMUNICATION_LINKED= 'Comms. linked';
-export const FORMS_COMBO_BOX= 'Combo box settings';
-export const SET_MANDATORY= 'Set as mandatory';
-export const MAP_TO= 'Map to';
-export const CLEAR_ALL_LABELS= 'Clear all labels';
-export const ALLOW_MORE= 'Allow more than one answer to this question (use checkboxes)';
-export const TEXT_FIELD_SETTINGS= 'Text field settings';
-export const MAKE_DEFAULT= 'Make default';
-export const NEW_ATTRIBUTE= 'New attribute';
-export const PROGRESSIVE_PROFILE_SETTINGS= 'Progressive profiling settings';
-export const PROGRESSIVE_PRE_POPULATE= 'Pre-populate fields if known';
-export const PROGRESSIVE_AUTO_SAVE= 'Auto-save when fields are filled';
-export const PROGRESSIVE_TOTAL= 'Fields to display';
-export const PROGRESSIVE_NUMBER= 'Number of fields displayed on the form. Remaining non-mandatory fields will be shown progressively in subsequent submissions.';
-export const PLACEHOLDER_SETTINGS= 'Placeholder settings';
-export const CUSTOM_ERROR_MESSAGE= 'Custom error message';
-export const VALIDATION_TYPE= 'Validation type';
-export const FORM_MAX_LENGTH= 'Max. length';
-export const WEBHOOK_SETTINGS= 'Webhook settings';
-export const WEBHOOK_SETTINGS_HELP_TEXT = 'Used to automatically receive data (like form submissions or conversions) from another system when a specific event happens.'
-export const THE_ATTRIBUTE= 'The attribute';
-export const WILL_ACT= 'will act as the Brand ID for your BU.';
-export const SCHEDULED_ATTRIBUTES= `This will impact your 'Scheduled' and 'In-progress' communications if these attributes were used.`;
-export const SAVE_FOOTER= `Save footer`;
-export const SMPP= `SMPP`;
-export const SMS_TYPE= `SMS type`;
-export const STATUS= `Status`;
-export const SMS= `SMS`;
-export const NOTE_ACTION= `Note: This action cannot be reverted.`;
-export const NOTE_TEMPLATE= `Note: Your template data will be lost.`;
-export const REFRESH= `Refresh`;
-export const FORM_BACKGROUND_COLOR= `Form background color`;
-export const LAYOUT_SETTINGS= `Layout settings`;
-export const LAYOUT= `Layout`;
-export const UPDATE_GENERATE= `Update & Generate form`;
-export const SAVE_GENERATE= `Save & Generate form`;
-export const EMAIL_ID_MOBILE_NO= `Email ID/ Mobile No  should be mandatory to create a Forms`;
-export const EMAIID_MOBILENO_MANDATORY = 'Mobile No / Email ID is mandatory'
-export const CHNAGE_DEFAULT_LABEL= `Change the default label name`;
-export const CHNAGE_DEFAULT_TEXT= `Change the default text`;
-export const SAVE_FORM= `Save form`;
-export const SAVE_FORM_NAME= `Form name`;
-export const EITHER_EMAIL= `Either email or mobile should be selected`;
-export const FORM_SETTINGS= `Form settings`;
-export const SELECT_LAYOUT= `Select layout`;
-export const CREATE_DATE= `Created date`;
-export const ONLY_SUBSEGMENT= `Only one list allowed for sub-segment`;
-export const ADD_AUDIENCE_LIST= `Add segment list`;
-export const EXISTING_DATE= `Are you sure you want to change the segment,this action will delete all your existing data`;
-export const GROUP_COMMUNICATIONS_PERSON= `Group communications so each person receives at most one message, even if eligible for multiple.`;
-export const TARGET_SPECIFIC= `Target specific groups within your main segment for tailored engagement.`;
-export const GROUP_COMMUNICATIONS= `Group communication`;
-export const SUB_SEGMENT_JOURNEY= `Sub-Segment journey`;
-export const SUB_SEGMENT_JOURNEY_PERSON='Restrict contacts to one segment';
-export const SUB_SEGMENT_JOURNEY_TEXT='Each contact will be placed in one segment only. Set priority order on the next screen'
-export const AUTO_REFRESH= `Auto refresh`;
-export const AUTO_REFRESH_POP_HOVER_TEXT = 'Refreshes the list 15 minutes before send to include new entries.'
-export const I_AGREE_MDC= `I agree`;
-export const ACTION_REQUIRED= `Action required`;
-export const CANVAS_WILL_BE_RESET_SEGMENT= `Deleting the sub-segment will cause the canvas to be reset.`;
-export const PLEASE_ENTER_VALID= `please enter valid`;
-export const CLICK_OK= `Click OK to continue`;
-export const SAVE_AS_TEMPLATE= `Save as template`;
-export const SMTP= `SMTP`;
+export const NO_DATA_AVAILABLE = 'No data attributes available for this list';
+export const MAX_5_ATTRIBUTES = 'Max. of 5 attributes are allowed';
+export const ADVANCED_DETAILS = 'Advanced details - Group by';
+export const NOTE = 'Note';
+export const ENSURE_NOTE =
+    'Ensure the first row of your file contains valid column names, as it will be used as the header row.';
+export const CSV_CHILD_ATTRIBUTE = 'Define the main category that groups related child attributes.';
+export const CSV_ATTRIBUTE_CATEGORY = 'Define a sub-category that falls under a parent attribute or category.';
+export const MORE_THAN_5_ATTRIBUTES = 'You cannot select more than 5 attributes.';
+export const DOWNLOAD_ADVANCED_DETAILS =
+    'Download option will be enabled once the Advanced details grid is displayed with data.';
+export const TARGETINFO_ADVANCED_DETAILS = 'Advanced details';
+export const LIST_VIEW = 'List view';
+export const CARD_VIEW = 'Card view';
+export const VIEW_THE_GRID = 'Click here to view the grid';
+export const NO_RECORD_FOUND = 'No record found';
+export const NO_RECORDS_FOUND = 'No records found';
+export const LIST_INFO = 'List info';
+export const DYNAMIC_COMMUNICATION_LINKED = 'Comms. linked';
+export const FORMS_COMBO_BOX = 'Combo box settings';
+export const SET_MANDATORY = 'Set as mandatory';
+export const MAP_TO = 'Map to';
+export const CLEAR_ALL_LABELS = 'Clear all labels';
+export const ALLOW_MORE = 'Allow more than one answer to this question (use checkboxes)';
+export const TEXT_FIELD_SETTINGS = 'Text field settings';
+export const MAKE_DEFAULT = 'Make default';
+export const NEW_ATTRIBUTE = 'New attribute';
+export const PROGRESSIVE_PROFILE_SETTINGS = 'Progressive profiling settings';
+export const PROGRESSIVE_PRE_POPULATE = 'Pre-populate fields if known';
+export const PROGRESSIVE_AUTO_SAVE = 'Auto-save when fields are filled';
+export const PROGRESSIVE_TOTAL = 'Fields to display';
+export const PROGRESSIVE_NUMBER =
+    'Number of fields displayed on the form. Remaining non-mandatory fields will be shown progressively in subsequent submissions.';
+export const PLACEHOLDER_SETTINGS = 'Placeholder settings';
+export const CUSTOM_ERROR_MESSAGE = 'Custom error message';
+export const VALIDATION_TYPE = 'Validation type';
+export const FORM_MAX_LENGTH = 'Max. length';
+export const WEBHOOK_SETTINGS = 'Webhook settings';
+export const WEBHOOK_SETTINGS_HELP_TEXT =
+    'Used to automatically receive data (like form submissions or conversions) from another system when a specific event happens.';
+export const THE_ATTRIBUTE = 'The attribute';
+export const WILL_ACT = 'will act as the Brand ID for your BU.';
+export const SCHEDULED_ATTRIBUTES = `This will impact your 'Scheduled' and 'In-progress' communications if these attributes were used.`;
+export const SAVE_FOOTER = `Save footer`;
+export const SMPP = `SMPP`;
+export const SMS_TYPE = `SMS type`;
+export const STATUS = `Status`;
+export const SMS = `SMS`;
+export const NOTE_ACTION = `Note: This action cannot be reverted.`;
+export const NOTE_TEMPLATE = `Note: Your template data will be lost.`;
+export const REFRESH = `Refresh`;
+export const FORM_BACKGROUND_COLOR = `Form background color`;
+export const LAYOUT_SETTINGS = `Layout settings`;
+export const LAYOUT = `Layout`;
+export const UPDATE_GENERATE = `Update & Generate form`;
+export const SAVE_GENERATE = `Save & Generate form`;
+export const EMAIL_ID_MOBILE_NO = `Email ID/ Mobile No  should be mandatory to create a Forms`;
+export const EMAIID_MOBILENO_MANDATORY = 'Mobile No / Email ID is mandatory';
+export const CHNAGE_DEFAULT_LABEL = `Change the default label name`;
+export const CHNAGE_DEFAULT_TEXT = `Change the default text`;
+export const SAVE_FORM = `Save form`;
+export const SAVE_FORM_NAME = `Form name`;
+export const EITHER_EMAIL = `Either email or mobile should be selected`;
+export const FORM_SETTINGS = `Form settings`;
+export const SELECT_LAYOUT = `Select layout`;
+export const CREATE_DATE = `Created date`;
+export const ONLY_SUBSEGMENT = `Only one list allowed for sub-segment`;
+export const ADD_AUDIENCE_LIST = `Add segment list`;
+export const EXISTING_DATE = `Are you sure you want to change the segment,this action will delete all your existing data`;
+export const GROUP_COMMUNICATIONS_PERSON = `Group communications so each person receives at most one message, even if eligible for multiple.`;
+export const TARGET_SPECIFIC = `Target specific groups within your main segment for tailored engagement.`;
+export const GROUP_COMMUNICATIONS = `Group communication`;
+export const SUB_SEGMENT_JOURNEY = `Sub-Segment journey`;
+export const SUB_SEGMENT_JOURNEY_PERSON = 'Restrict contacts to one segment';
+export const SUB_SEGMENT_JOURNEY_TEXT =
+    'Each contact will be placed in one segment only. Set priority order on the next screen';
+export const AUTO_REFRESH = `Auto refresh`;
+export const AUTO_REFRESH_POP_HOVER_TEXT = 'Refreshes the list 15 minutes before send to include new entries.';
+export const I_AGREE_MDC = `I agree`;
+export const ACTION_REQUIRED = `Action required`;
+export const CANVAS_WILL_BE_RESET_SEGMENT = `Deleting the sub-segment will cause the canvas to be reset.`;
+export const PLEASE_ENTER_VALID = `please enter valid`;
+export const CLICK_OK = `Click OK to continue`;
+export const SAVE_AS_TEMPLATE = `Save as template`;
+export const SMTP = `SMTP`;
 export const SEARCH_ATTRIBUTES_VALUES = 'Search attributes/values';
 export const TEMPLATE_NAME_ALREADY_EXISTS = 'Template name already exists';
 export const LANDING_PAGE_NAME = 'Landing page name';
@@ -1631,9 +1670,9 @@ export const NEW_TARGET_LIST = 'New Target List';
 export const NEW_SEGMENT = 'New segment';
 export const EDIT_SEGMENT = 'Edit segment';
 export const CREATE_NEW_TARGET_LIST = 'Create new Target List';
-export const EDIT_TARGET_LIST = 'Edit Target List'
-export const DUPLICATE_LIST = 'Duplicate list'
-export const DUPLICATE_COMMUNICATION_LIST = 'Duplicate communication'
+export const EDIT_TARGET_LIST = 'Edit Target List';
+export const DUPLICATE_LIST = 'Duplicate list';
+export const DUPLICATE_COMMUNICATION_LIST = 'Duplicate communication';
 export const SELECT_SCHEDULE_TIME = 'Select a schedule time';
 export const ADJUST_SPLIT_SIZE = 'Adjust split size';
 export const OFFER_NAME = 'Name';
@@ -1647,244 +1686,254 @@ export const ADD_OFFER_CODE_FORM = 'Add offer code from';
 export const CODE_LENGTH = 'Code length';
 export const ADD_OFFER_FORMAT = 'Format';
 export const GENERATE_CSV = 'Generate CSV';
-export const HASHES_CHARACTERS= 'Hashes(#) will replace with random characters';
-export const CREATE_PERSONA= 'Create persona';
-export const CATEGORY_MIGHT= 'This category is linked to existing templates. If you delete it, the templates will be reassigned to Uncategorized. Are you sure you want to continue?';
-export const PROCEED_TO_SAVE= 'Proceed to save';
-export const PROCEED_WITH_SAVING= 'One or more categories were removed. Are you sure you want to proceed with saving?';
-export const REMAINING_CHARS= 'Remaining chars';
+export const HASHES_CHARACTERS = 'Hashes(#) will replace with random characters';
+export const CREATE_PERSONA = 'Create persona';
+export const CATEGORY_MIGHT =
+    'This category is linked to existing templates. If you delete it, the templates will be reassigned to Uncategorized. Are you sure you want to continue?';
+export const PROCEED_TO_SAVE = 'Proceed to save';
+export const PROCEED_WITH_SAVING = 'One or more categories were removed. Are you sure you want to proceed with saving?';
+export const REMAINING_CHARS = 'Remaining chars';
 export const MIN_POTENTIAL_AUD_LOOKALIKE = 'Available for potential audiences ≥ 1,000.';
-export const CONTACT= 'Contact';
-export const INFO= 'Info';
-export const CLOSE= 'Close';
-export const SEARCH= 'Search..';
-export const SEARCH_TEXT= 'Search';
-export const FILTER= 'Filter';
-export const ADVANCED_ANALYTICS= 'Advanced analytics - Group by';
-export const CHART_VIEW= 'Chart view';
-export const SANKEY_GRID= 'Sankey grid';
-export const MULTIPLE_PERSONALIZATIONS= 'Multiple personalizations not allowed';
-export const YOUR_SITE_IS_NOT_SECURE= 'Your site is not secure';
-export const ARE_YOU_SURE= 'Are you sure?';
-export const WOULD_YOU_LIKE_TO_REMOVE= 'Would you like to remove the selection?';
-export const URL_PERSONALIZATION= 'URL personalization';
-export const ADAPTIVE_URL= 'Adaptive URL';
-export const DEF_DEEP_LINKING= 'Def. deep linking';
-export const ADD_MOBILE_DEVICE= 'Add mobile device';
-export const SMART_URL= 'Smart URL';
-export const COPIED_SUCCESSFULLY= 'Copied successfully';
-export const PUBLISH_URL_COPIED_SUCCESSFULLY= 'Publish URL has been copied successfully';
-export const ALERT_SOUND_NAME_ALREADY_EXISTS= 'Alert sound name already exists';
-export const EXPIRES_IN= 'Expires in';
-export const BACKGROUND_COLOR= 'Background color';
-export const NEW_ALERT_SOUND= 'New alert sound';
-export const INBOX_CLASSIFICATION_NAME= 'Inbox classification name already exists';
-export const SELECT_A_FILE_TO_PROCEED= 'Select a file to proceed';
-export const SELECT_CONTENT_PROCEED= 'Select content type to proceed';
-export const SELECT_DATE_TIME= 'Select a date & time later than 15 mins.';
-export const RESET_DOMAIN= 'Reset domain';
-export const ADD_DOMAIN= 'Add domain';
-export const INBOX_CLASSIFICATION= 'Inbox classification';
-export const LAYOUT_POSITION= 'Layout / Position';
-export const POSITION= 'Position';
-export const SPLIT_AB_TEST_TEXT= 'Split A/B test';
-export const SPLIT_AB_TEST_REQUIRES= 'Split A/B test requires a min. of 100 audience';
-export const PUSH_TYPE= 'Push type';
-export const MORE_THAN_5_LISTS= 'More than 5 lists are not allowed';
-export const VOICE_MESSAGING_SERVICE= 'Voice messaging service settings';
-export const SMS_SETTINGS= 'SMS settings';
-export const INBOUND_NUMBERS= 'Inbound number';
-export const SMTP_SETTINGS= 'SMTP settings';
-export const SMTP_DOMAIN_SETTINGS= 'SMTP domain settings';
-export const ADD_DOMAIN_NAME= 'Add domain name';
-export const DOMAIN_SETTINGS= 'Domain settings';
-export const ADD_SMTP= 'Add SMTP';
-export const SUBSCRIPTION_CONTENT= 'Subscription messages';
-export const UNSUBSCRIPTION_CONTENT= 'Unsubscription messages';
-export const DOUBLE_OPT_IN_SETTINGS= 'Double opt-in';
-export const EDIT_VERIFICATION_EMAIL= 'Edit verification email';
-export const EDIT_WELCOME_NOTE= 'Edit welcome note';
-export const DOUBLE_OPT_IN_LIST= 'Double opt-in list';
-export const EMAIL_FOOTER= 'Email footer';
-export const FOOTER_LIST= 'Footer list';
-export const WEB_NOTIFICATIONS_SETTINGS= 'Web notification settings';
+export const CONTACT = 'Contact';
+export const INFO = 'Info';
+export const CLOSE = 'Close';
+export const SEARCH = 'Search..';
+export const SEARCH_TEXT = 'Search';
+export const FILTER = 'Filter';
+export const ADVANCED_ANALYTICS = 'Advanced analytics - Group by';
+export const CHART_VIEW = 'Chart view';
+export const SANKEY_GRID = 'Sankey grid';
+export const MULTIPLE_PERSONALIZATIONS = 'Multiple personalizations not allowed';
+export const YOUR_SITE_IS_NOT_SECURE = 'Your site is not secure';
+export const ARE_YOU_SURE = 'Are you sure?';
+export const WOULD_YOU_LIKE_TO_REMOVE = 'Would you like to remove the selection?';
+export const URL_PERSONALIZATION = 'URL personalization';
+export const ADAPTIVE_URL = 'Adaptive URL';
+export const DEF_DEEP_LINKING = 'Def. deep linking';
+export const ADD_MOBILE_DEVICE = 'Add mobile device';
+export const SMART_URL = 'Smart URL';
+export const COPIED_SUCCESSFULLY = 'Copied successfully';
+export const PUBLISH_URL_COPIED_SUCCESSFULLY = 'Publish URL has been copied successfully';
+export const ALERT_SOUND_NAME_ALREADY_EXISTS = 'Alert sound name already exists';
+export const EXPIRES_IN = 'Expires in';
+export const BACKGROUND_COLOR = 'Background color';
+export const NEW_ALERT_SOUND = 'New alert sound';
+export const INBOX_CLASSIFICATION_NAME = 'Inbox classification name already exists';
+export const SELECT_A_FILE_TO_PROCEED = 'Select a file to proceed';
+export const SELECT_CONTENT_PROCEED = 'Select content type to proceed';
+export const SELECT_DATE_TIME = 'Select a date & time later than 15 mins.';
+export const RESET_DOMAIN = 'Reset domain';
+export const ADD_DOMAIN = 'Add domain';
+export const INBOX_CLASSIFICATION = 'Inbox classification';
+export const LAYOUT_POSITION = 'Layout / Position';
+export const POSITION = 'Position';
+export const SPLIT_AB_TEST_TEXT = 'Split A/B test';
+export const SPLIT_AB_TEST_REQUIRES = 'Split A/B test requires a min. of 100 audience';
+export const PUSH_TYPE = 'Push type';
+export const MORE_THAN_5_LISTS = 'More than 5 lists are not allowed';
+export const VOICE_MESSAGING_SERVICE = 'Voice messaging service settings';
+export const SMS_SETTINGS = 'SMS settings';
+export const INBOUND_NUMBERS = 'Inbound number';
+export const SMTP_SETTINGS = 'SMTP settings';
+export const SMTP_DOMAIN_SETTINGS = 'SMTP domain settings';
+export const ADD_DOMAIN_NAME = 'Add domain name';
+export const DOMAIN_SETTINGS = 'Domain settings';
+export const ADD_SMTP = 'Add SMTP';
+export const SUBSCRIPTION_CONTENT = 'Subscription messages';
+export const UNSUBSCRIPTION_CONTENT = 'Unsubscription messages';
+export const DOUBLE_OPT_IN_SETTINGS = 'Double opt-in';
+export const EDIT_VERIFICATION_EMAIL = 'Edit verification email';
+export const EDIT_WELCOME_NOTE = 'Edit welcome note';
+export const DOUBLE_OPT_IN_LIST = 'Double opt-in list';
+export const EMAIL_FOOTER = 'Email footer';
+export const FOOTER_LIST = 'Footer list';
+export const WEB_NOTIFICATIONS_SETTINGS = 'Web notification settings';
 //Custom events
-export const WEB_CUSTOM_EVENTS= 'Custom events';
+export const WEB_CUSTOM_EVENTS = 'Custom events';
 export const WEB_EVENT_NAME = 'Event name';
 export const WEB_EVENT_RANGE = 'Event Range';
 export const WEB_View = 'View';
 
-export const SDK_STATUS= 'SDK status';
-export const SDK_DETAILS= 'SDK details';
-export const MOBILE_NOTIFICATION_SETTINGS= 'Mobile notification settings';
-export const WEB_MOBILE_APP_LIST= 'Domains & mobile apps';
-export const USER_DEVICE_SUMMARY= 'User device summary';
-export const EDIT_DYNAMIC_LIST= 'Edit Dynamic List';
-export const COMMENTS= 'Comments';
-export const NEW_DYNAMIC_LIST= 'New Dynamic List';
-export const CREATE_NEW_DYNAMIC_LIST= 'Create new dynamic list';
-export const ADD_RULE_GROUP= 'Add rule group';
-export const SELECT_TRIGGERS_AS_SPECIFIED= 'Select triggers as specified in the "Any" field.';
-export const UP_TO_5_MATCH= 'Up to 5 match types can be specified in "Any" field';
-export const YOU_ARE_NOT_APPROVER= 'You are not a designated reviewer of this Dynamic List.';
-export const TRIGGERS= 'Triggers';
-export const ATTRIBUTE_CONDITION_CONFIGURED= 'Attribute condition configured';
-export const WAIT_FOR= 'Wait for';
-export const MAX_2_TRIGGERS= '(Max. 2 triggers allowed)';
-export const MAX_4_TRIGGERS= '(Max. 4 triggers allowed)';
-export const ENABLE= 'Enable';
-export const SEND_MAX= 'Send max';
-export const ADDITIONAL_INFO= 'Additional Info';
-export const OPENS= 'Opens';
-export const FORWARDS= 'Forwards';
-export const HARD_BOUNCED= 'Hard bounced';
-export const SOFT_BOUNCED= 'Soft bounced';
-export const MARKED_AS_SPAM= 'Marked as spam';
-export const QUARANTINED= 'Quarantined';
-export const LINK_CLICKS= 'Link clicks';
-export const FWD_MAIL_CLICKS= 'Fwd mail clicks';
-export const REGISTRATION= 'Registration';
-export const APPROVED= 'Approved';
-export const INCREASE_THE_IMPORT_DATE= 'Increase the import date by 10 days';
-export const PERSONALIZATION_HAS_BEEN= 'Personalization has been removed.';
-export const PLEASE_REMOVE= 'Please remove personalization';
-export const FONT_COLOR= 'Font color';
-export const CUSTOMIZE= 'Customize';
-export const INSERT= 'Insert';
-export const BUTTON_TYPE= 'Button type';
-export const BUTTON_NAME= 'Button name';
-export const ENTER_VALID_BUTTON= 'Enter valid button text';
-export const SELECT_FREQUENCY= 'Select frequency';
-export const SELECT_FREQUENCY_TIME= 'Select frequency time';
-export const FREQUENCY_VALUE= 'Frequency value';
-export const PROPER_FREQUENCY_VALUE= 'Enter proper frequency value';
-export const SUBTITLE= 'Subtitle';
-export const SUBTITLE_TEXT= 'Subtitle text';
-export const CHROME= 'Chrome';
-export const FIREFOX= 'Firefox';
-export const DEPARTMENT_CHANGE_FAILED= 'Department change failed';
-export const CLIENT_CHANGE_FAILED= 'Client change failed';
-export const CREATE_UNSUBCRIPTION= 'Create unsubscription';
-export const ENABLE_UNSUBSCRIPTION= 'Enable unsubscription';
-export const A_SUFFICIENT_NUMBER= 'Subject-line analysis can only be executed with a minimum of 500 communications';
-export const ADD_EMAIL_FOOTER= 'Add email footer';
-export const CREATE_EMAIL_FOOTER= 'Create email footer';
-export const KEY_PERSON_INFO_NOT_FOUND= 'Key person info not found.';
-export const EMAIL_PREVIEW= 'Email preview';
-export const EMAIL_FOOTER_TEMPLATES= 'Email footer templates';
-export const ARE_YOU_SURE_YOU_WANT_TO_LEAVE= 'Are you sure you want to leave? All unsaved data will be lost if you continue.';
-export const SEND_TIME_OPTIMIZATION= 'Send time optimization (STO)';
-export const THIS_COMMUNICATION_WILL_BE_SENT= 'This communication will be sent within 24 hours from the scheduled time based on individual audience time propensities.';
-export const THIS_FEATURE_IS_NOT_RECOMMENDED= 'This feature is not recommended for time-sensitive communications. ';
-export const IF_QUIET_TIME= `If "Quiet Time" is enabled, send time optimization will be overulled. The communication will be sent once the period ends.`;
-export const REPLY_EMAIL= `Reply email`;
-export const RENAME_TEMPLATE= `Rename template`;
-export const MORE_OPTIONS= `More options`;
-export const ENGAGEMENT_TYPE= `Engagement type`;
-export const CONVERSION_TYPE= `Conversion type`;
-export const ENTER_CUSTOM= 'Custom value';
-export const SELECT_THE_ATTRIBUTES= 'Select an attribute';
-export const SELECT_CURRENCY_TYPE= 'Select currency type';
-export const EVENT_TRACKING= 'Event tracking';
-export const CLICK_TO_CONFIGURE= 'Click to configure';
+export const SDK_STATUS = 'SDK status';
+export const SDK_DETAILS = 'SDK details';
+export const MOBILE_NOTIFICATION_SETTINGS = 'Mobile notification settings';
+export const WEB_MOBILE_APP_LIST = 'Domains & mobile apps';
+export const USER_DEVICE_SUMMARY = 'User device summary';
+export const EDIT_DYNAMIC_LIST = 'Edit Dynamic List';
+export const COMMENTS = 'Comments';
+export const NEW_DYNAMIC_LIST = 'New Dynamic List';
+export const CREATE_NEW_DYNAMIC_LIST = 'Create new dynamic list';
+export const ADD_RULE_GROUP = 'Add rule group';
+export const SELECT_TRIGGERS_AS_SPECIFIED = 'Select triggers as specified in the "Any" field.';
+export const UP_TO_5_MATCH = 'Up to 5 match types can be specified in "Any" field';
+export const YOU_ARE_NOT_APPROVER = 'You are not a designated reviewer of this Dynamic List.';
+export const TRIGGERS = 'Triggers';
+export const ATTRIBUTE_CONDITION_CONFIGURED = 'Attribute condition configured';
+export const WAIT_FOR = 'Wait for';
+export const MAX_2_TRIGGERS = '(Max. 2 triggers allowed)';
+export const MAX_4_TRIGGERS = '(Max. 4 triggers allowed)';
+export const ENABLE = 'Enable';
+export const SEND_MAX = 'Send max';
+export const ADDITIONAL_INFO = 'Additional Info';
+export const OPENS = 'Opens';
+export const FORWARDS = 'Forwards';
+export const HARD_BOUNCED = 'Hard bounced';
+export const SOFT_BOUNCED = 'Soft bounced';
+export const MARKED_AS_SPAM = 'Marked as spam';
+export const QUARANTINED = 'Quarantined';
+export const LINK_CLICKS = 'Link clicks';
+export const FWD_MAIL_CLICKS = 'Fwd mail clicks';
+export const REGISTRATION = 'Registration';
+export const APPROVED = 'Approved';
+export const INCREASE_THE_IMPORT_DATE = 'Increase the import date by 10 days';
+export const PERSONALIZATION_HAS_BEEN = 'Personalization has been removed.';
+export const PLEASE_REMOVE = 'Please remove personalization';
+export const FONT_COLOR = 'Font color';
+export const CUSTOMIZE = 'Customize';
+export const INSERT = 'Insert';
+export const BUTTON_TYPE = 'Button type';
+export const BUTTON_NAME = 'Button name';
+export const ENTER_VALID_BUTTON = 'Enter valid button text';
+export const SELECT_FREQUENCY = 'Select frequency';
+export const SELECT_FREQUENCY_TIME = 'Select frequency time';
+export const FREQUENCY_VALUE = 'Frequency value';
+export const PROPER_FREQUENCY_VALUE = 'Enter proper frequency value';
+export const SUBTITLE = 'Subtitle';
+export const SUBTITLE_TEXT = 'Subtitle text';
+export const CHROME = 'Chrome';
+export const FIREFOX = 'Firefox';
+export const DEPARTMENT_CHANGE_FAILED = 'Department change failed';
+export const CLIENT_CHANGE_FAILED = 'Client change failed';
+export const CREATE_UNSUBCRIPTION = 'Create unsubscription';
+export const ENABLE_UNSUBSCRIPTION = 'Enable unsubscription';
+export const A_SUFFICIENT_NUMBER = 'Subject-line analysis can only be executed with a minimum of 500 communications';
+export const ADD_EMAIL_FOOTER = 'Add email footer';
+export const CREATE_EMAIL_FOOTER = 'Create email footer';
+export const KEY_PERSON_INFO_NOT_FOUND = 'Key person info not found.';
+export const EMAIL_PREVIEW = 'Email preview';
+export const EMAIL_FOOTER_TEMPLATES = 'Email footer templates';
+export const ARE_YOU_SURE_YOU_WANT_TO_LEAVE =
+    'Are you sure you want to leave? All unsaved data will be lost if you continue.';
+export const SEND_TIME_OPTIMIZATION = 'Send time optimization (STO)';
+export const THIS_COMMUNICATION_WILL_BE_SENT =
+    'This communication will be sent within 24 hours from the scheduled time based on individual audience time propensities.';
+export const THIS_FEATURE_IS_NOT_RECOMMENDED = 'This feature is not recommended for time-sensitive communications. ';
+export const IF_QUIET_TIME = `If "Quiet Time" is enabled, send time optimization will be overulled. The communication will be sent once the period ends.`;
+export const REPLY_EMAIL = `Reply email`;
+export const RENAME_TEMPLATE = `Rename template`;
+export const MORE_OPTIONS = `More options`;
+export const ENGAGEMENT_TYPE = `Engagement type`;
+export const CONVERSION_TYPE = `Conversion type`;
+export const ENTER_CUSTOM = 'Custom value';
+export const SELECT_THE_ATTRIBUTES = 'Select an attribute';
+export const SELECT_CURRENCY_TYPE = 'Select currency type';
+export const EVENT_TRACKING = 'Event tracking';
+export const CLICK_TO_CONFIGURE = 'Click to configure';
 export const FIELD_TRACKING = 'Field tracking';
-export const ADD_URL= 'Add URL';
-export const REMOVE_URL= 'Remove url';
-export const WAITING_FOR_EVENT_SET= 'Waiting for event set';
-export const LIST_QUALITY= 'List quality';
-export const LIST_CONTROL= 'List control';
-export const NA= 'NA';
-export const SCRUBBED= 'Scrubbed';
+export const ADD_URL = 'Add URL';
+export const REMOVE_URL = 'Remove url';
+export const WAITING_FOR_EVENT_SET = 'Waiting for event set';
+export const LIST_QUALITY = 'List quality';
+export const LIST_CONTROL = 'List control';
+export const NA = 'NA';
+export const SCRUBBED = 'Scrubbed';
 export const SCRUBBING_INPROGRESS = 'Scrubbing in progress';
-export const FREQUENCY_CAP= 'Frequency cap';
-export const POTENTIAL_TARGET_AUDIENCE= 'Potential campaign audience';
-export const LIMIT_SCAN_BY= 'Limit scan by';
-export const SCRUBBED_BY_LIMIT_CAP= 'Scrubbed by limit cap';
-export const SPLIT_SCHEDULE= 'Split schedule';
-export const LIMIT_LIST_SPLIT_SCHEDULE= 'Limit list/Split schedule';
-export const ADVANCED_ANALYTIC= 'Advanced analytics';
+export const FREQUENCY_CAP = 'Frequency cap';
+export const POTENTIAL_TARGET_AUDIENCE = 'Potential communication audience';
+export const LIMIT_SCAN_BY = 'Limit scan by';
+export const SCRUBBED_BY_LIMIT_CAP = 'Scrubbed by limit cap';
+export const SPLIT_SCHEDULE = 'Split schedule';
+export const LIMIT_LIST_SPLIT_SCHEDULE = 'Limit list/Split schedule';
+export const ADVANCED_ANALYTIC = 'Advanced analytics';
 export const TOTAL_COMMUNICATION_SENT = 'Total communications sent';
 export const COMMUNICATION_AUDIENCE_DETAILS = 'Communication audience details';
 export const UNIQUE_AUDIENCE_COUNT = 'Unique audience count';
 export const SCRUBBED_BEFORE_COMMUNICATION_BLAST = 'Scrubbed before communication blast';
 export const AFTER_COMMUNICATION_BLAST_COUNT = 'After communication blast count';
-export const LIST= 'List';
-export const SCAN_CONTROL= 'Scan control';
-export const EXPECTED_AUDIENCE= 'Expected audience';
-export const GATE_MESSAGE= 'Gate message';
-export const OFFER_IS_COMPLETED= 'Offer is completed. Visit again.';
-export const SELECT_AT_LEAST_ONE= 'Select at least one from the list';
-export const MAX_OF5_FROM_THE_LIST= 'Max. of 5 from the list';
-export const ADVANCE_ANALYTICS_LIST= 'Advance analytics list';
-export const COMMUNICATION_UNIQUE_RESPONSE= 'Communication unique response';
-export const SCRUBBED_AUDIENCE_DATA= 'Scrubbed audience data';
-export const YES_I_AGREE_TO_REMOVE= 'Yes, I agree to remove audience members from the communication based on these rules.';
-export const SUPPRESSION_LIST= 'Suppression list';
-export const SCHEDULE_EXCEEDS_END_DATE= 'Schedule exceeds end date';
-export const LIMIT_AUDIENCE= 'Limit audience';
-export const SELECT_THIS_OPTION= 'Select this option to set the limit max. number of audiences that receive communications for a one-time blast. There will be no further communications to additional audiences after the initial blast.';
-export const SELECT_THIS_OPTION_TO_SET='Select this option to set a daily limit on the max. number of audiences that receive communications. Once the limit has been reached the remaining audience will be pushed to the next days communications.';
-export const CLICK_HERE= 'Click here';
-export const AUDIENCE_COUNT_LABLE= 'Audience count';
-export const MAX_OF_3_FRRQUENCY_CAP_LIST= 'Max. of 3 frequency cap list';
-export const FREQUENCY_CAP_LIST= 'Frequency cap list';
-export const UNIQUE_AUDIENCE= 'Unique audience';
+export const LIST = 'List';
+export const SCAN_CONTROL = 'Scan control';
+export const EXPECTED_AUDIENCE = 'Expected audience';
+export const GATE_MESSAGE = 'Gate message';
+export const OFFER_IS_COMPLETED = 'Offer is completed. Visit again.';
+export const SELECT_AT_LEAST_ONE = 'Select at least one from the list';
+export const MAX_OF5_FROM_THE_LIST = 'Max. of 5 from the list';
+export const ADVANCE_ANALYTICS_LIST = 'Advance analytics list';
+export const COMMUNICATION_UNIQUE_RESPONSE = 'Communication unique response';
+export const SCRUBBED_AUDIENCE_DATA = 'Scrubbed audience data';
+export const YES_I_AGREE_TO_REMOVE =
+    'Yes, I agree to remove audience members from the communication based on these rules.';
+export const SUPPRESSION_LIST = 'Suppression list';
+export const SCHEDULE_EXCEEDS_END_DATE = 'Schedule exceeds end date';
+export const LIMIT_AUDIENCE = 'Limit audience';
+export const SELECT_THIS_OPTION =
+    'Select this option to set the limit max. number of audiences that receive communications for a one-time blast. There will be no further communications to additional audiences after the initial blast.';
+export const SELECT_THIS_OPTION_TO_SET =
+    'Select this option to set a daily limit on the max. number of audiences that receive communications. Once the limit has been reached the remaining audience will be pushed to the next days communications.';
+export const CLICK_HERE = 'Click here';
+export const AUDIENCE_COUNT_LABLE = 'Audience count';
+export const MAX_OF_3_FRRQUENCY_CAP_LIST = 'Max. of 3 frequency cap list';
+export const FREQUENCY_CAP_LIST = 'Frequency cap list';
+export const UNIQUE_AUDIENCE = 'Unique audience';
 export const MAXIMUM_LIMIT_REACHED = 'Maximum limit reached';
 export const DROP_HERE = 'Drop here...';
-export const DROP_FIELD_HERE = 'Drop field here'
+export const DROP_FIELD_HERE = 'Drop field here';
 export const RECOMMENDED_8_10_ATTRIBUTES = 'Recommended 8 / Max. 10 attributes';
 export const RECOMMENDED_8_25_ATTRIBUTES = 'Recommended 8 / Max. 25 attributes';
 export const NEW_SUB_SEGMENT_LIST = 'New sub-segment list';
 export const EDIT_SUB_SEGMENT_LIST = 'Edit sub-segment list';
 export const AUDIENCE_SELECTION = 'Audience selection';
-export const MARKED_ANNUAL_REMAINDER = 'Marked as Annual remainder'
-export const REDIRECTING_CONFIGURATION = 'Redirection configuration'
-export const REDIRECTING_AND_WEBHOOK_CONFIGURATION = 'Webhook & Redirect configuration'
+export const MARKED_ANNUAL_REMAINDER = 'Marked as Annual remainder';
+export const REDIRECTING_CONFIGURATION = 'Redirection configuration';
+export const REDIRECTING_AND_WEBHOOK_CONFIGURATION = 'Webhook & Redirect configuration';
 
-export const SUCCESS_MSG_TEXT= `The message displayed on-screen as a pop-up after the user unsubscribes`;
-export const SUB_MSG_TEXT= `This message will be displayed as a pop-up on screen after the user subscribes`;
-export const FAREWELL_MSG_TEXT= `The confirmation email sent to the user's inbox after they unsubscribe.`;
-export const DOUBLE_OPT_IN_SETTINGS_TEXT= `Shown after form submission. Prompts the user to check their inbox.`;
-export const VERIFICATION_TEXT= `Email sent to the user with a link to confirm their subscription.`;
-export const WELCOME_TEXT= `Message shown after the user verifies their email.`;
-export const SMPP_TEXT= `Configuration is not available in RESUL. Please get in touch with your account manager or contact support.`;
-export const WHATSAPP_NO_DATA_TEXT='To configure your WhatsApp settings, please  get in touch with your account manager or contact support.'
-export const VMS_NO_DATA_TEXT='To configure your VMS settings, please  get in touch with your account manager or contact support.'
-export const FCM_POPOVER_TEXT= `To enable push notifications, set up a Firebase Cloud Messaging (FCM) account (free with Google).`;
-export const UPLOAD_145_LOGO= `Upload a 145×145 logo (JPEG or PNG)`;
-export const OFFER_SKELETON_TEXT ='Create and manage common or unique offer codes for use across communications and channels.';
-export const COMMUNIITON_PRODUCT_POPHOVER_TEXT ='Configure communication and product types in Account Settings > Localization Settings to use offer codes.'
-export const COMMON_TEXT= `Common: One code for all users`;
-export const UNIQUE_TEXT= `Unique: One code per user`;
-export const PERSONAS= `Personas`;
-export const FILTER_GROUP_TEXT='Filter groups organize attributes and appear as headings in the Target list.';
-export const CLASSIFICATION_GROUP_TEXT='Group attributes by purpose for use across platform modules.';
-export const LINK_VERIFICATION_STATUS='Link verification details';
-export const VERIFIED='Verified';
-export const NOT_VERIFIED='Not verified';
-export const CONTENT_ANALYSIS='Content analysis';
-export const LINK_VERIFICATION='Link verification status';
-export const SUBJECT_LINE_SPAM_SCORE='Subject line spam score';
-export const IMAGE_TO_TEXT_RATIO='Image to text ratio';
-export const FILE_WEIGHT='File weight';
-export const PROJECTED_OPEN_RATE='Projected open rate';
-export const CODING_LAYOUT='Coding & Layout';
-export const NUMBER_OF_SMS='Number of SMS';
-export const PERSONALIZATION_ENABLED='Personalization enabled';
-export const UNICODE='Unicode';
-export const CONTENT_LENGTH='Content length';
-export const FILE_TYPE='File type';
-export const RETRY_COUNT='Retry count';
-export const IMAGE_ATTACHED='Image attached';
-export const TRIGGER_TYPE='Trigger type';
-export const UNIQUE_CODE='Unique code';
-export const APPROVED_BY='Approved by';
-export const SDK_ENABLED='SDK enabled and all links are valid';
-export const SDK_ENABLED_LINKS='SDK enabled and some links having an error';
-export const UNABLE_TOLOAD_DATA='Unable to load data. Try again later.';
-export const AA360_RETARGET_NOTE_TEXT=`Note: The displayed audience count may vary after consolidation with the latest;
+export const SUCCESS_MSG_TEXT = `The message displayed on-screen as a pop-up after the user unsubscribes`;
+export const SUB_MSG_TEXT = `This message will be displayed as a pop-up on screen after the user subscribes`;
+export const FAREWELL_MSG_TEXT = `The confirmation email sent to the user's inbox after they unsubscribe.`;
+export const DOUBLE_OPT_IN_SETTINGS_TEXT = `Shown after form submission. Prompts the user to check their inbox.`;
+export const VERIFICATION_TEXT = `Email sent to the user with a link to confirm their subscription.`;
+export const WELCOME_TEXT = `Message shown after the user verifies their email.`;
+export const SMPP_TEXT = `Configuration is not available in RESUL. Please get in touch with your account manager or contact support.`;
+export const WHATSAPP_NO_DATA_TEXT =
+    'To configure your WhatsApp settings, please  get in touch with your account manager or contact support.';
+export const VMS_NO_DATA_TEXT =
+    'To configure your VMS settings, please  get in touch with your account manager or contact support.';
+export const FCM_POPOVER_TEXT = `To enable push notifications, set up a Firebase Cloud Messaging (FCM) account (free with Google).`;
+export const UPLOAD_145_LOGO = `Upload a 145×145 logo (JPEG or PNG)`;
+export const OFFER_SKELETON_TEXT =
+    'Create and manage common or unique offer codes for use across communications and channels.';
+export const COMMUNIITON_PRODUCT_POPHOVER_TEXT =
+    'Configure communication and product types in Account Settings > Localization Settings to use offer codes.';
+export const COMMON_TEXT = `Common: One code for all users`;
+export const UNIQUE_TEXT = `Unique: One code per user`;
+export const PERSONAS = `Personas`;
+export const FILTER_GROUP_TEXT = 'Filter groups organize attributes and appear as headings in the Target list.';
+export const CLASSIFICATION_GROUP_TEXT = 'Group attributes by purpose for use across platform modules.';
+export const LINK_VERIFICATION_STATUS = 'Link verification details';
+export const VERIFIED = 'Verified';
+export const NOT_VERIFIED = 'Not verified';
+export const CONTENT_ANALYSIS = 'Content analysis';
+export const LINK_VERIFICATION = 'Link verification status';
+export const SUBJECT_LINE_SPAM_SCORE = 'Subject line spam score';
+export const IMAGE_TO_TEXT_RATIO = 'Image to text ratio';
+export const FILE_WEIGHT = 'File weight';
+export const PROJECTED_OPEN_RATE = 'Projected open rate';
+export const CODING_LAYOUT = 'Coding & Layout';
+export const NUMBER_OF_SMS = 'Number of SMS';
+export const PERSONALIZATION_ENABLED = 'Personalization enabled';
+export const UNICODE = 'Unicode';
+export const CONTENT_LENGTH = 'Content length';
+export const FILE_TYPE = 'File type';
+export const RETRY_COUNT = 'Retry count';
+export const IMAGE_ATTACHED = 'Image attached';
+export const TRIGGER_TYPE = 'Trigger type';
+export const UNIQUE_CODE = 'Unique code';
+export const APPROVED_BY = 'Approved by';
+export const SDK_ENABLED = 'SDK enabled and all links are valid';
+export const SDK_ENABLED_LINKS = 'SDK enabled and some links having an error';
+export const UNABLE_TOLOAD_DATA = 'Unable to load data. Try again later.';
+export const AA360_RETARGET_NOTE_TEXT = `Note: The displayed audience count may vary after consolidation with the latest;
                                     audience base.`;
-export const RETARGET_LIST_NAME_TEXT='Give your retarget list a name';
+export const RETARGET_LIST_NAME_TEXT = 'Give your retarget list a name';
 export const QUIET_HOURS = 'Quiet hours';
 export const QUIET_HOURS_ADD_RULE = 'Add rule';
 export const QUIET_HOURS_EDIT_RULE = 'Edit rule';
@@ -1897,10 +1946,8 @@ export const QUIET_HOURS_WINDOW_END = 'Window end';
 export const QUIET_HOURS_ACCOUNT_TIMEZONE_NOTE =
     'Quiet hours are determined based on the account time zone, not the audience time zone.';
 export const QUIET_HOURS_WINDOW_TIMES_MUST_DIFFER = 'Start and end times must be different.';
-export const QUIET_HOURS_WINDOW_START_NOT_BEFORE_END =
-    'Window start cannot be earlier than window end.';
-export const QUIET_HOURS_WINDOW_END_NOT_BEFORE_START =
-    'Window end cannot be earlier than window start.';
+export const QUIET_HOURS_WINDOW_START_NOT_BEFORE_END = 'Window start cannot be earlier than window end.';
+export const QUIET_HOURS_WINDOW_END_NOT_BEFORE_START = 'Window end cannot be earlier than window start.';
 export const QUIET_HOURS_DAYS = 'Days';
 export const QUIET_HOURS_DAYS_OF_WEEK = 'Days of week';
 export const QUIET_HOURS_SELECT_DAYS_REQUIRED = 'Please select at least one day.';
@@ -1919,11 +1966,9 @@ export const QUIET_HOURS_FIRST_RULE_HINT = 'to create your first quiet hours rul
 export const QUIET_HOURS_EXTEND_REGULATORY_TOOLTIP =
     'You may extend the quiet window only; it cannot be shorter than the regulatory requirement.';
 export const QUIET_HOURS_PRIORITY_OVERRIDE = 'Priority override';
-export const QUIET_HOURS_PRIORITY_OVERRIDE_TOOLTIP =
-    'Allow high-priority campaigns to bypass this quiet hours rule.';
+export const QUIET_HOURS_PRIORITY_OVERRIDE_TOOLTIP = 'Allow high-priority communications to bypass this quiet hours rule.';
 export const QUIET_HOURS_DUPLICATE_RULE = 'Duplicate rule';
-export const QUIET_HOURS_CANNOT_SHORTEN_REGULATORY =
-    'Quiet window cannot be shorter than regulatory requirement.';
+export const QUIET_HOURS_CANNOT_SHORTEN_REGULATORY = 'Quiet window cannot be shorter than regulatory requirement.';
 export const QUIET_HOURS_BRAND_SHORTER_THAN_REGULATORY =
     'Error: quiet period cannot be shorter than the regulatory requirement.';
 export const QUIET_HOURS_BRAND_MUST_EXTEND_REGULATORY =
@@ -1935,7 +1980,8 @@ export const QUIET_HOURS_USA_TCPA_BOTH_WARNING =
 
 export const QUIET_HOURS_INDUSTRY_NOT_APPLICABLE =
     'Quiet hours are applicable only for Banking and Insurance industries.';
-export const API_WARNING_DESCRIPTION = 'We’re unable to complete your request at the moment. Please try again later or reach out to our support team.';
+export const API_WARNING_DESCRIPTION =
+    'We’re unable to complete your request at the moment. Please try again later or reach out to our support team.';
 export const SYSTEM_ALERT = 'System alert';
 export const CONTACT_SUPPORT = 'Contact support';
 export const WEBHOOK = 'Webhook';
@@ -1947,43 +1993,45 @@ export const VENDOR_NAME = 'Vendor name';
 export const SELECT_TEMPLATE = 'Select template';
 export const I_AGREE_TO_TRANSFER_CALL_CENTER = 'I agree to transfer audience data using the Call center API.';
 export const ARE_YOU_SURE_WANT_TO_RESET = 'Are you sure you want to reset?';
-export const TEMPLATE_ERROR='An error occurred during template creation';
-export const CAMPAIGN_DOCKET_TEXT ='Communication docket URL data not available';
-export const CAMPAIGN_DOCKET_NO_DATA_TEXT ='Communication docket URL data not available';
-export const LISTBOX_NOTES_TEXT='Hold Ctrl/Cmd to select multiple items';
-export const SPLIT_SCHEDULE_EQYAL='Split schedule - Equal';
-export const SPLIT_SCHEDULE_INCREMENTAL='Split schedule - Incremental';
-export const SEND_TIME_PROPENSITY='Send time propensity';
-export const ROI_CALCULATION='ROI calculation';
-export const PRIMARY_COMMUNICATION_GOAL='Primary communication goal';
-export const ENTER_PRIMARY_GOAL_VALUE='Enter primary goal value';
-export const BASED_ON_GOAL_PERCENTAGE='Based on goal percentage';
-export const BASED_ON_COMMUNICATION_GOAL='Based on communication goal';
-export const LIST_PROPENSITY='List propensity';
-export const BASED_ON_PROPENSITY_VALUE='Based on propensity value';
-export const FIXED_VARIABLE_COST_INCURRED='Fixed / Variable cost incurred';
-export const FIXED_COST='Fixed cost';
-export const EXPECTED_ROI='Expected ROI';
-export const PRE_COMMUNICATION_ANALYTICS='Predictive analysis';
-export const VALUE='Value';
-export const VARIABLE_COST='Variable cost';
-export const ROI_VALUE='ROI value';
-export const PROPENSITY_VALUE='Propensity value';
-export const LIST_NAME_ALREADY_EXISTS='List name already exists';
-export const LIST_EXTRACTION_IS_IN_PROGRESS='List extraction is in progress';
-export const CALCULATING='Calculating';
-export const LIST_REJECTED='List rejected';
-export const LIST_APPROVAL_PENDING='List approval pending';
-export const LIST_APPROVED='List approved';
-export const REMOVE_LIST='Remove list';
-export const PENDING_FOR_APPROVAL='Pending for approval';
-export const REQUEST_APPROVED='Request approved';
-export const REQUEST_REJECTED='Request rejected';
-export const NO_COMMUNICATIONS_BLASTED='No communications blasted';
-export const MATCH_INPUT_LIST_TARGET='Match input list';
-export const SUPPRESSION_INPUT_LIST_TARGET='Suppression input list';
-export const ENSURE_THE_FIRST_ROW_OF_YOUR_FILE='Enter valid names in the first row, as they will serve as the attribute names.';
-export const ENSURE_THE_FIRST_ROW_OF_YOUR_FILE_CSV = 'Make sure the first row of your file contains valid column names, as they will serve as attribute names.';
+export const TEMPLATE_ERROR = 'An error occurred during template creation';
+export const CAMPAIGN_DOCKET_TEXT = 'Communication docket URL data not available';
+export const CAMPAIGN_DOCKET_NO_DATA_TEXT = 'Communication docket URL data not available';
+export const LISTBOX_NOTES_TEXT = 'Hold Ctrl/Cmd to select multiple items';
+export const SPLIT_SCHEDULE_EQYAL = 'Split schedule - Equal';
+export const SPLIT_SCHEDULE_INCREMENTAL = 'Split schedule - Incremental';
+export const SEND_TIME_PROPENSITY = 'Send time propensity';
+export const ROI_CALCULATION = 'ROI calculation';
+export const PRIMARY_COMMUNICATION_GOAL = 'Primary communication goal';
+export const ENTER_PRIMARY_GOAL_VALUE = 'Enter primary goal value';
+export const BASED_ON_GOAL_PERCENTAGE = 'Based on goal percentage';
+export const BASED_ON_COMMUNICATION_GOAL = 'Based on communication goal';
+export const LIST_PROPENSITY = 'List propensity';
+export const BASED_ON_PROPENSITY_VALUE = 'Based on propensity value';
+export const FIXED_VARIABLE_COST_INCURRED = 'Fixed / Variable cost incurred';
+export const FIXED_COST = 'Fixed cost';
+export const EXPECTED_ROI = 'Expected ROI';
+export const PRE_COMMUNICATION_ANALYTICS = 'Predictive analysis';
+export const VALUE = 'Value';
+export const VARIABLE_COST = 'Variable cost';
+export const ROI_VALUE = 'ROI value';
+export const PROPENSITY_VALUE = 'Propensity value';
+export const LIST_NAME_ALREADY_EXISTS = 'List name already exists';
+export const LIST_EXTRACTION_IS_IN_PROGRESS = 'List extraction is in progress';
+export const CALCULATING = 'Calculating';
+export const LIST_REJECTED = 'List rejected';
+export const LIST_APPROVAL_PENDING = 'List approval pending';
+export const LIST_APPROVED = 'List approved';
+export const REMOVE_LIST = 'Remove list';
+export const PENDING_FOR_APPROVAL = 'Pending for approval';
+export const REQUEST_APPROVED = 'Request approved';
+export const REQUEST_REJECTED = 'Request rejected';
+export const NO_COMMUNICATIONS_BLASTED = 'No communications blasted';
+export const MATCH_INPUT_LIST_TARGET = 'Match input list';
+export const SUPPRESSION_INPUT_LIST_TARGET = 'Suppression input list';
+export const ENSURE_THE_FIRST_ROW_OF_YOUR_FILE =
+    'Enter valid names in the first row, as they will serve as the attribute names.';
+export const ENSURE_THE_FIRST_ROW_OF_YOUR_FILE_CSV =
+    'Make sure the first row of your file contains valid column names, as they will serve as attribute names.';
 export const ENTER_NEW_SUB_SCREEN = 'Enter new sub screen';
 
 //Table header text
@@ -1992,59 +2040,62 @@ export const AVERAGE_PROJECTED_REACH_RATE = 'Average/Projected reach rate';
 
 export const CAPORTAL_UPLOAD_FILE_DETAIL =
     'Jpeg, png, doc, xls, pdf, csv, zip files of size not more than 2 MB can be uploaded';
-export const DATA_SYNC_PROGRESS =
-    'Data sync is currently in progress. Estimated to be completed in 1 hour';
+export const DATA_SYNC_PROGRESS = 'Data sync is currently in progress. Estimated to be completed in 1 hour';
 export const DATA_SYNC_STATUS = 'Data sync status';
-export const EMAIL_FOOTER_WARNING_MSG=`You haven’t enabled the email footer. Would you like to proceed?`;
-export const TREND_REPORT=`Trend report`;
-export const VIEW_ANALYTICS=`View analytics`;
-export const SENT_ON=`Sent on`;
-export const GOLDEN_CAMPAIGN=`Golden campaign`;
-export const REPORT=`Report`;
-export const GRID_VIEW=`Grid view`;
-export const SETTING='Settings';
-export const USERS='Users';
-export const ACCOUNT_STATUS='Account status';
-export const ADD_ATTRIBUTES='Add attributes';
-export const BRAND_OWNED_FORM='Brand-owned form';
-export const PLATFORM='Platform';
-export const BRAND_FORM_PAGE_URL='Brand-owned form';
-export const RESET_PLATFORM='Reset platform';
-export const CONVERSION_URLS='Conversion URL';
-export const NO_EVENTS_FOUND='No events found.';
-export const ANOTHER_INSTANCE_OF_BROWSER='Another instance of browser is waiting to connect with the same App Id';
-export const APP_FIELD_TRACKING_SETUP='app field tracking setup';
-export const CLICK_EVENT_SHOULD_BE='Click event should be two/ Value event should be five';
-export const SOCKET_CONNECT_SUCCESSFULY='Socket connect successfully your auth code is';
-export const NOTE_THE_CONNECTION_WILL_NOT_BE='Note - The connection will not be established if the SDK is missing/broken in the mobile app';
-export const ESTABLISHING_CONNECTION='Establishing connection';
-export const ADD_FORM_ELEMENT='Add form element';
-export const EVENTS='Events';
-export const MARK_AS_GOAL='Mark as goal';
-export const ADD_EVENTS='Add event';
-export const SCREEN_TRACK='Screen track';
-export const REMOVE_EVENT='Remove event';
-export const EDIT_EVENT='Edit event';
-export const CAPTCHA_TYPE='Capture type';
-export const MARK_AS_SUBMIT='Mark as submit';
-export const TRACKING_ACTION='Tracking action';
-export const DURATION_WARNING_IN_COMM_PLAN ='Your communication duration is set to 3 days, but the channel setup will only be applicable for 1 day. Are you sure you want to proceed with the setup?.'
-export const CLICK_HERE_TO_ACTIVATE='Click here to Activate';
-export const ACCOUNT_ACTIVATED='Account Activated';
+export const EMAIL_FOOTER_WARNING_MSG = `You haven’t enabled the email footer. Would you like to proceed?`;
+export const TREND_REPORT = `Trend report`;
+export const VIEW_ANALYTICS = `View analytics`;
+export const SENT_ON = `Sent on`;
+export const GOLDEN_CAMPAIGN = `Golden communications`;
+export const REPORT = `Report`;
+export const GRID_VIEW = `Grid view`;
+export const SETTING = 'Settings';
+export const USERS = 'Users';
+export const ACCOUNT_STATUS = 'Account status';
+export const ADD_ATTRIBUTES = 'Add attributes';
+export const BRAND_OWNED_FORM = 'Brand-owned form';
+export const PLATFORM = 'Platform';
+export const BRAND_FORM_PAGE_URL = 'Brand-owned form';
+export const RESET_PLATFORM = 'Reset platform';
+export const CONVERSION_URLS = 'Conversion URL';
+export const NO_EVENTS_FOUND = 'No events found.';
+export const ANOTHER_INSTANCE_OF_BROWSER = 'Another instance of browser is waiting to connect with the same App Id';
+export const APP_FIELD_TRACKING_SETUP = 'app field tracking setup';
+export const CLICK_EVENT_SHOULD_BE = 'Click event should be two/ Value event should be five';
+export const SOCKET_CONNECT_SUCCESSFULY = 'Socket connect successfully your auth code is';
+export const NOTE_THE_CONNECTION_WILL_NOT_BE =
+    'Note - The connection will not be established if the SDK is missing/broken in the mobile app';
+export const ESTABLISHING_CONNECTION = 'Establishing connection';
+export const ADD_FORM_ELEMENT = 'Add form element';
+export const EVENTS = 'Events';
+export const MARK_AS_GOAL = 'Mark as goal';
+export const ADD_EVENTS = 'Add event';
+export const SCREEN_TRACK = 'Screen track';
+export const REMOVE_EVENT = 'Remove event';
+export const EDIT_EVENT = 'Edit event';
+export const CAPTCHA_TYPE = 'Capture type';
+export const MARK_AS_SUBMIT = 'Mark as submit';
+export const TRACKING_ACTION = 'Tracking action';
+export const DURATION_WARNING_IN_COMM_PLAN =
+    'Your communication duration is set to 3 days, but the channel setup will only be applicable for 1 day. Are you sure you want to proceed with the setup?.';
+export const CLICK_HERE_TO_ACTIVATE = 'Click here to Activate';
+export const ACCOUNT_ACTIVATED = 'Account Activated';
 export const ACCOUNT_ALREADY_ACTIVATED = 'Your account is already activated';
-export const INVALID_ACTIVATION =  'Invalid activation link. Please click on the correct link';
-export const INPUT_TYPE_HELP='Choose how this attribute will be captured (e.g., text field, checkbox)';
-export const SELECT_DATATYPE_HELP='Select the kind of data this attribute holds (e.g., string, number, date)';
-export const DYNAMIC_LIST_ZERO ='No audience members currently match the selected dynamic criteria. Final audience count is 0.';
-export const SHARE_BUSINESS_UNITS ='Share business units';
-export const ICON_TO_ADD_BUSINESS_UNITS='icon to add Business unit';
-export const CLICK_ON='Click on';
-export const HYBRID_SOLUTION='Hybrid solution';
-export const CROSS_BU='Enable Cross Company/BU Conversion';
-export const COMPANY_LOGO='Company logo';
-export const OPERATIONAL_REGIONS='Operational regions';
+export const INVALID_ACTIVATION = 'Invalid activation link. Please click on the correct link';
+export const INPUT_TYPE_HELP = 'Choose how this attribute will be captured (e.g., text field, checkbox)';
+export const SELECT_DATATYPE_HELP = 'Select the kind of data this attribute holds (e.g., string, number, date)';
+export const DYNAMIC_LIST_ZERO =
+    'No audience members currently match the selected dynamic criteria. Final audience count is 0.';
+export const SHARE_BUSINESS_UNITS = 'Share business units';
+export const ICON_TO_ADD_BUSINESS_UNITS = 'icon to add Business unit';
+export const CLICK_ON = 'Click on';
+export const HYBRID_SOLUTION = 'Hybrid solution';
+export const CROSS_BU = 'Enable Cross Company/BU Conversion';
+export const COMPANY_LOGO = 'Company logo';
+export const OPERATIONAL_REGIONS = 'Operational regions';
 export const PERMISSION_REQUIRED = 'Permission Required';
-export const SHARING_BUS = 'Sharing data between Business Units requires Admin approval. Please contact your Admin to continue.';
+export const SHARING_BUS =
+    'Sharing data between Business Units requires Admin approval. Please contact your Admin to continue.';
 export const CONTACT_ADMIN = 'Contact admin';
 export const REQUEST_SENT = "Request has been sent to Admin. You'll receive an update once access is granted.";
 export const ALREADY_INTEGRATED = 'Your social media integrations are already set up.';
@@ -2053,54 +2104,83 @@ export const SELECT_ATTRIBUTES = 'Select attributes';
 export const SELECT_LIST = 'Select list';
 export const MAX_500_CHARACTERS = 'Max. 500 characters.';
 export const ENTER_COMMENTS = 'Enter comments';
-export const LOOK_ALIKE= 'Look-alike';
+export const LOOK_ALIKE = 'Look-alike';
 export const LOOKALIKE_MIN_AUDIENCE_TOOLTIP = 'Available for potential audiences ≥ 1,000.';
-export const APPROVER_NAME= 'Approver name';
-export const APPROVER_EMAIL= 'Approver email';
-export const ADD_FILE= 'Add file';
-export const REMOVE_TAG= 'Remove tag';
-export const ADD_TAG= 'Add tag';
-export const CONFIGURE_EVENT = 'To configure the script for this event, refer to the SDK integration document'
-export const COLLAPSE= 'Collapse';
-export const EXPAND= 'Expand';
+export const APPROVER_NAME = 'Approver name';
+export const APPROVER_EMAIL = 'Approver email';
+export const ADD_FILE = 'Add file';
+export const REMOVE_TAG = 'Remove tag';
+export const ADD_TAG = 'Add tag';
+export const CONFIGURE_EVENT = 'To configure the script for this event, refer to the SDK integration document';
+export const COLLAPSE = 'Collapse';
+export const EXPAND = 'Expand';
 // Geo fence
 export const GEOFENCE_LOCATION_CLUSTER= 'Location clusters';
-export const AUDIENCE_CHANGE_CONFIRMATION = 'Changing the segment list will update your personalization data based on the selected list type. Do you want to proceed?';
-export const DYNAMIC_ANNUAL_REMINDER_CONTENT  = 'This attribute is set for an annual reminder. Only the day and month will be used for yearly campaigns; the year will be ignored';
+
+// Beacons
+export const BEACONS_HEADING = 'Beacons';
+export const BEACON_INFORMATION = 'Beacon information';
+export const BEACON_INFO_BANNER =
+    'Ensure Beacon UUID, Major ID, and Minor ID values are unique for accurate device identification and section-level mapping.';
+export const BEACON_NAME = 'Beacon name';
+export const BEACON_UUID = 'Beacon UUID';
+export const BEACON_MAJOR_ID = 'Major ID';
+export const BEACON_MINOR_ID = 'Minor ID';
+export const BEACON_STORE = 'Store';
+export const ADD_STORE = 'Add store';
+export const BEACON_FLOOR = 'Floor';
+export const ENTER_FLOOR = 'Enter floor';
+export const BEACON_ZONE_NAME = 'Zone name';
+export const BEACON_IDENTIFICATION = 'Beacon identification';
+export const BEACON_IDENTIFICATION_INFO =
+    'Store Entrance and Store Exit can be selected individually or together. In-store cannot be selected with Store Entrance or Store Exit.';
+export const ADD_BEACON_IDENTIFICATION = 'Add beacon identification';
+export const BEACON_CONFIRM_DEACTIVATE =
+    'Deactivating the beacon will affect scheduled communications. Are you sure you want to proceed?';
+export const BEACON_CONFIRM_EDIT =
+    'Editing this beacon will affect scheduled communications. Are you sure you want to proceed?';
+export const UPLOAD_BULK_BEACONS = 'Upload beacon file';
+export const BEACON_BULK_UPLOAD_HINT =
+    'Select a CSV file containing beacon data. The first row must include headers: Name, Major, Minor, UUID, Store, Floor, ZoneName, Identification.';
+export const BEACON_CSV_FORMAT_TITLE = 'File format requirements:';
+export const UPLOAD_BEACONS = 'Upload beacons';
+
+export const AUDIENCE_CHANGE_CONFIRMATION =
+    'Changing the segment list will update your personalization data based on the selected list type. Do you want to proceed?';
+export const DYNAMIC_ANNUAL_REMINDER_CONTENT =
+    'This attribute is set for an annual reminder. Only the day and month will be used for yearly communications; the year will be ignored';
 export const MAX_7_OPTIONS = 'You can add up to 7 options';
 export const MAX_12_OPTIONS = 'You can add up to 12 options';
 export const MAX_100_OPTIONS = 'You can add up to 100 options';
 export const OFFER_MANAGEMENT = 'Offer management';
-export const PLACE_NAME =  'Place name';
-export const LATITUDE = 'Latitude'
-export const LONGITUDE = 'Longitude'
-export const RADIUS = 'Radius (m)'
+export const PLACE_NAME = 'Place name';
+export const LATITUDE = 'Latitude';
+export const LONGITUDE = 'Longitude';
+export const RADIUS = 'Radius (m)';
 
-
-export const SHOW_MORE  = 'Show more'
-export const SHOW_LESS  ='Show less'
-
-
+export const SHOW_MORE = 'Show more';
+export const SHOW_LESS = 'Show less';
 
 //MFA
-export const METHOD_TO_AUTHENTICATE= 'Select a method to authenticate'
-export const BACK_TO_LOGIN = ' Back to login page'
-export const INPROGRESS_REMINDER = 'Campaign is in progress. End-date editing is allowed only when the end date is at least two days away.'
-export const SERVICE_MANDATORY_TEXT = 'This campaign is under service mandatoy'
-export const NO_COMMUNICATION_APPROVER = 'This communication currently does not have an assigned approver.'
+export const METHOD_TO_AUTHENTICATE = 'Select a method to authenticate';
+export const BACK_TO_LOGIN = ' Back to login page';
+export const INPROGRESS_REMINDER =
+    'communication is in progress. End-date editing is allowed only when the end date is at least two days away.';
+export const SERVICE_MANDATORY_TEXT = 'This communication is under service mandatory';
+export const NO_COMMUNICATION_APPROVER = 'This communication currently does not have an assigned approver.';
 
 export const SELECTED_FILE = 'Selected file';
-export const WHATSAPP_TEMPLATE_BUILDER = 'WhatsApp template builder'
-export const RCS_TEMPLATE_BUILDER = 'RCS template builder'
+export const WHATSAPP_TEMPLATE_BUILDER = 'WhatsApp template builder';
+export const RCS_TEMPLATE_BUILDER = 'RCS template builder';
 export const sameTriggerSourceNotAllowed = 'Same trigger source not allowed';
-export const ADD_WEB_DOMAIN = 'Add web domain'
-export const ADD_MOBILE_APP = 'Add mobile app'
-export const ADD_TARGET_LIST = 'Add target list'
+export const ADD_WEB_DOMAIN = 'Add web domain';
+export const ADD_MOBILE_APP = 'Add mobile app';
+export const ADD_TARGET_LIST = 'Add target list';
 export const NO_COMMUNICATION_LINKED = 'No communication linked to this list';
-export const CLIENT_UPGRADE_SUCCESS = 'Your account upgrade is successful.'
-export const DROP_WARN_GOAL = 'Drop Goal or Endpoint channels in the dotted drop area.'
-export const DROP_WARN_CHANNEL = 'Drop channel items in the standard drop area.'
-export const INVALID_PLACEMENT = 'Invalid placement'
+export const CLIENT_UPGRADE_SUCCESS = 'Your account upgrade is successful.';
+export const DROP_WARN_GOAL = 'Drop Goal or Endpoint channels in the dotted drop area.';
+export const DROP_WARN_CHANNEL = 'Drop channel items in the standard drop area.';
+export const INVALID_PLACEMENT = 'Invalid placement';
 
 // Opt In / Opt Out - Keywords settings
 export const OPT_IN_OPT_OUT = 'Keyword management';
@@ -2138,8 +2218,7 @@ export const VIEW_CUSTOM_KEYWORDS = 'View custom keywords';
 export const ADD_INBOUND_NUMBER = 'Add inbound number';
 export const ENTER_INBOUND_NUMBER = 'Enter inbound number';
 export const CATEGORY = 'Category';
-export const ENVIRONMENT_HELP_TEXT=`Select the environment that matches your APNs .p8 certificate (Sandbox for testing, Production for live). Mismatch may cause delivery failure.`
-
+export const ENVIRONMENT_HELP_TEXT = `Select the environment that matches your APNs .p8 certificate (Sandbox for testing, Production for live). Mismatch may cause delivery failure.`;
 
 // User Deactivate Modal
 export const USER_DEACTIVATE_CONFIRMATION_DIALOG = 'Confirmation';
@@ -2148,19 +2227,21 @@ export const USER_DEACTIVATE_PENDING_APPROVALS_IMPACT = '3 pending approval work
 export const USER_DEACTIVATE_OTP_CONFIG_IMPACT = '2 OTP configurations will be affected.';
 export const USER_DEACTIVATE_APPROVER_UNAVAILABLE_WARNING1 = 'Pending approvals assigned to this user will be marked ';
 export const USER_DEACTIVATE_APPROVER_UNAVAILABLE_WARNING2 = 'Approver Unavailable';
-export const USER_DEACTIVATE_APPROVER_UNAVAILABLE_WARNING3 = '. You will need to reassign them manually after deactivation.';
-export const USER_DEACTIVATE_PERMANENT_WARNING_1= 'This action will remove the user’s access. The user cannot be reactivated from the platform.';
-export const USER_DEACTIVATE_PERMANENT_WARNING_2= 'To restore access, contact Customer Support.';
+export const USER_DEACTIVATE_APPROVER_UNAVAILABLE_WARNING3 =
+    '. You will need to reassign them manually after deactivation.';
+export const USER_DEACTIVATE_PERMANENT_WARNING_1 =
+    'This action will remove the user’s access. The user cannot be reactivated from the platform.';
+export const USER_DEACTIVATE_PERMANENT_WARNING_2 = 'To restore access, contact Customer Support.';
 export const USER_DEACTIVATE_PERMANENT_WARNING_TOOLTIP = 'Contact Customer Support to restore access.';
 export const DEACTIVATE_USER = 'Deactivate user';
 
 export const ROUTER_KEY = 'Router key';
-export const ROUTER_CONFIGURATION = 'Router configuration'
+export const ROUTER_CONFIGURATION = 'Router configuration';
 export const ANDROID_APP_SCREEN = 'Android app screen';
 export const ANDROID_SUB_APP_SCREEN = 'Android sub screen';
 export const IOS_APP_SCREEN = 'iOS app screen';
 
-export const CONNECTING = 'Connecting...'
+export const CONNECTING = 'Connecting...';
 
 // Restored after namespace-import codemod (symbols used via placeholder.* before named conversion)
 export const SAVE_NAME = 'Save name';
@@ -2171,4 +2252,4 @@ export const NO_HEADER_IMAGE = 'No header image configured';
 export const INSERT_LINK = 'Insert Link';
 export const MAXIMUM_TEN_OFFER_TYPES = 'Maximum 10 offer types allowed';
 export const SERVICE_ACCOUNT_SECRET = 'Service account secret';
-export const CONNECTED = 'Connected'
+export const CONNECTED = 'Connected';

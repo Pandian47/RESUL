@@ -257,10 +257,10 @@ export const communicationSkeletonCriticalCss = `
     color: #333;
 }
 .communication-skeleton-scope .communication-planner-tab-skeleton .bg-pink {
-    background-color: #fde8e8 !important;
+    background-color: #ffede1 !important;
 }
 .communication-skeleton-scope .communication-planner-tab-skeleton .bg-blue {
-    background-color: #e8f0fd !important;
+    background-color: #f0f8ff !important;
 }
 .communication-skeleton-scope .rs-planner-calendar-wrapper.position-relative {
     min-height: 520px;

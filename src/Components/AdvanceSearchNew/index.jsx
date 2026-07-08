@@ -4,7 +4,7 @@ import PropTypes from 'prop-types';
 import { useForm } from 'react-hook-form';
 import { AnimatePresence, motion } from 'framer-motion';
 import { get as _get } from 'Utils/modules/lodashReplacements';
-import RSBootstrapdown from 'Components/FormFields/RSBootstrapdown';
+import RSBootstrapdown, { RS_ADVANCE_SEARCH_DROPDOWN_POPPER_CONFIG } from 'Components/FormFields/RSBootstrapdown';
 import RSInput from 'Components/FormFields/RSInput';
 import RSMultiSelectNew from 'Components/FormFields/RSMultiSelect_Advance_Search';
 import RSTooltip from 'Components/RSTooltip';
@@ -121,28 +121,34 @@ function omitNonPersistedMainBarSearchKeysFromPersistSnapshot(obj, filterConfig)
 
 const ADVANCE_SEARCH_PERSIST_FORMAT_V1 = 1;
 const ADVANCE_SEARCH_CLUSTER_GAP_PX = 15;
+const ADVANCE_PANEL_MOTION_EASE = [0.22, 1, 0.36, 1];
+
 const ADVANCE_PANEL_MOTION = {
     initial: {
         opacity: 0,
-        y: -10,
-        scaleY: 0.98,
+        y: -6,
+        scaleY: 0.97,
     },
     animate: {
         opacity: 1,
         y: 0,
         scaleY: 1,
         transition: {
-            duration: 0.34,
-            ease: [0.22, 1, 0.36, 1],
+            duration: 0.22,
+            ease: ADVANCE_PANEL_MOTION_EASE,
+            opacity: { duration: 0.16, ease: 'easeOut' },
+            y: { duration: 0.22, ease: ADVANCE_PANEL_MOTION_EASE },
+            scaleY: { duration: 0.22, ease: ADVANCE_PANEL_MOTION_EASE },
         },
     },
     exit: {
         opacity: 0,
-        y: -8,
+        y: -4,
         scaleY: 0.98,
         transition: {
-            duration: 0.2,
-            ease: [0.22, 1, 0.36, 1],
+            duration: 0.15,
+            ease: [0.4, 0, 0.2, 1],
+            opacity: { duration: 0.12, ease: 'easeIn' },
         },
     },
 };
@@ -287,6 +293,7 @@ const RSAdvanceSearchNew = ({
 }) => {
     const persistHydrationRef = useRef(null);
     const [searchValue, setSearchValue] = useState('');
+    const activeFiltersRef = useRef({});
     const [activeFilters, setActiveFilters] = useState(() => {
         persistHydrationRef.current = { nameChipSource: 'none' };
         if (persistActiveFilters && persistActiveFiltersStorageKey) {
@@ -318,11 +325,20 @@ const RSAdvanceSearchNew = ({
         return {};
     });
 
+    const commitActiveFilters = useCallback((next) => {
+        activeFiltersRef.current = next;
+        setActiveFilters(next);
+    }, []);
+
+    useLayoutEffect(() => {
+        activeFiltersRef.current = activeFilters;
+    }, [activeFilters]);
+
     useEffect(() => {
         if (activeFiltersProp !== undefined) {
-            setActiveFilters(activeFiltersProp);
+            commitActiveFilters(activeFiltersProp);
         }
-    }, [activeFiltersProp]);
+    }, [activeFiltersProp, commitActiveFilters]);
 
     const [isSearchExpanded, setIsSearchExpanded] = useState(false);
     const [isAdvancedPanelOpen, setIsAdvancedPanelOpen] = useState(false);
@@ -733,33 +749,42 @@ const RSAdvanceSearchNew = ({
     const mergeCommittedNameIntoActiveFiltersForSubmit = useCallback(
         (committedNameForSync) => {
             if (!isCommunicationNameSearchType || filterConfig.length === 0) {
-                return activeFilters;
+                return activeFiltersRef.current;
             }
             const name = String(committedNameForSync ?? '').trim();
-            const next = { ...activeFilters };
+            const next = { ...activeFiltersRef.current };
             if (name) {
                 next.communication_name = { displayValue: name, rawValue: name };
             } else {
                 delete next.communication_name;
             }
-            setActiveFilters(next);
+            activeFiltersRef.current = next;
             return next;
         },
-        [activeFilters, filterConfig.length, isCommunicationNameSearchType],
+        [filterConfig.length, isCommunicationNameSearchType],
     );
+
+    const submitClearedListNameSearch = useCallback(() => {
+        const nextFilters = { ...activeFiltersRef.current };
+        delete nextFilters.communication_name;
+        commitActiveFilters(nextFilters);
+        setCommunicationNameChipSource('none');
+        advanceCommNameFieldDirtyRef.current = false;
+        onSearch('', { type: searchType, isAdvanceSearch: false });
+    }, [commitActiveFilters, onSearch, searchType]);
 
     const handleFilterTextChange = useCallback(
         (filterKey, value) => {
             if (disabled) return;
             const str = String(value ?? '');
             const trimmed = str.trim();
-            const updatedFilters = { ...activeFilters };
+            const updatedFilters = { ...activeFiltersRef.current };
             if (!trimmed) {
                 delete updatedFilters[filterKey];
             } else {
                 updatedFilters[filterKey] = { displayValue: trimmed, rawValue: str };
             }
-            setActiveFilters(updatedFilters);
+            commitActiveFilters(updatedFilters);
             if (filterKey === 'communication_name' && hasCommunicationNameInputFilter) {
                 advanceCommNameFieldDirtyRef.current = true;
                 if (trimmed) {
@@ -778,8 +803,12 @@ const RSAdvanceSearchNew = ({
 
     const handleSearchCollapse = () => {
         setIsAdvancedPanelOpen(false);
-        setIsSearchExpanded(false);
         setIsFocused(false);
+        if (hasActiveFilterTags) {
+            setIsSearchExpanded(true);
+            return;
+        }
+        setIsSearchExpanded(false);
     };
 
     const applyAfterSearchSubmit = (committedName, wasAdvancedPanel) => {
@@ -866,6 +895,16 @@ const RSAdvanceSearchNew = ({
             const committedName = isCommunicationNameSearchType
                 ? getEffectiveCommittedName()
                 : String(searchValue ?? '').trim();
+            const trimmedCommitted = String(committedName ?? '').trim();
+            if (isCommunicationNameSearchType && !trimmedCommitted && !hasActiveFilterTags) {
+                e.preventDefault();
+                sawSuggestionsLoadingForQueryRef.current = false;
+                sawAdvanceSuggestLoadingForQueryRef.current = false;
+                submitClearedListNameSearch();
+                applyAfterSearchSubmit('', false);
+                handleSearchCollapse();
+                return;
+            }
             const nameOk = shouldSubmitSearch(committedName);
             if (
                 shouldSkipSearchSubmitDueToInertState(activeFilters, nameOk, hasActiveFilterTags)
@@ -877,9 +916,13 @@ const RSAdvanceSearchNew = ({
             sawSuggestionsLoadingForQueryRef.current = false;
             sawAdvanceSuggestLoadingForQueryRef.current = false;
             const filtersForParent = mergeCommittedNameIntoActiveFiltersForSubmit(committedName);
-            onSearch(committedName, { type: searchType });
+            onSearch(committedName, {
+                type: searchType,
+                isAdvanceSearch: wasAdvanced,
+                skipListNameClearOnEmpty: wasAdvanced && !trimmedCommitted,
+            });
             if ((isCommunicationNameSearchType || wasAdvanced) && filterConfig.length > 0) {
-                onFiltersChange(filtersForParent, { forceSubmit: true });
+                onFiltersChange(filtersForParent, { forceSubmit: true, isAdvanceSearch: wasAdvanced });
             }
             applyAfterSearchSubmit(committedName, wasAdvanced);
             handleSearchCollapse();
@@ -901,6 +944,15 @@ const RSAdvanceSearchNew = ({
         const committedName = isCommunicationNameSearchType
             ? getEffectiveCommittedName()
             : String(searchValue ?? '').trim();
+        const trimmedCommitted = String(committedName ?? '').trim();
+        if (isCommunicationNameSearchType && !trimmedCommitted && !hasActiveFilterTags) {
+            sawSuggestionsLoadingForQueryRef.current = false;
+            sawAdvanceSuggestLoadingForQueryRef.current = false;
+            submitClearedListNameSearch();
+            applyAfterSearchSubmit('', false);
+            handleSearchCollapse();
+            return;
+        }
         const nameOk = shouldSubmitSearch(committedName);
         if (shouldSkipSearchSubmitDueToInertState(activeFilters, nameOk, hasActiveFilterTags)) {
             return;
@@ -908,9 +960,13 @@ const RSAdvanceSearchNew = ({
         sawSuggestionsLoadingForQueryRef.current = false;
         sawAdvanceSuggestLoadingForQueryRef.current = false;
         const filtersForParent = mergeCommittedNameIntoActiveFiltersForSubmit(committedName);
-        onSearch(committedName, { type: searchType });
+        onSearch(committedName, {
+            type: searchType,
+            isAdvanceSearch: wasAdvanced,
+            skipListNameClearOnEmpty: wasAdvanced && !trimmedCommitted,
+        });
         if ((isCommunicationNameSearchType || wasAdvanced) && filterConfig.length > 0) {
-            onFiltersChange(filtersForParent, { forceSubmit: true });
+            onFiltersChange(filtersForParent, { forceSubmit: true, isAdvanceSearch: wasAdvanced });
         }
         applyAfterSearchSubmit(committedName, wasAdvanced);
         handleSearchCollapse();
@@ -1103,6 +1159,7 @@ const RSAdvanceSearchNew = ({
         setActiveFilters({});
         advanceCommNameFieldDirtyRef.current = false;
         setCommunicationNameChipSource('none');
+        advancedPanelBaselineRef.current = null;
         /** Parent `onClear` performs the authoritative reset + fetch (e.g. listing `buildClearPayload`). */
         onClear();
     };
@@ -1139,12 +1196,7 @@ const RSAdvanceSearchNew = ({
         if (disabled) return;
         onAdvanceCommunicationNameSuggestDismiss?.();
         if (isAdvancedPanelOpen) {
-            if (hasActiveFilterTags) {
-                handleClearActiveFilterTagsOnly(true);
-            } else {
-                setSearchValue('');
-                handleClearActiveFilterTagsOnly(true, '');
-            }
+            handleClear();
             return;
         }
         if (hasActiveFilterTags) {
@@ -1198,6 +1250,7 @@ const RSAdvanceSearchNew = ({
     };
 
     const handleSearchClose = () => {
+        const hadFilterChips = hasActiveFilterTags;
         setIsAdvancedPanelOpen(false);
         setSearchValue('');
         onSearchChange('');
@@ -1226,9 +1279,19 @@ const RSAdvanceSearchNew = ({
                 setCommunicationNameChipSource('none');
                 setActiveFilters({});
                 onClear();
+                return;
             }
         }
+        if (!hadFilterChips && hasCommunicationNameInputFilter) {
+            submitClearedListNameSearch();
+        }
     };
+
+    useEffect(() => {
+        if (hasActiveFilterTags && !isSearchExpanded && !isAdvancedPanelOpen) {
+            setIsSearchExpanded(true);
+        }
+    }, [hasActiveFilterTags, isSearchExpanded, isAdvancedPanelOpen]);
 
     useEffect(() => {
         if (!isSearchExpanded) {
@@ -1409,10 +1472,10 @@ const RSAdvanceSearchNew = ({
         const displayValue = normalizeChipLabel(rawLabel);
 
         const updatedFilters = {
-            ...activeFilters,
+            ...activeFiltersRef.current,
             [filterKey]: { displayValue, rawValue: selectedValue },
         };
-        setActiveFilters(updatedFilters);
+        commitActiveFilters(updatedFilters);
         if (isAdvancedPanelOpen && filterConfig.length > 0) {
             onFiltersChange(updatedFilters, { syncFiltersOnly: true });
         }
@@ -1468,7 +1531,7 @@ const RSAdvanceSearchNew = ({
         const { notifyParent = false } = options;
         const filter = filterConfig.find((f) => f.key === filterKey);
         if (items.length === 0) {
-            const updatedFilters = { ...activeFilters };
+            const updatedFilters = { ...activeFiltersRef.current };
             delete updatedFilters[filterKey];
             if (filterKey === 'channel_type') {
                 const ic = initialActiveFiltersRef.current?.channel_type;
@@ -1479,7 +1542,7 @@ const RSAdvanceSearchNew = ({
                     };
                 }
             }
-            setActiveFilters(updatedFilters);
+            commitActiveFilters(updatedFilters);
             const reseededChannelType =
                 filterKey === 'channel_type' &&
                 updatedFilters.channel_type != null &&
@@ -1504,10 +1567,10 @@ const RSAdvanceSearchNew = ({
                 .filter((s) => s !== '')
                 .join(', ');
         const updatedFilters = {
-            ...activeFilters,
+            ...activeFiltersRef.current,
             [filterKey]: { displayValue, rawValue: items },
         };
-        setActiveFilters(updatedFilters);
+        commitActiveFilters(updatedFilters);
         if (isAdvancedPanelOpen && filterConfig.length > 0) {
             /** Advanced multiselects are only interactive while the panel is open; parent refs must update for suggest APIs. */
             onFiltersChange(updatedFilters, { syncFiltersOnly: true });
@@ -1540,7 +1603,7 @@ const RSAdvanceSearchNew = ({
         topSearchPickedRowRef.current = row;
         setHideSelectedFilterSuggestions(true);
         onSearchChange('', searchType);
-        onSearch(label, { type: searchType, searchValue: row });
+        onSearch(label, { type: searchType, searchValue: row, isAdvanceSearch: false });
     };
 
     useEffect(() => {
@@ -1913,7 +1976,7 @@ const RSAdvanceSearchNew = ({
         );
     };
 
-    const searchBarInlineWidth = isSearchExpanded ? `${searchBarWidthPx}px` : '0px';
+    const searchBarInlineWidth = isSearchExpanded ? `${searchBarWidthPx + 15}px` : '0px';
     const isAdvancedPanelLayoutActive = isAdvancedPanelOpen || isAdvancedPanelExiting;
 
     return (
@@ -2279,6 +2342,7 @@ const RSAdvanceSearchNew = ({
                                                                 toggleLabel={filter.label}
                                                                 alignRight
                                                                 className="rs-asn-filter-dropdown"
+                                                                popperConfig={RS_ADVANCE_SEARCH_DROPDOWN_POPPER_CONFIG}
                                                                 onSelect={(value) => handleFilterSelect(filter.key, value)}
                                                             />
                                                         )}

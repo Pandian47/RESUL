@@ -45,6 +45,43 @@ const LIST_NAME_SUGGEST_DEBOUNCE_MS = 400;
 const LIST_NAME_SUGGEST_MIN_CHARS = 3;
 const DYNAMIC_ADVANCE_SEARCH_OPTIONS = ['List name', 'Created by'];
 
+const hasDynamicAdvanceFilterFields = (formState = {}) =>
+    Boolean(
+        formState.list_type?.length ||
+            formState.approval_status?.length ||
+            formState.status?.length ||
+            formState.created_by?.length ||
+            (formState.sort_type != null && formState.sort_type !== AUDIENCE_LIST_DEFAULT_SORT_BY_ID),
+    );
+
+const resolveDynamicIsAdvanceSearch = (meta = {}, formState = {}) => {
+    if (meta?.isAdvanceSearch != null) {
+        return Boolean(meta.isAdvanceSearch);
+    }
+    return hasDynamicAdvanceFilterFields(formState);
+};
+
+const buildDynamicAudienceFormStateFromFilters = (filters = {}) => {
+    const formState = {
+        communication_name_text: String(
+            filters.communication_name?.rawValue ?? filters.communication_name?.displayValue ?? '',
+        ).trim(),
+        list_type: filters.list_type?.rawValue?.length ? filters.list_type.rawValue : [],
+        approval_status: filters.approval_status?.rawValue?.length ? filters.approval_status.rawValue : [],
+        status: filters.status?.rawValue?.length ? filters.status.rawValue : [],
+        created_by: filters.created_by?.rawValue?.length ? filters.created_by.rawValue : [],
+    };
+    if (filters.sort_type != null) {
+        const raw = filters.sort_type.rawValue;
+        const sortCandidate = raw != null && typeof raw === 'object' ? raw.id ?? raw : raw;
+        const sortId = Number(sortCandidate);
+        if (Number.isFinite(sortId)) {
+            formState.sort_type = sortId;
+        }
+    }
+    return formState;
+};
+
 // var searchBy = '';
 
 const DYNAMIC_LIST_TYPE_FILTER_META = {
@@ -85,6 +122,7 @@ const DynamicHeaderView = (props) => {
         setisDateFilter,
         setInitialGridPagination: setInitialGridPaginationFromContext,
         pageConfig,
+        clearLastDispatchedDynamicListParams,
     } = useContext(DynamicListContext);
     const setInitialGridPagination =
         typeof setInitialGridPaginationFromContext === 'function'
@@ -209,19 +247,26 @@ const DynamicHeaderView = (props) => {
             }));
     };
 
-    const handleSearchText = (data) => {
+    const handleSearchText = (data, meta = {}) => {
         const pagination = applyPaginationReset();
-        var value;
-        if (!!data?.searchValue)
+        const isAdvanceSearch =
+            data.type === 'List name' ? resolveDynamicIsAdvanceSearch(meta, {}) : true;
+        let value;
+        if (data?.searchValue) {
             value = data?.type === 'Created by' ? data?.searchValue?.userId ?? data?.text : data?.text;
-        else value = data?.text;
+        } else {
+            value = data?.text;
+        }
+        setisDateFilter(true);
         setParams((prev) => ({
             ...prev,
             pagination,
-            isAdvanceSearch: true,
+            isAdvanceSearch,
+            isFilteration: true,
             filteration: {
                 ...prev.filteration,
                 isContains: true,
+                isDateFilter: true,
                 searchBy: data?.type,
                 searchValue: value,
             },
@@ -254,9 +299,13 @@ const DynamicHeaderView = (props) => {
             return '';
     }
 };
-    const handleAdvanceSearch = (formStateData) => {
+    const handleAdvanceSearch = (formStateData, meta = {}) => {
         const pagination = applyPaginationReset();
-
+        const isAdvanceSearch = resolveDynamicIsAdvanceSearch(meta, formStateData);
+        if (meta?.forceSubmit) {
+            clearLastDispatchedDynamicListParams?.();
+        }
+        setisDateFilter(true);
         setParams((prev) => {
             const fil = { ...prev.filteration };
 
@@ -338,7 +387,7 @@ const DynamicHeaderView = (props) => {
             return {
                 ...prev,
                 pagination,
-                isAdvanceSearch: true,
+                isAdvanceSearch,
                 isFilteration: true,
                 filteration: fil,
             };
@@ -401,13 +450,15 @@ const DynamicHeaderView = (props) => {
             filteration: { listName, searchValue },
         } = params;
         
-        if (!status && searchValue) {
+        if (!status && (searchValue || listName)) {
             const pagination = applyPaginationReset();
             setSearchValueSync((prev) => ({ rev: prev.rev + 1, value: '' }));
             setParams((prev) => ({
                 ...prev,
+                isAdvanceSearch: true,
                 filteration: {
                     ...prev.filteration,
+                    listName: '',
                     searchBy: '',
                     isContains: false,
                     searchValue: '',
@@ -540,7 +591,7 @@ const DynamicHeaderView = (props) => {
         setNameSuggestLoading(false);
         const text = String(label ?? '').trim();
         setSearchValueSync((prev) => ({ rev: prev.rev + 1, value: text }));
-        handleSearchText({ type: 'List name', text });
+        handleSearchText({ type: 'List name', text }, { isAdvanceSearch: false });
     };
 
     const handleSearchExpandedChange = useCallback((expanded) => {
@@ -567,6 +618,11 @@ const DynamicHeaderView = (props) => {
         }
         const prev = prevAudienceAdvanceFiltersRef.current;
         prevAudienceAdvanceFiltersRef.current = filters;
+
+        if (meta?.forceSubmit) {
+            handleAdvanceSearch(buildDynamicAudienceFormStateFromFilters(filters), meta);
+            return;
+        }
 
         const wasRemoved = (key) =>
             prev &&
@@ -615,7 +671,7 @@ const DynamicHeaderView = (props) => {
                 formState.sort_type = sortId;
             }
         }
-        handleAdvanceSearch(formState);
+        handleAdvanceSearch(formState, meta);
     };
 
     const handleAdvanceCommunicationNameSearchChange = useCallback(
@@ -693,13 +749,16 @@ const DynamicHeaderView = (props) => {
                     setNameSuggestLoading(false);
                     const text = String(value || '').trim();
                     if (!text) {
+                        if (meta?.skipListNameClearOnEmpty) {
+                            return;
+                        }
                         const pagination = applyPaginationReset();
                         setSearchValueSync((prev) => ({ rev: prev.rev + 1, value: '' }));
                         setisDateFilter(true);
                         setParams((prev) => ({
                             ...prev,
                             pagination,
-                            isAdvanceSearch: true,
+                            isAdvanceSearch: meta?.isAdvanceSearch ?? false,
                             isFilteration: true,
                             filteration: {
                                 ...prev.filteration,
@@ -712,11 +771,14 @@ const DynamicHeaderView = (props) => {
                         return;
                     }
                     setSearchValueSync((prev) => ({ rev: prev.rev + 1, value: text }));
-                    handleSearchText({
-                        type: meta?.type || 'List name',
-                        text,
-                        searchValue: meta?.searchValue ?? text,
-                    });
+                    handleSearchText(
+                        {
+                            type: meta?.type || 'List name',
+                            text,
+                            searchValue: meta?.searchValue ?? text,
+                        },
+                        meta,
+                    );
                 }}
                 onSearchChange={handleDynamicSearchChange}
                 onSearchExpandedChange={handleSearchExpandedChange}

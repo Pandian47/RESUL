@@ -37,6 +37,8 @@ const AddAudienceDataExchange = (props) => {
         mode: 'onTouched',
     });
     const navigate = useNavigate();
+    const isOneTime =
+        location?.isOneTime
     const isEdit = location?.mode === 'edit';
     const [fileName, setFileName] = useState('');
     const { csvFiles } = useSelector(({ addAudienceReducer }) => addAudienceReducer);
@@ -136,6 +138,7 @@ const AddAudienceDataExchange = (props) => {
             connectorId: location?.data.remoteDataSourceID,
             connectorName: location?.data.sourceName,
             friendlyName: instanceName,
+            remoteSettingId: location?.data?.remoteSettingId || 0,
         };
 
         //bigquery
@@ -148,6 +151,7 @@ const AddAudienceDataExchange = (props) => {
             connectorId: location?.data?.remoteDataSourceID,
             connectorName: location?.data?.sourceName,
             friendlyName: instanceName,
+            remoteSettingId: location?.data?.remoteSettingId || 0,
             // friendlyName: instanceName,
         };
         //mysql
@@ -166,6 +170,7 @@ const AddAudienceDataExchange = (props) => {
             dbName: databaseName,
             clientId,
             userId,
+            remoteSettingId: location?.data?.remoteSettingId || 0,
             //  scheduleFrequency: 1,
         };
 
@@ -186,6 +191,7 @@ const AddAudienceDataExchange = (props) => {
             userId,
             connectorName: location?.data?.sourceName,
             connectorId: location?.data?.remoteDataSourceID,
+            remoteSettingId: location?.data?.remoteSettingId || 0,
             //  scheduleFrequency: 1,
         };
 
@@ -211,6 +217,7 @@ const AddAudienceDataExchange = (props) => {
             userId,
             connectorName: location?.data?.sourceName,
             connectorId: location?.data?.remoteDataSourceID,
+            remoteSettingId: location?.data?.remoteSettingId || 0,
             //  scheduleFrequency: 1,
         };
 
@@ -228,6 +235,7 @@ const AddAudienceDataExchange = (props) => {
             connectorName: location?.data?.sourceName,
             connectorId: location?.data?.remoteDataSourceID,
             friendlyName: instanceName,
+            remoteSettingId: location?.data?.remoteSettingId || 0,
         };
 
         //Oracle
@@ -244,6 +252,7 @@ const AddAudienceDataExchange = (props) => {
             clientId,
             userId,
             departmentId,
+            remoteSettingId: location?.data?.remoteSettingId || 0,
         };
         //blackbaud",
         let payload_blackbaud = {
@@ -254,6 +263,7 @@ const AddAudienceDataExchange = (props) => {
             clientId,
             userId,
             departmentId,
+            remoteSettingId: location?.data?.remoteSettingId || 0,
         };
         //Leadsquared",
         let payload_leadsquared = {
@@ -266,6 +276,7 @@ const AddAudienceDataExchange = (props) => {
             clientId,
             userId,
             departmentId,
+            remoteSettingId: location?.data?.remoteSettingId || 0,
         };
 
         //Shopify
@@ -279,6 +290,7 @@ const AddAudienceDataExchange = (props) => {
             clientId,
             userId,
             departmentId,
+            remoteSettingId: location?.data?.remoteSettingId || 0,
         };
 
         //Salesforce
@@ -292,6 +304,7 @@ const AddAudienceDataExchange = (props) => {
             clientId,
             userId,
             departmentId,
+            remoteSettingId: location?.data?.remoteSettingId || 0,
         };
 
         //Pipedrive
@@ -303,6 +316,7 @@ const AddAudienceDataExchange = (props) => {
             clientId,
             userId,
             departmentId,
+            remoteSettingId: location?.data?.remoteSettingId || 0,
         };
 
         //Cassandra
@@ -318,6 +332,7 @@ const AddAudienceDataExchange = (props) => {
             clientId,
             userId,
             departmentId,
+            remoteSettingId: location?.data?.remoteSettingId || 0,
         };
 
         //Areospike
@@ -333,6 +348,7 @@ const AddAudienceDataExchange = (props) => {
             clientId,
             userId,
             departmentId,
+            remoteSettingId: location?.data?.remoteSettingId || 0,
         };
 
         //Mongodb
@@ -348,6 +364,7 @@ const AddAudienceDataExchange = (props) => {
             clientId,
             userId,
             departmentId,
+            remoteSettingId: location?.data?.remoteSettingId || 0,
         };
 
         //Storehippo
@@ -360,6 +377,7 @@ const AddAudienceDataExchange = (props) => {
             clientId,
             userId,
             departmentId,
+            remoteSettingId: location?.data?.remoteSettingId || 0,
         };
 
         //postgresql
@@ -376,6 +394,7 @@ const AddAudienceDataExchange = (props) => {
             clientId,
             userId,
             departmentId,
+            remoteSettingId: location?.data?.remoteSettingId || 0,
         };
 
         //Eventbrite
@@ -387,6 +406,7 @@ const AddAudienceDataExchange = (props) => {
             clientId,
             userId,
             departmentId,
+            remoteSettingId: location?.data?.remoteSettingId || 0,
         };
         //bigcommerce
         let payload_bigcommerce = {
@@ -399,6 +419,7 @@ const AddAudienceDataExchange = (props) => {
             clientId,
             userId,
             departmentId,
+            remoteSettingId: location?.data?.remoteSettingId || 0,
         };
         //PrestaShop
         let payload_prestashop = {
@@ -410,6 +431,7 @@ const AddAudienceDataExchange = (props) => {
             clientId,
             userId,
             departmentId,
+            remoteSettingId: location?.data?.remoteSettingId || 0,
         };
         //Magento
         let payload_magento = {
@@ -423,6 +445,7 @@ const AddAudienceDataExchange = (props) => {
             clientId,
             userId,
             departmentId,
+            remoteSettingId: location?.data?.remoteSettingId || 0,
         };
         //Woocommerce
         let payload_WooCommerce = {
@@ -435,6 +458,7 @@ const AddAudienceDataExchange = (props) => {
             clientId,
             userId,
             departmentId,
+            remoteSettingId: location?.data?.remoteSettingId || 0,
         };
         //Wix
         let payload_Wix = {
@@ -446,6 +470,7 @@ const AddAudienceDataExchange = (props) => {
             clientId,
             userId,
             departmentId,
+            remoteSettingId: location?.data?.remoteSettingId || 0,
         };
         //Data Bricks
         let payload_DataBricks = {
@@ -460,6 +485,7 @@ const AddAudienceDataExchange = (props) => {
             clientId,
             userId,
             departmentId,
+            remoteSettingId: location?.data?.remoteSettingId || 0,
         };
         //Insightly
         let payload_Insightly = {
@@ -470,6 +496,7 @@ const AddAudienceDataExchange = (props) => {
             clientId,
             userId,
             departmentId,
+            remoteSettingId: location?.data?.remoteSettingId || 0,
         };
         //Webinar
         let Payload_Webinar = {
@@ -499,6 +526,7 @@ const AddAudienceDataExchange = (props) => {
             connectorId: location?.data.remoteDataSourceID,
             connectorName: location?.data.sourceName,
             friendlyName: instanceName,
+            remoteSettingId: location?.data?.remoteSettingId || 0,
         };
         let Payload_Commercetools = {
             clientId: clientDomain,
@@ -508,6 +536,7 @@ const AddAudienceDataExchange = (props) => {
             connectorId: location?.data.remoteDataSourceID,
             connectorName: location?.data.sourceName,
             friendlyName: instanceName,
+            remoteSettingId: location?.data?.remoteSettingId || 0,
         };
         let payload_Digipop = {
             userName: userName,
@@ -518,6 +547,7 @@ const AddAudienceDataExchange = (props) => {
             clientId,
             departmentId,
             userId,
+            remoteSettingId: location?.data?.remoteSettingId || 0,
         };
         let payload_googleSheet = {
             credentialsPath: jsonFilePath,
@@ -528,6 +558,7 @@ const AddAudienceDataExchange = (props) => {
             clientId,
             departmentId,
             userId,
+            remoteSettingId: location?.data?.remoteSettingId || 0,
         };
         const dataSourceId = location?.data?.remoteDataSourceID;
         let customPayload;
@@ -1006,7 +1037,7 @@ const AddAudienceDataExchange = (props) => {
                                                             // : 'CRM - MSCRM'
                                                         }
                                                     </h4>
-                                                    {isDirty && !showTableFlag && (
+                                                    {isDirty && !showTableFlag && !isOneTime && (
                                                         <RSTooltip position="top" text="Reset" className="lh0">
                                                             <i
                                                                 id="rs_data_reset"

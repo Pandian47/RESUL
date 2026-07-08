@@ -58,7 +58,7 @@ const OtpTimerSkeleton = () => (
 
 const getOtpAlertIconClassName = ({ iconClass, iconBg, compact = true }) => {
     const iconPadding = compact ? 'p5' : 'p8 border-tlr7 border-blr7';
-    return `position-relative mr10 d-flex align-items-center ${iconPadding} white ${iconClass} ${iconBg} icon-md`;
+    return `position-relative mr10 d-flex align-items-center p8 border-tlr7 border-blr7 white ${iconPadding} white ${iconClass} ${iconBg} icon-md`;
 };
 
 export const OtpSendingAlert = ({
@@ -220,6 +220,7 @@ const RSOTPForm = ({
     disabled = false,
     scenarioType = 'loginUser',
     isAccountSetup = false,
+    className = '',
     otpMessage = true,
     prefix= '',
     showTimer = true,
@@ -415,9 +416,9 @@ const RSOTPForm = ({
     };
 
     return (
-        <>
+        <div className={`rs-otp-form ${className}`}>
             {otpMessage && !isOtpValidateLoading && (
-                <small className="mb11">{getOtpMessage()}</small>
+                <small className="mb11 ">{getOtpMessage()}</small>
             )}
             <div className={`form-group rs-otp-form-body mb0 ${isOtpModalShow ? 'mt14' : ''}`}>
                 <div
@@ -555,7 +556,7 @@ const RSOTPForm = ({
                     </div>
                 )}
             </div>
-        </>
+        </div>
     );
 };
 

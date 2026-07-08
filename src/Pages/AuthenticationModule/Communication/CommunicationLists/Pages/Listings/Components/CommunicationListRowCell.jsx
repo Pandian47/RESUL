@@ -5,7 +5,7 @@ import { encodeUrl, encryptWithAES } from 'Utils/modules/crypto';
 import { getUserCurrentFormat } from 'Utils/modules/dateTime';
 
 import { numberWithCommas } from 'Utils/modules/formatters';
-import { ACTIONS, ANALYTICS, ARE_YOU_SURE_ARCHIVE, COMMUNICATION_EXECUTION, DUPLICATE, EDIT, OK, TOTAL_AUDIENCE, VIEW } from 'Constants/GlobalConstant/Placeholders';
+import { ACTIONS, ANALYTICS, ARE_YOU_SURE_ARCHIVE, COMMUNICATION_EXECUTION, DUPLICATE, EDIT, OK, TOTAL_AUDIENCE, VIEW,GOLDEN_CAMPAIGN } from 'Constants/GlobalConstant/Placeholders';
 import { analytics_medium, circle_arrow_down_medium, duplicate_medium, listing_preview_medium, pencil_edit_medium } from 'Constants/GlobalConstant/Glyphicons';
 import { useEffect, useMemo, useState } from 'react';
 import { get as _get } from 'Utils/modules/lodashReplacements';
@@ -23,7 +23,7 @@ import {
     deleteArchiveCommunication,
     duplicateCommunication,
     getCommunicationList,
-    unarchiveCommunication,
+    unarchiveCommunication,mdcDuplicateCommunication
 } from 'Reducers/communication/listing/request';
 import RSConfirmationModal from 'Components/ConfirmationModal';
 import { updateCommunicationData } from 'Reducers/communication/createCommunication/plan/reducer';
@@ -172,10 +172,11 @@ const CommunicationListRowCell = (props) => {
     };
 
     const handleAction = async (option, payload) => {
+        let fetchAPI =  campaignType === 'M' ? mdcDuplicateCommunication : duplicateCommunication;
         const actions = {
             Duplicate: async () => {
                 if (!dataItem?.isCommuReference) {
-                    const response = await dispatch(duplicateCommunication({ payload, loading: false }));
+                    const response = await dispatch(fetchAPI({ payload, loading: false }));
                     props?.setCampaignData({ dataState: initialDataState });
                     return response;
                 } else {
@@ -213,15 +214,15 @@ const CommunicationListRowCell = (props) => {
     };
 
     const handleIconStatus = () => {
-        if (isEditable) {
-            return {
-                icon: `${pencil_edit_medium}`,
-                tooltipText: EDIT,
-            };
-        } else {
+        if (statusId === 9) {
             return {
                 icon: `${listing_preview_medium}`,
                 tooltipText: VIEW,
+            };
+        } else {
+            return {
+                icon: `${pencil_edit_medium}`,
+                tooltipText: EDIT,
             };
         }
     };
@@ -258,8 +259,12 @@ const CommunicationListRowCell = (props) => {
                                 )?.dateFormat
                             }
                         </small>
-                        <div className={LAYOUT_CLASSES.listCardTitle}>
-                            <TruncatedCell value={dataItem?.campaignName} noTable />
+                        <div className={`${LAYOUT_CLASSES.listCardTitle} d-flex gap-1`}>
+                        { dataItem?.isGoldCampaign &&  <RSTooltip text={GOLDEN_CAMPAIGN} position="top">  <i
+                                        id="rs_data_Golden_campaign"
+                                        className={`icon-rs-star-fill-large color-alert icon-xs `}
+                                        
+                                    ></i>   </RSTooltip>}   <TruncatedCell value={dataItem?.campaignName} noTable />
                         </div>
                         {renderCommunicationListingTags({
                             tags: dataItem?.tags,
@@ -340,9 +345,7 @@ const CommunicationListRowCell = (props) => {
                                     // className={`${statusId === 9 || statusId === 6 ? '' : 'click-off'}`}
                                 >
                                     <div
-                                        className={`${statusId !== 52 ? '' : 'pe-none click-off'} ${
-                                            campaignType === 'M' && statusId !== 52 ? 'pe-none click-off' : ''
-                                        }`}
+                                        className={`${statusId !== 52 ? '' : 'pe-none click-off'}`}
                                     >
                                         <i
                                             id="rs_CommunicationListRowCell_Archieve"

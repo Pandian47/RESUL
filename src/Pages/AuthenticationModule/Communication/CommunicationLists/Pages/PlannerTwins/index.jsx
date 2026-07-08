@@ -1,9 +1,9 @@
 import { getUserDetails, encodeUrl } from 'Utils/modules/crypto';
 import { getYYMMDD, convertUTCtoUserTimezone } from 'Utils/modules/dateTime';
-import { truncateTitle } from 'Utils/modules/displayCore';
 import { getWarningPopupMessage } from 'Utils/modules/warningPopup';
 import { SELECT_BU } from 'Constants/GlobalConstant/Placeholders';
 import { circle_plus_fill_edge_large } from 'Constants/GlobalConstant/Glyphicons';
+import { PlannerCampaignTruncateCell } from '../../constants';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 //Calendar
 import { Calendar, momentLocalizer } from 'react-big-calendar';
@@ -230,12 +230,15 @@ const CommunicationPlanner = () => {
         const oneDayBefore = new Date(givenDate);
         dispatch(setModalLoading(false));
         dispatch(setModalFailure(false));
+        dispatch(setEventInfoLoading(false));
+        dispatch(setEventInfoFailure(false));
         setPlanner((pre) => ({
             ...pre,
             popupEvent: events,
             popupShow: true,
             showMore: true,
             selectedDate: oneDayBefore,
+            eventPopupShow: false,
         }));
     };
 
@@ -273,16 +276,9 @@ const CommunicationPlanner = () => {
     const components = useMemo(
         () => ({
             toolbar: ToolBar,
-            event: ({ event }) => {
-                const campaignName = event?.campaignName || '';
-                return campaignName?.length > 15 ? (
-                    <RSTooltip text={campaignName} position="top" innerContent={false}>
-                        <span className="repo-label">{truncateTitle(campaignName, 15)}</span>
-                    </RSTooltip>
-                ) : (
-                    <span className="repo-label">{campaignName}</span>
-                );
-            },
+            event: ({ event }) => (
+                <PlannerCampaignTruncateCell value={event?.campaignName || ''} />
+            ),
         }),
         [currentDate],
     );
@@ -373,7 +369,7 @@ const CommunicationPlanner = () => {
                                 <CommunicationPlannerSkeleton calendarOnly />
                             </div>
                         )}
-                        <div className={`${isLoading ? 'opacity-50' : 'box-design py19'}`}>
+                        <div className={`${isLoading ? 'opacity-50' : ''} box-design py19`}>
                             <Calendar
                                 // date={currentMonth}
                                 localizer={localizer}

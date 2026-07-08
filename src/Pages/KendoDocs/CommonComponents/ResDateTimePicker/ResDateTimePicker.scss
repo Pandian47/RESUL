@@ -337,7 +337,9 @@ body>.k-animation-container:has(.k-datetime-container) {
     .validation-message {
         font-size: $font-xs;
         padding-right: 15px;
-        padding-bottom: 10px;
+        padding-bottom: 2px;
+        width: 93%;
+        line-height: 1.4;
     }
 
     .k-datetimepicker,
@@ -438,11 +440,25 @@ body>.k-animation-container:has(.k-datetime-container) {
     }
 }
 
+.k-popup.k-datetime-container {
+    .k-calendar-th {
+        inline-size: 36px;
+        block-size: 36px;
+    }
+
+    .k-month-calendar .k-calendar-td,
+    .k-calendar-monthview .k-calendar-td {
+        width: 36px;
+        height: 36px;
+        inline-size: 36px;
+        block-size: 36px;
+    }
+}
+
 // .k-animation-container.#{$res-kendo-datetimepicker-popup},
 // .k-animation-container.#{$res-kendo-datetimepicker-popup} .k-popup,
 // .k-animation-container.#{$res-kendo-datetimepicker-popup} .k-datetime-container,
-.k-datetime-container.#{$res-kendo-datetimepicker-popup},
-.k-popup.k-datetime-container.#{$res-kendo-datetimepicker-popup} {
+.k-popup.k-datetime-container {
     margin-left: 0;
     background-color: $white;
    // border: 1px solid $quaternary-blue;
@@ -559,7 +575,7 @@ body>.k-animation-container:has(.k-datetime-container) {
 
         .k-calendar-table {
             padding: 0;
-            margin: 0;
+            // margin: 0;
             .k-calendar-thead .k-calendar-tr .k-calendar-th {
                 color: $primary-black;
             }
@@ -653,96 +669,95 @@ body>.k-animation-container:has(.k-datetime-container) {
 }
 
 // Portaled popup — global scope (ResTimePicker pattern)
-.#{$res-kendo-datetimepicker-popup} {
-    .k-popup,
-    .k-datetime-container {
+// .#{$res-kendo-datetimepicker-popup} {
+    .k-popup.k-datetime-container {
         display: flex;
         flex-direction: column;
         overflow: hidden;
         max-width: 295px;
         background-color: $white;
-    }
-
-    .k-datetime-buttongroup {
-        flex: 0 0 auto;
-    }
-
-    .k-datetime-wrap {
-        flex: 1 1 auto;
-        overflow: hidden;
-        min-height: 0;
-    }
-
-    .k-datetime-calendar-wrap,
-    .k-datetime-time-wrap {
-        overflow: hidden;
-    }
-
-    .k-actions,
-    .k-action-buttons,
-    .k-datetime-footer,
-    .k-datetime-footer.k-actions,
-    .k-datetime-footer.k-actions-stretched,
-    .#{$res-kendo-datetimepicker-footer} {
-        flex: 0 0 auto;
-        align-self: stretch;
-        padding: 10px 12px 10px 0;
-        display: flex;
-        flex-direction: row;
-        flex-wrap: nowrap;
-        justify-content: flex-end;
-        align-items: center;
-        width: 100%;
-        max-width: 100%;
-        box-sizing: border-box;
-        gap: 12px;
-        background-color: $white;
-        position: relative;
-        z-index: 10;
-
-        >.k-button,
-        .k-button {
+        
+        .k-datetime-buttongroup {
             flex: 0 0 auto;
-            flex-grow: 0;
-            width: auto;
-            max-width: none;
-            margin: 0;
         }
 
-        .k-time-accept,
-        .k-button-solid-primary {
-            order: 2;
-            background-color: $primary-btn;
-            border: 0;
-            border-radius: 5px;
-            color: $white;
-            padding: 8px 25px;
-            box-shadow: none;
-            transition: background-color 0.25s ease, box-shadow 0.25s ease;
+        .k-datetime-wrap {
+            flex: 1 1 auto;
+            overflow: hidden;
+            min-height: 0;
+        }
 
-            .k-button-text {
+        .k-datetime-calendar-wrap,
+        .k-datetime-time-wrap {
+            overflow: hidden;
+        }
+
+        .k-actions,
+        .k-action-buttons,
+        .k-datetime-footer,
+        .k-datetime-footer.k-actions,
+        .k-datetime-footer.k-actions-stretched,
+        .#{$res-kendo-datetimepicker-footer} {
+            flex: 0 0 auto;
+            align-self: stretch;
+            padding: 10px 12px 10px 0;
+            display: flex;
+            flex-direction: row;
+            flex-wrap: nowrap;
+            justify-content: flex-end;
+            align-items: center;
+            width: 100%;
+            max-width: 100%;
+            box-sizing: border-box;
+            gap: 12px;
+            background-color: $white;
+            position: relative;
+            z-index: 10;
+
+            >.k-button,
+            .k-button {
+                flex: 0 0 auto;
+                flex-grow: 0;
+                width: auto;
+                max-width: none;
+                margin: 0;
+            }
+
+            .k-time-accept,
+            .k-button-solid-primary {
+                order: 2;
+                background-color: $primary-btn;
+                border: 0;
+                border-radius: 5px;
                 color: $white;
+                padding: 8px 25px;
+                box-shadow: none;
+                transition: background-color 0.25s ease, box-shadow 0.25s ease;
+
+                .k-button-text {
+                    color: $white;
+                }
+
+                &:hover,
+                &:focus {
+                    background-color: $primary-btn-hover;
+                    box-shadow: 0 0 12px $primary-btn-hover;
+                }
             }
 
-            &:hover,
-            &:focus {
-                background-color: $primary-btn-hover;
-                box-shadow: 0 0 12px $primary-btn-hover;
-            }
-        }
-
-        .k-time-cancel,
-        .k-button:not(.k-time-accept):not(.k-button-solid-primary) {
-            order: 1;
-            background: transparent;
-            border: 0;
-            color: $secondary-orange;
-            padding: 8px 10px;
-            box-shadow: none;
-
-            .k-button-text {
+            .k-time-cancel,
+            .k-button:not(.k-time-accept):not(.k-button-solid-primary) {
+                order: 1;
+                background: transparent;
+                border: 0;
                 color: $secondary-orange;
+                padding: 8px 10px;
+                box-shadow: none;
+
+                .k-button-text {
+                    color: $secondary-orange;
+                }
             }
         }
     }
-}
+// }

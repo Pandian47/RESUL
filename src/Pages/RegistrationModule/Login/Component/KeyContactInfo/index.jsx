@@ -87,7 +87,7 @@ const KeyContactInfo = ({ nextScreen, back, type }) => {
             disable: disable,
             show: phoneNo !== '',
             setFocus: false,
-            countryDetails: countryDetails,
+            countryDetails: phoneState?.countryDetails,
         }));
     }, [phoneNo, disable, countryDetails]);
 
@@ -423,23 +423,9 @@ const KeyContactInfo = ({ nextScreen, back, type }) => {
                                                         ? PASSWORD_NOT_MATCH
                                                         : true,
                                             }}
-                                        />
-                                        <div className="mt5">
-                                            <small className="position-absolute">
-                                                {MIN_8_CHARACTERS}{' '}
-                                                <RSTooltip
-                                                    position="top"
-                                                    className="d-inline-flex"
-                                                    text={PASSWORD_MAX_15_CHARACTERS}
-                                                >
-                                                    <i
-                                                        className={` ${circle_question_mark_mini} color-primary-blue icon-xs position-relative top2`}
-                                                        id="rs_KeyContactInfo_passwordquestion"
-                                                    ></i>
-                                                </RSTooltip>
-                                            </small>
-                                        </div>
-                                    </div>
+                                    smallText= {MIN_8_CHARACTERS}
+                                    rightTooltip = {PASSWORD_MAX_15_CHARACTERS}
+                                        />                                    </div>
                                 </Col>
                                 <Col md={{span:6 ,offset:6}}>
                                     <div className="form-group mt17">

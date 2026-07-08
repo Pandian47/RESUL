@@ -1,6 +1,4 @@
-
 import RSModal from 'Components/RSModal';
-import { RSSecondaryButton } from 'Components/Buttons';
 import NoDataAvailableRender from 'Components/FormFields/Component/NoDataAvailableRender';
 import { CampaignPerformanceSkeleton } from 'Components/Skeleton/Skeleton';
 
@@ -22,11 +20,6 @@ export const GallerySelectModal = ({ show, onHide, selectedItem }) => {
                             <CampaignPerformanceSkeleton />
                         </>
                     )}
-                </>
-            }
-            footer={
-                <>
-                    <RSSecondaryButton onClick={onHide}>Close</RSSecondaryButton>
                 </>
             }
         />

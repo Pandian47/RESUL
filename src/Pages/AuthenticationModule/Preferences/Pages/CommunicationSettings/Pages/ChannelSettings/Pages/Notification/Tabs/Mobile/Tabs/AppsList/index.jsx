@@ -7,6 +7,7 @@ import AppNotificationGrid from './Grid';
 import Goal from '../Goal/Grid';
 import Create from '../Goal/Create';
 import { useLocation } from 'react-router-dom';
+import useQueryParams from 'Hooks/useQueryParams';
 
 import { useDispatch, useSelector } from 'react-redux';
 import { update_disableBU } from 'Reducers/preferences/CommunicationSettings/reducer';
@@ -15,8 +16,10 @@ const Apps = () => {
     const { failureApiErrors } = useSelector(({ globalstate }) => globalstate);
     const [ failedApi, setFailedApi] = useState('')
     const { state } = useLocation();
+    const queryState = useQueryParams('/preferences/communication-settings');
+    const navState = { ...queryState, ...state };
     useEffect(() => {
-        if (state?.type === true) {
+        if (navState?.type === true || navState?.mode === 'add') {
             setGridCreate((prev) => ({
                 ...prev,
                 showGrid: false,
@@ -30,7 +33,7 @@ const Apps = () => {
                 },
             }));
         }
-    }, [state]);
+    }, [queryState, state]);
     const [gridCreate, setGridCreate] = useState(ACTION_INITIAL_STATE);
     const value = { setGridCreate };
 

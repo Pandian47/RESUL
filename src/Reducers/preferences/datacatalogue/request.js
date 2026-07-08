@@ -2,6 +2,7 @@ import { AUDIENCE_GET_PERSONALIZED_ATTRIBUTES, DATA_CATALOGUE_ATTRIBUTES, DATA_C
 import request from 'Utils/Http';
 
 import { update_data_catalogue, update_loading } from './reducer';
+import { setChildCategoryList } from 'Reducers/audience/addAudience/reducer';
 import { getUserDetails, encryptWithAES } from 'Utils/modules/crypto';
 import { updateBrandId } from 'Utils/modules/brandStorage';
 
@@ -402,26 +403,43 @@ export const updateClassificationFallback = (payload) => (dispatch) => {
 };
 
 // Child import
-export const getChildListings = (payload, requestOptions = {}) => (dispatch) => {
-    const { loading = true } = requestOptions;
+const sortChildCategoryList = (list = []) =>
+    [...list].sort((a, b) => {
+        const nameA = (a.catTypeName || '').toLowerCase();
+        const nameB = (b.catTypeName || '').toLowerCase();
+        if (nameA < nameB) return -1;
+        if (nameA > nameB) return 1;
+        return 0;
+    });
+
+export const getChildListings = (payload, requestOptions = {}) => async (dispatch, getState) => {
+    const { loading = false, isAudience = false } = requestOptions;
+
+
     return dispatch(
         request.post({
             url: GET_CHILD_LISTINGS,
             payload,
             loading,
-            ok: () => {},
+            ok: ({ data: response }) => {
+                const { status, data } = response || {};
+                if (status && isAudience && data?.length) {
+                    dispatch(setChildCategoryList(sortChildCategoryList(data)));
+                }
+            },
             fail: (err) => {
                             },
         }),
     );
 };
 
-export const saveCatType = (payload) => (dispatch) => {
+export const saveCatType = (payload, requestOptions = {}) => (dispatch) => {
+    const { loading = true } = requestOptions;
     return dispatch(
         request.post({
             url: SAVE_CAT_TYPE,
             payload,
-            loading: true,
+            loading,
             ok: () => {},
             fail: (err) => {
                             },

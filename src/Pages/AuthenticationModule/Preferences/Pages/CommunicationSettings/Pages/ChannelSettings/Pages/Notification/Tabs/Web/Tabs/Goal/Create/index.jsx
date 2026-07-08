@@ -265,7 +265,7 @@ const WebPushGoalSettingsCreate = ({ type, config, setFailedApi }) => {
                     tab: COMMUNICATION_SETTINGS_VERTICAL_TAB.NOTIFICATION,
                     verticalTabId: VERTICAL_TAB_ID.NOTIFICATION,
                     notificationTabId: NOTIFICATION_TAB_ID.WEB,
-                    innerTab: 0,
+                    webTabId: 'web',
                 };
                 const encryptState = encodeUrl(state);
                 let url = '/preferences/communication-settings';
@@ -370,7 +370,7 @@ const WebPushGoalSettingsCreate = ({ type, config, setFailedApi }) => {
             tab: COMMUNICATION_SETTINGS_VERTICAL_TAB.NOTIFICATION,
             verticalTabId: VERTICAL_TAB_ID.NOTIFICATION,
             notificationTabId: NOTIFICATION_TAB_ID.WEB,
-            innerTab: 0,
+            webTabId: 'web',
         };
         const encryptState = encodeUrl(navState);
         const url = '/preferences/communication-settings';

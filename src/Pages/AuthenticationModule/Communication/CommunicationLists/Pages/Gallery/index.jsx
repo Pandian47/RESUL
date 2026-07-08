@@ -1,7 +1,7 @@
 import { convertToUserTimezone, convertUTCtoUserTimezone, getDateFormat, getDateWithDaynoFormat, getYYMMDD } from 'Utils/modules/dateTime';
 import { encodeUrl, getUserDetails } from 'Utils/modules/crypto';
 import { getWarningPopupMessage } from 'Utils/modules/warningPopup';
-import { ADD_FIRST_COMMUNICATION_1, ADD_FIRST_COMMUNICATION_2, ALERT, COMPLETED, IN_PROGRESS, SCHEDULED, SELECT_BU } from 'Constants/GlobalConstant/Placeholders';
+import { ADD_FIRST_COMMUNICATION_1, ADD_FIRST_COMMUNICATION_2, ALERT, COMPLETED, IN_PROGRESS, SCHEDULED, SELECT_BU,GOLDEN_CAMPAIGN} from 'Constants/GlobalConstant/Placeholders';
 import { alert_medium, circle_plus_fill_edge_large, circle_plus_fill_medium } from 'Constants/GlobalConstant/Glyphicons';
 import { Fragment, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
@@ -59,7 +59,7 @@ const GALLERY_NAME_SUGGEST_MIN_CHARS = 3;
 const GALLERY_ADVANCE_SEARCH_OPTIONS = ['Communication name', 'Communication type', 'Delivery type'];
 
 /** Same scope labels as Communication List toolbar (My / All). */
-const GALLERY_SCOPE_DROPDOWN_DATA = ['All communications', 'My communications','Golden communications'];
+const GALLERY_SCOPE_DROPDOWN_DATA = ['All communications', 'My communications',GOLDEN_CAMPAIGN];
 const GALLERY_TOP_CHANNEL_DROPDOWN_DATA = GALLERY_CHANNEL_FILTER_DATA;
 
 /** Chip-row omit keys (parity with `RSAdvanceSearchNew` when we pass `excludeActiveFilterTagKeys`). */

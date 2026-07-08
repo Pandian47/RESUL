@@ -227,7 +227,7 @@ const RolesAndPermissions = ({ permissions }) => {
                                                                     <li className="pe-none click-off">
                                                                         <i
                                                                             id="rs_RolesAndPermissions_delete"
-                                                                            className={`${delete_medium} icon-md color-primary-blue `}
+                                                                            className={`${delete_medium} icon-md color-primary-red `}
                                                                         />
                                                                     </li>
                                                                 )}

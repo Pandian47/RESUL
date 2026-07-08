@@ -8,6 +8,31 @@ import EmailOTPSetup from './Component/EmailOTPSetup';
 import AuthenticatorSetup from './Component/AuthenticatorSetup';
 import { globalStateSelector } from 'Utils/Selectors/app';
 import { useSelector } from 'react-redux';
+import { motion } from 'framer-motion';
+
+const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+        opacity: 1,
+        transition: {
+            staggerChildren: 0.08,
+            delayChildren: 0.05,
+        },
+    },
+};
+
+const itemVariants = {
+    hidden: { y: 15, opacity: 0 },
+    visible: {
+        y: 0,
+        opacity: 1,
+        transition: {
+            type: 'spring',
+            stiffness: 100,
+            damping: 15,
+        },
+    },
+};
 
 const VerificationModule = ({ onStepChange }) => {
     const navigate = useNavigate();
@@ -70,39 +95,53 @@ const VerificationModule = ({ onStepChange }) => {
     return (
         <div className="rs-login-wrapper">
             <div className={`login-panel ${showSessionModal ? 'p0': ''}`}>
-                <div className="verification-module-container">
-                    <div className="text-center mb10 ">
+                <motion.div
+                    className="verification-module-container"
+                    variants={containerVariants}
+                    initial="hidden"
+                    animate="visible"
+                    style={{ width: '100%' }}
+                >
+                    <motion.div variants={itemVariants} className="text-center sp-mb-space-sm">
                         <p>{METHOD_TO_AUTHENTICATE}</p>
-                    </div>
+                    </motion.div>
 
-                    <div className="form-group mb10">
+                    <div className="form-group mb0">
                         {VERIFICATION_METHODS.map((method) => (
-                            <Row key={method.id}>
-                                <Col md={12}>
-                                    <Card
-                                        className={`verification-method-card mb10 cursor-pointer ${
-                                            selectedMethod === method.id ? 'border-primary' : ''
-                                        }`}
-                                        onClick={() => handleMethodSelect(method.id)}
-                                    >
-                                        <Card.Body className="d-flex mt-5 p15">
-                                            <div className="method-icon me-3">
-                                                <i className={` ${method.icon} icon-lg color-primary-blue`}></i>
-                                            </div>
-                                            <div className="method-content flex-grow-1">
-                                                <h5 className="font-semi-bold mb5">{method.title}</h5>
-                                                <small className='fs14 lh-sm'>
-                                                    {method.description}
-                                                </small>
-                                            </div>
-                                        </Card.Body>
-                                    </Card>
-                                </Col>
-                            </Row>
+                            <motion.div key={method.id} variants={itemVariants}>
+                                <Row>
+                                    <Col md={12}>
+                                        <motion.div
+                                            whileHover={{ scale: 1.02, y: -2 }}
+                                            whileTap={{ scale: 0.98 }}
+                                            transition={{ type: 'spring', stiffness: 300, damping: 20 }}
+                                        >
+                                            <Card
+                                                className={`verification-method-card mb10 cursor-pointer ${
+                                                    selectedMethod === method.id ? 'border-primary' : ''
+                                                }`}
+                                                onClick={() => handleMethodSelect(method.id)}
+                                            >
+                                                <Card.Body className="d-flex mt-5 p15">
+                                                    <div className="method-icon me-3">
+                                                        <i className={` ${method.icon} icon-lg color-primary-blue`}></i>
+                                                    </div>
+                                                    <div className="method-content flex-grow-1">
+                                                        <h5 className="font-semi-bold mb5">{method.title}</h5>
+                                                        <small className='fs14 lh-sm'>
+                                                            {method.description}
+                                                        </small>
+                                                    </div>
+                                                </Card.Body>
+                                            </Card>
+                                        </motion.div>
+                                    </Col>
+                                </Row>
+                            </motion.div>
                         ))}
                     </div>
 
-                    <div className="text-center">
+                    <motion.div variants={itemVariants} className="text-center">
                         <RSSecondaryButton
                             type="button"
                             id="rs_verification_back"
@@ -111,8 +150,8 @@ const VerificationModule = ({ onStepChange }) => {
                         >
                            {BACK_TO_LOGIN}
                         </RSSecondaryButton>
-                    </div>
-                </div>
+                    </motion.div>
+                </motion.div>
             </div>
         </div>
     );

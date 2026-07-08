@@ -3,7 +3,7 @@ import { getUserDetails } from 'Utils/modules/crypto';
 import { getDateWithDaynoFormat, getYYMMDD } from 'Utils/modules/dateTime';
 import { getWarningPopupMessage } from 'Utils/modules/warningPopup';
 import { DYNAMIC_LIST_NOT_AVAILABLE_1, DYNAMIC_LIST_NOT_AVAILABLE_2, NOT_USED, USED } from 'Constants/GlobalConstant/Placeholders';
-import { Fragment, createContext, useEffect, useMemo, useRef, useState } from 'react';
+import { Fragment, createContext, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 
 import DynamicGridView from './Components/DynamicGridView/DynamicGridView';
@@ -40,6 +40,7 @@ export const DynamicListContext = createContext({
     isDateFilter: false,
     setisDateFilter: () => { },
     initialGridPagination: false,
+    clearLastDispatchedDynamicListParams: () => { },
 });
 
 const DynamicList = () => {
@@ -187,7 +188,6 @@ const DynamicList = () => {
                 pageSize: pageConfig?.[pageSizeKey] || (listTypeView ? 9 : 3),
             },
             departmentId: departmentId,
-            isAdvanceSearch: true,
         };
         const shouldFetch =
             (licenseTypeId !== '3' && !isAgencyAccountAdmin) ||
@@ -233,6 +233,10 @@ const DynamicList = () => {
     };
     const pageSize = listTypeView ? 9 : 5;
 
+    const clearLastDispatchedDynamicListParams = useCallback(() => {
+        lastDispatchedDynamicListParamsRef.current = null;
+    }, []);
+
     const value = useMemo(
         () => ({
             listTypeView,
@@ -248,8 +252,9 @@ const DynamicList = () => {
             setIsClearSearch,
             setInitialGridPagination,
             initialGridPagination,
+            clearLastDispatchedDynamicListParams,
         }),
-        [listTypeView, params, isDateFilter, pageConfig, isClearSearch, initialGridPagination],
+        [listTypeView, params, isDateFilter, pageConfig, isClearSearch, initialGridPagination, clearLastDispatchedDynamicListParams],
     );
     return (
         <Fragment>

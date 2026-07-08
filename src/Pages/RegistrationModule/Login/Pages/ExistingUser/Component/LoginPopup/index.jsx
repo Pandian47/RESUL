@@ -141,7 +141,7 @@ const LoginPopup = (props) => {
                             </RSSecondaryButton>
                             <RSPrimaryButton
                                 type="submit"
-                                className={emailHasError || !isValid || isSendLoading ? 'click-off' : ''}
+                                disabledClass={emailHasError || !isValid || isSendLoading ? 'pe-none click-off' : ''}
                                 isLoading={isSendLoading}
                                 blockBodyPointerEvents
                             >

@@ -311,14 +311,14 @@ export const FORM_INITIAL_STATE = {
             editorText: '',
             schedule: null,
             timezone: '',
-            templateId: null,
+            templateId: '',
             daylightSavings: '',
         },
         splitB: {
             editorText: '',
             schedule: null,
             timezone: '',
-            templateId: null,
+            templateId: '',
             daylightSavings: '',
         },
         splitC: {

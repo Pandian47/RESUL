@@ -17,6 +17,7 @@ import {
     dataExchangeSkeletonCriticalCss,
     communicationSettingsSkeletonCriticalCss,
     communicationSubscriptionSkeletonCriticalCss,
+    formGeneratorEditorSkeletonCriticalCss,
     preferencesSkeletonCriticalCss,
 } from './preferencesSkeletonCriticalCss';
 import { PreferencesSectionsSkeleton } from './PreferencesPageContentSkeleton';
@@ -95,7 +96,8 @@ const MainPageSkeleton = ({ variant: variantProp, withAppShell = false, activeTa
     }
 
     if (variant === 'preferencesSubPage' && withAppShell) {
-        const subPageVariant = resolvePreferencesSubPageVariant(pathname);
+        const subPageVariant = resolvePreferencesSubPageVariant(pathname, search);
+        const isFormGeneratorEditor = subPageVariant === PREFERENCES_SUBPAGE_VARIANT.FORM_GENERATOR_EDITOR;
         const isDataCatalogue =
             subPageVariant === PREFERENCES_SUBPAGE_VARIANT.DATA_CATALOGUE ||
             subPageVariant === PREFERENCES_SUBPAGE_VARIANT.DATA_CATALOGUE_GRID;
@@ -105,6 +107,25 @@ const MainPageSkeleton = ({ variant: variantProp, withAppShell = false, activeTa
             subPageVariant === PREFERENCES_SUBPAGE_VARIANT.COMMUNICATION_SUBSCRIPTION;
         const isAudienceScore = subPageVariant === PREFERENCES_SUBPAGE_VARIANT.AUDIENCE_SCORE;
         const isDataExchange = subPageVariant === PREFERENCES_SUBPAGE_VARIANT.DATA_EXCHANGE;
+
+        if (isFormGeneratorEditor) {
+            return (
+                <>
+                    <style>{pageLayoutSkeletonCriticalCss}</style>
+                    <style>{skeletonShellSharedCriticalCss}</style>
+                    <style>{preferencesSkeletonCriticalCss}</style>
+                    <style>{formGeneratorEditorSkeletonCriticalCss}</style>
+                    <div
+                        className="preferences-skeleton-scope preferences-subpage-skeleton-scope pref-fg-editor-skeleton-scope page-layout-skeleton--inline"
+                        aria-busy="true"
+                        aria-label="Loading form builder"
+                    >
+                        <PreferencesSubPageRouteSkeleton variant={subPageVariant} withAppShell />
+                    </div>
+                </>
+            );
+        }
+
         return (
             <>
                 <style>{pageLayoutSkeletonCriticalCss}</style>
@@ -147,7 +168,7 @@ const MainPageSkeleton = ({ variant: variantProp, withAppShell = false, activeTa
 
     if (variant === 'preferencesSubPage' && !withAppShell) {
         return (
-            <PreferencesSubPageRouteSkeleton variant={resolvePreferencesSubPageVariant(pathname)} />
+            <PreferencesSubPageRouteSkeleton variant={resolvePreferencesSubPageVariant(pathname, search)} />
         );
     }
 

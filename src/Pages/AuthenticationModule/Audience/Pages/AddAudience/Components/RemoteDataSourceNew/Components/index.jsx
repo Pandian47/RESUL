@@ -46,6 +46,8 @@ const AddAudienceDataExchange = () => {
     const navigate = useNavigate();
     const DBConnectionAPI = useApiLoader({ autoFetch: false });
     const GetTablesFromDBAPI = useApiLoader({ autoFetch: false });
+    const isOneTime =
+        location?.isOneTime;
     const isEdit = location?.mode === 'edit';
     const isBiDirectionEnabled = location?.data?.connectionType == 1;
     const [fileName, setFileName] = useState('');
@@ -135,6 +137,7 @@ const AddAudienceDataExchange = () => {
             clientId,
             userId,
             departmentId,
+            remoteSettingId: loc?.remoteSettingId || 0,
         });
         const remoteListMeta = {
             connectorId: loc?.remoteDataSourceID,
@@ -483,7 +486,7 @@ const AddAudienceDataExchange = () => {
 
                         dispatchState({ type: 'UPDATE', field: 'connectorPayload', payload: customPayload });
                         if (!isEdit) {
-                            //setSuccessMessage({ msg: 'Successfully connected', type: 'success' });
+                            setSuccessMessage({ msg: 'Successfully connected', type: 'success' });
                             setShowTableFlag(true);
                             return;
                         }
@@ -854,7 +857,7 @@ const AddAudienceDataExchange = () => {
                                                                         ' - ' +
                                                                         location?.data.sourceName}
                                                             </h4>
-                                                            {isDirty && !showTableFlag && (
+                                                            {isDirty && !showTableFlag && !isOneTime && (
                                                                 <RSTooltip position="top" text="Reset" className="lh0">
                                                                     <i
                                                                         id="rs_data_reset"

@@ -1,5 +1,5 @@
 import { DROPDOWN_LIST, normalizeSummaryCommunicationTypeToIds, pickCommunicationSummaryRequestPayload } from './constant';
-import { COMPLETED, GRID_VIEW, IN_PROGRESS, LIST_VIEW, SELECT_BU } from 'Constants/GlobalConstant/Placeholders';
+import { COMPLETED, GRID_VIEW, IN_PROGRESS, LIST_VIEW, SELECT_BU, GOLDEN_CAMPAIGN } from 'Constants/GlobalConstant/Placeholders';
 import { circle_grid_fill_edge_large, circle_list_edge_large } from 'Constants/GlobalConstant/Glyphicons';
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { Container } from 'react-bootstrap';
@@ -51,7 +51,13 @@ import { SkeletonCommunicationList } from 'Components/Skeleton/Components/Skelet
 import { globalStateSelector } from 'Utils/Selectors/app';
 import analyticsListingInitialState from 'Reducers/analyticsTwins/communicationAnalytics/initialState';
 
-const ANALYTICS_SCOPE_DROPDOWN_DATA = ['All communications', 'My communications'];
+const ANALYTICS_SCOPE_DROPDOWN_DATA = ['All communications', 'My communications', GOLDEN_CAMPAIGN];
+
+const ANALYTICS_SCOPE = {
+    ALL: 'all',
+    MY: 'my',
+    GOLDEN: 'golden',
+};
 
 const omitPaginationForRestPayload = (p) => {
     if (!p) return {};
@@ -190,6 +196,7 @@ const CommunicationAnalytics = () => {
             pageNo: 1,
             pageSize: 5,
         },
+        isGoldenCampaign: false,
     });
     const payloadRef = useRef(payload);
     const lastSummaryListRequestRef = useRef(null);
@@ -214,12 +221,18 @@ const CommunicationAnalytics = () => {
     const [searchValueSync, setSearchValueSync] = useState({ rev: 0, value: '' });
     const [myCommunicationsOnly, setMyCommunicationsOnly] = useState(true);
     const myCommunicationsOnlyRef = useRef(true);
+    const [isGoldenCampaignOnly, setIsGoldenCampaignOnly] = useState(false);
+    const isGoldenCampaignOnlyRef = useRef(false);
     const persistAdvanceFiltersKey = useMemo(
         () => buildAdvanceSearchPersistStorageKey('comm-analytics-twins', clientId, userId, departmentId),
         [clientId, userId, departmentId],
     );
     const persistAnalyticsMyCommKey = useMemo(
         () => `${persistAdvanceFiltersKey}:my-comm`,
+        [persistAdvanceFiltersKey],
+    );
+    const persistAnalyticsScopeKey = useMemo(
+        () => `${persistAdvanceFiltersKey}:scope`,
         [persistAdvanceFiltersKey],
     );
     const syncAnalyticsMyCommunicationsScopeFromStorage = useCallback(() => {
@@ -237,22 +250,49 @@ const CommunicationAnalytics = () => {
     const handleMyCommunicationsToggleRef = useRef(async () => {});
     const analyticsAdvanceFilterConfigRef = useRef(null);
 
-    useLayoutEffect(() => {
-        if (!clientId || departmentId == null) return;
+    const applyAnalyticsScope = useCallback((scope) => {
+        const isMy = scope === ANALYTICS_SCOPE.MY;
+        const isGolden = scope === ANALYTICS_SCOPE.GOLDEN;
+        setMyCommunicationsOnly(isMy);
+        myCommunicationsOnlyRef.current = isMy;
+        setIsGoldenCampaignOnly(isGolden);
+        isGoldenCampaignOnlyRef.current = isGolden;
+    }, []);
+
+    const readAnalyticsScopeFromStorage = useCallback(() => {
         try {
-            const rawMyComm = localStorage.getItem(persistAnalyticsMyCommKey);
-            if (rawMyComm === 'true' || rawMyComm === 'false') {
-                const v = rawMyComm === 'true';
-                setMyCommunicationsOnly(v);
-                myCommunicationsOnlyRef.current = v;
-                return;
+            const rawScope = localStorage.getItem(persistAnalyticsScopeKey);
+            if (
+                rawScope === ANALYTICS_SCOPE.ALL ||
+                rawScope === ANALYTICS_SCOPE.MY ||
+                rawScope === ANALYTICS_SCOPE.GOLDEN
+            ) {
+                return rawScope;
             }
-            setMyCommunicationsOnly(true);
-            myCommunicationsOnlyRef.current = true;
+            const legacyMyComm = localStorage.getItem(persistAnalyticsMyCommKey);
+            if (legacyMyComm === 'true') return ANALYTICS_SCOPE.MY;
+            if (legacyMyComm === 'false') return ANALYTICS_SCOPE.ALL;
         } catch {
             /* ignore */
         }
-    }, [persistAdvanceFiltersKey, persistAnalyticsMyCommKey, clientId, departmentId]);
+        return ANALYTICS_SCOPE.MY;
+    }, [persistAnalyticsMyCommKey, persistAnalyticsScopeKey]);
+
+    const persistAnalyticsScope = useCallback(
+        (scope) => {
+            try {
+                localStorage.setItem(persistAnalyticsScopeKey, scope);
+            } catch {
+                /* ignore */
+            }
+        },
+        [persistAnalyticsScopeKey],
+    );
+
+    useLayoutEffect(() => {
+        if (!clientId || departmentId == null) return;
+        applyAnalyticsScope(readAnalyticsScopeFromStorage());
+    }, [persistAdvanceFiltersKey, clientId, departmentId, applyAnalyticsScope, readAnalyticsScopeFromStorage]);
 
     useEffect(() => {
         if (clientId == null || departmentId == null) return;
@@ -293,6 +333,8 @@ const CommunicationAnalytics = () => {
         });
         setMyCommunicationsOnly(true);
         myCommunicationsOnlyRef.current = true;
+        setIsGoldenCampaignOnly(false);
+        isGoldenCampaignOnlyRef.current = false;
         setCurrentFilters({});
         searchTextRef.current = '';
         setpayload((prev) => ({
@@ -309,6 +351,7 @@ const CommunicationAnalytics = () => {
             statusId: '',
             tags: '',
             channelType: '',
+            isGoldenCampaign: false,
             createdBy: String(userId),
             sortBy: DEFAULT_ADVANCE_SEARCH_SORT_BY_ID,
             timezoneid: getDateFormat().timeZoneId ?? 0,
@@ -531,7 +574,7 @@ const CommunicationAnalytics = () => {
             clientId,
             userId,
             pageSize: currentPageSize,
-            overrides: { index: 1 },
+            overrides: { index: 1, isGoldenCampaign: isGoldenCampaignOnlyRef.current },
             myCommunicationsOnly: scopeMy,
             advanceFilterConfig: analyticsAdvanceFilterConfigRef.current,
             productFilterUsesTypeIds: true,
@@ -556,7 +599,7 @@ const CommunicationAnalytics = () => {
             clientId,
             userId,
             pageSize: currentPageSize,
-            overrides: { index: 1 },
+            overrides: { index: 1, isGoldenCampaign: isGoldenCampaignOnlyRef.current },
             myCommunicationsOnly: scopeMy,
             advanceFilterConfig: analyticsAdvanceFilterConfigRef.current,
             productFilterUsesTypeIds: true,
@@ -709,6 +752,7 @@ const CommunicationAnalytics = () => {
                     index: 1,
                     startDate: pre.startDate,
                     endDate: pre.endDate,
+                    isGoldenCampaign: isGoldenCampaignOnlyRef.current,
                 },
                 myCommunicationsOnly: scopeMy,
                 advanceFilterConfig: analyticsAdvanceFilterConfigRef.current,
@@ -788,6 +832,8 @@ const CommunicationAnalytics = () => {
                 return;
             }
             if (hasPersistedAdvanceFilters(persistAdvanceFiltersKey)) return;
+            /** Golden communications is a deliberate scope choice — don't silently fall back to "My communications". */
+            if (isGoldenCampaignOnlyRef.current) return;
             if (myCommunicationsOnlyRef.current) return;
             myCommunicationsOnlyRef.current = true;
             setMyCommunicationsOnly(true);
@@ -805,6 +851,7 @@ const CommunicationAnalytics = () => {
                     index: 1,
                     startDate: pre.startDate,
                     endDate: pre.endDate,
+                    isGoldenCampaign: false,
                 },
                 myCommunicationsOnly: true,
                 advanceFilterConfig: analyticsAdvanceFilterConfigRef.current,
@@ -842,6 +889,7 @@ const CommunicationAnalytics = () => {
                 index: size,
                 startDate: pre.startDate,
                 endDate: pre.endDate,
+                isGoldenCampaign: isGoldenCampaignOnlyRef.current,
             },
             myCommunicationsOnly: scopeMy,
             advanceFilterConfig: analyticsAdvanceFilterConfigRef.current,
@@ -870,6 +918,7 @@ const CommunicationAnalytics = () => {
                 index: size,
                 startDate: pre.startDate,
                 endDate: pre.endDate,
+                isGoldenCampaign: isGoldenCampaignOnlyRef.current,
             },
             myCommunicationsOnly: scopeMy,
             advanceFilterConfig: analyticsAdvanceFilterConfigRef.current,
@@ -880,8 +929,8 @@ const CommunicationAnalytics = () => {
     };
 
     const performFullClear = (pageSize, currentPayload) => {
-        setMyCommunicationsOnly(true);
-        myCommunicationsOnlyRef.current = true;
+        persistAnalyticsScope(ANALYTICS_SCOPE.MY);
+        applyAnalyticsScope(ANALYTICS_SCOPE.MY);
         const cleared = buildClearPayload({
             departmentId,
             clientId,
@@ -967,7 +1016,7 @@ const CommunicationAnalytics = () => {
                 clientId,
                 userId,
                 pageSize: currentPageSize,
-                overrides: { index: 1 },
+                overrides: { index: 1, isGoldenCampaign: isGoldenCampaignOnlyRef.current },
                 myCommunicationsOnly: scopeMy,
                 advanceFilterConfig: analyticsAdvanceFilterConfigRef.current,
                 productFilterUsesTypeIds: true,
@@ -981,9 +1030,10 @@ const CommunicationAnalytics = () => {
         }
     };
 
-    handleMyCommunicationsToggleRef.current = async (checked) => {
-        setMyCommunicationsOnly(checked);
-        myCommunicationsOnlyRef.current = checked;
+    handleMyCommunicationsToggleRef.current = async (checked, golden = false) => {
+        const scope = golden ? ANALYTICS_SCOPE.GOLDEN : checked ? ANALYTICS_SCOPE.MY : ANALYTICS_SCOPE.ALL;
+        persistAnalyticsScope(scope);
+        applyAnalyticsScope(scope);
         const pre = payloadRef.current;
         const currentPageSize = pre?.pagination?.pageSize || 5;
         const built = buildSearchPayload({
@@ -994,7 +1044,7 @@ const CommunicationAnalytics = () => {
             clientId,
             userId,
             pageSize: currentPageSize,
-            overrides: { index: 1, startDate: pre.startDate, endDate: pre.endDate },
+            overrides: { index: 1, startDate: pre.startDate, endDate: pre.endDate, isGoldenCampaign: golden },
             myCommunicationsOnly: checked,
             advanceFilterConfig: analyticsAdvanceFilterConfigRef.current,
             productFilterUsesTypeIds: true,
@@ -1048,6 +1098,7 @@ const CommunicationAnalytics = () => {
                     index: 1,
                     startDate: pre.startDate,
                     endDate: pre.endDate,
+                    isGoldenCampaign: isGoldenCampaignOnlyRef.current,
                 },
                 myCommunicationsOnly: scopeMy,
                 advanceFilterConfig: analyticsAdvanceFilterConfig,
@@ -1076,6 +1127,7 @@ const CommunicationAnalytics = () => {
                 index: 1,
                 startDate: pre.startDate,
                 endDate: pre.endDate,
+                isGoldenCampaign: isGoldenCampaignOnlyRef.current,
             },
             myCommunicationsOnly: scopeMy,
             advanceFilterConfig: analyticsAdvanceFilterConfig,
@@ -1144,16 +1196,19 @@ const CommunicationAnalytics = () => {
                                         <BootstrapDropdown
                                             data={ANALYTICS_SCOPE_DROPDOWN_DATA}
                                             defaultItem={
-                                                myCommunicationsOnly
-                                                    ? 'My communications'
-                                                    : 'All communications'
+                                                isGoldenCampaignOnly
+                                                    ? GOLDEN_CAMPAIGN
+                                                    : myCommunicationsOnly
+                                                        ? 'My communications'
+                                                        : 'All communications'
                                             }
                                             alignRight
                                             containerClass="comm-listing-scope-dd"
                                             className="comm-listing-scope-dd__rs"
                                             onSelect={(item) => {
-                                                const next = item === 'My communications';
-                                                void handleMyCommunicationsToggleRef.current(next);
+                                                const nextGolden = item === GOLDEN_CAMPAIGN;
+                                                const nextMy = item === 'My communications';
+                                                void handleMyCommunicationsToggleRef.current(nextMy, nextGolden);
                                             }}
                                         />
                                     </div>

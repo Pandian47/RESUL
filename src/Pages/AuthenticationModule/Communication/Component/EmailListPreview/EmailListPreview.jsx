@@ -1,8 +1,69 @@
-import { memo, useEffect, useRef, useState } from 'react';
+import { memo, useCallback, useEffect, useRef, useState } from 'react';
+
 const SCALE_FACTOR = 0.4;
 const ANALYTICS_IFRAME_HEIGHT = 930;
 
-const EmailListPreview = ({ data }) => {
+const LEGACY_CONTENT_TARGET_TAB_SELECTOR = '.targetTab, .nav-tabs';
+const EMAIL_BUILDER_TAB_CONTROL_SELECTOR =
+    '.rp-tab-buttons-scroll-container, .rp-tab-buttons, .rp-tab-btn, .rp-tab-buttons-scroll-arrows, .rp-tab-buttons-scroll-arrow-btn';
+
+const isLegacyContentTargetTabArea = (target) =>
+    Boolean(target?.closest?.(LEGACY_CONTENT_TARGET_TAB_SELECTOR));
+
+const isEmailBuilderTabControl = (target) =>
+    Boolean(target?.closest?.(EMAIL_BUILDER_TAB_CONTROL_SELECTOR));
+
+const switchContentTargetTab = (doc, event) => {
+    const targetTab = event.target.closest('.targetTab, .nav-tabs');
+    if (!targetTab) return false;
+
+    const clickedTab = event.target.closest('li');
+    if (!clickedTab || !targetTab.contains(clickedTab)) return true;
+
+    event.preventDefault();
+    event.stopPropagation();
+
+    const parentElement = targetTab.closest('.editable') || targetTab.parentElement;
+    const tabContent = parentElement?.querySelector('.tab-content');
+    const listElement = [...targetTab.children].filter((node) => node.tagName === 'LI');
+    const tabIndex = listElement.indexOf(clickedTab);
+
+    if (tabIndex < 0) return true;
+
+    if (tabContent) {
+        const tabPanes = [...tabContent.children].filter(
+            (node) => node.classList?.contains('tab-pane') || node.hasAttribute('data-index'),
+        );
+
+        listElement.forEach((tabItem, index) => {
+            tabItem.classList.toggle('tab-active', index === tabIndex);
+        });
+
+        tabPanes.forEach((pane, paneIndex) => {
+            const dataIndex = Number(pane.getAttribute('data-index'));
+            const matchIndex = Number.isFinite(dataIndex) ? dataIndex : paneIndex;
+            pane.classList.toggle('active', matchIndex === tabIndex);
+        });
+    } else {
+        const tabLabel = clickedTab.getAttribute('data-id') || clickedTab.textContent?.trim();
+        const tabPanes = [...doc.querySelectorAll('.tab-pane')];
+
+        tabPanes.forEach((pane) => {
+            const fontName = pane.getAttribute('data-font');
+            const dataName = pane.getAttribute('data-name');
+            const isActive = fontName === tabLabel || dataName === tabLabel;
+            pane.classList.toggle('active', isActive);
+        });
+
+        listElement.forEach((tabItem, index) => {
+            tabItem.classList.toggle('tab-active', index === tabIndex);
+        });
+    }
+
+    return true;
+};
+
+const EmailListPreview = ({ data, onGalleryPreviewClick }) => {
     const content = data?.content || '';
     const footerContent = data?.footerContent || '';
     const previewImage = data?.previewImage || '';
@@ -13,6 +74,53 @@ const EmailListPreview = ({ data }) => {
     const [iframeHeight, setIframeHeight] = useState(null);
     const observerRef = useRef(null);
     const resizeObserverRef = useRef(null);
+    const galleryPreviewClickHandlerRef = useRef(null);
+    const onGalleryPreviewClickRef = useRef(onGalleryPreviewClick);
+    const remeasureIframeHeightRef = useRef(null);
+
+    useEffect(() => {
+        onGalleryPreviewClickRef.current = onGalleryPreviewClick;
+    }, [onGalleryPreviewClick]);
+
+    const attachGalleryPreviewClickHandler = useCallback(() => {
+        if (!onGalleryPreviewClickRef.current) return;
+
+        const iframe = iframeRef.current;
+        if (!iframe) return;
+
+        try {
+            const doc = iframe.contentDocument || iframe.contentWindow?.document;
+            if (!doc) return;
+
+            if (galleryPreviewClickHandlerRef.current) {
+                doc.removeEventListener('click', galleryPreviewClickHandlerRef.current, true);
+            }
+
+            const handlePreviewClick = (event) => {
+                if (isEmailBuilderTabControl(event.target)) {
+                    window.setTimeout(() => remeasureIframeHeightRef.current?.(), 50);
+                    return;
+                }
+
+                if (isLegacyContentTargetTabArea(event.target)) {
+                    const handledTabClick = switchContentTargetTab(doc, event);
+                    if (handledTabClick) {
+                        remeasureIframeHeightRef.current?.();
+                    }
+                    return;
+                }
+
+                event.preventDefault();
+                event.stopPropagation();
+                onGalleryPreviewClickRef.current?.();
+            };
+
+            galleryPreviewClickHandlerRef.current = handlePreviewClick;
+            doc.addEventListener('click', handlePreviewClick, true);
+        } catch {
+            // cross-origin — ignore
+        }
+    }, []);
 
     useEffect(() => {
         setIframeHeight(null);
@@ -37,9 +145,17 @@ const EmailListPreview = ({ data }) => {
             }
         };
 
+        remeasureIframeHeightRef.current = measureHeight;
+
         const onLoad = () => {
             const retryDelays = [50, 200, 500, 1000];
-            retryDelays.forEach((ms) => setTimeout(measureHeight, ms));
+            retryDelays.forEach((ms) =>
+                setTimeout(() => {
+                    measureHeight();
+                    attachGalleryPreviewClickHandler();
+                }, ms),
+            );
+            attachGalleryPreviewClickHandler();
 
             try {
                 const doc = iframe.contentDocument || iframe.contentWindow?.document;
@@ -75,8 +191,64 @@ const EmailListPreview = ({ data }) => {
             iframe.removeEventListener('load', onLoad);
             observerRef.current?.disconnect();
             resizeObserverRef.current?.disconnect();
+
+            try {
+                const doc = iframe.contentDocument || iframe.contentWindow?.document;
+                if (doc && galleryPreviewClickHandlerRef.current) {
+                    doc.removeEventListener('click', galleryPreviewClickHandlerRef.current, true);
+                }
+            } catch {
+                // cross-origin — ignore
+            }
         };
-    }, [content, footerContent, showAsHtml, previewImage]);
+    }, [content, footerContent, showAsHtml, previewImage, attachGalleryPreviewClickHandler]);
+
+    const galleryPreviewCss = onGalleryPreviewClick
+        ? `
+            html, body {
+                cursor: pointer !important;
+            }
+            .targetTab,
+            .targetTab li,
+            .targetTab li span,
+            .nav-tabs,
+            .nav-tabs li,
+            .nav-tabs li span,
+            .rp-tab-btn,
+            .rp-tab-buttons-scroll-arrow-btn {
+                cursor: pointer !important;
+            }
+        `
+        : '';
+
+    const galleryTabPointerCss = onGalleryPreviewClick
+        ? `
+            .targetTab,
+            .targetTab li,
+            .targetTab li span,
+            .nav-tabs,
+            .nav-tabs li,
+            .nav-tabs li span,
+            .rp-tab-buttons-scroll-container,
+            .rp-tab-buttons,
+            .rp-tab-btn,
+            .rp-tab-buttons-scroll-arrows,
+            .rp-tab-buttons-scroll-arrow-btn {
+                pointer-events: auto !important;
+                cursor: pointer !important;
+            }
+        `
+        : `
+            .targetTab,
+            .targetTab li,
+            .targetTab li span,
+            .nav-tabs,
+            .nav-tabs li,
+            .nav-tabs li span {
+                pointer-events: auto !important;
+                cursor: pointer !important;
+            }
+        `;
 
     const previewCss = `
         <style>
@@ -87,11 +259,21 @@ const EmailListPreview = ({ data }) => {
                 width: auto !important;
                 vertical-align: middle !important;
             }
-            a, button, input, textarea, select, img {
+            a, input, textarea, select, img {
                 pointer-events: none !important;
                 cursor: default !important;
             }
-            /* Carousel: parent wrapper as flex column for correct ordering */
+            button:not(.rp-tab-btn):not(.rp-tab-buttons-scroll-arrow-btn) {
+                pointer-events: none !important;
+                cursor: default !important;
+            }
+            ${galleryTabPointerCss}
+            .tab-pane {
+                display: none;
+            }
+            .tab-pane.active {
+                display: block !important;
+            }
             div:has(> [id^="rs-amp-carousel-fb-"]) {
                 display: flex !important;
                 flex-direction: column !important;
@@ -129,6 +311,7 @@ const EmailListPreview = ({ data }) => {
                 height: auto !important;
                 min-height: 0 !important;
             }
+            ${galleryPreviewCss}
         </style>
     `;
 
@@ -139,9 +322,11 @@ const EmailListPreview = ({ data }) => {
         return `${previewCss}${processedHtml}`;
     };
 
+    const galleryListingPreviewClass = onGalleryPreviewClick ? ' gallery-listing-preview-clickthrough' : '';
+
     if (!showAsHtml && previewImage) {
         return (
-            <div className="rs-preview-content css-scrollbar">
+            <div className={`rs-preview-content css-scrollbar${galleryListingPreviewClass}`}>
                 <img alt="Email Preview" src={previewImage} />
             </div>
         );
@@ -149,7 +334,7 @@ const EmailListPreview = ({ data }) => {
 
     if (!showAsHtml && content) {
         return (
-            <div className="rs-preview-content css-scrollbar">
+            <div className={`rs-preview-content css-scrollbar${galleryListingPreviewClass}`}>
                 <img alt="Email Preview" src={`data:image/jpeg;base64,${content}`} />
             </div>
         );
@@ -166,7 +351,7 @@ const EmailListPreview = ({ data }) => {
                 <div className="rspc-content">
                     <div className={`email-listing-preview ${isModalPreview ? ' modal-email-preview' : ''}`}>
                         <div
-                            className="preview-iframe-clip"
+                            className={`preview-iframe-clip${onGalleryPreviewClick ? ' gallery-email-preview-clickable' : ''}`}
                             style={
                                 visualHeight
                                     ? { height: `${visualHeight + 20}px`, padding: '5px 5px' }

@@ -2,7 +2,7 @@ import { useEffect, useMemo } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 
 import RSTabbar from 'Components/RSTabber';
-import { MAIL_TAB_CONFIG } from '../../constant';
+import { MAIL_TAB_CONFIG, shouldShowAuthoringTabChangeConfirmation } from '../../constant';
 import { updateTab } from 'Reducers/communication/createCommunication/Create/reducer';
 import useQueryParams from 'Hooks/useQueryParams';
 import { getChannelId } from 'Utils/modules/communicationChannels';
@@ -94,7 +94,7 @@ const Mail = () => {
             activeClass={`active`}
             defaultTab={currentIndex}
             tabData={finalMailTabConfig}
-            isTabChangeConfirmation={isDirty}
+            isTabChangeConfirmation={shouldShowAuthoringTabChangeConfirmation(isDirty)}
             callBack={(tabs, index) => {
                 if (currentIndex !== index) {
                     dispatch(

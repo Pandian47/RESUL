@@ -20,7 +20,7 @@ import Scheduler from '../../Component/Scheduler';
 import RSKendoDropdown from 'Components/FormFields/RSKendoDropdown';
 import RSTextarea from 'Components/FormFields/RSTextarea';
 import RSTooltip from 'Components/RSTooltip';
-import { availableTabs, communicationChannels, getPreCampaignStatus, handleAutoRefreshClickOff, handlePersonalizationFetchApiCall, AudienceFieldRenderComponent, audienceTypeList, handleCheckCTGT, handleCGTGModalCheck, getPastPlanDurationBlockedState, validatePastPlanDurationOnSubmit, PAST_PLAN_DURATION_CLICK_OFF_CLASS } from '../../constant';
+import { availableTabs, communicationChannels, getPreCampaignStatus, handleAutoRefreshClickOff, handlePersonalizationFetchApiCall, AudienceFieldRenderComponent, audienceTypeList, handleCheckCTGT, handleCGTGModalCheck, getPastPlanDurationBlockedState, validatePastPlanDurationOnSubmit, PAST_PLAN_DURATION_CLICK_OFF_CLASS , shouldPromptSkipChannelConfirmation} from '../../constant';
 
 import { getSessionId, getUtcTimeData } from 'Reducers/globalState/selector';
 import { getUtcTimeNow } from 'Reducers/globalState/request';
@@ -123,11 +123,7 @@ const Voice = ({ type, mCampType }) => {
         campaignType: _get(location, 'campaignType', 'S'),
     };
     const methods = useForm(formInitailState);
-    
-    // Call UTC time API on component mount
-    useEffect(() => {
-        dispatch(getUtcTimeNow());
-    }, [dispatch]);
+
     const {
         control,
         reset,
@@ -812,6 +808,10 @@ const Voice = ({ type, mCampType }) => {
                         onClick={() => {
                             if (isPastPlanDurationBlocked) return;
                             if (!isDirty && !isValid && levelNumber === 1) {
+                                if (!shouldPromptSkipChannelConfirmation()) {
+                                    handleNavigation();
+                                    return;
+                                }
                                 setNavigate_confirm(true);
                             } else {
                                 const formData = getValues();

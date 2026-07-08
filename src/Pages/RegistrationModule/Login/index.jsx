@@ -173,18 +173,15 @@ const Login = () => {
                   }}
                 >
                 <div ref={contentRef} className='tabs-content d-flex' style={{ position: 'relative' }}>
-                  <AnimatePresence mode="wait">
-                    <motion.div
-                      key={getActiveViewKey()}
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      exit={{ opacity: 0 }}
-                      transition={{ duration: 0.3, ease: 'easeInOut' }}
-                      style={{ width: '100%' }}
-                    >
-                      {renderLoginComponent()}
-                    </motion.div>
-                  </AnimatePresence>
+                  <motion.div
+                    key={getActiveViewKey()}
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ duration: 0.2, ease: 'easeInOut' }}
+                    style={{ width: '100%' }}
+                  >
+                    {renderLoginComponent()}
+                  </motion.div>
                 </div>
                 </motion.div>
                 {!isLoginValid && (
@@ -212,7 +209,7 @@ const Login = () => {
                                               ? ''
                                               : isNewUser
                                               ? 'Existing user'
-                                              : 'New user?'}
+                                              : 'New user'}
                                         </motion.span>
                                       </AnimatePresence>
                                     </span>

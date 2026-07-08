@@ -1,6 +1,6 @@
 import { convertObjectToBase64 } from 'Utils/modules/crypto';
 import { formatNumber } from 'Utils/modules/campaignUtils';
-import { numberWithCommas } from 'Utils/modules/formatters';
+import { numberWithCommas, formatPercentageDisplay } from 'Utils/modules/formatters';
 import { MAX_LENGTH50 } from 'Constants/GlobalConstant/Regex';
 import { NAME_CANNOT_BE_EMPTY } from 'Constants/GlobalConstant/ValidationMessage';
 import { LIST_NAME_RULES } from 'Pages/AuthenticationModule/Audience/audienceFormRules';
@@ -68,6 +68,11 @@ const SingleList = ({ list, type, duplicate, setDuplicate, setPageState, params,
         list?.isAdhoclist || (!list?.isAdhoclist && !list?.isRequestApproval === 0) || list?.createdBy !== userId;
     const recipientCount = list.audienceCount;
     const recipientPercentage = list.audiencePercentage;
+    const hasRecipientPercentage =
+        recipientPercentage !== '' && recipientPercentage !== undefined && recipientPercentage !== null;
+    const formattedRecipientPercentage = hasRecipientPercentage
+        ? formatPercentageDisplay(String(recipientPercentage).replace('%', '').trim())
+        : null;
     const status = list.status;
     const usersIcon = list.usersIcon;
     const blastedCount = list.blastedCount;
@@ -434,27 +439,12 @@ const SingleList = ({ list, type, duplicate, setDuplicate, setPageState, params,
 
                                         <div className="rcit-number">
                                             <span
-                                                className={`rcitn-number ${
-                                                    recipientPercentage === '' ||
-                                                    recipientPercentage === undefined ||
-                                                    recipientPercentage === null
-                                                        ? 'na'
-                                                        : ''
-                                                }`}
+                                                className={`rcitn-number ${!hasRecipientPercentage ? 'na' : ''}`}
                                             >
-                                                {recipientPercentage === '' ||
-                                                recipientPercentage === undefined ||
-                                                recipientPercentage === null
-                                                    ? 'NA'
-                                                    : recipientPercentage}
+                                                {hasRecipientPercentage ? formattedRecipientPercentage : 'NA'}
                                             </span>
                                             <span className="rcitn-per">
-                                                {' '}
-                                                {recipientPercentage === '' ||
-                                                recipientPercentage === undefined ||
-                                                recipientPercentage === null
-                                                    ? ''
-                                                    : '%'}
+                                                {hasRecipientPercentage ? '%' : ''}
                                             </span>
                                         </div>
                                         {/* <div className="cardInfo">

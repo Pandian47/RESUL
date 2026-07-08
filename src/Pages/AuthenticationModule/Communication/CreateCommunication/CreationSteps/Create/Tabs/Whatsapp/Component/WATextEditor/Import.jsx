@@ -13,6 +13,7 @@ import { RSPrimaryButton } from 'Components/Buttons';
 import RSFileUpload from 'Components/FormFields/RSFileUpload';
 import useApiLoader from 'Hooks/useApiLoader';
 import { AUTHORING_FIELD_LOADER_CONFIG } from 'Components/Skeleton/pages/communication/authoring';
+import SpinnerLoader from 'Components/Skeleton/Components/common/SpinnerLoader';
 import {
     uploadMessagingImage,
     uploadMessagingVideoDocument,
@@ -43,7 +44,8 @@ const Import = ({
     } = useFormContext();
     const { userId, clientId, departmentId } = useSelector((state) => getSessionId(state));
     const dispatch = useDispatch();
-    const uploadLoader = useApiLoader({ autoFetch: false });    const watcher = isSplitFieldName ? watch(isSplitFieldName) : watch()
+    const uploadLoader = useApiLoader({ autoFetch: false });
+    const watcher = isSplitFieldName ? watch(isSplitFieldName) : watch();
     const isEditable = watch(fieldName)?.isHeaderEditable;
     const getFinalFieldName = (fieldValue) =>
         isSplitFieldName && isSplitTabs ? `${isSplitFieldName}.${fieldValue}` : fieldValue;
@@ -107,52 +109,60 @@ const Import = ({
         };
 
         try {
-            if (type === 'video') {
-                const formData = new FormData();
-                const mimeType = getVideoMimeType(fileName);
-                const blob = base64ToBlob(base64, mimeType);
-                formData.append('file', blob, fileName);
-                formData.append('departmentId', departmentId);
-                formData.append('clientId', clientId);
-                formData.append('userId', userId);
+            const isVideoUpload = type === 'video';
+            const payload = isVideoUpload
+                ? (() => {
+                      const formData = new FormData();
+                      const mimeType = getVideoMimeType(fileName);
+                      const blob = base64ToBlob(base64, mimeType);
+                      formData.append('file', blob, fileName);
+                      formData.append('departmentId', departmentId);
+                      formData.append('clientId', clientId);
+                      formData.append('userId', userId);
+                      return formData;
+                  })()
+                : {
+                      base64Image: base64,
+                      imageFormat: fileName.split('.')?.pop(),
+                      fileName,
+                      contentLength,
+                      departmentId,
+                      clientId,
+                      userId,
+                  };
 
-                const result = await dispatch(uploadMessagingVideoDocument({ payload: formData }));
-                const { data, status } = result || {};
-                const videoUrl = Array.isArray(data) && data[0]?.url ? data[0].url : url ?? data;
-                if (status && videoUrl) {
-                    setValue(getFinalFieldName(`headerType.${type}UploadUrl`), videoUrl);
-                    setValue(getFinalFieldName('previewImage'), videoUrl);
-                    setValue(getFinalFieldName('header'), videoUrl);
-                } else {
-                    setUploadError();
-                }
-            } else {
-                const payloadData = {
-                    base64Image: base64,
-                    imageFormat: fileName.split('.')?.pop(),
-                    fileName: fileName,
-                    contentLength,
-                    departmentId,
-                    clientId,
-                    userId,
-                };
-                const { data, status } =
-                    (await uploadLoader.refetch({
-                        fetcher: ({ payload: uploadPayload } = {}) =>
-                            dispatch(uploadMessagingImage({ payload: uploadPayload, loading: false })),
-                        mode: 'create',
-                        loaderConfig: AUTHORING_FIELD_LOADER_CONFIG,
-                        params: { payload: payloadData },
-                    })) || {};
-                if (status) {                    
-                    setValue(getFinalFieldName(`headerType.${type}UploadUrl`), data);
-                    setValue(getFinalFieldName('previewImage'), data);
-                    setValue(getFinalFieldName('header'), data);
-                } else {
-                    setUploadError();
-                }
+            const { data, status } =
+                (await uploadLoader.refetch({
+                    fetcher: ({ payload: uploadPayload } = {}) =>
+                        dispatch(
+                            isVideoUpload
+                                ? uploadMessagingVideoDocument({ payload: uploadPayload, loading: false })
+                                : uploadMessagingImage({ payload: uploadPayload, loading: false }),
+                        ),
+                    mode: 'create',
+                    loaderConfig: AUTHORING_FIELD_LOADER_CONFIG,
+                    params: { payload },
+                })) || {};
+
+            if (!status) {
+                setUploadError();
+                return;
             }
-        } catch (err) {
+
+            const uploadedUrl = isVideoUpload
+                ? Array.isArray(data) && data[0]?.url
+                    ? data[0].url
+                    : data?.url ?? data
+                : data;
+
+            if (uploadedUrl) {
+                setValue(getFinalFieldName(`headerType.${type}UploadUrl`), uploadedUrl);
+                setValue(getFinalFieldName('previewImage'), uploadedUrl);
+                setValue(getFinalFieldName('header'), uploadedUrl);
+            } else {
+                setUploadError();
+            }
+        } catch {
             setUploadError();
         }
     };
@@ -447,7 +457,6 @@ const Import = ({
                                                     <i
                                                         className={`${import_file_edge_large} icon-lg color-primary-blue `}
                                                     ></i>
-
                                                     <label className="rsiwi-label">Upload {type}</label>
                                                 </div>
                                                 <span className="opacity-0  position-absolute">
@@ -510,7 +519,7 @@ const Import = ({
                                                     className="d-inline-flex align-items-center justify-content-center position-absolute"
                                                     style={{ right: 15, top: 35 }}
                                                 >
-                                                    <span className="segment_loader"></span>
+                                                    <SpinnerLoader ariaLabel="Uploading" />
                                                 </span>
                                             )}
                                         </div>                                    </Col>

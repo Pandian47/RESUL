@@ -6,7 +6,20 @@ import { encodeUrl, encryptWithAES } from 'Utils/modules/crypto';
 import { getUserCurrentFormat } from 'Utils/modules/dateTime';
 import { truncateTitle } from 'Utils/modules/displayCore';
 
-import { ANALYTICS, ARE_YOU_SURE_DELETE, CANCEL, DELETE, DYNAMIC_LIST_ZERO, EDIT, ENTER_COMMENTS, OK, PROCEED, VIEW } from 'Constants/GlobalConstant/Placeholders';
+import {
+    ANALYTICS,
+    ARE_YOU_SURE_DELETE_DRAFT_COMMUNICATION,
+    ARE_YOU_SURE_DELETE_SCHEDULED_COMMUNICATION,
+    CANCEL,
+    CONFIRM_DELETION,
+    DELETE,
+    DYNAMIC_LIST_ZERO,
+    EDIT,
+    ENTER_COMMENTS,
+    OK,
+    PROCEED,
+    VIEW,
+} from 'Constants/GlobalConstant/Placeholders';
 import { analytics_medium, comment_medium, delete_medium, eye_medium, listing_preview_medium, pencil_edit_medium, tick_medium, winner_mini } from 'Constants/GlobalConstant/Glyphicons';
 import { Fragment, cloneElement, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { get as _get,forEach as _forEach ,lowerCase} from 'Utils/modules/lodashReplacements';
@@ -101,11 +114,11 @@ const DetailedStatus = ({
 
     const { savedChannelsId, campaignBlastDetails } = useSelector(({ communicationPlanReducer }) => communicationPlanReducer);
     const { campaignDetail = {}, data = {} } = useSelector((state) => state.communicationListingReducer ?? {});
-    const statusId = content?.statusId;
+    const statusId = content?.statusId || null;
     const communicationStatusId = dataItem?.statusId; // communicationStatus
     const isArchivable =
-        communicationStatusId === 6 ||
-        communicationStatusId === 7;
+        statusId === 6 ||
+        statusId === 7;
     const { icon, title } = getIconByStatus(statusId);
     const socialSubChannelId = content?.socialPostChannelId ?? content?.subChannelId ?? 0;
 
@@ -178,6 +191,7 @@ const DetailedStatus = ({
     const makeChangesCommentLoader = useApiLoader({ loaderConfig: COMMENT_MODAL_LOADER_CONFIG, autoFetch: false });
     const rejectCommentLoader = useApiLoader({ loaderConfig: COMMENT_MODAL_LOADER_CONFIG, autoFetch: false });
     const editFlowLoader = useApiLoader({ loaderConfig: LISTING_FIELD_LOADER_CONFIG, autoFetch: false });
+    const deleteChannelApi = useApiLoader({ autoFetch: false });
 
     const getCommentApiPayload = useCallback(
         () => ({
@@ -193,6 +207,8 @@ const DetailedStatus = ({
     const [showDeleteModal, setShowDeleteModal] = useState(false);
 
     const handleDelete = async () => {
+        if (deleteChannelApi.isFetching) return;
+
         const deletePayload = {
             clientId,
             departmentId,
@@ -204,13 +220,18 @@ const DetailedStatus = ({
             createdBy: dataItem?.createdById || userId,
             levelNumber: content?.levelNumber || 1,
         };
-        const response = await dispatch(
-            deleteChannelById({
-                payload: deletePayload,
-            }),
-        );
-        setShowDeleteModal(false);
+        const response = await deleteChannelApi.refetch({
+            fetcher: () =>
+                dispatch(
+                    deleteChannelById({
+                        payload: deletePayload,
+                        loading: false,
+                    }),
+                ),
+            mode: 'create',
+        });
         if (response?.status) {
+            setShowDeleteModal(false);
             const { requestPayload } = contextState || {};
             const listPayload = {
                 userId,
@@ -693,10 +714,21 @@ const DetailedStatus = ({
             };
         }
 
+        // API sometimes omits splitType for split rows — derive the label from the
+        // row order (Split A/B/C/D) so a grouped split never renders an empty/"undefined" label.
+        if (content?.isGrouping && typeof splitIndex === 'number') {
+            return {
+                name: `Split ${SplitTypes(splitIndex)}`,
+                color: splitColors[splitIndex] || '#666666',
+                isWinner: false,
+            };
+        }
+
         return null;
     }, [
         content?.splitTypes,
         content?.splitType,
+        content?.isGrouping,
         content?.iswinnerSplit,
         content?.iswinnerSplitType,
         splitIndex,
@@ -744,7 +776,7 @@ const DetailedStatus = ({
                                 ) : (
                                     <span className="split-dot mr15" style={{ backgroundColor: splitInfo?.color }} />
                                 )}
-                                <span className="split-label">{`${splitInfo?.name}`}</span>
+                                <span className="split-label">{splitInfo?.name || ''}</span>
                             </div>
                         )}
                     </td>
@@ -1110,23 +1142,25 @@ const DetailedStatus = ({
                                 </span>
                             </RSTooltip>
                         </li>
-                        <li>
-                            <RSTooltip text={DELETE}>
-                                <span
-                                    className={
-                                        !isArchivable
-                                            ? 'pe-none click-off'
-                                            : ''
-                                    }
-                                >
-                                    <i
-                                        id="rs_data_trash_delete"
-                                        className={`${delete_medium} icon-md color-primary-red cp`}
-                                        onClick={() => setShowDeleteModal(true)}
-                                    ></i>
-                                </span>
-                            </RSTooltip>
-                        </li>
+                        {!isSplit && (
+                            <li>
+                                <RSTooltip text={DELETE}>
+                                    <span
+                                        className={
+                                            !isArchivable
+                                                ? 'pe-none click-off'
+                                                : ''
+                                        }
+                                    >
+                                        <i
+                                            id="rs_data_trash_delete"
+                                            className={`${delete_medium} icon-md color-primary-red cp`}
+                                            onClick={() => setShowDeleteModal(true)}
+                                        ></i>
+                                    </span>
+                                </RSTooltip>
+                            </li>
+                        )}
                     </ul>
                 </td>
             </tr>
@@ -1415,14 +1449,26 @@ const DetailedStatus = ({
                     }
                 />
             )}
-            <RSConfirmationModal
-                show={showDeleteModal}
-                text={ARE_YOU_SURE_DELETE}
-                primaryButtonText={OK}
-                handleClose={() => setShowDeleteModal(false)}
-                handleConfirm={handleDelete}
-                isCloseButton={false}
-            />
+            {!isSplit && (
+                <RSConfirmationModal
+                    show={showDeleteModal}
+                    header={CONFIRM_DELETION}
+                    text={
+                        statusId === 7
+                            ? ARE_YOU_SURE_DELETE_SCHEDULED_COMMUNICATION(label || name || 'channel')
+                            : ARE_YOU_SURE_DELETE_DRAFT_COMMUNICATION(label || name || 'channel')
+                    }
+                    secondaryButtonText={CANCEL}
+                    primaryButtonText={DELETE}
+                    isLoading={deleteChannelApi.isLoading}
+                    blockBodyPointerEvents={deleteChannelApi.isFetching}
+                    handleClose={() => {
+                        if (deleteChannelApi.isFetching) return;
+                        setShowDeleteModal(false);
+                    }}
+                    handleConfirm={handleDelete}
+                />
+            )}
         </Fragment>
     );
 };

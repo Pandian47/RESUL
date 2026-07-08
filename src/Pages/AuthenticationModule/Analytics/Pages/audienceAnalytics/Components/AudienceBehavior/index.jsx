@@ -7,6 +7,7 @@ import { getWeekName } from 'Utils/modules/communicationChannels';
 
 import { A360AudienceBehaviorBodySkeleton } from 'Components/Skeleton/pages/analytics';
 import { useSelector } from 'react-redux';
+import { motion } from 'framer-motion';
 const AudienceBehavior = () => {
     const [channels, setChannels] = useState('Reach');
     const [audienceBehaviourData, setAudienceBehaviourData] = useState([]);
@@ -91,18 +92,26 @@ const AudienceBehavior = () => {
                     <A360AudienceBehaviorBodySkeleton isError={!isBehaviorLoading && !hasBehaviorData} />
                 ) : (
                     <div className="bubble-chart-custom">
-                        <ul>
+                        <ul key={channels}>
                             {audienceBehaviourData.map((channel, index) => {
                                 const sortedValues = audienceBehaviourData.map((channel) => parseFloat(channel.value));
                                 const value = parseFloat(channel.value);
                                 const size = getSizeBasedOnValue(value, sortedValues);
                                 return (
-                                    <li
+                                    <motion.li
                                         key={index}
                                         className={`bubble-chart-list b-${channel.className}`}
                                         style={{
                                             width: `${size}px`,
                                             height: `${size}px`,
+                                        }}
+                                        initial={{ scale: 0, opacity: 0 }}
+                                        animate={{ scale: 1, opacity: 1 }}
+                                        transition={{
+                                            type: 'spring',
+                                            stiffness: 100,
+                                            damping: 12,
+                                            delay: index * 0.08,
                                         }}
                                     >
                                         <h2 className="b-title">
@@ -111,7 +120,7 @@ const AudienceBehavior = () => {
                                             <small>%</small>
                                         </h2>
                                         <p className="text-capitalize"> {channel.className}</p>
-                                    </li>
+                                    </motion.li>
                                 );
                             })}
                             {/* <li className="bubble-chart-list b-mon">

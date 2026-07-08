@@ -205,7 +205,7 @@ const ToolbarComponent = ({
                                 }}
                                 className={'kendo-dd-size-2 fs-19'}
                                 defaultValue={u_Months[u_Months?.length - 1]}
-                                noBottomBorder
+                                //noBottomBorder
                             />
                         </li>
                         <li>
@@ -223,7 +223,7 @@ const ToolbarComponent = ({
                                     handleMonthAndYear(selectedYear, 'year');
                                 }}
                                 className={'kendo-dd-size-3'}
-                                noBottomBorder
+                               // noBottomBorder
                             />
                         </li>
                     </ul>

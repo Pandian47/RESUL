@@ -10,10 +10,19 @@ import {
 import { getAudienceInsightPalette } from 'Pages/AuthenticationModule/Audience/audienceChartColors';
 import './InsightChartPortlet.scss';
 
-
 const formatColumnTitle = (column) => `${column?.slice(0, 1)?.toUpperCase() || ''}${column?.slice(1) || ''}`;
 
-const FALLBACK_COLORS = ['#f56701', '#99cc03', '#4caaf4', '#fcb040', '#33cc99', '#8f5dd9', '#ed6f9f', '#5bc0de', '#7e8a97'];
+const FALLBACK_COLORS = [
+    '#f56701',
+    '#99cc03',
+    '#4caaf4',
+    '#fcb040',
+    '#33cc99',
+    '#8f5dd9',
+    '#ed6f9f',
+    '#5bc0de',
+    '#7e8a97',
+];
 
 const getInsightColors = (values) => {
     const palette = getAudienceInsightPalette(values || []);
@@ -93,21 +102,85 @@ const insightValueAxisMax = (values, usePercentage) => {
 
 const INSIGHT_CHART_WIDTH = '532';
 
-/** Audience insight tooltips show Count (not column header); chart size may use percentage. */
-const insightCountTooltipFormatter = function () {
-    const pointKey = String(
-        this.point?.name ?? this.point?.category ?? this.point?.key ?? this.x ?? '',
+/** Portaled Highcharts tooltips must sit above RSModal (Bootstrap ~1055). */
+const INSIGHT_CHART_TOOLTIP_Z_INDEX = 10010;
+
+/** Audience insight tooltips — name on top, divider, then Count row (matches pie/donut reference). */
+const formatInsightTooltipHtml = ({ name, count, color }) => {
+    const displayName = String(name ?? '').trim();
+    const formattedValue = formatNumber(count ?? 0);
+    const pointColor = color ?? '';
+    return (
+        `<span class="font-xs insight-chart-tooltip">` +
+        `<span class="insight-chart-tooltip__name">${displayName}</span>` +
+        `<hr class="insight-chart-tooltip__divider" />` +
+        `<span class="insight-chart-tooltip__count">` +
+        `<span class="font-monospace" style="color:${pointColor}">\u25CF</span>&nbsp;` +
+        `<span class="font-xs">Count: </span>` +
+        `<span class="font-xs">${formattedValue}</span>` +
+        `</span></span>`
     );
+};
+
+const insightCountTooltipFormatter = function () {
+    const pointKey = String(this.point?.name ?? this.point?.category ?? this.point?.key ?? this.x ?? '');
     const displayValue = this.point?.count != null ? this.point.count : (this.point?.y ?? 0);
-    const formattedValue = formatNumber(displayValue);
-    const color = this.point?.color ?? '';
-    return `<span class="font-xs">${pointKey}<br/><hr /><span class="font-monospace" style="color:${color}">\u25CF</span>&nbsp;<span class="font-xs">Count: </span><span class="font-xs" style="text-align: right;">${formattedValue}</span></span>`;
+    const color = this.point?.color ?? this.color ?? '';
+    return formatInsightTooltipHtml({ name: pointKey, count: displayValue, color });
+};
+
+const insightBubbleTooltipFormatter = function () {
+    const fullName =
+        this?.point?.fullName ||
+        this?.series?.userOptions?.fullName ||
+        this?.series?.name ||
+        this?.point?.name ||
+        '';
+    const pointColor = this?.color || this?.point?.color || this?.series?.color || '';
+    const countValue =
+        this?.point?.count !== undefined
+            ? this?.point?.count
+            : this?.series?.userOptions?.count !== undefined
+              ? this?.series?.userOptions?.count
+              : 0;
+    return formatInsightTooltipHtml({ name: fullName, count: countValue, color: pointColor });
 };
 
 const insightPieCountTooltip = {
     enabled: true,
+    useHTML: true,
+    outside: true,
+    shared: false,
+    followPointer: false,
+    backgroundColor: '#111111',
+    borderWidth: 0,
+    borderRadius: 4,
+    shadow: false,
+    hideDelay: 0,
+    style: {
+        zIndex: INSIGHT_CHART_TOOLTIP_Z_INDEX,
+        color: '#ffffff',
+    },
     formatter: insightCountTooltipFormatter,
 };
+
+const insightChartTooltip = (formatter = insightCountTooltipFormatter) => ({
+    enabled: true,
+    useHTML: true,
+    outside: true,
+    shared: false,
+    followPointer: false,
+    backgroundColor: '#111111',
+    borderWidth: 0,
+    borderRadius: 4,
+    shadow: false,
+    hideDelay: 0,
+    style: {
+        zIndex: INSIGHT_CHART_TOOLTIP_Z_INDEX,
+        color: '#ffffff',
+    },
+    formatter,
+});
 
 const applyInsightChartLayout = (options) => ({
     ...options,
@@ -120,12 +193,28 @@ const applyInsightChartLayout = (options) => ({
 /** Clock gauge keeps dashboard sizing (no forced 532px width). */
 const applyInsightClockGaugeLayout = (options) => options;
 
+const resolveInsightValues = (insightData) => {
+    const rawValues = Array.isArray(insightData?.values) ? insightData.values : [];
+    let normalized = rawValues;
+
+    try {
+        const next = normalizeInsightValues(rawValues, insightData?.column);
+        normalized = Array.isArray(next) ? next : rawValues;
+    } catch {
+        normalized = rawValues;
+    }
+
+    return normalized
+        .filter((v) => v != null && typeof v === 'object')
+        .map((v) => ({
+            ...v,
+            label: formatInsightLabel(v?.label),
+        }));
+};
+
 const buildInsightOptions = (chartType, insightData) => {
     const rawValues = Array.isArray(insightData?.values) ? insightData.values : [];
-    const values = normalizeInsightValues(rawValues, insightData?.column).map((v) => ({
-        ...v,
-        label: formatInsightLabel(v?.label),
-    }));
+    const values = resolveInsightValues(insightData);
     const title = formatColumnTitle(insightData?.column);
     const categories = values.map((v) => v?.label ?? '');
     const palette = getInsightColors(values);
@@ -158,7 +247,7 @@ const buildInsightOptions = (chartType, insightData) => {
 
         case 'bar': {
             const usePctAxis = insightUsesPercentageAxis(values);
-            const barData = values.map((v) => (usePctAxis ? v?.percentage ?? 0 : v?.count ?? 0));
+            const barData = values.map((v) => (usePctAxis ? (v?.percentage ?? 0) : (v?.count ?? 0)));
             return applyInsightChartLayout(
                 barChartOptions({
                     xAxis: { categories, title: '' },
@@ -273,6 +362,7 @@ const buildInsightOptions = (chartType, insightData) => {
                         // Avoid 0/near-zero values that bubbleChartOptions renders with transparent shade.
                         value: Math.max(MIN_BUBBLE_VISIBLE_VALUE, roundedPct),
                         count: v?.count ?? 0,
+                        pct: roundedPct,
                     };
                 })
                 .filter(Boolean);
@@ -287,28 +377,27 @@ const buildInsightOptions = (chartType, insightData) => {
                     return {
                         ...s,
                         count: orig?.count ?? 0,
+                        pct: orig?.pct ?? 0,
                         data: s.data.map((d) => ({
                             ...d,
                             count: orig?.count ?? 0,
+                            pct: orig?.pct ?? 0,
                         })),
                     };
                 });
             }
             opts.tooltip = {
                 ...opts.tooltip,
-                formatter: function () {
-                    const fullName = this?.point?.fullName || this?.series?.userOptions?.fullName || this?.series?.name;
-                    const pointColor = this?.color || this?.point?.color || this?.series?.color;
-                    const countValue = this?.point?.count !== undefined ? this?.point?.count : (this?.series?.userOptions?.count !== undefined ? this?.series?.userOptions?.count : 0);
-                    const formattedCount = formatNumber(countValue);
-                    return `<span class="font-xs" style="color: #ffffff;">${fullName}</span><hr style="margin:4px -8px 6px;border:0;border-top:1px solid #5a5a5a;opacity:1;width:auto;" /><span class="font-monospace" style="color:${pointColor}">\u25CF</span>&nbsp;<span class="font-xs" style="color: #ffffff;">Count: </span><span class="font-xs" style="color: #ffffff;">${formattedCount}</span>`;
-                },
+                ...insightChartTooltip(insightBubbleTooltipFormatter),
             };
+            if (opts?.plotOptions?.packedbubble?.states?.hover) {
+                opts.plotOptions.packedbubble.states.hover.enabled = true;
+            }
             return applyInsightChartLayout(opts);
         }
 
         case 'scatter':
-            return {
+            return applyInsightChartLayout({
                 ...base,
                 chart: { type: 'scatter', height: '325', width: '532' },
                 xAxis: { categories },
@@ -330,10 +419,11 @@ const buildInsightOptions = (chartType, insightData) => {
                 ],
                 colors: palette,
                 legend: { enabled: false },
-            };
+                tooltip: insightChartTooltip(),
+            });
 
         case 'treemap':
-            return {
+            return applyInsightChartLayout({
                 ...base,
                 chart: { height: '325', width: '532' },
                 series: [
@@ -355,7 +445,8 @@ const buildInsightOptions = (chartType, insightData) => {
                     },
                 ],
                 legend: { enabled: false },
-            };
+                tooltip: insightChartTooltip(),
+            });
 
         case 'gauge': {
             const column = insightData?.column ?? '';
@@ -642,9 +733,16 @@ const InsightChartPortlet = ({ insightData = {}, chartKey }) => {
     const hasData = values.length > 0 || insightData?.avg != null || insightData?.min != null;
     if (!hasData) return null;
 
-    const rawOptions = buildInsightOptions(chartType, insightData);
+    let options;
+    try {
+        options = buildInsightOptions(chartType, insightData);
+    } catch {
+        return null;
+    }
+
+    if (!options || typeof options !== 'object') return null;
+
     const isClockGauge = chartType === 'gauge' && shouldUseClockGauge(column, values);
-    const options = rawOptions;
 
     return (
         <div

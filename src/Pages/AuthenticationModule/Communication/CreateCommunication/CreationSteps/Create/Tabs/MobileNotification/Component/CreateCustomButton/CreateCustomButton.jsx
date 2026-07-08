@@ -127,7 +127,7 @@ const CreateCustomButton = ({ handleClose, confirm, show = false, currentIndex =
                             </Col>
                         </Row>
                     </div>
-                    <div className="form-group mb0 mt20">
+                    <div className="form-group mb0 mt30">
                         <Row>
                             <Col sm={4} className="text-right">
                                 <label className="control-label-left">On click behaviour</label>

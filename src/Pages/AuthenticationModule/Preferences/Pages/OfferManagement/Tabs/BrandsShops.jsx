@@ -368,7 +368,23 @@ const BrandsShops = () => {
                 isServerSide
                 className="custom-rspager"
                 // wrapperClassName={!isLoading && brandsList.length > 0 ? 'mt-21' : 'mt21'}
-                emptyMessage="No brands found"
+                emptyMessage={
+                    <>
+                        Click{''}
+                        <i
+                            className={`${circle_plus_fill_edge_large} icon-md color-primary-blue mx5 cursor-pointer`}
+                            onClick={() => {
+                                const state = { index: tabIndex };
+                                const encryptState = encodeUrl(state);
+                                navigate(`/preferences/create-brand?q=${encryptState}`, {
+                                    state,
+                                });
+                            }}
+                        />{' '}
+                         Icon to Create Brand
+                    </>
+                }
+                emptyShowIcon={false}
             />
         </div>
     );

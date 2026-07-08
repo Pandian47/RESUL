@@ -10,6 +10,7 @@ import RSConfirmationModal from 'Components/ConfirmationModal';
 import { useDispatch, useSelector } from 'react-redux';
 import { useState } from 'react';
 import useQueryParams from 'Hooks/useQueryParams';
+import { shouldPromptSkipChannelConfirmation } from '../../../constant';
 
 
 const WebinarAnalytics = () => {
@@ -101,7 +102,11 @@ const WebinarAnalytics = () => {
                 <RSPrimaryButton
                     onClick={() => {
                         if (!isDirty && !isValid) {
-                            setNavigate_confirm(true);
+                            if (!shouldPromptSkipChannelConfirmation()) {
+                                    handleNavigation();
+                                    return;
+                                }
+                                setNavigate_confirm(true);
                         } else {
                             handleSubmit((data) => formSubmitHandler(data, 'form', false))();
                         }

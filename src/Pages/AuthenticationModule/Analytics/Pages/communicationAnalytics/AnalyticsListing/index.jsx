@@ -2,7 +2,7 @@ import { getStatus } from 'Utils/modules/communicationStatus';
 import { encodeUrl } from 'Utils/modules/crypto';
 import { getUserCurrentFormat } from 'Utils/modules/dateTime';
 import { renderCommunicationListingTags } from 'Utils/modules/display';
-import { truncateTitle } from 'Utils/modules/displayCore';
+import TruncatedCell from 'Components/RSKendoGrid/TruncateCell.jsx';
 import { DOWNLOAD, GOLDEN_CAMPAIGN, SENT_ON, SHARE, TREND_REPORT, VIEW_ANALYTICS } from 'Constants/GlobalConstant/Placeholders';
 import { analytics_medium, download_medium, share_tick_medium, star_fill_mini, trend_report_large } from 'Constants/GlobalConstant/Glyphicons';
 import { useMemo, useEffect } from 'react';
@@ -138,20 +138,16 @@ const AnalyticsList = ({ dataItem, listLayout }) => {
                             )?.dateFormat
                         }
                     </small>
-                    <div className={LAYOUT_CLASSES.listCardTitle}>
-                        {dataItem?.isGoldCampaign === true && (
-                            <RSTooltip text={GOLDEN_CAMPAIGN} position="top" className="d-inline-block lh0">
-                                <i className={`${star_fill_mini} icon-xs color-alert`}></i>
-                            </RSTooltip>
-                        )}{' '}
-                        {dataItem?.campaignName?.length > 60 ? (
-                            <RSTooltip text={dataItem?.campaignName} position="bottom" className="d-inline-block">
-                                {truncateTitle(dataItem?.campaignName, 60)}
-                            </RSTooltip>
-                        ) : (
-                            dataItem?.campaignName
-                        )}
-                    </div>
+               
+                     <div className={`${LAYOUT_CLASSES.listCardTitle} d-flex gap-1`}>
+                        { dataItem?.isGoldCampaign &&  <RSTooltip text={GOLDEN_CAMPAIGN} position="top">  <i
+                                        id="rs_data_Golden_campaign"
+                                        className={`icon-rs-star-fill-large color-alert icon-xs `}
+                                        
+                                    ></i>   </RSTooltip>}   <TruncatedCell value={dataItem?.campaignName} noTable />
+                        </div>
+
+
                     {renderCommunicationListingTags({
                         tags: dataItem?.tags,
                         campaignId: dataItem?.campaignID,
@@ -160,15 +156,9 @@ const AnalyticsList = ({ dataItem, listLayout }) => {
                 </div>
                 <div className="communication-content">
                     <small>{dataItem?.campaignTypeValue}</small>
-                    <p className="d-flex">
-                        {dataItem?.communicationType?.length > 20 ? (
-                            <RSTooltip text={dataItem?.communicationType} position="bottom">
-                                {truncateTitle(dataItem?.communicationType, 20)}
-                            </RSTooltip>
-                        ) : (
-                            dataItem?.communicationType
-                        )}
-                    </p>
+                   <div className="d-flex">
+                            <TruncatedCell value={dataItem?.communicationType} noTable />
+                        </div>
                 </div>
                 <div className="communication-content">
                     <small>{SENT_ON}</small>

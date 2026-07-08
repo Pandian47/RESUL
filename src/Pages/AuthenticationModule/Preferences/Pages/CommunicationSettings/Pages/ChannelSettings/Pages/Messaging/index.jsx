@@ -1,7 +1,7 @@
 import RSTabbar from 'Components/RSTabber';
 import { useEffect, useState } from 'react';
 import { useLocation } from 'react-router-dom';
-import { MESSAGING_TABBER_CONFIG, resolveMessagingTabState } from '../../constant';
+import { MESSAGING_TABBER_CONFIG, resolveMessagingTabState, syncMessagingChannelTabQuery } from '../../constant';
 import useQueryParams from 'Hooks/useQueryParams';
 
 const Messaging = () => {
@@ -19,6 +19,9 @@ const Messaging = () => {
             activeClass={`active`}
             defaultTab={tabState}
             tabData={MESSAGING_TABBER_CONFIG}
+            callBack={(_, index) => {
+                syncMessagingChannelTabQuery(index);
+            }}
         />
     );
 };

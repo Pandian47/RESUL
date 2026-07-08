@@ -3,6 +3,29 @@ import { Provider } from 'react-redux';
 import { createRoot } from 'react-dom/client';
 import { PersistGate } from 'redux-persist/integration/react';
 import { useLocation } from 'react-router-dom';
+import { captureRuntimeError, installRuntimeConsoleCapture } from 'Utils/RSPLogger/RSPLogger';
+
+installRuntimeConsoleCapture();
+
+if (typeof window !== 'undefined') {
+    window.addEventListener('error', (event) => {
+        captureRuntimeError({
+            type: 'window-error',
+            message: event.message,
+            stack: event.error?.stack,
+            source: `${event.filename}:${event.lineno}:${event.colno}`,
+        });
+    });
+
+    window.addEventListener('unhandledrejection', (event) => {
+        const reason = event.reason;
+        captureRuntimeError({
+            type: 'unhandled-rejection',
+            message: reason?.message || String(reason),
+            stack: reason?.stack,
+        });
+    });
+}
 
 import CustomRouter from 'Hoc/CustomRouter';
 import MainPageSkeleton from 'Components/Skeleton/Components/MainPageSkeleton';

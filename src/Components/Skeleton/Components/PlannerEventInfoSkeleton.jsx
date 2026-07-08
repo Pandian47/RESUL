@@ -1,4 +1,5 @@
 import { Col, Row } from 'react-bootstrap';
+import NoDataAvailableRender from 'Components/FormFields/Component/NoDataAvailableRender';
 
 const SkelBar = ({ width, height = 14, className = '' }) => (
     <span
@@ -24,8 +25,12 @@ const SkelChannelIcon = () => (
 );
 
 /** Inner card only — no carousel arrows or pagination dots. */
-const PlannerEventInfoSkeleton = () => (
-    <div className="planner-event-info-skeleton" aria-hidden="true">
+const PlannerEventInfoSkeleton = ({isError = false}) => (
+        <div className="skeleton-span-con ">
+        {isError && (
+            <NoDataAvailableRender/>
+        )}
+        <div className="planner-event-info-skeleton" aria-hidden="true">
         <div className="planner-event-info-skeleton__card border p5 border-r10">
             <div className="border-bottom mb10 pb10 px5">
                 <SkelBar width={150} height={14} />
@@ -50,8 +55,8 @@ const PlannerEventInfoSkeleton = () => (
                     <Col sm={6}>
                         <SkelBar width={128} height={16} />
                     </Col>
-                    <Col sm={6} className="text-end">
-                        <SkelBar width={72} height={16} className="ms-auto" />
+                    <Col sm={6}>
+                        <SkelBar width={72} height={16} />
                     </Col>
                 </Row>
             </div>
@@ -61,8 +66,8 @@ const PlannerEventInfoSkeleton = () => (
                     <Col sm={6}>
                         <SkelBar width={96} height={16} />
                     </Col>
-                    <Col sm={6} className="text-end">
-                        <SkelBar width={36} height={16} className="ms-auto" />
+                    <Col sm={6}>
+                        <SkelBar width={36} height={16} />
                     </Col>
                 </Row>
             </div>
@@ -78,6 +83,7 @@ const PlannerEventInfoSkeleton = () => (
                 </Row>
             </div>
         </div>
+    </div>
     </div>
 );
 

@@ -29,7 +29,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { useDispatch, useSelector, useStore } from 'react-redux';
 import { FormProvider, useForm } from 'react-hook-form';
 
-import { getContentSetupStatus, COMMUNICATION_CHANNEL_ID, handleUpdateEditAudienceCount, handleTotalAudienceCount, handleCGTGModalCheck, editActionIdFromCommunicationResponse } from '../../constant';
+import { getContentSetupStatus, COMMUNICATION_CHANNEL_ID, handleUpdateEditAudienceCount, handleTotalAudienceCount, handleCGTGModalCheck, editActionIdFromCommunicationResponse, shouldBypassAuthoringChannelSubmit, shouldPromptEmailFooterConfirmation } from '../../constant';
 import RSBootstrapdown from 'Components/FormFields/RSBootstrapdown';
 import EmailProvider from './context';
 import RSConfirmationModal from 'Components/ConfirmationModal';
@@ -805,7 +805,11 @@ const Email = ({ type, mCampType }) => {
                         ? content.some(({ isUnsubscribeEnabled }) => isUnsubscribeEnabled)
                         : Boolean(content?.[0]?.isUnsubscribeEnabled));
                 if (campaignUsesUnsubscription) {
-                    await dispatch(getUnSubscriptionList({ payload: { clientId, userId, departmentId } }));
+                    if (!unSubscriptionList?.length) {
+                        await dispatch(
+                            getUnSubscriptionList({ payload: { clientId, userId, departmentId }, loading: false }),
+                        );
+                    }
                     unsubscriptionListForBinding = emailList(store.getState()).unSubscriptionList;
                 }
                 if (isSplitAB && !_isEmpty(content)) {
@@ -901,7 +905,10 @@ const Email = ({ type, mCampType }) => {
                                     isClickOff={splitTabsIsClickOff}
                                 />
                             ),
-                            ...(total?.length < 4 && total?.length - 1 === index && { add: circle_plus_medium }),
+                            ...(total?.length < 4 && total?.length - 1 === index && {
+                                add: circle_plus_medium,
+                                isAdd: splitTabsIsClickOff,
+                            }),
                             ...(index > 1 &&
                                 total?.length - 1 === index && {
                                 remove: circle_minus_fill_medium,
@@ -1249,6 +1256,18 @@ const Email = ({ type, mCampType }) => {
             setIsClickOff(false);
         }
     }, [location?.campaignType, location?.endDate, campaignDetails?.content?.[0]?.statusId]);
+
+    useEffect(() => {
+        if (!splitTest) return;
+        setSplitAB((prev) =>
+            prev.map((tab) => ({
+                ...tab,
+                ...(tab.add ? { isAdd: isClickOff } : {}),
+                ...(tab.remove ? { isRemove: isClickOff } : {}),
+            })),
+        );
+    }, [isClickOff, splitTest]);
+
     useEffect(() => {
         if (mCampType === 'M' && isClickOff) {
             setDisableNext(false);
@@ -1293,10 +1312,10 @@ const Email = ({ type, mCampType }) => {
                 return {
                     ...split,
                     add: circle_plus_medium,
+                    isAdd: isClickOff,
                 };
-            } else {
-                return split;
             }
+            return split;
         });
         setSplitAB(updateInitialSplitABState);
     }
@@ -1336,10 +1355,13 @@ const Email = ({ type, mCampType }) => {
     };
 
     const onAddTab = (index) => {
+        if (isClickOff) return;
         const getSplitName = { ...SPLIT_AB_NAME[index] };
         const temp = [...splitAB];
         delete temp[temp?.length - 1].add;
         delete temp[temp?.length - 1].remove;
+        delete temp[temp?.length - 1].isAdd;
+        delete temp[temp?.length - 1].isRemove;
         temp.push({
             ...getSplitName,
             component: () => (
@@ -1352,6 +1374,7 @@ const Email = ({ type, mCampType }) => {
                 />
             ),
             remove: circle_minus_fill_medium,
+            isRemove: isClickOff,
         });
         setSplitAB(temp);
         updateTabChange(temp);
@@ -1359,6 +1382,7 @@ const Email = ({ type, mCampType }) => {
     };
 
     const onRemoveTab = () => {
+        if (isClickOff) return;
         // index > 1 && total?.length - 1 === index &&
         const temp = [...splitAB];
         const removedItem = temp.pop();
@@ -1366,7 +1390,11 @@ const Email = ({ type, mCampType }) => {
         temp[temp?.length - 1] = {
             ...temp[temp?.length - 1],
             add: circle_plus_medium,
-            ...(temp?.length >= 3 && { remove: circle_minus_fill_medium }),
+            isAdd: isClickOff,
+            ...(temp?.length >= 3 && {
+                remove: circle_minus_fill_medium,
+                isRemove: isClickOff,
+            }),
         };
         reset(
             (formState) => ({
@@ -1413,19 +1441,55 @@ const Email = ({ type, mCampType }) => {
         }
     };
 
+    const hasEmailContentTabErrors = (formData) => {
+        if (formData.splitTest) {
+            const tabsToCheck = splitTabList?.length ? splitTabList : ['splitA', 'splitB'];
+            return tabsToCheck.some((tab) => {
+                const currentPage = _get(formData, `${tab}.currentPage`, null);
+                return currentPage === null || currentPage === undefined;
+            });
+        }
+        const currentPage = formData.currentPage;
+        return currentPage === null || currentPage === undefined;
+    };
+
     const checkEmailFooterEnabled = (formData) => {
         if (formData.splitTest) {
             const tabsToCheck = splitTabList && splitTabList.length > 0 ? splitTabList : ['splitA', 'splitB'];
+            let hasConfiguredTab = false;
             for (const tab of tabsToCheck) {
-                const emailFooter = _get(formData, `${tab}.emailFooter`, false);
-                if (!emailFooter) {
+                const currentPage = _get(formData, `${tab}.currentPage`, null);
+                if (currentPage === null || currentPage === undefined) {
+                    continue;
+                }
+                hasConfiguredTab = true;
+                if (!_get(formData, `${tab}.emailFooter`, false)) {
                     return false;
                 }
             }
-            return true;
-        } else {
-            return _get(formData, 'emailFooter', false);
+            return hasConfiguredTab;
         }
+        if (formData.currentPage === null || formData.currentPage === undefined) {
+            return true;
+        }
+        return _get(formData, 'emailFooter', false);
+    };
+
+    const promptEmailFooterBeforePayload = (state, submitType, scheduleFlag, skipFooterWarning, alreadyProceedWithoutSchedule = false) => {
+        if (skipFooterWarning) return false;
+        if (!shouldPromptEmailFooterConfirmation(isClickOff)) return false;
+        if (submitType !== 'form' && submitType !== 'save') return false;
+        if (hasEmailContentTabErrors(state)) return false;
+        if (!checkEmailFooterEnabled(state)) {
+            setPendingEmailFooterParams({
+                type: submitType,
+                isSchedule: scheduleFlag,
+                proceedWithoutSchedule: alreadyProceedWithoutSchedule,
+            });
+            setEmailFooterWarning(true);
+            return true;
+        }
+        return false;
     };
 
     const checkUnsubscribeDuplicate = (formData) => {
@@ -1497,6 +1561,7 @@ const Email = ({ type, mCampType }) => {
         proceedWithoutSchedule = false,
         passportId = '',
         isNewFooterCreation = false,
+        proceedWithoutEmailFooterWarning = false,
     ) {
         beginSubmit(getAuthoringSaveButtonType(type));
         const shouldRefreshEmailAfterSave = ['test preview', 'live', 'request for approval'].includes(type);
@@ -1525,6 +1590,9 @@ const Email = ({ type, mCampType }) => {
         }
 
         if (!isClickOff) {
+            if (!proceedWithoutEmailFooterWarning) {
+                setEmailFooterWarning(false);
+            }
             if (type !== 'test preview') {
                 if (!handleAutoRefreshClickOff(audience)) {
                     const audienceCountValid = validateAudienceCount({
@@ -1789,6 +1857,9 @@ const Email = ({ type, mCampType }) => {
                         scheduleAll.push(true);
                     }
                 }
+                if (promptEmailFooterBeforePayload(formState, type, isSchedule, proceedWithoutEmailFooterWarning, proceedWithoutSchedule)) {
+                    return;
+                }
                 if (location?.campaignType !== 'T' && getTestType() !== 2 && !proceedWithoutSchedule) {
                     formTypeRef.current = type;
                     if (nullCount === tempSplitTabsList?.length) {
@@ -2017,6 +2088,19 @@ const Email = ({ type, mCampType }) => {
                 }
             }
 
+            if (
+                !formState.splitTest &&
+                promptEmailFooterBeforePayload(
+                    formState,
+                    type,
+                    isSchedule,
+                    proceedWithoutEmailFooterWarning,
+                    proceedWithoutSchedule,
+                )
+            ) {
+                return;
+            }
+
             // formTypeRef.current = null;
             if (
                 (location?.campaignType === 'S' && type !== 'test preview' && type !== 'live') ||
@@ -2063,7 +2147,7 @@ const Email = ({ type, mCampType }) => {
                                 setFocus('subjectLine');
                                 return;
                             }
-                        } else if(!proceedWithoutSchedule) {
+                        } else if (!proceedWithoutSchedule) {
                             dispatchState({
                                 type: 'UPDATE',
                                 payload: true,
@@ -2582,16 +2666,14 @@ const Email = ({ type, mCampType }) => {
                     className="rsv-tabs-content tab-content position-relative allow-copy"
                 >
                     <div className={`box-design bd-top-border`}>
-                        {/* {!smartLink1 && !tabSmartLink_Flag && ( */}
-                        {!tabSmartLink_Flag && tabSmartLink_Flag !== null && !isClickOff && (
-                            <SmartLinkEnable
+                        <SmartLinkEnable
+                                isClickOff={isClickOff}
                                 onSave={() => dispatchState({ type: 'UPDATE', payload: false, field: 'isSmarkLink' })}
                                 onReject={() => {
                                     dispatch(showTabsSmartlink(true));
                                     dispatchState({ type: 'UPDATE', payload: false, field: 'isSmarkLink' });
                                 }}
                             />
-                        )}
                         <div className="form-group mt20">
                             {/* BUG{SAM}: Pattern needs to be check it */}
                             <Row>
@@ -2805,17 +2887,22 @@ const Email = ({ type, mCampType }) => {
                                                         onClick={(e) => {
                                                             e.preventDefault();
                                                             e.stopPropagation();
-                                                            navigate('/preferences/communication-settings', {
-                                                                state: createCommunicationSettingsNavState('mail', {
-                                                                        mode: 'add',
-                                                                        subfrom: 'MP',
+                                                            const navState = createCommunicationSettingsNavState(
+                                                                'mail',
+                                                                {
+                                                                    mode: 'add',
+                                                                    from: 'CreateCommunication',
+                                                                    campaignType: location?.campaignType,
                                                                     mailTabId: MAIL_TAB_ID.SMTP,
-                                                                        backAction: window.location.search,
-                                                                        tabValueName: 'email',
-                                                                        tabValue: 'email',
-                                                                        from: 'email',
-                                                                }, location, getValues),
-                                                            });
+                                                                    smtpTabId: 'domain',
+                                                                    backAction: window.location.search,
+                                                                },
+                                                                location,
+                                                            );
+                                                            navigate(
+                                                                `/preferences/communication-settings?q=${encodeUrl(navState)}`,
+                                                                { state: {} },
+                                                            );
                                                         }}
                                                     >
                                                         <span className="text-primary-blue">New domain</span>
@@ -2980,13 +3067,13 @@ const Email = ({ type, mCampType }) => {
                                     isAudienceLoading={audienceLoader.isLoading}
                                     children={
                                         <div className={`align-items-center d-flex justify-content-between`}>
-                                            <span className={`${shouldDisableAutoRefresh ? 'click-off' : ''}`}>
+                                            <span className={`${shouldDisableAutoRefresh ? 'pe-none click-off' : ''}`}>
                                                 <RSCheckbox
                                                     control={control}
                                                     name="isAutoRefereshenabled"
                                                     labelName={AUTO_REFRESH}
                                                     popover
-                                                    popover_icon={`${circle_question_mark_mini} icon-xs color-primary-blue top2`}
+                                                    popover_icon={`${circle_question_mark_mini} icon-xs color-primary-blue`}
                                                     popover_position="top"
                                                     popover_content={AUTO_REFRESH_POP_HOVER_TEXT}
                                                     disabled={shouldDisableAutoRefresh || isClickOff}
@@ -3238,6 +3325,8 @@ const Email = ({ type, mCampType }) => {
                                     onAddMenu={(index) => onAddTab(index)}
                                     onRemoveMenu={onRemoveTab}
                                     customTooltipName={'Add split'}
+                                    disableAddMenu={isClickOff}
+                                    disableRemoveMenu={isClickOff}
                                 />
                             </div>
                         ) : (
@@ -3328,6 +3417,7 @@ const Email = ({ type, mCampType }) => {
                                     type="button"
                                     onClick={() => {
                                         if (isPastPlanDurationBlocked) return;
+                                        if (shouldBypassAuthoringChannelSubmit(isClickOff)) return;
                                         const formData = getValues();
                                         const isCTGTConfirm = handleCheckCTGT(formData.audience);
                                         const hasUserConfirmed = formData.isCGTGConfirm === true;
@@ -3364,13 +3454,13 @@ const Email = ({ type, mCampType }) => {
                                     disabledClass={isSubmitting ? 'pe-none click-off' : ''}
                                     onClick={() => {
                                         if (isPastPlanDurationBlocked) return;
+                                        if (shouldBypassAuthoringChannelSubmit(isClickOff)) {
+                                            handleNavigation();
+                                            return;
+                                        }
                                         if (!isDirty && !isValid && (!getValues('splitTest') ? !getValues('subjectLine') : false)) {
                                             setNavigate_confirm(true);
                                         } else {
-                                            if (isClickOff) {
-                                                handleSubmit((data) => formSubmitHandler(data, 'form', true))();
-                                                return;
-                                            }
                                             const formData = getValues();
                                             const isCTGTConfirm = handleCheckCTGT(formData.audience);
                                             const hasUserConfirmed = formData.isCGTGConfirm === true;
@@ -3382,22 +3472,15 @@ const Email = ({ type, mCampType }) => {
                                                 return;
                                             }
 
-                                            const isEmailFooterEnabled = checkEmailFooterEnabled(formData);
-
-                                            if (!isEmailFooterEnabled) {
-                                                setPendingEmailFooterParams({ type: 'form', isSchedule: true });
-                                                setEmailFooterWarning(true);
-                                            } else {
-                                                handleSubmit((data) => {
-                                                    const hasDuplicateUnsubscribe = checkUnsubscribeDuplicate(data);
-                                                    if (hasDuplicateUnsubscribe) {
-                                                        setPendingSubmitParams({ type: 'form', isSchedule: true });
-                                                        setUnsubscribeDuplicateWarning(true);
-                                                    } else {
-                                                        void formSubmitHandler(data, 'form', true);
-                                                    }
-                                                })();
-                                            }
+                                            handleSubmit((data) => {
+                                                const hasDuplicateUnsubscribe = checkUnsubscribeDuplicate(data);
+                                                if (hasDuplicateUnsubscribe) {
+                                                    setPendingSubmitParams({ type: 'form', isSchedule: true });
+                                                    setUnsubscribeDuplicateWarning(true);
+                                                } else {
+                                                    void formSubmitHandler(data, 'form', true);
+                                                }
+                                            })();
                                         }
                                     }}
                                     id="rs_Email_Next"
@@ -3452,7 +3535,9 @@ const Email = ({ type, mCampType }) => {
                                     proceedWithoutSchedule: true,
                                 },
                             });
-                            handleSubmit((data) => formSubmitHandler(data, formTypeRef.current, false, '', true))();
+                            handleSubmit((data) =>
+                                formSubmitHandler(data, formTypeRef.current, false, '', true, '', false, true),
+                            )();
                         }
                     }}
                 />
@@ -3510,7 +3595,7 @@ const Email = ({ type, mCampType }) => {
                 }}
             />
             <RSConfirmationModal
-                show={emailFooterWarning}
+                show={emailFooterWarning && shouldPromptEmailFooterConfirmation(isClickOff)}
                 text={EMAIL_FOOTER_WARNING_MSG}
                 primaryButtonText="Yes, proceed"
                 secondaryButtonText="Cancel"
@@ -3526,7 +3611,9 @@ const Email = ({ type, mCampType }) => {
                             if (hasDuplicateUnsubscribe) {
                                 setPendingSubmitParams({
                                     type: pendingEmailFooterParams.type,
-                                    isSchedule: pendingEmailFooterParams.isSchedule
+                                    isSchedule: pendingEmailFooterParams.isSchedule,
+                                    proceedWithoutSchedule: pendingEmailFooterParams.proceedWithoutSchedule ?? false,
+                                    proceedWithoutEmailFooterWarning: true,
                                 });
                                 setUnsubscribeDuplicateWarning(true);
                             } else {
@@ -3534,6 +3621,11 @@ const Email = ({ type, mCampType }) => {
                                     data,
                                     pendingEmailFooterParams.type,
                                     pendingEmailFooterParams.isSchedule,
+                                    '',
+                                    pendingEmailFooterParams.proceedWithoutSchedule ?? false,
+                                    '',
+                                    false,
+                                    true,
                                 );
                             }
                         })();
@@ -3554,7 +3646,16 @@ const Email = ({ type, mCampType }) => {
                     setUnsubscribeDuplicateWarning(false);
                     if (pendingSubmitParams) {
                         handleSubmit((data) => {
-                            void formSubmitHandler(data, pendingSubmitParams.type, pendingSubmitParams.isSchedule);
+                            void formSubmitHandler(
+                                data,
+                                pendingSubmitParams.type,
+                                pendingSubmitParams.isSchedule,
+                                '',
+                                pendingSubmitParams.proceedWithoutSchedule ?? false,
+                                '',
+                                false,
+                                pendingSubmitParams.proceedWithoutEmailFooterWarning ?? false,
+                            );
                         })();
                         setPendingSubmitParams(null);
                     }
@@ -3611,33 +3712,27 @@ const Email = ({ type, mCampType }) => {
                     setValue('isCGTGEnabled', false);
 
                     if (pendingNextSubmitParams) {
-                        const formData = getValues();
-                        const isEmailFooterEnabled = checkEmailFooterEnabled(formData);
-
-                        if (!isEmailFooterEnabled) {
-                            setPendingEmailFooterParams({
-                                type: pendingNextSubmitParams.type,
-                                isSchedule: pendingNextSubmitParams.isSchedule
-                            });
-                            setEmailFooterWarning(true);
-                        } else {
-                            handleSubmit((data) => {
-                                const hasDuplicateUnsubscribe = checkUnsubscribeDuplicate(data);
-                                if (hasDuplicateUnsubscribe) {
-                                    setPendingSubmitParams({
-                                        type: pendingNextSubmitParams.type,
-                                        isSchedule: pendingNextSubmitParams.isSchedule
-                                    });
-                                    setUnsubscribeDuplicateWarning(true);
-                                } else {
-                                    void formSubmitHandler(
-                                        data,
-                                        pendingNextSubmitParams.type,
-                                        pendingNextSubmitParams.isSchedule,
-                                    );
-                                }
-                            })();
+                        if (shouldBypassAuthoringChannelSubmit(isClickOff)) {
+                            handleNavigation();
+                            setPendingNextSubmitParams(null);
+                            return;
                         }
+                        handleSubmit((data) => {
+                            const hasDuplicateUnsubscribe = checkUnsubscribeDuplicate(data);
+                            if (hasDuplicateUnsubscribe) {
+                                setPendingSubmitParams({
+                                    type: pendingNextSubmitParams.type,
+                                    isSchedule: pendingNextSubmitParams.isSchedule
+                                });
+                                setUnsubscribeDuplicateWarning(true);
+                            } else {
+                                void formSubmitHandler(
+                                    data,
+                                    pendingNextSubmitParams.type,
+                                    pendingNextSubmitParams.isSchedule,
+                                );
+                            }
+                        })();
                         setPendingNextSubmitParams(null);
                     }
                 }}

@@ -25,7 +25,7 @@ import content from 'Constants/GlobalConstant/Content/content.json';
 import { RSPrimaryButton } from 'Components/Buttons';
 import { loginExistingUser, emailExist, navigateToLoginAfterSessionClear } from 'Reducers/login/existingUser/request';
 import { globalStateSelector } from 'Utils/Selectors/app';
-import { getIpAddressData, getMasterData } from 'Reducers/globalState/request';
+import { getIpAddressData } from 'Reducers/globalState/request';
 import { getBrowserName } from 'Utils/modules/browserUtils';
 import { encryptWithAES, decryptWithAES, iv } from 'Utils/modules/crypto';
 import { GeneratePasswordpseudorandom } from 'Utils/modules/passwordUtils';
@@ -171,28 +171,6 @@ const SessionTimeout = () => {
     let byteHash = CryptoJS.enc.Utf8.parse(hasValue);
     let tempiv = iv;
 
-    const validateMasterData = async () => {
-        let masterData = localStorage.getItem('masterData');
-        let parsedData = null;
-        if (masterData) {
-            try {
-                parsedData = JSON.parse(masterData);
-            } catch {
-                parsedData = null;
-            }
-        }
-        const isMissing = _isEmpty(parsedData);
-        const data = isMissing ? await dispatch(getMasterData(false)) : parsedData;
-
-        if (_isEmpty(data) || typeof data !== 'object') {
-            setError('emailId', {
-                type: 'custom',
-                message: UNABLE_TOLOAD_DATA,
-            });
-            return false;
-        }
-        return true;
-    };
     const getLocation = async () => {
         const res = await axios.get('https://geolocation-db.com/json/');
         return res;
@@ -200,8 +178,7 @@ const SessionTimeout = () => {
     const handleSubmit = async (formState) => {
         await signInLoader.refetch({
             fetcher: async () => {
-                const status = await validateMasterData();
-                if (!status) return null;
+               
 
                 const res = await getLocation();
                 localStorage.setItem('sessionModal', false);

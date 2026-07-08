@@ -243,8 +243,8 @@ const LocalizationSettings = ({ back = () => {}, type, pageType, fromLicenseUpgr
                             <div className="ml-19">
                                 {showMapLoader ? (
                                     <span
-                                        className="skeleton-shimmer d-block account-setup-map-skeleton"
-                                        style={{ height: '335px', borderRadius: '5px' }}
+                                        className="skeleton-shimmer d-block account-setup-map-skeleton ml30"
+                                        style={{ height: '335px', borderRadius: '10px' }}
                                         aria-hidden="true"
                                     />
                                 ) : (

@@ -168,7 +168,7 @@ const SMTPDomainNameSettingsGrid = () => {
                         field: 'createdDate',
                         title: CREATE_DATE,
                         filter:'date',
-                        width: 300,
+                        width: 200,
                         cell: (props) => {
                             return (
                                 <td>

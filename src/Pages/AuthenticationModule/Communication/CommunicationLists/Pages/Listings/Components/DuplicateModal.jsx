@@ -88,8 +88,8 @@ const DuplicateModal = ({ show, onHide, selectedCommunication, onDuplicate, isDu
     };
 
     const onSubmit = async (data) => {
-        if (!newCampaignName.trim() || isDuplicating) return;
-        await onDuplicate(newCampaignName);
+        if (!data.newCampaignName.trim() || isDuplicating) return;
+        await onDuplicate(data.newCampaignName);
     };
 
     const handleClose = () => {
@@ -161,7 +161,7 @@ const DuplicateModal = ({ show, onHide, selectedCommunication, onDuplicate, isDu
                                         formatName(value) !== formatName(originalCampaignName) ||
                                         COMMUNICATION_NAME_MUST_DIFFER,
                                     nameExists: () =>
-                                        newCampaignName?.type === 'server'
+                                        errors.newCampaignName?.type === 'server'
                                             ? _get(errors, 'newCampaignName.message')
                                             : true,
                                 },
@@ -169,7 +169,7 @@ const DuplicateModal = ({ show, onHide, selectedCommunication, onDuplicate, isDu
                             maxLength={MAX_LENGTH200}
                             handleOnBlur={(e) => {
                                 const value = e.target.value;
-                                if (value && value.length >= 3 && !newCampaignName) {
+                                if (value && value.length >= 3 && !errors.newCampaignName) {
                                     checkCampaignNameExists(value);
                                 }
                             }}

@@ -5,7 +5,6 @@ import { encodeUrl, encryptWithAES, clearAllQueryStates } from 'Utils/modules/cr
 import { formatName } from 'Utils/modules/formatters';
 import { replacePlusWithEncoded } from 'Utils/modules/display';
 import { getDayDifference, getRenewalMessage } from 'Utils/modules/renewal';
-import { getBrowserName, getFirefoxVersion } from 'Utils/modules/browserUtils';
 import { getEnvironment } from 'Utils/modules/environment';
 
 import { showToast } from 'Components/CustomToast/CustomToast';
@@ -26,7 +25,6 @@ import { resetGlobalState, updateAccountAdmin, updateAuth, updateBUList, updateB
 
 import { resetdashboardState } from 'Reducers/dashboard/dashboardReducer';
 import { resetTargetListData } from 'Reducers/audience/targetList/reducer';
-import { getIsPartnerDataEnable } from 'Reducers/audience/masterdata/request';
 import { isAgencyBrandState, resetNewUserFormState } from '../newUser/reducer';
 import { updateHQData } from 'Reducers/preferences/accountSettings/request';
 import { setWelcomeModal } from 'Reducers/preferences/myProfile/reducer';
@@ -58,25 +56,7 @@ export const accountResponse = async (response, navigate, dispatch, lastURL = ''
     });
     CacheManager.set('permissions', temp);
     temp = encryptWithAES(JSON.stringify(temp));
-    const tempMasterData = localStorage.getItem('masterData');
-    const tempipAddressData = localStorage.getItem('ipAddressData');
-    const tempdisable_plugin_last_shown = localStorage.getItem('disable_plugin_last_shown');
-    const tempNewVersionConfirm = localStorage.getItem('newVersionConfirm');
-    let temp_session_credentials = localStorage.getItem('sessionCredentials');
-    localStorage.clear();
-    // if (tempMasterData) {
-    //     localStorage.setItem('masterData', tempMasterData);
-    // }
-    if (tempipAddressData) {
-        localStorage.setItem('ipAddressData', tempipAddressData);
-    }
-    if (tempdisable_plugin_last_shown) {
-        localStorage.setItem('disable_plugin_last_shown', tempdisable_plugin_last_shown);
-    }
-    if (temp_session_credentials) {
-        localStorage.setItem('sessionCredentials', temp_session_credentials);
-    }
-    localStorage.setItem('newVersionConfirm', tempNewVersionConfirm);
+   
     dispatch(updatedisLicenseId(parseInt(licenseTypeId, 10)));
     dispatch(updateIndustryId(industryId));
     localStorage.setItem('licenseTypeId', encryptWithAES(licenseTypeId));
@@ -93,11 +73,6 @@ export const accountResponse = async (response, navigate, dispatch, lastURL = ''
     localStorage.setItem('dateFormatId', dateFormatId);
     localStorage.setItem('timeZoneId', timeZoneId);
 
-    // Firefox browser support notification
-    const ffVersion = getFirefoxVersion();
-    // if (getBrowserName() === 'Firefox' && ffVersion >= 148) {
-    //     showToast(`Some Kendo features unsupported in Firefox 148+.`, null, null, false, null, true, 5000);
-    // }
 
     // Trigger storage event to notify other tabs about login
     localStorage.setItem('loginEvent', Date.now().toString());
@@ -231,7 +206,6 @@ export const accountResponse = async (response, navigate, dispatch, lastURL = ''
             state: { from: 'login' },
         });
     }
-    // dispatch(getIsPartnerDataEnable({ departmentId: depId, clientId: cliId, userId: uid }));
     dispatch(checkRenewalStatus({ payload: { clientId: clientId } }));
     dispatch(
         updateOtpValidState({
@@ -1024,17 +998,11 @@ export const agencyAccountActivation =
         };
 
 export const clearClientSessionForLoginRedirect = (dispatch) => {
-    const tempMasterData = localStorage.getItem('masterData');
     const tempipAddressData = localStorage.getItem('ipAddressData');
     const tempdisable_plugin_last_shown = localStorage.getItem('disable_plugin_last_shown');
     const temp_session_credentials = localStorage.getItem('sessionCredentials');
-    const tempNewVersionConfirm = localStorage.getItem('newVersionConfirm');
 
     localStorage.clear();
-
-    // if (tempMasterData) {
-    //     localStorage.setItem('masterData', tempMasterData);
-    // }
     if (tempipAddressData) {
         localStorage.setItem('ipAddressData', tempipAddressData);
     }
@@ -1044,7 +1012,6 @@ export const clearClientSessionForLoginRedirect = (dispatch) => {
     if (temp_session_credentials) {
         localStorage.setItem('sessionCredentials', temp_session_credentials);
     }
-    localStorage.setItem('newVersionConfirm', tempNewVersionConfirm);
 
     sessionStorage.clear();
     clearAllQueryStates();

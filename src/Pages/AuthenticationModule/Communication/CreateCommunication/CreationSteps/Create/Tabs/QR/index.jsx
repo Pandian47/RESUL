@@ -39,7 +39,7 @@ import AuthoringChannelEditSkeletonGate, {
 } from 'Components/Skeleton/pages/communication/authoring';
 import RSTooltip from 'Components/RSTooltip';
 
-import { availableTabs, communicationChannels, getPreCampaignStatus, handleAllChannelPayload, QR_TAB_CONFIG } from '../../constant';
+import { availableTabs, communicationChannels, getPreCampaignStatus, handleAllChannelPayload, QR_TAB_CONFIG , shouldPromptSkipChannelConfirmation} from '../../constant';
 import { encodeUrl } from 'Utils/modules/crypto';
 import { onlyNumbers } from 'Utils/modules/inputValidators';
 
@@ -609,6 +609,9 @@ const QRContent = ({ tab }) => {
             campaignId: _get(location, 'campaignId', 0),
             imagepath: imgpath,
             channelType: tab === 'sms' ? 'S' : 'W',
+            userId,
+            clientId,
+            departmentId,
             ...handleAllChannelPayload('qr', formState),
         };
         let res = await runSave(getAuthoringSaveButtonType(submitType), () =>
@@ -631,7 +634,11 @@ const QRContent = ({ tab }) => {
                 setalertGenerate(false);
                 return handleSave();
             } else {
-                setNavigate_confirm(true);
+                if (!shouldPromptSkipChannelConfirmation()) {
+                                    handleNavigation();
+                                    return;
+                                }
+                                setNavigate_confirm(true);
                 setalertGenerate(true);
                 return;
             }
@@ -642,7 +649,11 @@ const QRContent = ({ tab }) => {
                 const res = await saveApi_calls(1, 'form');
                 res && handleNavigation();
             } else {
-                setNavigate_confirm(true);
+                if (!shouldPromptSkipChannelConfirmation()) {
+                                    handleNavigation();
+                                    return;
+                                }
+                                setNavigate_confirm(true);
                 setalertGenerate(true);
                 return;
             }
@@ -800,8 +811,7 @@ const QRContent = ({ tab }) => {
                 className="rsv-tabs-content tab-content position-relative"
             >
                 <div className="box-design bd-top-border mx0">
-                    {!tabSmartLink_Flag && tabSmartLink_Flag !== null && (
-                        <SmartLinkEnable
+                    <SmartLinkEnable
                             onSave={() => setIsSmartLink(false)}
                             onReject={() => {
                                 dispatch(showTabsSmartlink(true));
@@ -809,7 +819,6 @@ const QRContent = ({ tab }) => {
                             }}
                             isQrClassNameEnable
                         />
-                    )}
                     <div >
                         <Row>
                             <div className="col-sm-9">
@@ -993,8 +1002,8 @@ const QRContent = ({ tab }) => {
                                                 </Col>
                                             </Row>
                                         </div>
-                                        <div className="form-group mt60">
-                                            <Row className="mb30">
+                                        <div className="form-group">
+                                            <Row >
                                                 <Col sm={{ span: 4 }}>
                                                     <label className="control-label-left">{MESSAGE}</label>
                                                 </Col>
@@ -1481,6 +1490,10 @@ const QRContent = ({ tab }) => {
                         disabledClass={isSubmitting ? 'pe-none click-off' : ''}
                         onClick={() => {
                             if (!isDirty && !isValid && campaignType !== 'M') {
+                                if (!shouldPromptSkipChannelConfirmation()) {
+                                    handleNavigation();
+                                    return;
+                                }
                                 setNavigate_confirm(true);
                             } else {
                                 handleSubmit((data) => handleOnSubmit(data, 'form', false))();

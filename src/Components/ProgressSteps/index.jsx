@@ -43,7 +43,7 @@ const RSProgressSteps = ({ isRoiCompleted, customSteps }) => {
 
         if (location) {
             const { channels = [], roi = false } = location;
-            if ((channels?.includes(1) || channels?.includes(2)) && roi) {
+            if (roi) {
                 setState(planningSteps_ROI);
             } else {
                 setState(planningSteps);

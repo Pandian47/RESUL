@@ -2,7 +2,7 @@ import { getChannelId, PAID_CHANNEL_LIST, CHANNELS_LIST } from 'Utils/modules/co
 import { getUserCurrentFormat, getFileDownloadDateTime } from 'Utils/modules/dateTime';
 import { truncateTitle } from 'Utils/modules/displayCore';
 import { addTabKey, getChannelTitle, handleSnapshot } from './constants';
-import { ANALYTICS_CUSTOMER_CLICK, ANALYTICS_CUSTOMER_QR_SCAN, ANALYTICS_PROGRESS_TEXT, AS_ON, DATA_DISCALIMER, DATA_DISCLAIMER_FOOTER_TEXT, ENTER_NAME_HERE, INFO, NAME_YOUR_SNAPSHOT, OK, OVERVIEW, SELECT } from 'Constants/GlobalConstant/Placeholders';
+import { ANALYTICS_CUSTOMER_CLICK, ANALYTICS_CUSTOMER_QR_SCAN, ANALYTICS_PROGRESS_TEXT, AS_ON, DATA_DISCALIMER, DATA_DISCLAIMER_FOOTER_TEXT, ENTER_NAME_HERE, INFO, NAME_YOUR_SNAPSHOT, OK, OVERVIEW, SELECT ,GOLDEN_CAMPAIGN} from 'Constants/GlobalConstant/Placeholders';
 import { circle_close_edge_medium, circle_close_fill_mini, circle_close_mini, circle_tick_medium, in_progress_large } from 'Constants/GlobalConstant/Glyphicons';
 import { createContext, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
@@ -1125,7 +1125,7 @@ const AnalyticsReport = () => {
                                         className={`position-relative mr10 p8 white border-tlr7 border-blr7 d-flex align-items-center ${circle_tick_medium} icon-md bg-primary-green `}
                                     ></i>
                                     <span className={`${isDownloadUI ? '' : ''} align-items-center d-flex lh-sm py10`}>
-                                        {summary?.campaignName} is marked as&nbsp; Golden communication!
+                                        {summary?.campaignName} is marked as&nbsp; {GOLDEN_CAMPAIGN}!
                                     </span>
                                     {/* <i
                                     className={`position-relative p5 ${circle_close_edge_medium} icon-md white bg-primary-red`}

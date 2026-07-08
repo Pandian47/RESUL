@@ -38,6 +38,12 @@
         &::after {
             top: 6px !important;
             margin-left: 1px !important;
+            // Blue caret tip to match the template icon (ref: analytics "Last 30 days" dropdown)
+            border-top-color: $primary-blue !important;
+        }
+
+        &:hover::after {
+            border-top-color: $secondary-blue !important;
         }
     }
 }
@@ -462,6 +468,17 @@
         &::before {
             content: '•';
             margin-right: 2px;
+        }
+    }
+}
+
+// Web notification "Background overlay" color picker — align the popup's callout
+// tip (:before) under its trigger icon (base .rscw-content::before has no `left`).
+.bg-overlay-colorpicker {
+    .rscw-content {
+        top: 35px;
+        &::before{
+        left: 7px;
         }
     }
 }
@@ -1015,12 +1032,17 @@ input[type='range']::-moz-range-thumb {
         .dropdown-menu.show {
             display: flex;
             flex-direction: column;
-            overflow: hidden;
+            // `visible` (not `hidden`) so the callout tip (:before up-arrow) isn't clipped;
+            // the menu's clip-path already keeps the rounded corners + reserves room for the tip.
+            overflow: visible;
 
             .v1-search-dropdown-icon {
                 flex-shrink: 0;
                 margin: 0;
                 padding: 4px 10px;
+                // Keep top corners rounded now that the menu no longer clips via overflow
+                border-top-left-radius: var(--globalBorderRadius);
+                border-top-right-radius: var(--globalBorderRadius);
             }
 
             .custome-dropdown-scroll.v1-dropdown-data {
@@ -1407,6 +1429,34 @@ input[type='range']::-moz-range-thumb {
     background: rgba($white, 0.65);
     border-radius: inherit;
     pointer-events: none;
+}
+
+.gallery-preview-detail-loader {
+    position: absolute;
+    inset: 0;
+    z-index: 4;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba($white, 0.72);
+    border-radius: inherit;
+    pointer-events: none;
+
+    &__content {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        text-align: center;
+
+        p {
+            margin: 0;
+            font-size: $font-xs;
+            color: $secondary-grey;
+            font-family: $rs-font-regular;
+        }
+    }
 }
 
 .eye-icon-wrapper--loading {
@@ -1900,6 +1950,17 @@ input.highlight-input {
     @extend .css-scrollbar;
     .preview-iframe-clip{
         min-height: 110px;
+    }
+}
+
+// Gallery card email preview — pass image clicks to parent; iframe uses in-document click handler.
+.gl-body.listing-preview-scroll.cp {
+    .gallery-listing-preview-clickthrough {
+        pointer-events: none;
+    }
+
+    .gallery-email-preview-clickable {
+        cursor: pointer;
     }
 }
 

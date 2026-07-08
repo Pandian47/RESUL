@@ -189,7 +189,13 @@ const Preview = ({ show, handleClose, type, primaryDropDown }) => {
             isbackEnable: location?.isBack ? true : false,
             identity: location?.fromBack || '',
             referenceRid: location?.data?.remoteSettingId || 0,
+            remoteSettingId: location?.data?.remoteSettingId || 0,
+            editHistoryId: location?.data?.editHistoryId || 0,
         };
+        const isEditFlow = location?.mode === 'edit';
+        if (isEditFlow) {
+            payload.isEdit = true;
+        }
         let connectionRequest;
         if (DATA_EXCHANGE_SAVE_REMOTE_IDS.has(remoteId)) {
             connectionRequest = dataExchange_SaveData;
@@ -219,6 +225,9 @@ const Preview = ({ show, handleClose, type, primaryDropDown }) => {
                                 location?.data?.remoteSettingId ||
                                 0,
                         };
+                        if (isEditFlow) {
+                            dedupePayload.isEdit = true;
+                        }
                         await dispatch(updateDedupeRDS({ payload: dedupePayload, loading: false }));
                     }
                     return response;
@@ -237,6 +246,8 @@ const Preview = ({ show, handleClose, type, primaryDropDown }) => {
                     from: 'manual entry',
                     data: { audienceData: { arr: columname, data }, type },
                     isAudience: location?.isAudience,
+                    mode: location?.mode,
+                    isEdit: isEditFlow,
                 };
                 const encryptState = encodeUrl(state);
                 navigate(`${url}?q=${encryptState}`, {

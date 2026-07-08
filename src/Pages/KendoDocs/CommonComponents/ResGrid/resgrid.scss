@@ -1191,7 +1191,10 @@ $expand-corner-icon-stroke: 2px;
         }
     }
 
-    &.custom-rspager {
+    // `custom-rspager` is applied to the inner Kendo grid via ResGrid's `className`
+    // prop, not the outer `.resgrid` wrapper — so it must be matched as a descendant,
+    // not a compound (`&.custom-rspager`), otherwise these rules never apply.
+    .custom-rspager {
         .#{$resgrid}-pager .respager .k-pager {
             margin-top: 0;
         }
@@ -1257,7 +1260,7 @@ $expand-corner-icon-stroke: 2px;
     }
 
     .#{$resgrid}--skeleton-list--brand {
-        gap: 15px;
+        gap: 21px;
     }
 
     .#{$resgrid}--skeleton-list-card,

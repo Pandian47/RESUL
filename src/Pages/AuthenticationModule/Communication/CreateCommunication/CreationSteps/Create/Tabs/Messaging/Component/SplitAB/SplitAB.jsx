@@ -35,7 +35,6 @@ import InsertOffer from '../../../../Component/InsertOffer';
 
 import WarningPopup from 'Pages/AuthenticationModule/Components/WarningPopup/WarningPopup';
 import { handlePersonalization } from '../../../../constant';
-import { getUtcTimeNow } from 'Reducers/globalState/request';
 import {
     usePersonalizationHighlight,
     getHighlightedHTML,
@@ -72,7 +71,7 @@ const SplitAB = ({ fieldName, isSplitTabs = true, templateType = 1, channelTabNa
         unregister
     } = useFormContext();
     const context = useContext(MessagingContext);
-    const { smsTemplateList = [], isSmsTemplateListLoading = false } = context || {};
+    const { smsTemplateList = [], isSmsTemplateListLoading = false } = context || {};    
     const inputRef = useRef();
     const { backdropRef, syncBackdropScroll } = usePersonalizationHighlight();
     const [isToolbarActive, setIsToolbarActive] = useState(false);
@@ -170,10 +169,6 @@ const SplitAB = ({ fieldName, isSplitTabs = true, templateType = 1, channelTabNa
     // const waMediaURLType = watch(mediaType);
 
     const utcTimeData = useSelector(getUtcTimeData);
-
-    useEffect(() => {
-        dispatch(getUtcTimeNow());
-    }, [dispatch]);
 
     useEffect(() => {
         if (editorText) trigger(name); // validation purpose
@@ -465,7 +460,7 @@ const SplitAB = ({ fieldName, isSplitTabs = true, templateType = 1, channelTabNa
 
         const footer = smsTemplateList?.length > 0 ? (
             <NewAttributeBtn
-                title="Custom Template Id"
+                title="Custom template ID"
                 handleModalAttribute={() => {
                     unregister(templateIdName)
                     setValue(templateIdName, '');
@@ -557,7 +552,8 @@ const SplitAB = ({ fieldName, isSplitTabs = true, templateType = 1, channelTabNa
     return (
         <Fragment>
             <div className="split-tab-content-holder mt40">
-                {TemplateIdField}
+                
+                {senderId?.countryName!=='US' &&TemplateIdField}
                 <div className="form-group mb0">
                     <Row>
                         {' '}

@@ -1,4 +1,55 @@
 // Scoped to Audience Insight charts only (InsightChartPortlet).
+.rs-audience-insight-chart {
+    // piechart-default-render hides the SVG tooltip group (opacity: 0); restore for insight hover tooltips.
+    .piechart-default-render {
+        g.highcharts-label.highcharts-tooltip {
+            opacity: 1 !important;
+        }
+
+        .highcharts-label-box.highcharts-tooltip-box {
+            display: none;
+        }
+
+        .highcharts-label.highcharts-tooltip > span {
+            background: #111111;
+            padding: 3px 9px;
+            border-radius: 4px;
+        }
+    }
+}
+
+// Portaled (outside) + in-chart insight tooltips — compact vertical spacing
+.insight-chart-tooltip {
+    display: block;
+    line-height: 1.15;
+
+    &__name {
+        display: block;
+        line-height: 1.15;
+    }
+
+    &__divider {
+        margin: 2px -8px 2px !important;
+        border: 0 !important;
+        border-top: 1px solid #5a5a5a !important;
+        opacity: 1;
+        height: 0;
+        width: auto;
+    }
+
+    &__count {
+        display: block;
+        line-height: 1.15;
+    }
+}
+
+.highcharts-tooltip-container,
+.highcharts-label.highcharts-tooltip > span {
+    .insight-chart-tooltip__divider {
+        margin: 2px -8px 2px !important;
+    }
+}
+
 .rs-audience-insight-chart--clock-gauge {
     .guageclock {
         background-image: url(Assets/Images/new_clock.svg);

@@ -966,7 +966,7 @@ const DownloadRecords = ({ showPopup, audienceValue, handleClose, isDynamic = fa
                                                 <Col sm={3}>
                                                     <label className="control-label-left">SFTP</label>
                                                 </Col>
-                                                <Col sm={9}>
+                                                <Col sm={7}>
                                                     <RSKendoDropdown
                                                         name={'selectedSftp'}
                                                         control={control}
@@ -1260,7 +1260,8 @@ const DownloadRecords = ({ showPopup, audienceValue, handleClose, isDynamic = fa
                                                             </Col> */}
 
                                                             <Col
-                                                                sm={6}
+                                                                sm={7}
+                                                                className='pr0'
                                                             >
                                                                 <div className="flex-grow-1">
                                                                     <RSDatePicker
@@ -1296,7 +1297,7 @@ const DownloadRecords = ({ showPopup, audienceValue, handleClose, isDynamic = fa
                                                             </Col>
                                                             <Col
                                                                 sm={1}
-                                                                className='d-flex align-items-center ml-10'
+                                                                className='d-flex align-items-center '
                                                             >
                                                                 <RSTooltip text="Date range is limited to a maximum of 6 months.">
                                                                     <i
@@ -1441,15 +1442,9 @@ const DownloadRecords = ({ showPopup, audienceValue, handleClose, isDynamic = fa
                                                             placeholder={FOLDER_PATH}
                                                             rules={{ required: ENTER_FOLDER_PATH }}
                                                             maxLength={MAX_LENGTH250}
-                                                            isCustomIcon={true}
+                                                            rightTooltip = {AUDIENCE_FILE_STORED}
                                                         />
-                                                        <div className="folderPathInputHelpIcon">
-                                                            <RSPPophover text={AUDIENCE_FILE_STORED}>
-                                                                <i
-                                                                    className={`${circle_question_mark_mini} icon-sm color-primary-blue position-relative top4`}
-                                                                />
-                                                            </RSPPophover>
-                                                        </div>
+                                                      
                                                     </Col>
                                                 </Row>
                                             </div>

@@ -16,7 +16,6 @@ import { resetCreateCommunication } from 'Reducers/communication/createCommunica
 import { setTabforEdit } from 'Reducers/communication/createCommunication/Create/reducer';
 import {
     ANALYTICS_TYPES,
-    buildRequestPayload,
     buildPlanSubmitPayload,
     isPlanPayloadEqual,
     CHANNEL_NAMES_UNSUPPORTED_FOR_OFFLINE_CONVERSION,
@@ -35,7 +34,12 @@ import {
     validateEndDateAgainstCampaignBlast,
     validateStartDateAgainstCampaignBlast,
     handleReferenceData,
+    normalizeReferenceConfig,
+    getCommunicationReferenceFormState,
+    buildReferenceFormStateFromConfig,
+    flattenPlanChannelAnalytics,
     handleWithoutAPICallNavigation,
+    isCompletedOrAlertStatus,
     isFullMonthDifference,
     REDUCER_INITIAL_STATE,
     RESET_FREQUENCY,
@@ -104,7 +108,6 @@ import CommuncationReferenceModal from '../Component/CommuncationReferenceModal'
 import DeliveryMethodSkeleton from 'Components/Skeleton/Components/DeliveryMethodSkeleton';
 
 import { getSessionId, getUtcTimeData } from 'Reducers/globalState/selector';
-import { getUtcTimeNow } from 'Reducers/globalState/request';
 import { updateCommunicationOptions, setPlanDropdownsFetchedFor } from 'Reducers/communication/createCommunication/plan/reducer';
 
 import NewAttributeBtn from 'Pages/AuthenticationModule/Audience/Pages/AddImportAudience/Components/CustomHeaderColumn/NewAttributeBtn';
@@ -225,6 +228,7 @@ const DeliveryMethod = ({ type } = {}) => {
     const existingCommunicationName = useRef();
     const communicationReferenceFetchRef = useRef(null);
     const communicationReferenceScopeKeyRef = useRef('');
+    const referenceSettingsLoadedRef = useRef(false);
     const editBoundKeyRef = useRef(null);
     const boundPlanPayloadRef = useRef(null);
     const boundSubProductRef = useRef(null);
@@ -306,16 +310,23 @@ const DeliveryMethod = ({ type } = {}) => {
     const isTagsIconDisabled = isEditable ? false : !hasTagsSetup;
     const isTagsModalViewOnly = !isEditable && hasTagsSetup;
 
-    // Memo / Callback
+    const referenceConfigList = useMemo(
+        () => normalizeReferenceConfig(state?.defaultCommunicationReferenceConfigData),
+        [state?.defaultCommunicationReferenceConfigData],
+    );
+    const isCommReferenceIconDisabled = !state?.isCommunicationReferenceIconEnabled;
+
     const fetchCommunicationReferenceOnce = useCallback(
         async (payload) => {
             const key = `${payload.clientId}|${payload.userId}|${payload.departmentId}`;
             if (communicationReferenceScopeKeyRef.current !== key) {
                 communicationReferenceFetchRef.current = null;
                 communicationReferenceScopeKeyRef.current = key;
+                referenceSettingsLoadedRef.current = false;
             }
-            if (Array.isArray(communicationReferenceConfigs) && communicationReferenceConfigs.length > 0) {
-                return { status: true, data: communicationReferenceConfigs };
+            const cachedList = normalizeReferenceConfig(communicationReferenceConfigs);
+            if (cachedList.length > 0) {
+                return { status: true, data: cachedList };
             }
             if (!communicationReferenceFetchRef.current) {
                 communicationReferenceFetchRef.current = dispatch(
@@ -324,10 +335,37 @@ const DeliveryMethod = ({ type } = {}) => {
                     communicationReferenceFetchRef.current = null;
                 });
             }
-            return communicationReferenceFetchRef.current;
+            const rawResponse = await communicationReferenceFetchRef.current;
+            const referenceList = normalizeReferenceConfig(rawResponse?.data ?? rawResponse);
+            return {
+                status: referenceList.length > 0 || Boolean(rawResponse?.status),
+                data: referenceList,
+            };
         },
         [dispatch, communicationReferenceConfigs],
     );
+
+    const applyReferenceSettings = useCallback((referenceConfigList, savedReference, version) => {
+        if (!referenceConfigList?.length) return false;
+
+        referenceSettingsLoadedRef.current = true;
+        dispatchState({ type: 'UPDATE_REFERENCE_CONFIG', payload: referenceConfigList });
+        dispatchState({ type: 'UPDATE', payload: true, field: 'isCommunicationReferenceIconEnabled' });
+
+        if (savedReference?.length) {
+            dispatchState({
+                type: 'UPDATE_REFERENCE_EDIT_DATA',
+                payload: handleReferenceData(savedReference, referenceConfigList, version),
+            });
+        } else {
+            dispatchState({
+                type: 'UPDATE',
+                payload: buildReferenceFormStateFromConfig(referenceConfigList),
+                field: 'communicationReferenceData',
+            });
+        }
+        return true;
+    }, []);
 
     const [
         startDate,
@@ -395,9 +433,6 @@ const DeliveryMethod = ({ type } = {}) => {
 
     useEffect(() => {
         fetchInitialData(mode === 'edit');
-
-        // Call UTC time API
-        dispatch(getUtcTimeNow());
     }, [departmentId, mode, type]);
 
     useEffect(() => {
@@ -550,13 +585,10 @@ const DeliveryMethod = ({ type } = {}) => {
                         //     reference: reference,
                         // };
 
-                        if (!communicationReference?.length) {
-                            dispatchState({
-                                type: 'UPDATE_REFERENCE_EDIT_DATA',
-                                payload: [],
-                            });
+                        const refConfigFromCampaign = normalizeReferenceConfig(campaign?.data);
+                        if (!applyReferenceSettings(refConfigFromCampaign, null, version)) {
+                            void fetchReferencSettings({ communicationReference, version });
                         }
-                        void fetchReferencSettings({ communicationReference, version });
 
                         const editBindState = {
                             // communicationReferenceData:
@@ -573,8 +605,9 @@ const DeliveryMethod = ({ type } = {}) => {
                                         (tabs) => tabs?.id === _get(recurrenceInfo, 'frequencyID', 4),
                                     )
                                     : 4,
-                            frequencyType: _get(recurrenceInfo, 'frequencyID', 4)
+                            frequencyType: _get(recurrenceInfo, 'frequencyID', 4),
                         };
+                        const editReducerState = { ...state, ...editBindState };
                         const nextRequest = [
                             dispatch(
                                 getCommunicationSubProducts({
@@ -782,7 +815,7 @@ const DeliveryMethod = ({ type } = {}) => {
                         editModeStartDateRef.current = startDate;
                         editModeEndDateRef.current = endDate;
                         existingCommunicationName.current = campaignName;
-                        dispatchState({ type: 'UPDATE_EDIT', payload: { ...state, ...editBindState } });
+                        dispatchState({ type: 'UPDATE_EDIT', payload: editReducerState });
                         setNameState({
                             isValid: true,
                         });
@@ -791,16 +824,16 @@ const DeliveryMethod = ({ type } = {}) => {
                         boundPlanPayloadRef.current = buildPlanSubmitPayload({
                             formState: getValues(),
                             type,
-                            reducerState: state,
+                            reducerState: editReducerState,
                             mode: 'edit',
                             locationState,
                             departmentId,
                             userId,
                             clientId,
-                            tags: tags?.length ? tags.split(',') : [],
-                            isSecondaryGoal: !!secondaryGoal,
+                            tags: editReducerState.tags,
+                            isSecondaryGoal: editReducerState.secondaryGoal,
                             isCommunicationReference,
-                            communicationReferenceData: state?.communicationReferenceData,
+                            communicationReferenceData: editReducerState?.communicationReferenceData,
                             savedDynamicListChannel,
                         });
                         editBoundKeyRef.current = editNavKey;
@@ -900,12 +933,15 @@ const DeliveryMethod = ({ type } = {}) => {
                 setIsInitialLoading(false);
             }
         }
-        if (!isEditLoad) {
+        if (!referenceSettingsLoadedRef.current) {
             void fetchReferencSettings();
         }
     };
 
     const fetchReferencSettings = async ({ communicationReference, version } = {}) => {
+        if (referenceSettingsLoadedRef.current) {
+            return;
+        }
         try {
             const payload = {
                 userId,
@@ -916,50 +952,9 @@ const DeliveryMethod = ({ type } = {}) => {
             await communicationReferenceLoader.refetch({
                 fetcher: async () => {
                     const response = await fetchCommunicationReferenceOnce(payload);
-                    const status = response?.status;
-                    const data = response?.data;
+                    const referenceConfigList = normalizeReferenceConfig(response?.data);
 
-                    if (!status) {
-                        return response;
-                    }
-
-                    if (!isMounted.current) return response;
-
-                    dispatchState({
-                        type: 'UPDATE_REFERENCE_CONFIG',
-                        payload: data,
-                    });
-
-                    if (communicationReference?.length) {
-                        dispatchState({
-                            type: 'UPDATE_REFERENCE_EDIT_DATA',
-                            payload: handleReferenceData(communicationReference, data, version),
-                        });
-                        return response;
-                    }
-
-                    let tempGrouping = {};
-                    let tempPriority = {};
-                    const tempData = data?.filter((item) => {
-                        if (item?.columnValue === 'Communication Grouping ID') {
-                            tempGrouping = { ...item };
-                        }
-                        if (item?.columnValue === 'Priority') {
-                            tempPriority = { ...item };
-                        }
-                        return item?.columnValue !== 'Communication Grouping ID' && item?.columnValue !== 'Priority';
-                    });
-
-                    dispatchState({
-                        type: 'UPDATE',
-                        payload: {
-                            priority: tempPriority,
-                            grouping: tempGrouping,
-                            reference: [...(tempData || [])],
-                        },
-                        field: 'communicationReferenceData',
-                    });
-
+                    applyReferenceSettings(referenceConfigList, communicationReference, version);
                     return response;
                 },
             });
@@ -1605,6 +1600,86 @@ const DeliveryMethod = ({ type } = {}) => {
         }
     };
 
+    const handleCompletedOrAlertSubmit = async (buttonType) => {
+        dispatch(setTabforEdit(null));
+        dispatch(showTabsSmartlink(false));
+
+        const rawFormState = getValues();
+        const payload = buildPlanSubmitPayload({
+            formState: rawFormState,
+            type,
+            reducerState: state,
+            mode,
+            locationState,
+            departmentId,
+            userId,
+            clientId,
+            tags: selectedTags,
+            isSecondaryGoal,
+            isCommunicationReference,
+            communicationReferenceData: state?.communicationReferenceData,
+            savedDynamicListChannel,
+        });
+        const { channelTypes, analyticsTypes } = flattenPlanChannelAnalytics({
+            formState: rawFormState,
+            savedDynamicListChannel,
+            campaignId: _get(locationState, 'campaignId', 0),
+        });
+        const hasOfflineConversion =
+            isOfflineConversionGoalSelection(rawFormState?.primaryGoalType) ||
+            isOfflineConversionGoalSelection(rawFormState?.secondaryGoalType);
+        const endDate = getValues('enddate');
+        const startDate = getValues('startdate');
+        const diffTime = Math.abs(new Date(endDate) - new Date(startDate));
+        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+        const props = {
+            communicationType: rawFormState?.communicationType,
+            primaryGoal: rawFormState?.primaryGoal,
+            productType: rawFormState?.productType,
+            secondaryGoal: rawFormState?.secondaryGoal,
+            channelType: channelTypes,
+            buttonType,
+            analyticsTypes: handleAnalyticsType(analyticsTypes, hasOfflineConversion),
+            offlineConversion: hasOfflineConversion,
+            isEditable: locationState?.isEditable,
+            statusId: locationState?.statusId,
+            timeZoneId: timeZone,
+            templateId: locationState?.edmTemplateId,
+            diffDays,
+            eligibleChannelType: {},
+            templateChannelId: locationState?.templateChannelId || 0,
+        };
+
+        setSubmittingButtonType(buttonType);
+        try {
+            await handleWithoutAPICallNavigation({
+                payload,
+                props,
+                locationState,
+                navigate,
+                dispatch,
+                forceNavigateWithoutApi: true,
+            });
+        } finally {
+            if (isMounted.current) {
+                setSubmittingButtonType(null);
+            }
+        }
+    };
+
+    const handlePlanButtonClick = (buttonType) => {
+        if (isCompletedOrAlertStatus(statusId)) {
+            handleCompletedOrAlertSubmit(buttonType);
+            return;
+        }
+        handleSubmit((data) => formSubmitHandler(data, buttonType))();
+    };
+
+    const isPlanFormActionDisabled =
+        !isCompletedOrAlertStatus(statusId) &&
+        ((state?.frequencyType === 4 ? false : !isDirty && mode !== 'edit') ||
+            Object.keys(errors).length > 0);
+
     const formSubmitHandler = async (formState, buttonType) => {
         dispatch(setTabforEdit(null));
         dispatch(showTabsSmartlink(false));
@@ -1812,30 +1887,47 @@ const DeliveryMethod = ({ type } = {}) => {
         }
 
         const handleSavePlan = async () => {
-            const payload = buildRequestPayload(formState, type, state, mode);
-            if (channelTypes?.length === 0 && type !== 'multi') {
+            const payload = buildPlanSubmitPayload({
+                formState: getValues(),
+                type,
+                reducerState: state,
+                mode,
+                locationState,
+                departmentId,
+                userId,
+                clientId,
+                tags: selectedTags,
+                isSecondaryGoal,
+                isCommunicationReference,
+                communicationReferenceData: state?.communicationReferenceData,
+                savedDynamicListChannel,
+            });
+            const submitChannelTypes = payload?.channelType ?? [];
+            const submitAnalyticsTypes = payload?.analyticsTypes ?? [];
+            if (submitChannelTypes?.length === 0 && type !== 'multi') {
                 setError('channelTypes[0].selected', {
                     type: 'custom',
                     message: SELECT_CHANNEL_TYPE,
                 });
                 return false;
             }
+            const formValues = getValues();
             const props = {
-                communicationType: formState?.communicationType,
-                primaryGoal: formState?.primaryGoal,
-                productType: formState?.productType,
-                secondaryGoal: formState?.secondaryGoal,
-                channelType: channelTypes,
+                communicationType: formValues?.communicationType,
+                primaryGoal: formValues?.primaryGoal,
+                productType: formValues?.productType,
+                secondaryGoal: formValues?.secondaryGoal,
+                channelType: submitChannelTypes,
                 buttonType,
-                analyticsTypes: handleAnalyticsType(analyticsTypes, ConversionName),
+                analyticsTypes: handleAnalyticsType(submitAnalyticsTypes, ConversionName),
                 offlineConversion: ConversionName,
                 isEditable: locationState?.isEditable,
                 statusId: locationState?.statusId,
                 timeZoneId: timeZone,
-                templateId: formState?.templateId,
+                templateId: locationState?.edmTemplateId,
                 diffDays,
                 eligibleChannelType,
-                templateChannelId: locationState?.templateChannelId || 0
+                templateChannelId: locationState?.templateChannelId || 0,
             };
 
             if (mode === 'edit' && isPlanPayloadEqual(payload, boundPlanPayloadRef.current)) {
@@ -1869,7 +1961,8 @@ const DeliveryMethod = ({ type } = {}) => {
                 : false;
 
             if (isEventTrigger && isInProgress) {
-                if (!isEndDateModified) {
+                const isPlanUnchanged = isPlanPayloadEqual(payload, boundPlanPayloadRef.current);
+                if (isPlanUnchanged && !isEndDateModified) {
                     setSubmittingButtonType(buttonType);
                     try {
                         const navigatedWithoutApi = await handleWithoutAPICallNavigation({
@@ -2098,9 +2191,10 @@ const DeliveryMethod = ({ type } = {}) => {
                 <DeliveryMethodSkeleton type={type} />
             ) : (
             <form
-                onSubmit={handleSubmit((data) => {
-                    formSubmitHandler(data);
-                })}
+                onSubmit={(e) => {
+                    e.preventDefault();
+                    handlePlanButtonClick('form');
+                }}
             >
                 <div className={`box-design bd-top-border ${!isEditable ? 'create-not-edit' : ''}`}>
                     {/* First Row */}
@@ -2217,31 +2311,28 @@ const DeliveryMethod = ({ type } = {}) => {
                                             </span>
                                         ) : (
                                             <div
-                                                className={`
-                                                ${!statusIdCheck(locationState?.statusId) ||
-                                                        state?.defaultCommunicationReferenceConfigData?.length === 0
-                                                        ? 'pe-none click-off'
-                                                        : ''
-                                                    }
-                                                `}
+                                                className={isCommReferenceIconDisabled ? 'pe-none click-off' : ''}
                                             >
                                             <i
                                                 id="rs_DeliveryMethod_edit"
                                                 className={`${form_edit_medium} icon-md color-primary-blue cp
                                                 `}
                                                 onClick={() => {
-                                                    const commReferenceEdit = [
-                                                        state?.communicationReferenceData?.grouping,
-                                                        state?.communicationReferenceData?.priority,
-                                                        ...(state?.communicationReferenceData?.reference ?? []),
-                                                    ].filter((item) => item && Object.keys(item)?.length > 0);
-
-                                                    const finalEditReferenceData = handleReferenceData(
-                                                        commReferenceEdit,
-                                                        state?.defaultCommunicationReferenceConfigData,
-                                                        '',
-                                                        state?.communicationReferenceData?.docketFilename,
+                                                    const referenceFormState = getCommunicationReferenceFormState(
+                                                        state?.communicationReferenceData,
                                                     );
+                                                    const hasFormFields =
+                                                        referenceFormState.reference.length > 0 ||
+                                                        Object.keys(referenceFormState.grouping).length > 0;
+
+                                                    const finalEditReferenceData = hasFormFields
+                                                        ? state.communicationReferenceData
+                                                        : handleReferenceData(
+                                                              [],
+                                                              referenceConfigList,
+                                                              '',
+                                                              referenceFormState.docketFilename,
+                                                          );
 
                                                     dispatchState({
                                                         type: 'UPDATE',
@@ -3443,7 +3534,7 @@ getCommunicationSubProducts({
                     )}
                 </div>
                 {/* Buttons Row */}
-                <div className="buttons-holder">
+                <div className="buttons-holder d-flex justify-content-end">
                     <RSSecondaryButton
                         onClick={() => {
                             dispatch(resetCommunicationPlan());
@@ -3462,14 +3553,10 @@ getCommunicationSubProducts({
                     </RSSecondaryButton>
                     <RSSecondaryButton
                         disabledClass={`color-primary-blue ${
-                            // !isValid ||
-                            (state?.frequencyType === 4 ? false : !isDirty && mode !== 'edit') ||
-                                Object?.keys(errors)?.length > 0
-                                ? 'pe-none click-off'
-                                : ''
+                            isPlanFormActionDisabled ? 'pe-none click-off' : ''
                             }`}
                             className={'color-primary-blue'}
-                        onClick={handleSubmit((data) => formSubmitHandler(data, 'save'))}
+                        onClick={() => handlePlanButtonClick('save')}
                         id="rs_DeliveryMethod_Save"
                         isLoading={submittingButtonType === 'save'}
                         blockBodyPointerEvents
@@ -3477,13 +3564,9 @@ getCommunicationSubProducts({
                         {SAVE}
                     </RSSecondaryButton>
                     <RSPrimaryButton
-                        onClick={handleSubmit((data) => formSubmitHandler(data, 'form'))}
+                        onClick={() => handlePlanButtonClick('form')}
                         disabledClass={`${
-                            // !isValid ||
-                            (state?.frequencyType === 4 ? false : !isDirty && mode !== 'edit') ||
-                                Object?.keys(errors)?.length > 0
-                                ? 'pe-none click-off'
-                                : ''
+                            isPlanFormActionDisabled ? 'pe-none click-off' : ''
                             } ${submittingButtonType === 'form' ? 'pe-none click-off' : ''}`}
                         id="rs_DeliveryMethod_Next"
                         isLoading={submittingButtonType === 'form'}

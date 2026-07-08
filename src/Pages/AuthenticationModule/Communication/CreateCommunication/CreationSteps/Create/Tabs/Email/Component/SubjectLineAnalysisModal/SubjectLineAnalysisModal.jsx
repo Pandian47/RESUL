@@ -143,7 +143,7 @@ let cons = {
                                         <RSHighchartsContainer
                                             options={percentageChartOptions(
                                                // Math.round(emailList?.subjectLine_Analysis[0]?.openRate) || 0,
-                                                Math.round(emailList?.subjectLine_Analysis?.originalAnalysis?.unifiedPerformanceScore)||0,
+                                                Math.round((emailList?.subjectLine_Analysis?.originalAnalysis?.unifiedPerformanceScore || 0) * 100),
                                                 ctrColor,
                                             )}
                                             // className="sla-chart"

@@ -39,10 +39,11 @@ const RenderFields = ({ index, responseApiData = {}, removeUser }) => {
                         const currentBUData = watchedBUs?.[idx] || {};
                         const selectedRoleId = currentBUData?.selectedRole?.groupId || currentBUData?.roleId;
                         const isKeyPerson = currentBUData?.isKeyPerson;
+                        const isLastBU = idx === selectedBUFields?.length - 1 || false;
                         return (
                             <Row
                                 key={field.id}
-                                className="assign-entity-card p10 mx0 border-bottom last-no-border align-items-center"
+                                className={`assign-entity-card p10 mx0 align-items-center ${isLastBU ? ' no-border-bottom' : ''}`}
                             >
                                 <Col md={4} className="assign-entity-card-info pl15">
                                     <span className="assign-entity-card-name font-weight-500 color-dark-grey">

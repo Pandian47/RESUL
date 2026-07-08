@@ -606,7 +606,7 @@
 
 .aud_mappingScreen {
     display: flex;
-    align-items: flex-end;
+    align-items: center;
     width: 100%;
     min-height: 32px;
     gap: 8px;
@@ -758,6 +758,30 @@ body:has(.pref-dedupe-settings-modal.show) {
         overflow: visible;
     }
 
+    .tabs-right-align.pageSub_tab {
+        position: relative;
+        width: 100%;
+
+        > h4 {
+            float: left;
+        }
+
+        .res-tabber {
+            > .res-tabs.row,
+            > .rs-tabs.row {
+                display: flex;
+                justify-content: flex-end;
+                float: right;
+                width: auto;
+                max-width: calc(100% - 110px);
+            }
+
+            > .res-tabs-content {
+                clear: both;
+            }
+        }
+    }
+
     .reskendogrid-pager {
         overflow: visible;
         position: relative;
@@ -773,6 +797,12 @@ body:has(.target-list-info-modal.show) {
         z-index: 10010 !important;
         overflow: visible !important;
         pointer-events: auto !important;
+    }
+
+    .highcharts-tooltip-container,
+    .highcharts-label.highcharts-tooltip {
+        z-index: 10010 !important;
+        pointer-events: none;
     }
 }
 .timermodal-date-timer {

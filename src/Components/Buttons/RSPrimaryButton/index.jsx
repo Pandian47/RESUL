@@ -2,7 +2,6 @@ import { memo } from 'react';
 import PropTypes from 'prop-types';
 import RSButton from '../RSButton';
 import useBodyPointerLock from 'Hooks/useBodyPointerLock';
-import { motion, AnimatePresence } from 'framer-motion';
 
 const RSPrimaryButton = ({
     bgc,
@@ -39,21 +38,13 @@ const RSPrimaryButton = ({
             disabled={isBlocked || disabled}
         >
             <div className="d-flex justify-content-center align-items-center gap-2">
-                <AnimatePresence>
-                    {showLoading && (
-                        <motion.div
-                            className="segment_loader"
-                            initial={{ width: 0, height: 0, opacity: 0, x: 15 }}
-                            animate={{ width: 16, height: 16, opacity: 1, x: 0 }}
-                            exit={{ width: 0, height: 0, opacity: 0, x: -15 }}
-                            transition={{ duration: 0.25, ease: 'easeInOut' }}
-                            style={{ overflow: 'hidden' }}
-                        />
-                    )}
-                </AnimatePresence>
-                <span style={{ display: 'inline-block' }}>
+                <div
+                    className={`segment_loader rs-button-loading-icon ${showLoading ? 'is-active' : ''}`}
+                    aria-hidden="true"
+                />
+                <div style={{ display: 'inline-block' }}>
                     {showLoading && loadingText ? loadingText : children}
-                </span>
+                </div>
             </div>
         </RSButton>
     );

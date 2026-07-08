@@ -754,8 +754,8 @@ input.radio[type='radio']~.lbl:before {
             @extend .box-design;
             @extend .primary-box-shadow;
             padding: 0 !important;
-            border-radius: 0 0 var(--globalBorderRadius) var(--globalBorderRadius) !important;
-            margin: 0;
+            border-radius: var(--globalDropdownRadius) !important;
+            margin: 5px 0 0 0;
             max-height: 201px;
             width: 285px;
             @extend %css-scrollbar;
@@ -930,7 +930,7 @@ input[type='range']::-webkit-slider-thumb {
 // Bootstrap dropdown search icon ui start
 .v1-search-dropdown-container {
     .dropdown-menu.show {
-        padding: 0 !important;
+        // padding: 0 !important;
         min-width: 200px;
 
         .form-control:focus {
@@ -938,7 +938,7 @@ input[type='range']::-webkit-slider-thumb {
         }
 
         .v1-dropdown-nodata {
-            min-height: 140px;
+            min-height: 215px;
 
         }
 
@@ -963,7 +963,7 @@ input[type='range']::-webkit-slider-thumb {
     }
     .v1-search-dropdown-icon {
         margin: 0 10px;
-        padding: 4px 0;
+        padding: 4px 0 0 0;
 
         &:focus-visible {
             outline: none;

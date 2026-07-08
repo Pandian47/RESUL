@@ -1200,7 +1200,7 @@ const AIOfferBuilderWrapper = () => {
         return () => {
             dispatch(resetEmailBuilderReducer());
         };
-    }, [state, savedVersions]);
+    }, [state]);
 
     useEffect(() => {
         const callImediate = async () => {

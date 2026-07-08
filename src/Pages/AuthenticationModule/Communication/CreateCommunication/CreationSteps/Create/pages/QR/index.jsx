@@ -3,7 +3,7 @@ import { useDispatch, useSelector } from 'react-redux';
 
 import RSTabbar from 'Components/RSTabber';
 
-import { QR_TAB_CONFIG, UPDATE_QR_TAB_CONFIG } from '../../constant';
+import { QR_TAB_CONFIG, UPDATE_QR_TAB_CONFIG, shouldShowAuthoringTabChangeConfirmation } from '../../constant';
 import { updateQr, updateQREnableTab, updateTab } from 'Reducers/communication/createCommunication/Create/reducer';
 
 const QR = () => {
@@ -41,7 +41,7 @@ const QR = () => {
                 className='MDC-subtab-tip'
                 defaultTab={updateCurrentIndex}
                 tabData={!tabName ? QR_TAB_CONFIG : UPDATE_QR_TAB_CONFIG(tabName)}
-                isTabChangeConfirmation={isDirty}
+                isTabChangeConfirmation={shouldShowAuthoringTabChangeConfirmation(isDirty)}
                 clear
                 onClear={(ind) => {
                     dispatch(

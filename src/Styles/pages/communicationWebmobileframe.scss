@@ -222,7 +222,7 @@
   .mobilepush_frame_wrapper {
     background-size: 100% !important;
     width: 100%;
-    height: 278px;
+    height: 278px !important;
     border-radius: 0;
 
     .android-frame {
@@ -1488,3 +1488,9 @@
     }
 }
 // Table grid tag ui end
+.modalWACarouselPreview{
+  .rs-mobile-frame-wrapper-new .carousel-item{
+    height: auto;
+  }
+
+}

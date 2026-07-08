@@ -183,6 +183,27 @@ export const isSmartLinkCacheValid = createSelector(
     }),
 );
 
+export const selectIsSmartLinkFetchResolved = createSelector(
+    (state) => state.smartLinkReducer.tabSmartLink_Flag,
+    (tabSmartLink_Flag) => tabSmartLink_Flag !== null,
+);
+
+export const selectHasExistingSmartLinkData = createSelector(
+    getGeneratedLink,
+    (generatedLink = {}) =>
+        Object.values(generatedLink).some((link) => String(link || '').trim() !== ''),
+);
+
+export const selectHasWebSmartLinkData = createSelector(
+    getGeneratedLink,
+    (generatedLink = {}) => Boolean(String(generatedLink?.smartLink1 || '').trim()),
+);
+
+export const selectHasMobileSmartLinkData = createSelector(
+    getGeneratedLink,
+    (generatedLink = {}) => Boolean(String(generatedLink?.smartLink2 || '').trim()),
+);
+
 export const getMobileSmartLinkOverlayMessage = ({
     smartLink1,
     smartLink = {},
@@ -190,10 +211,10 @@ export const getMobileSmartLinkOverlayMessage = ({
     noSmartLinkMessage,
     mobileNotSetupMessage,
 }) => {
-    const hasSmartLinkUrl = Boolean(smartLink1 && Object.values(smartLink)[0]);
+    const hasMobileSmartLink = Boolean(String(smartLink?.smartLink2 || '').trim());
     const resolvedMobileAppId = getMobileAppIdFromEditFlow(editFlow);
 
-    if (!hasSmartLinkUrl) return noSmartLinkMessage;
+    if (!hasMobileSmartLink) return noSmartLinkMessage;
     if (!resolvedMobileAppId) return mobileNotSetupMessage;
     return noSmartLinkMessage;
 };

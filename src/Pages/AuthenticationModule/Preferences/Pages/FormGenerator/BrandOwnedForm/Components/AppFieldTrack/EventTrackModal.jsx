@@ -137,7 +137,7 @@ const EventTrackModal = ({
             clientId,
             userId,
         };
-        const rslt = dispatch(getDataAttributes(payload, true, false, 'BrandForm'));
+        const rslt = dispatch(getDataAttributes(payload, false, false, 'BrandForm'));
             }, [departmentId, clientId, userId]);
 
     useEffect(() => {
@@ -571,7 +571,7 @@ const EventTrackModal = ({
                     clientId,
                     userId,
                 };
-                await dispatch(getDataAttributes(payload, true, false, 'BrandForm'));
+                await dispatch(getDataAttributes(payload, false, false, 'BrandForm'));
             }
             return attr;
         } catch (error) {

@@ -4,7 +4,7 @@ import Carousel from './Components/Carousel/Carousel';
 import TextContent from './Components/TextContent/TextContent';
 import SplitAB from './Components/SplitAB/SplitAB';
 
-import { formatDateScheculer, handleAllChannelPayload, handleAllChannelTimeZonePayload, handleMDCExtraPayload, resolveLocalBlastDateTime } from '../../constant';
+import { formatDateScheculer, handleAllChannelPayload, handleAllChannelTimeZonePayload, handleMDCExtraPayload, resolveLocalBlastDateTime, resolveMdcSchedule } from '../../constant';
 
 import {
     ensureArray,

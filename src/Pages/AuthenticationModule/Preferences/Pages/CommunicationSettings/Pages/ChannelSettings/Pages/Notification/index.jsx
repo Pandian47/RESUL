@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import RSTabbar from 'Components/RSTabber/index';
 import useQueryParams from 'Hooks/useQueryParams';
-import { NOTIFICATION_TABBER_CONFIG, resolveNotificationTabState } from '../../constant';
+import { NOTIFICATION_TABBER_CONFIG, resolveNotificationTabState, syncNotificationChannelTabQuery } from '../../constant';
 import { useDispatch, useSelector } from 'react-redux';
 import { getSessionId } from 'Reducers/globalState/selector';
 
@@ -47,6 +47,9 @@ const Notification = () => {
                     activeClass={`active`}
                     defaultTab={tabState}
                     tabData={NOTIFICATION_TABBER_CONFIG}
+                    callBack={(_, index) => {
+                        syncNotificationChannelTabQuery(index);
+                    }}
                 />
             )}
             <RSConfirmationModal

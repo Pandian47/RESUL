@@ -1,4 +1,4 @@
-import { ARHIVE_COMMUNICATION, DUPLICATE_COMMUNICATION, GET_CAMPAIGN_MAKE_CHANGES, GET_CAMPAIGN_REJECTS_COMMENTS, GET_CAMPAINGN_STATUS_EXTENSION, GET_COMMUNICATION_LIST_EXTENSION, GET_COMM_SPLITAB_PROCESS_RECIPIENTS, GET_COMM_SPLIT_POPUP, GET_COMM_TAGS, GET_LISTING_USER_LIST, GET_PREVIEW_BY_CHANNEL, LISTNAME_SEARCH, TIGGER_PAUSE_AND_PLAY_CAMPAIGN, UNARHIVE_COMMUNICATION, DELETE_CHANNEL_BY_ID } from 'Constants/EndPoints';
+import { ARHIVE_COMMUNICATION, DUPLICATE_COMMUNICATION, GET_CAMPAIGN_MAKE_CHANGES, GET_CAMPAIGN_REJECTS_COMMENTS,MDC_DUPLICATE_COMMUNICATION, GET_CAMPAINGN_STATUS_EXTENSION, GET_COMMUNICATION_LIST_EXTENSION, GET_COMM_SPLITAB_PROCESS_RECIPIENTS, GET_COMM_SPLIT_POPUP, GET_COMM_TAGS, GET_LISTING_USER_LIST, GET_PREVIEW_BY_CHANNEL, LISTNAME_SEARCH, TIGGER_PAUSE_AND_PLAY_CAMPAIGN, UNARHIVE_COMMUNICATION, DELETE_CHANNEL_BY_ID } from 'Constants/EndPoints';
 import request from 'Utils/Http';
 
 import {
@@ -224,13 +224,25 @@ export const duplicateCommunication =
                 request.post({
                     url: DUPLICATE_COMMUNICATION,
                     payload,
-                    loading,
+                    loading:false,
                     ok: () => { },
                     isFailureCheck: true,
                 }),
             );
         };
-
+export const mdcDuplicateCommunication =
+    ({ payload, loading = false }) =>
+        async (dispatch) => {
+            return dispatch(
+                request.post({
+                    url: MDC_DUPLICATE_COMMUNICATION,
+                    payload,
+                    loading:false,
+                    ok: () => { },
+                    isFailureCheck: true,
+                }),
+            );
+        };
 export const updatePlayPause =
     ({ payload }) =>
         async (dispatch) => {
@@ -358,13 +370,13 @@ export const commListingUserList = ({ payload, loading = false }) => async (disp
 };
 
 export const deleteChannelById =
-    ({ payload }) =>
+    ({ payload, loading = false }) =>
         async (dispatch) => {
             return dispatch(
                 request.post({
                     url: DELETE_CHANNEL_BY_ID,
                     payload,
-                    loading: true,
+                    loading,
                     isFailureCheck: true,
                 }),
             );

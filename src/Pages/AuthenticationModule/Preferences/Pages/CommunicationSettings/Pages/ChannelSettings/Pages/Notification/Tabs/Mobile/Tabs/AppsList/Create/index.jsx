@@ -1,3 +1,5 @@
+import { validateIsCustomNavigate } from 'Utils/modules/navigation';
+import { updateQueryParams } from 'Utils/modules/urlQuery';
 import { MAX_LENGTH50 } from 'Constants/GlobalConstant/Regex';
 import { APP_NAME as APP_NAME_MSG, UPLOAD_FILE } from 'Constants/GlobalConstant/ValidationMessage';
 import { APP_LOGO, APP_NAME, UPLOAD_145_LOGO } from 'Constants/GlobalConstant/Placeholders';
@@ -22,18 +24,32 @@ import { MOBILE_FORM_ACTIONS_PORTAL_ID } from '../../../constant';
 import usePermission from 'Hooks/usePersmission';
 import { getSessionId } from 'Reducers/globalState/selector';
 import { useSelector, useDispatch, useStore } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
 import useApiLoader from 'Hooks/useApiLoader';
+import useQueryParams from 'Hooks/useQueryParams';
+import useOnlyDepChangeEffect from 'Hooks/useOnlyDepChangeEffect';
 import { FIELD_BOTH_LOADER_CONFIG as fieldLoaderConfig } from 'Hooks/loaderTypes';
 import { CommunicationSettingsEditSkeletonGate } from 'Components/Skeleton/Components/PreferencesSubPageRouteSkeleton';
-
-
-const APP_NOTIFICATION_ONBOARDING_FORM_ID = 'rs_AppNotificationOnBoarding_Form';
-import useOnlyDepChangeEffect from 'Hooks/useOnlyDepChangeEffect';
 import RSFileUpload from 'Components/FormFields/RSFileUpload';
 import IntegrationSuccessModal from '../../../../../Components/IntegrationSuccessModal';
+
+const APP_NOTIFICATION_ONBOARDING_FORM_ID = 'rs_AppNotificationOnBoarding_Form';
+
+const MOBILE_ADD_QUERY_KEYS_TO_CLEAR = {
+    backNavigationDetails: null,
+    backAction: null,
+    mode: null,
+    subfrom: null,
+};
+
 const AppNotificationOnBoarding = ({ type, handleCancel, config, setFailedApi }) => {
     const methods = useForm(MOBILEAPP_ONBOARDING_INITIALSTATE);
     const dispatch = useDispatch();
+    const navigate = useNavigate();
+    const queryState = useQueryParams('/preferences/communication-settings');
+    const isNavigatingBackRef = useRef(false);
+    const isAddFromExternalFlow =
+        queryState?.mode === 'add' && queryState?.backNavigationDetails?.isCustomNavigate;
     const store = useStore();
     const { clientId, userId, departmentId } = useSelector((state) => getSessionId(state));
     const sessionReady = Boolean(clientId && userId != null && departmentId != null);
@@ -349,12 +365,21 @@ const AppNotificationOnBoarding = ({ type, handleCancel, config, setFailedApi })
         }
     };
 
+    const handleReturn = () => {
+        if (isAddFromExternalFlow) {
+            isNavigatingBackRef.current = true;
+            validateIsCustomNavigate(queryState, queryState, navigate, () => {
+                handleCancel(true);
+            }, { dispatch });
+            return;
+        }
+        handleCancel(true);
+    };
+
     // Handle success modal close
     const handleSuccessModalClose = () => {
         setShowSuccessModal(false);
-        
-        handleCancel(true);
-       
+        handleReturn();
     };
 
     const [actionsPortalTarget, setActionsPortalTarget] = useState(null);
@@ -364,6 +389,9 @@ const AppNotificationOnBoarding = ({ type, handleCancel, config, setFailedApi })
 
         return () => {
             setActionsPortalTarget(null);
+            if (isAddFromExternalFlow && !isNavigatingBackRef.current) {
+                updateQueryParams(MOBILE_ADD_QUERY_KEYS_TO_CLEAR);
+            }
         };
     }, []);
 
@@ -374,7 +402,7 @@ const AppNotificationOnBoarding = ({ type, handleCancel, config, setFailedApi })
                 blockInteraction={isSaveLoading}
                 onClick={() => {
                     if (isSaveLoading) return;
-                    handleCancel(true);
+                    handleReturn();
                 }}
                 id="rs_AppNotificationOnBoarding_Cancel"
             >

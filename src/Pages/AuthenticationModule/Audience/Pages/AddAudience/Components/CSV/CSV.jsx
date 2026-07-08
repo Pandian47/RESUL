@@ -4,9 +4,24 @@ import { getCsvListType } from 'Utils/modules/browserUtils';
 import { getYYYYMMDDHHMMSS } from 'Utils/modules/dateTime';
 import { getListType, limitConfigBUWiseList, modalType } from './constant';
 import { FILECOUNT, FILECOUNT_TL, MAX_LENGTH200 } from 'Constants/GlobalConstant/Regex';
-import { ENTER_IMPORT_DESCRIPTION, SELECT_LIST_TYPE } from 'Constants/GlobalConstant/ValidationMessage';
-import { ARE_YOU_SURE_WANT_TO_RESET, ENTER_LIST_NAME, FILTER_GROUP_TEXT, IMPORT_DESCRIPTION, LIST_TYPE, RESET, SELECT } from 'Constants/GlobalConstant/Placeholders';
-import { circle_question_mark_mini, restart_medium } from 'Constants/GlobalConstant/Glyphicons';
+import {
+    ENTER_IMPORT_DESCRIPTION,
+    SELECT_LIST_TYPE,
+} from 'Constants/GlobalConstant/ValidationMessage';
+import {
+    ARE_YOU_SURE_WANT_TO_RESET,
+    ENTER_LIST_NAME,
+    FILTER_GROUP_TEXT,
+    IMPORT_DESCRIPTION,
+    LIST_TYPE,
+    RESET,
+    CHILD_ATTRIBUTE,
+} from 'Constants/GlobalConstant/Placeholders';
+import {
+    circle_question_mark_mini,
+    restart_medium,
+    settings_medium,
+} from 'Constants/GlobalConstant/Glyphicons';
 import { Fragment, useEffect, useMemo, useRef, useState } from 'react';
 import { Col, Row } from 'react-bootstrap';
 import { useFormContext } from 'react-hook-form';
@@ -16,7 +31,6 @@ import RSTooltip from 'Components/RSTooltip';
 import ListNameExists from 'Components/ListNameExists';
 import RSKendoDropdownList from 'Components/FormFields/RSKendoDropdown';
 import ConfirmationPopup from './Components/ConfirmationPopup/ConfirmationPopup';
-
 
 import { getSessionId } from 'Reducers/globalState/selector';
 import {
@@ -33,9 +47,9 @@ import ListAnalysis from '../../../AddImportAudience/Components/ListAnalysis';
 import useQueryParams from 'Hooks/useQueryParams';
 import CSVUpload from './Components/CSVUpload';
 import ExcelUpload from './Components/ExcelUpload';
-import AttributeMappingSection from '../AttributeMappingSection';
 import useApiLoader, { LOADER_TYPE } from 'Hooks/useApiLoader';
 import { getListsConstant } from './Components/ConfirmationPopup/constant';
+import ChildAttrModal from '../ChildAttrModal';
 
 const LIST_TYPE_MODAL_KEY_BY_VALUE = {
     'Ad-hoc list': 'adhoclist',
@@ -75,6 +89,9 @@ const CSV = ({ audRefData, fetchAudienceInsight }) => {
         data: {},
     });
     const [isReset, setIsReset] = useState({
+        show: false,
+    });
+    const [childAttrModal, setChildAttrModal] = useState({
         show: false,
     });
     const [isValidListname, setIsValidListname] = useState(false);
@@ -132,7 +149,7 @@ const CSV = ({ audRefData, fetchAudienceInsight }) => {
             if (state?.mode === 'inputList' && !isNamePrefilledRef.current) {
                 const prefix = state.type === 'match-list' ? 'ML' : 'SuL';
                 const name = state.recipientsBunchName || '';
-                
+
                 const formattedDateTime = getYYYYMMDDHHMMSS();
 
                 // setValue('listName', `${prefix}_${name}_${formattedDateTime}`);
@@ -189,6 +206,11 @@ const CSV = ({ audRefData, fetchAudienceInsight }) => {
         //setValue('csvFiles', '');
     };
 
+    const openChildAttributeModal = () => {
+        setChildAttrModal({ show: true });
+        handleErrorandValue()
+    };
+
     const maxLimitCheckList = [3];
 
     const checkListCount = async (type) => {
@@ -219,8 +241,7 @@ const CSV = ({ audRefData, fetchAudienceInsight }) => {
                     <i
                         className={`${circle_question_mark_mini} icon-xs color-primary-blue cursor-pointer`}
                         onClick={() => {
-                            const modalTypeValue =
-                                state?.type === 'match-list' ? 'matchList' : 'supressionList';
+                            const modalTypeValue = state?.type === 'match-list' ? 'matchList' : 'supressionList';
                             setModal({ show: true, type: modalTypeValue });
                         }}
                     />
@@ -274,11 +295,7 @@ const CSV = ({ audRefData, fetchAudienceInsight }) => {
                     </Col>
                     {listType && state?.from !== 'targetList' && (
                         <Col md={1} className="pl0">
-                            <RSTooltip
-                                position="top"
-                                className="d-inline-flex position-relative"
-                                text={RESET}
-                            >
+                            <RSTooltip position="top" className="d-inline-flex position-relative" text={RESET}>
                                 <i
                                     id="rs_data_refresh"
                                     className={`${restart_medium} icon-md color-primary-blue mt-9`}
@@ -289,26 +306,32 @@ const CSV = ({ audRefData, fetchAudienceInsight }) => {
                                     }}
                                 />{' '}
                             </RSTooltip>
+                            {listType === 'Target list' && (
+                                <RSTooltip
+                                    position="top"
+                                    className="d-inline-flex position-relative ml10"
+                                    text={CHILD_ATTRIBUTE}
+                                >
+                                    <i
+                                        id="rs_child_attribute"
+                                        className={`${settings_medium} icon-md color-primary-blue cursor-pointer mt-9`}
+                                        onClick={() => {
+                                            openChildAttributeModal();
+                                        }}
+                                    />
+                                </RSTooltip>
+                            )}
                         </Col>
                     )}
                 </Row>
             </div>
             {listType && (
                 <Fragment>
-                    <AttributeMappingSection
-                        mappingFieldName="attributeMapping"
-                        mappingSelectLabel={SELECT}
-                        beforeFetchChildList={handleErrorandValue}
-                        onCategoryDropdownChange={() => clearErrors('csvFiles')}
-                        onCloseCategoryTypeExtras={() => clearErrors()}
-                    />
                     <div className="form-group">
                         <Row>
                             <Col sm={{ span: 3, offset: 1 }} className="text-right">
                                 <label className="control-label-left">
-                                    {listType === 'Target list'
-                                        ? IMPORT_DESCRIPTION
-                                        : ENTER_LIST_NAME}
+                                    {listType === 'Target list' ? IMPORT_DESCRIPTION : ENTER_LIST_NAME}
                                 </label>
                             </Col>
                             <Col sm={4}>
@@ -331,15 +354,9 @@ const CSV = ({ audRefData, fetchAudienceInsight }) => {
                                         MAX_LENGTH200,
                                     )}
                                     customErrorMessage={
-                                        listType === 'Target list'
-                                            ? ENTER_IMPORT_DESCRIPTION
-                                            : ENTER_LIST_NAME
+                                        listType === 'Target list' ? ENTER_IMPORT_DESCRIPTION : ENTER_LIST_NAME
                                     }
-                                    placeholder={
-                                        listType === 'Target list'
-                                            ? IMPORT_DESCRIPTION
-                                            : ENTER_LIST_NAME
-                                    }
+                                    placeholder={listType === 'Target list' ? IMPORT_DESCRIPTION : ENTER_LIST_NAME}
                                     extraPayload={{ listType: getCsvListType(listType) }}
                                     maxLength={MAX_LENGTH200}
                                     onChange={() => {
@@ -367,18 +384,18 @@ const CSV = ({ audRefData, fetchAudienceInsight }) => {
                 </Fragment>
             )}
             {/* Modals */}
-            {modal.show && 
+            {modal.show && (
                 <ConfirmationPopup
                     show={modal.show}
                     type={modal.type}
                     csvType={csvType?.type}
                     handleClose={() => {
-                            setValue('listType', '');
+                        setValue('listType', '');
                         setModal({ show: false, type: null });
                     }}
                     handleConfirm={() => setModal({ show: false, type: null })}
                 />
-            }
+            )}
             <RSConfirmationModal
                 show={isDelete?.show}
                 isCloseButton={false}
@@ -435,6 +452,12 @@ const CSV = ({ audRefData, fetchAudienceInsight }) => {
                         });
                         setInvalidFiles([]);
                     }}
+                />
+            )}
+            {childAttrModal?.show && (
+                <ChildAttrModal
+                    show={childAttrModal?.show}
+                    onClose={() => setChildAttrModal({ show: false })}
                 />
             )}
             {listAnalysisInfoModal?.show && (

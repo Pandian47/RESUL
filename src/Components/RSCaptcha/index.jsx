@@ -169,11 +169,13 @@ export const RSCaptchaGenerator = ({
                         <div id="image" className="bg-tertiary-grey text-center unselectable w-100">
                             {captcha}
                         </div>
+                        <RSTooltip text={REFRESH} className='lh0'>
                         <i
                             id='rs_data_refresh'
                             className={`${refresh_medium} icon-md color-primary-blue position-relative`}
                             onClick={generate}
                         ></i>
+                        </RSTooltip>
                     </div>
                 }
             </Col>

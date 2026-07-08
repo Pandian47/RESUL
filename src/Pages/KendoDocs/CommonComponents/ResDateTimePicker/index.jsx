@@ -52,6 +52,7 @@ const ResDateTimePicker = ({
 }) => {
     const datePickerWrapper = useRef(null);
     const footerClassAppliedRef = useRef(false);
+    const placementRef = useRef(null);
     const [showDatepicker, setDatepicker] = useState(false);
     const [datePickerValue, setDatePickerValue] = useState(null);
     const [hasValue, setHasValue] = useState(false);
@@ -249,7 +250,11 @@ const ResDateTimePicker = ({
     const resolvePopupPlacement = useCallback(() => {
         const inputRect = getInputRect();
         if (!inputRect) {
-            return { placement: 'bottom', inputRect: null, popupHeight: POPUP_ESTIMATED_HEIGHT };
+            return {
+                placement: placementRef.current || 'bottom',
+                inputRect: null,
+                popupHeight: POPUP_ESTIMATED_HEIGHT,
+            };
         }
 
         const popup = getPopupElement();
@@ -257,11 +262,33 @@ const ResDateTimePicker = ({
             popup?.offsetHeight || POPUP_ESTIMATED_HEIGHT,
             POPUP_ESTIMATED_HEIGHT,
         );
+
+        // Lock the placement while the popup stays open. The Date and Time tabs
+        // have different heights, so recomputing on every DOM mutation (tab switch)
+        // makes the popup flip sides and pushes the Set/Cancel buttons off-screen.
+        if (placementRef.current) {
+            return { placement: placementRef.current, inputRect, popupHeight };
+        }
+
         const spaceBelow = window.innerHeight - inputRect.bottom - POPUP_GAP;
         const spaceAbove = inputRect.top - POPUP_GAP;
-        const placement =
-            spaceBelow >= POPUP_MIN_SPACE_BELOW || spaceBelow >= spaceAbove ? 'bottom' : 'top';
+        // Decide against the full estimated height (tallest tab = calendar) so the
+        // chosen side can fit the whole popup, keeping the action buttons visible.
+        const fitsBelow = spaceBelow >= POPUP_ESTIMATED_HEIGHT;
+        const fitsAbove = spaceAbove >= POPUP_ESTIMATED_HEIGHT;
 
+        let placement;
+        if (fitsBelow) {
+            placement = 'bottom';
+        } else if (fitsAbove) {
+            placement = 'top';
+        } else if (spaceBelow >= POPUP_MIN_SPACE_BELOW && spaceBelow >= spaceAbove) {
+            placement = 'bottom';
+        } else {
+            placement = spaceBelow >= spaceAbove ? 'bottom' : 'top';
+        }
+
+        placementRef.current = placement;
         return { placement, inputRect, popupHeight };
     }, [getInputRect, getPopupElement]);
 
@@ -404,6 +431,7 @@ const ResDateTimePicker = ({
     useEffect(() => {
         if (!showDatepicker) {
             footerClassAppliedRef.current = false;
+            placementRef.current = null;
             return undefined;
         }
 

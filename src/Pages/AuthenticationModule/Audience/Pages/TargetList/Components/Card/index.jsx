@@ -1,7 +1,7 @@
 import { convertObjectToBase64, encodeUrl } from 'Utils/modules/crypto';
 import { getUserCurrentFormat } from 'Utils/modules/dateTime';
 import { formatNumber } from 'Utils/modules/campaignUtils';
-import { numberWithCommas } from 'Utils/modules/formatters';
+import { numberWithCommas, formatPercentageDisplay } from 'Utils/modules/formatters';
 import { charNumUnderScore } from 'Utils/modules/inputValidators';
 import { AD_HOC_FOOTER_DATA, ALL_AUDIENCE_FOOTER_DATA, DDL_AUDIENCE_FOOTER_DATA, DDL_COMMUNICATION_DATA, getAudienceFooterData, getMetricLabel, INITIAL_STATE, STATE_REDUCER } from './constant';
 import { LIST_NAME_CREATION, MAX_LENGTH, MIN_LENGTH } from 'Constants/GlobalConstant/Regex';
@@ -150,6 +150,20 @@ const Card = ({ list, type, duplicate, setDuplicate, setPageState, listNameEdit,
     const hasProjectedData = parsedProjectedReachRate != null;
     const activeProjectedMetricKey = selectedProjectedMetric.charAt(0).toUpperCase() + selectedProjectedMetric.slice(1);
     const activeProjectedValue = hasProjectedData ? parsedProjectedReachRate[activeProjectedMetricKey] : null;
+
+    const rawProjectedRate =
+        listType !== 5 || list.listMappingStatus === 0
+            ? null
+            : status === 'scheduled'
+              ? activePredictedData?.predicted_rate_pct ?? null
+              : status === 'completed'
+                ? activeProjectedValue
+                : null;
+    const hasProjectedRateDisplay =
+        rawProjectedRate !== null && rawProjectedRate !== undefined && rawProjectedRate !== '';
+    const formattedProjectedRate = hasProjectedRateDisplay
+        ? formatPercentageDisplay(String(rawProjectedRate).replace('%', '').trim())
+        : null;
 
     const [warningMessage, setWarningMessage] = useState('');
     const TLUserName = list.createdName;
@@ -826,44 +840,12 @@ const Card = ({ list, type, duplicate, setDuplicate, setPageState, listNameEdit,
                                     </span>
                                     <div className="rcit-number">
                                         <span
-                                            className={`rcitn-number ${
-                                                listType !== 5 || list.listMappingStatus === 0
-                                                    ? 'na'
-                                                    : status === 'scheduled'
-                                                    ? activePredictedData?.predicted_rate_pct == null
-                                                        ? 'na'
-                                                        : ''
-                                                    : status === 'completed'
-                                                    ? activeProjectedValue == null
-                                                        ? 'na'
-                                                        : ''
-                                                    : 'na'
-                                            }`}
+                                            className={`rcitn-number ${!hasProjectedRateDisplay ? 'na' : ''}`}
                                         >
-                                            {listType !== 5 || list.listMappingStatus === 0
-                                                ? 'NA'
-                                                : status === 'scheduled'
-                                                ? activePredictedData?.predicted_rate_pct ?? 'NA'
-                                                : status === 'completed'
-                                                ? activeProjectedValue != null
-                                                    ? activeProjectedValue
-                                                    : 'NA'
-                                                : 'NA'}
+                                            {hasProjectedRateDisplay ? formattedProjectedRate : 'NA'}
                                         </span>
                                         <span className="rcitn-per">
-                                            {listType !== 5 || list.listMappingStatus === 0
-                                                ? ''
-                                                : status === 'scheduled'
-                                                ? String(activePredictedData?.predicted_rate_pct || '').includes('%')
-                                                    ? ''
-                                                    : activePredictedData?.predicted_rate_pct != null
-                                                    ? ' %'
-                                                    : ''
-                                                : status === 'completed'
-                                                ? activeProjectedValue != null
-                                                    ? ' %'
-                                                    : ''
-                                                : ''}
+                                            {hasProjectedRateDisplay ? ' %' : ''}
                                         </span>
                                     </div>
                                 </div>

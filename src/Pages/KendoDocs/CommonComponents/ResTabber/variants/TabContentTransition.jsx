@@ -43,9 +43,13 @@ const transition = {
  * When selectedIdx is null there is no panel to show. We render nothing so
  * AnimatePresence can cleanly unmount the previous panel with its exit animation.
  */
-const TabContentTransition = ({ selectedIdx, children, className = '' }) => {
+const TabContentTransition = ({ selectedIdx, children, className = '', disableOverflowClip = false, animate = false }) => {
     // Don't wrap a null panel — let AnimatePresence handle the unmount cleanly.
     const hasContent = selectedIdx !== null && selectedIdx !== undefined;
+
+    if (!animate) {
+        return hasContent ? <div className={className || undefined} style={{ width: '100%' }}>{children}</div> : null;
+    }
 
     return (
         <AnimatePresence mode="wait" initial={false}>
@@ -58,7 +62,11 @@ const TabContentTransition = ({ selectedIdx, children, className = '' }) => {
                     animate="center"
                     exit="exit"
                     transition={transition}
-                    style={{ width: '100%', overflow: 'hidden', minHeight: 0 }}
+                    style={
+                        disableOverflowClip
+                            ? { width: '100%', minHeight: 0 }
+                            : { width: '100%', overflow: 'hidden', minHeight: 0 }
+                    }
                 >
                     {children}
                 </motion.div>

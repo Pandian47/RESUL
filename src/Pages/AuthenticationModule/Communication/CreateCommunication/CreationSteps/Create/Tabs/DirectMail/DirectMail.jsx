@@ -58,7 +58,8 @@ import {
     handleAllChannelTimeZonePayload,
     getPreCampaignStatus,
     handlePersonalization,
-    handleTotalAudienceCount
+    handleTotalAudienceCount,
+    shouldPromptSkipChannelConfirmation,
 } from '../../constant.jsx';
 import { updateSaveChannelsId } from 'Reducers/communication/createCommunication/plan/reducer';
 import { AUTHORING_FIELD_LOADER_CONFIG } from 'Components/Skeleton/pages/communication/authoring';
@@ -373,7 +374,7 @@ const DirectMail = () => {
     }, [location, savedChannel]);
 
     async function formSubmitHandler(formState, type = 'form', otpValue = '') {
-        if (statusIdCheck(statusId)) {
+        if (statusIdCheck(statusId, location?.campaignType, undefined)) {
             const selectedDirectMailRecipients = (audience || []).map((aud) => ({
                 SegmentationListID: aud?.segmentationListId || aud?.segmentationListID || 0,
                 AudienceCount: Number(aud?.recipientCountEmail || aud?.recipientCount || 0),
@@ -484,7 +485,7 @@ const DirectMail = () => {
                 className="tab-content rsv-tabs-content"
                 onSubmit={handleSubmit((data) => formSubmitHandler(data, 'form'))}
             >
-                <div className={`${!statusIdCheck(statusId) ? 'click-off' : ''} box-design bd-top-border`}>
+                <div className={`${!statusIdCheck(statusId, location?.campaignType, undefined) ? 'click-off' : ''} box-design bd-top-border`}>
                     {location.campaignType === 'S' && (
                         <div className="form-group mt20" ref={audienceRef}>
                             <AudienceFieldRenderComponent
@@ -697,6 +698,10 @@ const DirectMail = () => {
                         blockBodyPointerEvents
                         disabledClass={isSubmitting ? 'pe-none click-off' : ''}
                         onClick={() => {
+                            if (!shouldPromptSkipChannelConfirmation()) {
+                                handleNavigation();
+                                return;
+                            }
                             if (!isDirty && location.campaignType !== 'M' && !savedChannel && !watch('audience')?.length) {
                                 setNavigate_confirm(true);
                                 return;

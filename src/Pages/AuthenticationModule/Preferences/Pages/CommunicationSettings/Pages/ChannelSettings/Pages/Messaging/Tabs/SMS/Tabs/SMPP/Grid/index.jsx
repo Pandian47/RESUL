@@ -235,7 +235,7 @@ const SMPPList = () => {
                                 field: 'senderId',
                                 title: SENDER_ID,
                                 filter: 'text',
-                                width: 200,
+                                width: 150,
                                 cell: ({ dataItem }) => (
                                     <td>
                                     {dataItem?.senderId}

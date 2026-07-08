@@ -745,13 +745,22 @@ const FormGenerator = () => {
                                                                         minWidth: 0,
                                                                     }}
                                                                 >
-                                                                    <TruncatedCell value={firstName} noTable={true} />
+                                                                    <span
+                                                                        style={{
+                                                                            flex: '0 1 auto',
+                                                                            minWidth: 0,
+                                                                            overflow: 'hidden',
+                                                                        }}
+                                                                    >
+                                                                        <TruncatedCell value={firstName} noTable={true} />
+                                                                    </span>
                                                                     {moreCount > 0 && (
                                                                         <span
                                                                             className="color-primary-blue cursor-pointer"
                                                                             style={{
+                                                                                flexShrink: 0,
                                                                                 whiteSpace: 'nowrap',
-                                                                                marginLeft: '4px',
+                                                                                marginLeft: '5px',
                                                                             }}
                                                                             onClick={() => {
                                                                                 setModalState({

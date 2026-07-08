@@ -38,10 +38,11 @@ const TimerModal = ({ show, handleClose, isSplit, fieldName }) => {
     const { timeZoneList } = getmasterData();
     const userTimeZone = timeZoneList?.find((tz) => tz.timeZoneID === timeZoneId);
     
-    // Call UTC time API when component mounts
+    // Fetch UTC when timer modal opens and picker needs server time (deduped in getUtcTimeNow).
     useEffect(() => {
-        dispatch(getUtcTimeNow());
-    }, [show]);
+        if (!show || utcTimeData?.utcTime) return;
+        dispatch(getUtcTimeNow(false));
+    }, [show, utcTimeData?.utcTime, dispatch]);
     
     // Function to get minimum date and time for the datetime picker
     const getMinDateAndTime = () => {

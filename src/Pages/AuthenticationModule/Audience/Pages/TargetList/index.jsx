@@ -46,6 +46,7 @@ export const TargetListContext = createContext({
     setPageConfig: () => {},
     initialGridPagination: false,
     pageConfig: {},
+    clearLastDispatchedTargetListParams: () => {},
 });
 
 const TargetList = () => {
@@ -223,7 +224,6 @@ const TargetList = () => {
                 pageSize: pageConfig?.[pageSizeKey] || (listTypeView ? 9 : 3),
             },
             departmentId: departmentId,
-            isAdvanceSearch: true,
         };
         const fullParams = { ...tempParams, departmentId, clientId, userId };
         if (licenseTypeId !== '3' && !isAgencyAccountAdmin) {
@@ -278,6 +278,10 @@ const TargetList = () => {
         }
     }, [audienceView]);
 
+    const clearLastDispatchedTargetListParams = useCallback(() => {
+        lastDispatchedTargetListParamsRef.current = null;
+    }, []);
+
     const targetListContextValues = {
         listTypeView,
         setListTypeView,
@@ -312,8 +316,9 @@ const TargetList = () => {
             setPageConfig,
             initialGridPagination,
             pageConfig,
+            clearLastDispatchedTargetListParams,
         }),
-        [listTypeView, params, isDateFilter, pageConfig, initialGridPagination, audienceView],
+        [listTypeView, params, isDateFilter, pageConfig, initialGridPagination, audienceView, clearLastDispatchedTargetListParams],
     );
     // if(true) {
     //     return <></>

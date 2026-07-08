@@ -52,6 +52,20 @@ const GridLoadingSkeletonRow = ({
     );
 
     const getColWidth = (index) => {
+        // When header is visible and measured, always use the actual rendered header widths
+        // so skeleton body columns align precisely with the header borders.
+        if (canSyncToHeader) {
+            return resolveSyncedSkeletonColumnWidth({
+                index,
+                headerWidths,
+                headerTableWidth,
+                syncToHeader: true,
+                columnConfigs: resolvedConfigs,
+                columnCount: syncedColCount,
+                syncedPixelWidths,
+            });
+        }
+
         const configWidth = resolvedConfigs[index]?.width;
         if (configWidth != null) {
             const parsed = parseSkeletonWidth(configWidth);
@@ -60,9 +74,9 @@ const GridLoadingSkeletonRow = ({
 
         return resolveSyncedSkeletonColumnWidth({
             index,
-            headerWidths: canSyncToHeader ? headerWidths : null,
-            headerTableWidth: canSyncToHeader ? headerTableWidth : 0,
-            syncToHeader: canSyncToHeader,
+            headerWidths: null,
+            headerTableWidth: 0,
+            syncToHeader: false,
             columnConfigs: resolvedConfigs,
             columnCount: syncedColCount,
             syncedPixelWidths,

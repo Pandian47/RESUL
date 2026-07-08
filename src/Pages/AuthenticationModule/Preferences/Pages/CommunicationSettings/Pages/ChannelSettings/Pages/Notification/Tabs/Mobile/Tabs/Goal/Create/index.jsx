@@ -366,7 +366,7 @@ const MobilePushGoalSettingCreate = ({ type, config, setFailedApi }) => {
                     tab: COMMUNICATION_SETTINGS_VERTICAL_TAB.NOTIFICATION,
                     verticalTabId: VERTICAL_TAB_ID.NOTIFICATION,
                     notificationTabId: NOTIFICATION_TAB_ID.MOBILE,
-                    innerTab: 1,
+                    mobileTabId: 'userDeviceSetup',
                 };
                 const encryptState = encodeUrl(state);
                 let url = '/preferences/communication-settings';
@@ -910,7 +910,7 @@ const MobilePushGoalSettingCreate = ({ type, config, setFailedApi }) => {
                     tab: COMMUNICATION_SETTINGS_VERTICAL_TAB.NOTIFICATION,
                     verticalTabId: VERTICAL_TAB_ID.NOTIFICATION,
                     notificationTabId: NOTIFICATION_TAB_ID.MOBILE,
-                    innerTab: 1,
+                    mobileTabId: 'userDeviceSetup',
                 };
                                 const encryptState = encodeUrl(state);
                                 let url = '/preferences/communication-settings';

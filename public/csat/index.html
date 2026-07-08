@@ -1,1528 +1,1383 @@
 <!DOCTYPE html>
 <html lang="en">
-    <head>
-        <meta charset="UTF-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <title>Customer Satisfaction Survey</title>
 
-        <!-- Bootstrap 5 CSS -->
-        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
-        <!-- Bootstrap Icons -->
-        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" />
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Customer Satisfaction Survey</title>
 
-        <style>
-            :root {
-                --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-                --primary-color: #667eea;
-                --secondary-color: #764ba2;
-            }
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" />
 
-            body {
-                font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-                background: var(--primary-gradient);
-                min-height: 100vh;
-                padding-top: 0;
-                line-height: 1.6;
-            }
+    <style>
+        :root {
+            --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --primary-color: #667eea;
+            --secondary-color: #764ba2;
+        }
 
-            /* Header Styles */
-            .main-header {
-                background: rgba(255, 255, 255, 0.95);
-                box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-                padding: 5px 0;
-                position: sticky;
-                top: 0;
-                z-index: 1000;
-            }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: var(--primary-gradient);
+            min-height: 100vh;
+            padding-top: 0;
+            line-height: 1.6;
+        }
 
-            .navbar-brand {
-                font-weight: 700;
-                font-size: 1.5rem;
-                background: var(--primary-gradient);
-                -webkit-background-clip: text;
-                -webkit-text-fill-color: transparent;
-                background-clip: text;
-            }
+        /* Header Styles */
+        .main-header {
+            background: rgba(255, 255, 255, 0.95);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            padding: 5px 0;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
 
-            .navbar-nav .nav-link {
-                color: #333;
-                font-weight: 500;
-                margin: 0 10px;
-                transition: color 0.3s ease;
-            }
+        .navbar-brand {
+            font-weight: 700;
+            font-size: 1.5rem;
+            background: var(--primary-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
 
-            .navbar-nav .nav-link:hover {
-                color: var(--primary-color);
-            }
+        .navbar-nav .nav-link {
+            color: #333;
+            font-weight: 500;
+            margin: 0 10px;
+            transition: color 0.3s ease;
+        }
 
-            .header-logo {
-                /* width: 50px; */
-                height: 50px;
-                border-radius: 10px;
-                object-fit: cover;
-                margin-right: 10px;
-            }
+        .navbar-nav .nav-link:hover {
+            color: var(--primary-color);
+        }
 
-            /* Main Content */
-            .main-container {
-                max-width: 900px;
-                margin: 30px auto;
-                background: white;
-                border-radius: 20px;
-                box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-                overflow: hidden;
-            }
+        .header-logo {
+            /* width: 50px; */
+            height: 50px;
+            border-radius: 10px;
+            object-fit: cover;
+            margin-right: 10px;
+        }
 
-            .survey-header {
-                background: var(--primary-gradient);
-                color: white;
-                padding: 50px 40px;
+        /* Main Content */
+        .main-container {
+            max-width: 900px;
+            margin: 30px auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+        }
+
+        .survey-header {
+            background: var(--primary-gradient);
+            color: white;
+            padding: 50px 40px;
+            text-align: center;
+        }
+
+        .survey-header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 15px;
+            font-weight: 600;
+        }
+
+        .survey-header p {
+            font-size: 1.1rem;
+            opacity: 0.95;
+            margin: 0;
+        }
+
+        .survey-header-image {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            object-fit: cover;
+            margin: 0 auto 20px;
+            border: 5px solid rgba(255, 255, 255, 0.3);
+            display: block;
+        }
+
+        .survey-form {
+            padding: 40px;
+        }
+
+        .form-section {
+            margin-bottom: 40px;
+            padding-bottom: 30px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+
+        .form-section:last-child {
+            border-bottom: none;
+        }
+
+        .section-title {
+            font-size: 1rem;
+            color: #333;
+            margin-bottom: 25px;
+            font-weight: 600;
+            padding-bottom: 10px;
+            border-bottom: 3px solid var(--primary-color);
+        }
+
+        .question-group {
+            margin-bottom: 30px;
+        }
+
+        .question-label {
+            font-size: 1.1rem;
+            color: #333;
+            margin-bottom: 15px;
+            display: block;
+            font-weight: 500;
+        }
+
+        .required {
+            color: #e74c3c;
+            margin-left: 5px;
+        }
+
+        /* Rating Scale Styles */
+        .rating-scale {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .rating-option {
+            flex: 1;
+            min-width: 70px;
+            text-align: center;
+        }
+
+        .rating-option input[type='radio'] {
+            display: none;
+        }
+
+        .rating-option label {
+            display: block;
+            padding: 15px 10px;
+            background: #f8f9fa;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 500;
+            color: #555;
+        }
+
+        .rating-option label:hover {
+            background: #e8e9ea;
+            border-color: var(--primary-color);
+            transform: translateY(-2px);
+        }
+
+        .rating-option input[type='radio']:checked+label {
+            background: var(--primary-gradient);
+            color: white;
+            border-color: var(--primary-color);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .rating-labels {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 8px;
+            font-size: 0.85rem;
+            color: #666;
+        }
+
+        /* Radio and Checkbox Styles */
+        .radio-group,
+        .checkbox-group {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .radio-option,
+        .checkbox-option {
+            display: flex;
+            align-items: center;
+            padding: 8px 0;
+            background: transparent;
+            border: none;
+            border-radius: 0;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .radio-option:hover,
+        .checkbox-option:hover {
+            background: transparent;
+        }
+
+        .radio-option input[type='radio'],
+        .checkbox-option input[type='checkbox'] {
+            margin-right: 10px;
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+            accent-color: var(--primary-color);
+        }
+
+        .radio-option label,
+        .checkbox-option label {
+            margin: 0;
+            font-weight: normal;
+            cursor: pointer;
+        }
+
+        /* Form Controls */
+        .form-control,
+        .form-select {
+            border: none;
+            border-bottom: 1px solid #e0e0e0;
+            border-radius: 0;
+            padding: 8px 0;
+            background: transparent;
+            transition: all 0.3s ease;
+        }
+
+        .form-control:focus,
+        .form-select:focus {
+            outline: none;
+            border-bottom-color: #e74c3c;
+            box-shadow: none;
+        }
+
+        .form-control::placeholder {
+            color: #999;
+        }
+
+        /* Input Field Layout - Bootstrap Grid */
+        .question-group .row {
+            margin-bottom: 0;
+        }
+
+        .question-group .col-6 .question-label {
+            margin-bottom: 0;
+            font-weight: 500;
+            color: #333;
+        }
+
+        .question-group .error-message {
+            margin-top: 5px;
+            margin-left: 0;
+        }
+
+        textarea.form-control {
+            min-height: 120px;
+            resize: vertical;
+        }
+
+        /* Progress Bar */
+        .progress {
+            height: 8px;
+            background: #f0f0f0;
+            margin-bottom: 30px;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .progress-bar {
+            background: var(--primary-gradient);
+            transition: width 0.3s ease;
+        }
+
+        /* Submit Button */
+        .submit-section {
+            text-align: center;
+            margin-top: 40px;
+        }
+
+        .btn-submit {
+            background: #005534;
+            color: white;
+            font-size: 19px;
+            -webkit-border-radius: 5px;
+            -ms-border-radius: 5px;
+            border-radius: 5px;
+            text-align: center;
+            padding: 8px 25px;
+            border: 0;
+            outline: 0;
+            margin: 0;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            letter-spacing: 0.5px;
+        }
+
+        .btn-submit:hover {
+            background: #1b5e20;
+            color: white;
+        }
+
+        .btn-submit:active {
+            background: #005534;
+        }
+
+        /* Cancel Button - Plain Text */
+        .btn-cancel {
+            background: transparent;
+            border: none;
+            color: #fc6a00;
+            padding: 12px 20px;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+
+        .btn-cancel:hover {
+            color: #fc6a00;
+            text-decoration: underline;
+        }
+
+        /* Thank You Message */
+        .thank-you {
+            display: none;
+            text-align: center;
+            padding: 60px 40px;
+        }
+
+        .thank-you-icon {
+            font-size: 5rem;
+            color: var(--primary-color);
+            margin-bottom: 20px;
+        }
+
+        .thank-you h2 {
+            font-size: 2.5rem;
+            color: var(--primary-color);
+            margin-bottom: 20px;
+        }
+
+        .thank-you p {
+            font-size: 1.2rem;
+            color: #666;
+            line-height: 1.8;
+        }
+
+        /* Footer Styles */
+        .main-footer {
+            background: white;
+            margin-top: 50px;
+        }
+
+        .footer-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0;
+        }
+
+        /* Footer Main Content */
+        .footer-main {
+            background: white;
+            padding: 1px 10px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .footer-left {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .footer-logo {
+            width: 50px;
+            height: 50px;
+            object-fit: contain;
+        }
+
+        .footer-copyright {
+            color: #333;
+            font-size: 0.95rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .footer-copyright-separator {
+            color: #999;
+        }
+
+        .footer-social-icons {
+            display: flex;
+            align-items: center;
+            gap: 0px;
+        }
+
+        .footer-social-icons a {
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            /* border: 1px solid #ddd; */
+            border-radius: 5px;
+            text-decoration: none;
+            background: white;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .footer-social-icons a:hover {
+            border-color: #999;
+            transform: translateY(-2px);
+        }
+
+        .footer-social-icons a img {
+            width: 24px;
+            height: 24px;
+            object-fit: contain;
+            transition: opacity 0.3s ease;
+        }
+
+        .footer-social-icons a .social-icon-hover {
+            position: absolute;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .footer-social-icons a:hover .social-icon-default {
+            opacity: 0;
+        }
+
+        .footer-social-icons a:hover .social-icon-hover {
+            opacity: 1;
+        }
+
+        /* Colorful Bottom Strips */
+        .footer-strips {
+            display: flex;
+            width: 100%;
+            height: 8px;
+        }
+
+        .footer-strip {
+            flex: 1;
+            height: 100%;
+        }
+
+        .footer-strip:nth-child(1) {
+            background: #1f00ff;
+            /* Bright Blue */
+        }
+
+        .footer-strip:nth-child(2) {
+            background: #7f04b2;
+            /* Purple */
+        }
+
+        .footer-strip:nth-child(3) {
+            background: #9e131e;
+            /* Dark Red / Maroon */
+        }
+
+        .footer-strip:nth-child(4) {
+            background: #b78200;
+            /* Golden Yellow / Ochre */
+        }
+
+        .footer-strip:nth-child(5) {
+            background: #005f35;
+            /* Dark Green */
+        }
+
+        @media (max-width: 768px) {
+            .footer-main {
+                flex-direction: column;
                 text-align: center;
             }
 
+            .footer-left {
+                flex-direction: column;
+            }
+
+            .footer-social-icons {
+                justify-content: center;
+            }
+        }
+
+        /* Validation Styles */
+        .error-message {
+            color: #e74c3c;
+            font-size: 0.9rem;
+            margin-top: 5px;
+            display: none;
+        }
+
+        .question-group.error .error-message {
+            display: block;
+        }
+
+        .question-group.error .form-control,
+        .question-group.error .rating-option label {
+            border-color: #e74c3c;
+        }
+
+        .question-group.error .form-control {
+            border-bottom-color: #e74c3c;
+        }
+
+        /* Custom Checkbox Styling */
+        .form-check {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .form-check-input {
+            width: 20px;
+            height: 20px;
+            border: 1.5px solid #666;
+            border-radius: 3px;
+            cursor: pointer;
+            appearance: none;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            background-color: white;
+            position: relative;
+            margin: 0;
+            flex-shrink: 0;
+            transition: all 0.3s ease;
+        }
+
+        .form-check-input:hover {
+            border-color: #4caf50;
+        }
+
+        .form-check-input:checked {
+            background-color: white;
+            border-color: #4caf50;
+            border-width: 2px;
+        }
+
+        .form-check-input:checked::after {
+            content: '';
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -60%) rotate(45deg);
+            width: 6px;
+            height: 12px;
+            border: solid #4caf50;
+            border-width: 0 2.5px 2.5px 0;
+        }
+
+        .form-check-input:focus {
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.1);
+        }
+
+        .form-check-label {
+            margin: 0;
+            cursor: pointer;
+            color: #333;
+            font-weight: normal;
+        }
+
+        .form-check-label a {
+            color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .form-check-label a:hover {
+            text-decoration: underline;
+        }
+
+        .question-group.error .form-check-input {
+            border-color: #e74c3c;
+        }
+
+        /* Character Counter */
+        .char-counter {
+            text-align: right;
+            margin-top: 5px;
+            font-size: 0.85rem;
+            color: #666;
+        }
+
+        .char-counter span {
+            font-weight: 600;
+            color: var(--primary-color);
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
             .survey-header h1 {
-                font-size: 2.5rem;
-                margin-bottom: 15px;
-                font-weight: 600;
-            }
-
-            .survey-header p {
-                font-size: 1.1rem;
-                opacity: 0.95;
-                margin: 0;
-            }
-
-            .survey-header-image {
-                width: 120px;
-                height: 120px;
-                border-radius: 50%;
-                object-fit: cover;
-                margin: 0 auto 20px;
-                border: 5px solid rgba(255, 255, 255, 0.3);
-                display: block;
+                font-size: 2rem;
             }
 
             .survey-form {
-                padding: 40px;
+                padding: 25px;
             }
 
-            .form-section {
-                margin-bottom: 40px;
-                padding-bottom: 30px;
-                border-bottom: 2px solid #f0f0f0;
-            }
-
-            .form-section:last-child {
-                border-bottom: none;
-            }
-
-            .section-title {
-                font-size: 1rem;
-                color: #333;
-                margin-bottom: 25px;
-                font-weight: 600;
-                padding-bottom: 10px;
-                border-bottom: 3px solid var(--primary-color);
-            }
-
-            .question-group {
-                margin-bottom: 30px;
-            }
-
-            .question-label {
-                font-size: 1.1rem;
-                color: #333;
-                margin-bottom: 15px;
-                display: block;
-                font-weight: 500;
-            }
-
-            .required {
-                color: #e74c3c;
-                margin-left: 5px;
-            }
-
-            /* Rating Scale Styles */
             .rating-scale {
-                display: flex;
-                justify-content: space-between;
-                align-items: center;
-                flex-wrap: wrap;
-                gap: 10px;
-                margin-top: 10px;
+                flex-direction: column;
             }
 
             .rating-option {
-                flex: 1;
-                min-width: 70px;
-                text-align: center;
-            }
-
-            .rating-option input[type='radio'] {
-                display: none;
-            }
-
-            .rating-option label {
-                display: block;
-                padding: 15px 10px;
-                background: #f8f9fa;
-                border: 2px solid #e0e0e0;
-                border-radius: 10px;
-                cursor: pointer;
-                transition: all 0.3s ease;
-                font-weight: 500;
-                color: #555;
-            }
-
-            .rating-option label:hover {
-                background: #e8e9ea;
-                border-color: var(--primary-color);
-                transform: translateY(-2px);
-            }
-
-            .rating-option input[type='radio']:checked + label {
-                background: var(--primary-gradient);
-                color: white;
-                border-color: var(--primary-color);
-                box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+                width: 100%;
             }
 
             .rating-labels {
-                display: flex;
-                justify-content: space-between;
-                margin-top: 8px;
-                font-size: 0.85rem;
-                color: #666;
-            }
-
-            /* Radio and Checkbox Styles */
-            .radio-group,
-            .checkbox-group {
-                display: flex;
                 flex-direction: column;
-                gap: 12px;
+                gap: 5px;
             }
 
-            .radio-option,
-            .checkbox-option {
-                display: flex;
-                align-items: center;
-                padding: 8px 0;
-                background: transparent;
-                border: none;
-                border-radius: 0;
-                cursor: pointer;
-                transition: all 0.3s ease;
+            .navbar-nav {
+                text-align: center;
+                margin-top: 15px;
             }
 
-            .radio-option:hover,
-            .checkbox-option:hover {
-                background: transparent;
-            }
-
-            .radio-option input[type='radio'],
-            .checkbox-option input[type='checkbox'] {
-                margin-right: 10px;
-                width: 18px;
-                height: 18px;
-                cursor: pointer;
-                accent-color: var(--primary-color);
-            }
-
-            .radio-option label,
-            .checkbox-option label {
-                margin: 0;
-                font-weight: normal;
-                cursor: pointer;
-            }
-
-            /* Form Controls */
-            .form-control,
-            .form-select {
-                border: none;
-                border-bottom: 1px solid #e0e0e0;
-                border-radius: 0;
-                padding: 8px 0;
-                background: transparent;
-                transition: all 0.3s ease;
-            }
-
-            .form-control:focus,
-            .form-select:focus {
-                outline: none;
-                border-bottom-color: #e74c3c;
-                box-shadow: none;
-            }
-
-            .form-control::placeholder {
-                color: #999;
-            }
-
-            /* Input Field Layout - Bootstrap Grid */
             .question-group .row {
+                flex-direction: column;
+            }
+
+            .question-group .col-6 {
+                width: 100%;
+                margin-bottom: 15px;
+            }
+
+            .question-group .col-6:last-child {
                 margin-bottom: 0;
             }
 
             .question-group .col-6 .question-label {
-                margin-bottom: 0;
-                font-weight: 500;
-                color: #333;
+                margin-bottom: 10px;
             }
-
-            .question-group .error-message {
-                margin-top: 5px;
-                margin-left: 0;
-            }
-
-            textarea.form-control {
-                min-height: 120px;
-                resize: vertical;
-            }
-
-            /* Progress Bar */
-            .progress {
-                height: 8px;
-                background: #f0f0f0;
-                margin-bottom: 30px;
-                border-radius: 10px;
-                overflow: hidden;
-            }
-
-            .progress-bar {
-                background: var(--primary-gradient);
-                transition: width 0.3s ease;
-            }
-
-            /* Submit Button */
-            .submit-section {
-                text-align: center;
-                margin-top: 40px;
-            }
-
-            .btn-submit {
-                background: #005534;
-                color: white;
-                font-size: 19px;
-                -webkit-border-radius: 5px;
-                -ms-border-radius: 5px;
-                border-radius: 5px;
-                text-align: center;
-                padding: 8px 25px;
-                border: 0;
-                outline: 0;
-                margin: 0;
-                cursor: pointer;
-                transition: all 0.3s ease;
-                letter-spacing: 0.5px;
-            }
-
-            .btn-submit:hover {
-                background: #1b5e20;
-                color: white;
-            }
-
-            .btn-submit:active {
-                background: #005534;
-            }
-
-            /* Cancel Button - Plain Text */
-            .btn-cancel {
-                background: transparent;
-                border: none;
-                color: #fc6a00;
-                padding: 12px 20px;
-                font-size: 1rem;
-                font-weight: 500;
-                cursor: pointer;
-                text-decoration: none;
-                transition: color 0.3s ease;
-            }
-
-            .btn-cancel:hover {
-                color: #fc6a00;
-                text-decoration: underline;
-            }
-
-            /* Thank You Message */
-            .thank-you {
-                display: none;
-                text-align: center;
-                padding: 60px 40px;
-            }
-
-            .thank-you-icon {
-                font-size: 5rem;
-                color: var(--primary-color);
-                margin-bottom: 20px;
-            }
-
-            .thank-you h2 {
-                font-size: 2.5rem;
-                color: var(--primary-color);
-                margin-bottom: 20px;
-            }
-
-            .thank-you p {
-                font-size: 1.2rem;
-                color: #666;
-                line-height: 1.8;
-            }
-
-            /* Footer Styles */
-            .main-footer {
-                background: white;
-                margin-top: 50px;
-            }
-
-            .footer-content {
-                max-width: 1400px;
-                margin: 0 auto;
-                padding: 0;
-            }
-
-            /* Footer Main Content */
-            .footer-main {
-                background: white;
-                padding: 1px 10px;
-                display: flex;
-                align-items: center;
-                justify-content: space-between;
-                flex-wrap: wrap;
-                gap: 20px;
-            }
-
-            .footer-left {
-                display: flex;
-                align-items: center;
-                gap: 15px;
-            }
-
-            .footer-logo {
-                width: 50px;
-                height: 50px;
-                object-fit: contain;
-            }
-
-            .footer-copyright {
-                color: #333;
-                font-size: 0.95rem;
-                display: flex;
-                align-items: center;
-                gap: 10px;
-            }
-
-            .footer-copyright-separator {
-                color: #999;
-            }
-
-            .footer-social-icons {
-                display: flex;
-                align-items: center;
-                gap: 0px;
-            }
-
-            .footer-social-icons a {
-                width: 40px;
-                height: 40px;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                /* border: 1px solid #ddd; */
-                border-radius: 5px;
-                text-decoration: none;
-                background: white;
-                transition: all 0.3s ease;
-                position: relative;
-                overflow: hidden;
-            }
-
-            .footer-social-icons a:hover {
-                border-color: #999;
-                transform: translateY(-2px);
-            }
-
-            .footer-social-icons a img {
-                width: 24px;
-                height: 24px;
-                object-fit: contain;
-                transition: opacity 0.3s ease;
-            }
-
-            .footer-social-icons a .social-icon-hover {
-                position: absolute;
-                opacity: 0;
-                transition: opacity 0.3s ease;
-            }
-
-            .footer-social-icons a:hover .social-icon-default {
-                opacity: 0;
-            }
-
-            .footer-social-icons a:hover .social-icon-hover {
-                opacity: 1;
-            }
-
-            /* Colorful Bottom Strips */
-            .footer-strips {
-                display: flex;
-                width: 100%;
-                height: 8px;
-            }
-
-            .footer-strip {
-                flex: 1;
-                height: 100%;
-            }
-
-            .footer-strip:nth-child(1) {
-                background: #1f00ff; /* Bright Blue */
-            }
-
-            .footer-strip:nth-child(2) {
-                background: #7f04b2; /* Purple */
-            }
-
-            .footer-strip:nth-child(3) {
-                background: #9e131e; /* Dark Red / Maroon */
-            }
-
-            .footer-strip:nth-child(4) {
-                background: #b78200; /* Golden Yellow / Ochre */
-            }
-
-            .footer-strip:nth-child(5) {
-                background: #005f35; /* Dark Green */
-            }
-
-            @media (max-width: 768px) {
-                .footer-main {
-                    flex-direction: column;
-                    text-align: center;
-                }
-
-                .footer-left {
-                    flex-direction: column;
-                }
-
-                .footer-social-icons {
-                    justify-content: center;
-                }
-            }
-
-            /* Validation Styles */
-            .error-message {
-                color: #e74c3c;
-                font-size: 0.9rem;
-                margin-top: 5px;
-                display: none;
-            }
-
-            .question-group.error .error-message {
-                display: block;
-            }
-
-            .question-group.error .form-control,
-            .question-group.error .rating-option label {
-                border-color: #e74c3c;
-            }
-
-            .question-group.error .form-control {
-                border-bottom-color: #e74c3c;
-            }
-
-            /* Custom Checkbox Styling */
-            .form-check {
-                display: flex;
-                align-items: center;
-                gap: 10px;
-            }
-
-            .form-check-input {
-                width: 20px;
-                height: 20px;
-                border: 1.5px solid #666;
-                border-radius: 3px;
-                cursor: pointer;
-                appearance: none;
-                -webkit-appearance: none;
-                -moz-appearance: none;
-                background-color: white;
-                position: relative;
-                margin: 0;
-                flex-shrink: 0;
-                transition: all 0.3s ease;
-            }
-
-            .form-check-input:hover {
-                border-color: #4caf50;
-            }
-
-            .form-check-input:checked {
-                background-color: white;
-                border-color: #4caf50;
-                border-width: 2px;
-            }
-
-            .form-check-input:checked::after {
-                content: '';
-                position: absolute;
-                left: 50%;
-                top: 50%;
-                transform: translate(-50%, -60%) rotate(45deg);
-                width: 6px;
-                height: 12px;
-                border: solid #4caf50;
-                border-width: 0 2.5px 2.5px 0;
-            }
-
-            .form-check-input:focus {
-                outline: none;
-                box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.1);
-            }
-
-            .form-check-label {
-                margin: 0;
-                cursor: pointer;
-                color: #333;
-                font-weight: normal;
-            }
-
-            .form-check-label a {
-                color: var(--primary-color);
-                text-decoration: none;
-            }
-
-            .form-check-label a:hover {
-                text-decoration: underline;
-            }
-
-            .question-group.error .form-check-input {
-                border-color: #e74c3c;
-            }
-
-            /* Character Counter */
-            .char-counter {
-                text-align: right;
-                margin-top: 5px;
-                font-size: 0.85rem;
-                color: #666;
-            }
-
-            .char-counter span {
-                font-weight: 600;
-                color: var(--primary-color);
-            }
-
-            /* Responsive Design */
-            @media (max-width: 768px) {
-                .survey-header h1 {
-                    font-size: 2rem;
-                }
-
-                .survey-form {
-                    padding: 25px;
-                }
-
-                .rating-scale {
-                    flex-direction: column;
-                }
-
-                .rating-option {
-                    width: 100%;
-                }
-
-                .rating-labels {
-                    flex-direction: column;
-                    gap: 5px;
-                }
-
-                .navbar-nav {
-                    text-align: center;
-                    margin-top: 15px;
-                }
-
-                .question-group .row {
-                    flex-direction: column;
-                }
-
-                .question-group .col-6 {
-                    width: 100%;
-                    margin-bottom: 15px;
-                }
-
-                .question-group .col-6:last-child {
-                    margin-bottom: 0;
-                }
-
-                .question-group .col-6 .question-label {
-                    margin-bottom: 10px;
-                }
-            }
-        </style>
-    </head>
-    <body>
-        <!-- Header -->
-        <header class="main-header">
-            <div class="container">
-                <nav class="navbar navbar-expand-lg navbar-light">
-                    <div class="container-fluid">
-                        <a class="navbar-brand d-flex align-items-center" href="#">
-                            <img
-                                src="https://www.resulticks.com/images/logos/resulticks-logo-blue.svg"
-                                alt="Logo"
-                                class="header-logo"
-                            />
-                        </a>
-                        <button
-                            class="navbar-toggler"
-                            type="button"
-                            data-bs-toggle="collapse"
-                            data-bs-target="#navbarNav"
-                        >
-                            <span class="navbar-toggler-icon"></span>
-                        </button>
-                    </div>
-                </nav>
-            </div>
-        </header>
-
-        <!-- Main Content -->
-        <div class="main-container">
-            <div class="survey-header">
-                <!-- <img src="https://picsum.photos/120/120?random=2" alt="Survey Header" class="survey-header-image" /> -->
-                <h1>Customer Satisfaction Survey</h1>
-                <p>Your feedback helps us improve our services</p>
-            </div>
-
-            <div class="survey-form" id="surveyForm">
-                <div class="progress">
-                    <div class="progress-bar" role="progressbar" id="progressFill" style="width: 0%"></div>
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Header -->
+    <header class="main-header">
+        <div class="container">
+            <nav class="navbar navbar-expand-lg navbar-light">
+                <div class="container-fluid">
+                    <a class="navbar-brand d-flex align-items-center" href="#">
+                        <img src="https://www.resulticks.com/images/logos/resulticks-logo-blue.svg" alt="Logo"
+                            class="header-logo" />
+                    </a>
+                    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                        <span class="navbar-toggler-icon"></span>
+                    </button>
                 </div>
+            </nav>
+        </div>
+    </header>
 
-                <form id="customerSurveyForm">
-                    <!-- Section 1: RESUL Rating (1-5 scale) -->
-                    <div class="form-section">
-                        <p class="section-title">
-                            Please rate the following on a scale of 1 to 5 (1 being 'Poor' and 5 being 'Excellent')
-                        </p>
-                        <p class="mb-4 text-muted">1. How satisfied are you with RESUL in terms of?</p>
-
-                        <div class="question-group">
-                            <div class="row align-items-start">
-                                <div class="col-6">
-                                    <label class="question-label">
-                                        a. User experience and navigation<span class="required">*</span>
-                                    </label>
-                                </div>
-                                <div class="col-6">
-                                    <div class="radio-group">
-                                        <div class="radio-option">
-                                            <input
-                                                type="radio"
-                                                name="Question_1"
-                                                value="excellent"
-                                                id="ux_excellent"
-                                                required
-                                            />
-                                            <label for="ux_excellent">Excellent</label>
-                                        </div>
-                                        <div class="radio-option">
-                                            <input type="radio" name="Question_1" value="very_good" id="ux_very_good" />
-                                            <label for="ux_very_good">Very Good</label>
-                                        </div>
-                                        <div class="radio-option">
-                                            <input type="radio" name="Question_1" value="good" id="ux_good" />
-                                            <label for="ux_good">Good</label>
-                                        </div>
-                                        <div class="radio-option">
-                                            <input type="radio" name="Question_1" value="fair" id="ux_fair" />
-                                            <label for="ux_fair">Fair</label>
-                                        </div>
-                                        <div class="radio-option">
-                                            <input type="radio" name="Question_1" value="poor" id="ux_poor" />
-                                            <label for="ux_poor">Poor</label>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="question-group">
-                            <div class="row align-items-start">
-                                <div class="col-6">
-                                    <label class="question-label">
-                                        b. Feature & Functions<span class="required">*</span>
-                                    </label>
-                                </div>
-                                <div class="col-6">
-                                    <div class="radio-group">
-                                        <div class="radio-option">
-                                            <input
-                                                type="radio"
-                                                name="Question_2"
-                                                value="excellent"
-                                                id="ff_excellent"
-                                                required
-                                            />
-                                            <label for="ff_excellent">Excellent</label>
-                                        </div>
-                                        <div class="radio-option">
-                                            <input type="radio" name="Question_2" value="very_good" id="ff_very_good" />
-                                            <label for="ff_very_good">Very Good</label>
-                                        </div>
-                                        <div class="radio-option">
-                                            <input type="radio" name="Question_2" value="good" id="ff_good" />
-                                            <label for="ff_good">Good</label>
-                                        </div>
-                                        <div class="radio-option">
-                                            <input type="radio" name="Question_2" value="fair" id="ff_fair" />
-                                            <label for="ff_fair">Fair</label>
-                                        </div>
-                                        <div class="radio-option">
-                                            <input type="radio" name="Question_2" value="poor" id="ff_poor" />
-                                            <label for="ff_poor">Poor</label>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="question-group">
-                            <div class="row align-items-start">
-                                <div class="col-6">
-                                    <label class="question-label">
-                                        c. Speed & performance<span class="required">*</span>
-                                    </label>
-                                </div>
-                                <div class="col-6">
-                                    <div class="radio-group">
-                                        <div class="radio-option">
-                                            <input
-                                                type="radio"
-                                                name="Question_3"
-                                                value="excellent"
-                                                id="sp_excellent"
-                                                required
-                                            />
-                                            <label for="sp_excellent">Excellent</label>
-                                        </div>
-                                        <div class="radio-option">
-                                            <input type="radio" name="Question_3" value="very_good" id="sp_very_good" />
-                                            <label for="sp_very_good">Very Good</label>
-                                        </div>
-                                        <div class="radio-option">
-                                            <input type="radio" name="Question_3" value="good" id="sp_good" />
-                                            <label for="sp_good">Good</label>
-                                        </div>
-                                        <div class="radio-option">
-                                            <input type="radio" name="Question_3" value="fair" id="sp_fair" />
-                                            <label for="sp_fair">Fair</label>
-                                        </div>
-                                        <div class="radio-option">
-                                            <input type="radio" name="Question_3" value="poor" id="sp_poor" />
-                                            <label for="sp_poor">Poor</label>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Section 2: Questions with Textarea -->
-                    <div class="form-section">
-                        <h2 class="section-title">Please provide your responses to the following questions:</h2>
-
-                        <div class="question-group">
-                            <div class="row align-items-start">
-                                <div class="col-6">
-                                    <label class="question-label">
-                                        a. How long have you been using RESUL?<span class="required">*</span>
-                                    </label>
-                                </div>
-                                <div class="col-6">
-                                    <textarea
-                                        class="form-control"
-                                        name="Question_4"
-                                        rows="4"
-                                        placeholder="Enter your comments"
-                                        maxlength="500"
-                                        required
-                                    ></textarea>
-                                    <div class="char-counter"><span id="counter_using_duration">0</span>/500</div>
-                                    <div class="error-message">This field is required</div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="question-group">
-                            <div class="row align-items-start">
-                                <div class="col-6">
-                                    <label class="question-label">
-                                        b. Which 3 RESUL features are most valuable to you?<span class="required"
-                                            >*</span
-                                        >
-                                    </label>
-                                </div>
-                                <div class="col-6">
-                                    <textarea
-                                        class="form-control"
-                                        name="Question_5"
-                                        rows="4"
-                                        placeholder="Enter your comments"
-                                        maxlength="500"
-                                        required
-                                    ></textarea>
-                                    <div class="char-counter"><span id="counter_valuable_features">0</span>/500</div>
-                                    <div class="error-message">This field is required</div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="question-group">
-                            <div class="row align-items-start">
-                                <div class="col-6">
-                                    <label class="question-label">
-                                        c. What is the most critical / biggest problem you are resolving with
-                                        RESUL?<span class="required">*</span>
-                                    </label>
-                                </div>
-                                <div class="col-6">
-                                    <textarea
-                                        class="form-control"
-                                        name="Question_6"
-                                        rows="4"
-                                        placeholder="Enter your comments"
-                                        maxlength="500"
-                                        required
-                                    ></textarea>
-                                    <div class="char-counter"><span id="counter_critical_problem">0</span>/500</div>
-                                    <div class="error-message">This field is required</div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="question-group">
-                            <div class="row align-items-start">
-                                <div class="col-6">
-                                    <label class="question-label">
-                                        d. What is the one improvement to you would suggest and why?<span
-                                            class="required"
-                                            >*</span
-                                        >
-                                    </label>
-                                </div>
-                                <div class="col-6">
-                                    <textarea
-                                        class="form-control"
-                                        name="Question7"
-                                        rows="4"
-                                        placeholder="Enter your comments"
-                                        maxlength="500"
-                                        required
-                                    ></textarea>
-                                    <div class="char-counter">
-                                        <span id="counter_improvement_suggestion">0</span>/500
-                                    </div>
-                                    <div class="error-message">This field is required</div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Section 3: Customer Service Experience -->
-                    <div class="form-section">
-                        <h2 class="section-title">Customer service experience</h2>
-                        <p class="mb-4 text-muted">
-                            Please rate the following on a scale of 1 to 5 (1 being 'Poor' and 5 being 'Excellent')
-                        </p>
-
-                        <div class="question-group">
-                            <div class="row align-items-start">
-                                <div class="col-6">
-                                    <label class="question-label">
-                                        a. Resolution time<span class="required">*</span>
-                                    </label>
-                                </div>
-                                <div class="col-6">
-                                    <div class="radio-group">
-                                        <div class="radio-option">
-                                            <input
-                                                type="radio"
-                                                name="Question8"
-                                                value="excellent"
-                                                id="rt_excellent"
-                                                required
-                                            />
-                                            <label for="rt_excellent">Excellent</label>
-                                        </div>
-                                        <div class="radio-option">
-                                            <input type="radio" name="Question8" value="very_good" id="rt_very_good" />
-                                            <label for="rt_very_good">Very Good</label>
-                                        </div>
-                                        <div class="radio-option">
-                                            <input type="radio" name="Question8" value="good" id="rt_good" />
-                                            <label for="rt_good">Good</label>
-                                        </div>
-                                        <div class="radio-option">
-                                            <input type="radio" name="Question8" value="fair" id="rt_fair" />
-                                            <label for="rt_fair">Fair</label>
-                                        </div>
-                                        <div class="radio-option">
-                                            <input type="radio" name="Question8" value="poor" id="rt_poor" />
-                                            <label for="rt_poor">Poor</label>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="question-group">
-                            <div class="row align-items-start">
-                                <div class="col-6">
-                                    <label class="question-label"> b. Quality<span class="required">*</span> </label>
-                                </div>
-                                <div class="col-6">
-                                    <div class="radio-group">
-                                        <div class="radio-option">
-                                            <input
-                                                type="radio"
-                                                name="Question9"
-                                                value="excellent"
-                                                id="sq_excellent"
-                                                required
-                                            />
-                                            <label for="sq_excellent">Excellent</label>
-                                        </div>
-                                        <div class="radio-option">
-                                            <input type="radio" name="Question9" value="very_good" id="sq_very_good" />
-                                            <label for="sq_very_good">Very Good</label>
-                                        </div>
-                                        <div class="radio-option">
-                                            <input type="radio" name="Question9" value="good" id="sq_good" />
-                                            <label for="sq_good">Good</label>
-                                        </div>
-                                        <div class="radio-option">
-                                            <input type="radio" name="Question9" value="fair" id="sq_fair" />
-                                            <label for="sq_fair">Fair</label>
-                                        </div>
-                                        <div class="radio-option">
-                                            <input type="radio" name="Question9" value="poor" id="sq_poor" />
-                                            <label for="sq_poor">Poor</label>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="question-group">
-                            <div class="row align-items-start">
-                                <div class="col-6">
-                                    <label class="question-label">
-                                        c. Responsiveness<span class="required">*</span>
-                                    </label>
-                                </div>
-                                <div class="col-6">
-                                    <div class="radio-group">
-                                        <div class="radio-option">
-                                            <input
-                                                type="radio"
-                                                name="Question10"
-                                                value="excellent"
-                                                id="resp_excellent"
-                                                required
-                                            />
-                                            <label for="resp_excellent">Excellent</label>
-                                        </div>
-                                        <div class="radio-option">
-                                            <input
-                                                type="radio"
-                                                name="Question10"
-                                                value="very_good"
-                                                id="resp_very_good"
-                                            />
-                                            <label for="resp_very_good">Very Good</label>
-                                        </div>
-                                        <div class="radio-option">
-                                            <input type="radio" name="Question10" value="good" id="resp_good" />
-                                            <label for="resp_good">Good</label>
-                                        </div>
-                                        <div class="radio-option">
-                                            <input type="radio" name="Question10" value="fair" id="resp_fair" />
-                                            <label for="resp_fair">Fair</label>
-                                        </div>
-                                        <div class="radio-option">
-                                            <input type="radio" name="Question10" value="poor" id="resp_poor" />
-                                            <label for="resp_poor">Poor</label>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Section 4: Personal Details -->
-                    <div class="form-section">
-                        <!-- <h2 class="section-title">Personal Details</h2> -->
-
-                        <div class="question-group">
-                            <div class="row align-items-center">
-                                <div class="col-6">
-                                    <label class="question-label">Company name<span class="required">*</span> </label>
-                                </div>
-                                <div class="col-6">
-                                    <input
-                                        type="text"
-                                        class="form-control"
-                                        name="Company"
-                                        placeholder="Company name"
-                                        required
-                                    />
-                                </div>
-                            </div>
-                            <div class="error-message">This field is required</div>
-                        </div>
-
-                        <div class="question-group">
-                            <div class="row align-items-center">
-                                <div class="col-6">
-                                    <label class="question-label">
-                                        Company's authorized representative<span class="required">*</span>
-                                    </label>
-                                </div>
-                                <div class="col-6">
-                                    <input
-                                        type="text"
-                                        class="form-control"
-                                        name="Company_authorized_representative"
-                                        placeholder="Company's authorized representative"
-                                        required
-                                    />
-                                </div>
-                            </div>
-                            <div class="error-message">This field is required</div>
-                        </div>
-
-                        <div class="question-group">
-                            <div class="row align-items-center">
-                                <div class="col-6">
-                                    <label class="question-label">Designation<span class="required">*</span> </label>
-                                </div>
-                                <div class="col-6">
-                                    <input
-                                        type="text"
-                                        class="form-control"
-                                        name="Designation"
-                                        placeholder="Designation"
-                                        required
-                                    />
-                                </div>
-                            </div>
-                            <div class="error-message">This field is required</div>
-                        </div>
-
-                        <div class="question-group">
-                            <div class="row align-items-center">
-                                <div class="col-6">
-                                    <label class="question-label">Email<span class="required">*</span> </label>
-                                </div>
-                                <div class="col-6">
-                                    <input
-                                        type="email"
-                                        class="form-control"
-                                        name="EmailID"
-                                        placeholder="Email"
-                                        required
-                                    />
-                                </div>
-                            </div>
-                            <div class="error-message">This field is required</div>
-                        </div>
-
-                        <div class="question-group">
-                            <div class="row align-items-center">
-                                <div class="col-6">
-                                    <!-- Empty column for alignment -->
-                                </div>
-                                <div class="col-6">
-                                    <div class="form-check">
-                                        <input
-                                            class="form-check-input"
-                                            type="checkbox"
-                                            name="chkterms"
-                                            id="terms_conditions"
-                                            required
-                                        />
-                                        <label class="form-check-label" for="terms_conditions">
-                                            I agree to the
-                                            <a
-                                                href="https://www.google.com"
-                                                target="_blank"
-                                                class="text-decoration-none"
-                                                >Terms & Conditions</a
-                                            ><span class="required">*</span>
-                                        </label>
-                                    </div>
-                                    <div class="error-message">You must agree to the Terms & Conditions</div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="submit-section">
-                        <button type="button" class="btn-cancel me-3" id="cancelBtn">Cancel</button>
-                        <button type="submit" class="btn btn-submit">Submit</button>
-                    </div>
-                </form>
-            </div>
-
-            <!-- Thank You Message -->
-            <div class="thank-you" id="thankYou">
-                <div class="thank-you-icon">
-                    <i class="bi bi-check-circle-fill"></i>
-                </div>
-                <h2>Thank You!</h2>
-                <p>
-                    We appreciate you taking the time to complete our survey.<br />
-                    Your feedback is valuable to us and helps us improve our services.
-                </p>
-            </div>
+    <!-- Main Content -->
+    <div class="main-container">
+        <div class="survey-header">
+            <!-- <img src="https://picsum.photos/120/120?random=2" alt="Survey Header" class="survey-header-image" /> -->
+            <h1>Customer Satisfaction Survey</h1>
+            <p>Your feedback helps us improve our services</p>
         </div>
 
-        <!-- Footer -->
-        <footer class="main-footer">
-            <div class="footer-content">
-                <!-- Footer Main Content -->
-                <div class="footer-main">
-                    <div class="footer-left">
-                        <img
-                            src="https://www.resulticks.com/images/icons/c-cloud.svg"
-                            alt="Resulticks Logo"
-                            class="footer-logo"
-                        />
-                        <div class="footer-copyright">
-                            <span class="footer-copyright-separator">|</span>
-                            <span>Copyright © 2025 RESULTICKS Solution Inc</span>
+        <div class="survey-form" id="surveyForm">
+            <div class="progress">
+                <div class="progress-bar" role="progressbar" id="progressFill" style="width: 0%"></div>
+            </div>
+
+            <form id="customerSurveyForm">
+                <!-- Section 1: RESUL Rating (1-5 scale) -->
+                <div class="form-section">
+                    <p class="section-title">
+                        Please rate the following on a scale of 1 to 5 (1 being 'Poor' and 5 being 'Excellent')
+                    </p>
+                    <p class="mb-4 text-muted">1. How satisfied are you with RESUL in terms of?</p>
+
+                    <div class="question-group">
+                        <div class="row align-items-start">
+                            <div class="col-6">
+                                <label class="question-label">
+                                    a. User experience and navigation<span class="required">*</span>
+                                </label>
+                            </div>
+                            <div class="col-6">
+                                <div class="radio-group">
+                                    <div class="radio-option">
+                                        <input type="radio" name="Question_1" value="excellent" id="ux_excellent"
+                                            required />
+                                        <label for="ux_excellent">Excellent</label>
+                                    </div>
+                                    <div class="radio-option">
+                                        <input type="radio" name="Question_1" value="very_good" id="ux_very_good" />
+                                        <label for="ux_very_good">Very Good</label>
+                                    </div>
+                                    <div class="radio-option">
+                                        <input type="radio" name="Question_1" value="good" id="ux_good" />
+                                        <label for="ux_good">Good</label>
+                                    </div>
+                                    <div class="radio-option">
+                                        <input type="radio" name="Question_1" value="fair" id="ux_fair" />
+                                        <label for="ux_fair">Fair</label>
+                                    </div>
+                                    <div class="radio-option">
+                                        <input type="radio" name="Question_1" value="poor" id="ux_poor" />
+                                        <label for="ux_poor">Poor</label>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
-                    <div class="footer-social-icons">
-                        <a
-                            href="https://www.facebook.com/resulticks"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            title="Facebook"
-                        >
-                            <img
-                                src="https://www.resulticks.com/images/icons/social/social-facebook-wt.svg"
-                                alt="Facebook"
-                                class="social-icon-default"
-                            />
-                            <img
-                                src="https://www.resulticks.com/images/icons/social/social-facebook.svg"
-                                alt="Facebook"
-                                class="social-icon-hover"
-                            />
-                        </a>
-                        <a
-                            href="https://www.linkedin.com/company/resulticks"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            title="LinkedIn"
-                        >
-                            <img
-                                src="https://www.resulticks.com/images/icons/social/social-linked-wt.svg"
-                                alt="LinkedIn"
-                                class="social-icon-default"
-                            />
-                            <img
-                                src="https://www.resulticks.com/images/icons/social/social-linked.svg"
-                                alt="LinkedIn"
-                                class="social-icon-hover"
-                            />
-                        </a>
-                        <a
-                            href="https://twitter.com/resulticks"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            title="X (Twitter)"
-                        >
-                            <img
-                                src="https://www.resulticks.com/images/icons/social/social-twitter-wt.svg"
-                                alt="X (Twitter)"
-                                class="social-icon-default"
-                            />
-                            <img
-                                src="https://www.resulticks.com/images/icons/social/social-twitter.svg"
-                                alt="X (Twitter)"
-                                class="social-icon-hover"
-                            />
-                        </a>
-                        <a
-                            href="https://www.youtube.com/resulticks"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            title="YouTube"
-                        >
-                            <img
-                                src="https://www.resulticks.com/images/icons/social/social-youtube-wt.svg"
-                                alt="YouTube"
-                                class="social-icon-default"
-                            />
-                            <img
-                                src="https://www.resulticks.com/images/icons/social/social-youtube.svg"
-                                alt="YouTube"
-                                class="social-icon-hover"
-                            />
-                        </a>
-                        <a
-                            href="https://www.instagram.com/resulticks/"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            title="Instagram"
-                        >
-                            <img
-                                src="https://www.resulticks.com/images/icons/social/social-insta-wt.svg"
-                                alt="Instagram"
-                                class="social-icon-default"
-                            />
-                            <img
-                                src="https://www.resulticks.com/images/icons/social/social-insta.svg"
-                                alt="Instagram"
-                                class="social-icon-hover"
-                            />
-                        </a>
+
+                    <div class="question-group">
+                        <div class="row align-items-start">
+                            <div class="col-6">
+                                <label class="question-label">
+                                    b. Feature & Functions<span class="required">*</span>
+                                </label>
+                            </div>
+                            <div class="col-6">
+                                <div class="radio-group">
+                                    <div class="radio-option">
+                                        <input type="radio" name="Question_2" value="excellent" id="ff_excellent"
+                                            required />
+                                        <label for="ff_excellent">Excellent</label>
+                                    </div>
+                                    <div class="radio-option">
+                                        <input type="radio" name="Question_2" value="very_good" id="ff_very_good" />
+                                        <label for="ff_very_good">Very Good</label>
+                                    </div>
+                                    <div class="radio-option">
+                                        <input type="radio" name="Question_2" value="good" id="ff_good" />
+                                        <label for="ff_good">Good</label>
+                                    </div>
+                                    <div class="radio-option">
+                                        <input type="radio" name="Question_2" value="fair" id="ff_fair" />
+                                        <label for="ff_fair">Fair</label>
+                                    </div>
+                                    <div class="radio-option">
+                                        <input type="radio" name="Question_2" value="poor" id="ff_poor" />
+                                        <label for="ff_poor">Poor</label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="question-group">
+                        <div class="row align-items-start">
+                            <div class="col-6">
+                                <label class="question-label">
+                                    c. Speed & performance<span class="required">*</span>
+                                </label>
+                            </div>
+                            <div class="col-6">
+                                <div class="radio-group">
+                                    <div class="radio-option">
+                                        <input type="radio" name="Question_3" value="excellent" id="sp_excellent"
+                                            required />
+                                        <label for="sp_excellent">Excellent</label>
+                                    </div>
+                                    <div class="radio-option">
+                                        <input type="radio" name="Question_3" value="very_good" id="sp_very_good" />
+                                        <label for="sp_very_good">Very Good</label>
+                                    </div>
+                                    <div class="radio-option">
+                                        <input type="radio" name="Question_3" value="good" id="sp_good" />
+                                        <label for="sp_good">Good</label>
+                                    </div>
+                                    <div class="radio-option">
+                                        <input type="radio" name="Question_3" value="fair" id="sp_fair" />
+                                        <label for="sp_fair">Fair</label>
+                                    </div>
+                                    <div class="radio-option">
+                                        <input type="radio" name="Question_3" value="poor" id="sp_poor" />
+                                        <label for="sp_poor">Poor</label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
-            </div>
-        </footer>
-        <!-- Colorful Bottom Strips -->
-        <div class="footer-strips">
-            <div class="footer-strip"></div>
-            <div class="footer-strip"></div>
-            <div class="footer-strip"></div>
-            <div class="footer-strip"></div>
-            <div class="footer-strip"></div>
+
+                <!-- Section 2: Questions with Textarea -->
+                <div class="form-section">
+                    <h2 class="section-title">Please provide your responses to the following questions:</h2>
+
+                    <div class="question-group">
+                        <div class="row align-items-start">
+                            <div class="col-6">
+                                <label class="question-label">
+                                    a. How long have you been using RESUL?<span class="required">*</span>
+                                </label>
+                            </div>
+                            <div class="col-6">
+                                <textarea class="form-control" name="Question_4" rows="4"
+                                    placeholder="Enter your comments" maxlength="500" required></textarea>
+                                <div class="char-counter"><span id="counter_using_duration">0</span>/500</div>
+                                <div class="error-message">This field is required</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="question-group">
+                        <div class="row align-items-start">
+                            <div class="col-6">
+                                <label class="question-label">
+                                    b. Which 3 RESUL features are most valuable to you?<span class="required">*</span>
+                                </label>
+                            </div>
+                            <div class="col-6">
+                                <textarea class="form-control" name="Question_5" rows="4"
+                                    placeholder="Enter your comments" maxlength="500" required></textarea>
+                                <div class="char-counter"><span id="counter_valuable_features">0</span>/500</div>
+                                <div class="error-message">This field is required</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="question-group">
+                        <div class="row align-items-start">
+                            <div class="col-6">
+                                <label class="question-label">
+                                    c. What is the most critical / biggest problem you are resolving with
+                                    RESUL?<span class="required">*</span>
+                                </label>
+                            </div>
+                            <div class="col-6">
+                                <textarea class="form-control" name="Question_6" rows="4"
+                                    placeholder="Enter your comments" maxlength="500" required></textarea>
+                                <div class="char-counter"><span id="counter_critical_problem">0</span>/500</div>
+                                <div class="error-message">This field is required</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="question-group">
+                        <div class="row align-items-start">
+                            <div class="col-6">
+                                <label class="question-label">
+                                    d. What is the one improvement to you would suggest and why?<span
+                                        class="required">*</span>
+                                </label>
+                            </div>
+                            <div class="col-6">
+                                <textarea class="form-control" name="Question7" rows="4"
+                                    placeholder="Enter your comments" maxlength="500" required></textarea>
+                                <div class="char-counter">
+                                    <span id="counter_improvement_suggestion">0</span>/500
+                                </div>
+                                <div class="error-message">This field is required</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Section 3: Customer Service Experience -->
+                <div class="form-section">
+                    <h2 class="section-title">Customer service experience</h2>
+                    <p class="mb-4 text-muted">
+                        Please rate the following on a scale of 1 to 5 (1 being 'Poor' and 5 being 'Excellent')
+                    </p>
+
+                    <div class="question-group">
+                        <div class="row align-items-start">
+                            <div class="col-6">
+                                <label class="question-label">
+                                    a. Resolution time<span class="required">*</span>
+                                </label>
+                            </div>
+                            <div class="col-6">
+                                <div class="radio-group">
+                                    <div class="radio-option">
+                                        <input type="radio" name="Question8" value="excellent" id="rt_excellent"
+                                            required />
+                                        <label for="rt_excellent">Excellent</label>
+                                    </div>
+                                    <div class="radio-option">
+                                        <input type="radio" name="Question8" value="very_good" id="rt_very_good" />
+                                        <label for="rt_very_good">Very Good</label>
+                                    </div>
+                                    <div class="radio-option">
+                                        <input type="radio" name="Question8" value="good" id="rt_good" />
+                                        <label for="rt_good">Good</label>
+                                    </div>
+                                    <div class="radio-option">
+                                        <input type="radio" name="Question8" value="fair" id="rt_fair" />
+                                        <label for="rt_fair">Fair</label>
+                                    </div>
+                                    <div class="radio-option">
+                                        <input type="radio" name="Question8" value="poor" id="rt_poor" />
+                                        <label for="rt_poor">Poor</label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="question-group">
+                        <div class="row align-items-start">
+                            <div class="col-6">
+                                <label class="question-label"> b. Quality<span class="required">*</span> </label>
+                            </div>
+                            <div class="col-6">
+                                <div class="radio-group">
+                                    <div class="radio-option">
+                                        <input type="radio" name="Question9" value="excellent" id="sq_excellent"
+                                            required />
+                                        <label for="sq_excellent">Excellent</label>
+                                    </div>
+                                    <div class="radio-option">
+                                        <input type="radio" name="Question9" value="very_good" id="sq_very_good" />
+                                        <label for="sq_very_good">Very Good</label>
+                                    </div>
+                                    <div class="radio-option">
+                                        <input type="radio" name="Question9" value="good" id="sq_good" />
+                                        <label for="sq_good">Good</label>
+                                    </div>
+                                    <div class="radio-option">
+                                        <input type="radio" name="Question9" value="fair" id="sq_fair" />
+                                        <label for="sq_fair">Fair</label>
+                                    </div>
+                                    <div class="radio-option">
+                                        <input type="radio" name="Question9" value="poor" id="sq_poor" />
+                                        <label for="sq_poor">Poor</label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="question-group">
+                        <div class="row align-items-start">
+                            <div class="col-6">
+                                <label class="question-label">
+                                    c. Responsiveness<span class="required">*</span>
+                                </label>
+                            </div>
+                            <div class="col-6">
+                                <div class="radio-group">
+                                    <div class="radio-option">
+                                        <input type="radio" name="Question10" value="excellent" id="resp_excellent"
+                                            required />
+                                        <label for="resp_excellent">Excellent</label>
+                                    </div>
+                                    <div class="radio-option">
+                                        <input type="radio" name="Question10" value="very_good" id="resp_very_good" />
+                                        <label for="resp_very_good">Very Good</label>
+                                    </div>
+                                    <div class="radio-option">
+                                        <input type="radio" name="Question10" value="good" id="resp_good" />
+                                        <label for="resp_good">Good</label>
+                                    </div>
+                                    <div class="radio-option">
+                                        <input type="radio" name="Question10" value="fair" id="resp_fair" />
+                                        <label for="resp_fair">Fair</label>
+                                    </div>
+                                    <div class="radio-option">
+                                        <input type="radio" name="Question10" value="poor" id="resp_poor" />
+                                        <label for="resp_poor">Poor</label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Section 4: Personal Details -->
+                <div class="form-section">
+                    <!-- <h2 class="section-title">Personal Details</h2> -->
+
+                    <div class="question-group">
+                        <div class="row align-items-center">
+                            <div class="col-6">
+                                <label class="question-label">Company name<span class="required">*</span> </label>
+                            </div>
+                            <div class="col-6">
+                                <input type="text" class="form-control" name="Company" placeholder="Company name"
+                                    required />
+                            </div>
+                        </div>
+                        <div class="error-message">This field is required</div>
+                    </div>
+
+                    <div class="question-group">
+                        <div class="row align-items-center">
+                            <div class="col-6">
+                                <label class="question-label">
+                                    Company's authorized representative<span class="required">*</span>
+                                </label>
+                            </div>
+                            <div class="col-6">
+                                <input type="text" class="form-control" name="Company_authorized_representative"
+                                    placeholder="Company's authorized representative" required />
+                            </div>
+                        </div>
+                        <div class="error-message">This field is required</div>
+                    </div>
+
+                    <div class="question-group">
+                        <div class="row align-items-center">
+                            <div class="col-6">
+                                <label class="question-label">Designation<span class="required">*</span> </label>
+                            </div>
+                            <div class="col-6">
+                                <input type="text" class="form-control" name="Designation" placeholder="Designation"
+                                    required />
+                            </div>
+                        </div>
+                        <div class="error-message">This field is required</div>
+                    </div>
+
+                    <div class="question-group">
+                        <div class="row align-items-center">
+                            <div class="col-6">
+                                <label class="question-label">Email<span class="required">*</span> </label>
+                            </div>
+                            <div class="col-6">
+                                <input type="email" class="form-control" name="EmailID" placeholder="Email" required />
+                            </div>
+                        </div>
+                        <div class="error-message">This field is required</div>
+                    </div>
+
+                    <div class="question-group">
+                        <div class="row align-items-center">
+                            <div class="col-6">
+                                <!-- Empty column for alignment -->
+                            </div>
+                            <div class="col-6">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" name="chkterms"
+                                        id="terms_conditions" required />
+                                    <label class="form-check-label" for="terms_conditions">
+                                        I agree to the
+                                        <a href="https://www.google.com" target="_blank"
+                                            class="text-decoration-none">Terms & Conditions</a><span
+                                            class="required">*</span>
+                                    </label>
+                                </div>
+                                <div class="error-message">You must agree to the Terms & Conditions</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="submit-section">
+                    <button type="button" class="btn-cancel me-3" id="cancelBtn">Cancel</button>
+                    <button type="submit" class="btn btn-submit">Submit</button>
+                </div>
+            </form>
         </div>
 
-        <!-- Bootstrap 5 JS Bundle -->
-        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+        <!-- Thank You Message -->
+        <div class="thank-you" id="thankYou">
+            <div class="thank-you-icon">
+                <i class="bi bi-check-circle-fill"></i>
+            </div>
+            <h2>Thank You!</h2>
+            <p>
+                We appreciate you taking the time to complete our survey.<br />
+                Your feedback is valuable to us and helps us improve our services.
+            </p>
+        </div>
+    </div>
 
-        <script>
-            // Form validation and submission
-            const form = document.getElementById('customerSurveyForm');
-            const surveyForm = document.getElementById('surveyForm');
-            const thankYou = document.getElementById('thankYou');
-            const progressFill = document.getElementById('progressFill');
+    <!-- Footer -->
+    <footer class="main-footer">
+        <div class="footer-content">
+            <!-- Footer Main Content -->
+            <div class="footer-main">
+                <div class="footer-left">
+                    <img src="https://www.resulticks.com/images/icons/c-cloud.svg" alt="Resulticks Logo"
+                        class="footer-logo" />
+                    <div class="footer-copyright">
+                        <span class="footer-copyright-separator">|</span>
+                        <span>Copyright © 2025 RESULTICKS Solution Inc</span>
+                    </div>
+                </div>
+                <div class="footer-social-icons">
+                    <a href="https://www.facebook.com/resulticks" target="_blank" rel="noopener noreferrer"
+                        title="Facebook">
+                        <img src="https://www.resulticks.com/images/icons/social/social-facebook-wt.svg" alt="Facebook"
+                            class="social-icon-default" />
+                        <img src="https://www.resulticks.com/images/icons/social/social-facebook.svg" alt="Facebook"
+                            class="social-icon-hover" />
+                    </a>
+                    <a href="https://www.linkedin.com/company/resulticks" target="_blank" rel="noopener noreferrer"
+                        title="LinkedIn">
+                        <img src="https://www.resulticks.com/images/icons/social/social-linked-wt.svg" alt="LinkedIn"
+                            class="social-icon-default" />
+                        <img src="https://www.resulticks.com/images/icons/social/social-linked.svg" alt="LinkedIn"
+                            class="social-icon-hover" />
+                    </a>
+                    <a href="https://twitter.com/resulticks" target="_blank" rel="noopener noreferrer"
+                        title="X (Twitter)">
+                        <img src="https://www.resulticks.com/images/icons/social/social-twitter-wt.svg"
+                            alt="X (Twitter)" class="social-icon-default" />
+                        <img src="https://www.resulticks.com/images/icons/social/social-twitter.svg" alt="X (Twitter)"
+                            class="social-icon-hover" />
+                    </a>
+                    <a href="https://www.youtube.com/resulticks" target="_blank" rel="noopener noreferrer"
+                        title="YouTube">
+                        <img src="https://www.resulticks.com/images/icons/social/social-youtube-wt.svg" alt="YouTube"
+                            class="social-icon-default" />
+                        <img src="https://www.resulticks.com/images/icons/social/social-youtube.svg" alt="YouTube"
+                            class="social-icon-hover" />
+                    </a>
+                    <a href="https://www.instagram.com/resulticks/" target="_blank" rel="noopener noreferrer"
+                        title="Instagram">
+                        <img src="https://www.resulticks.com/images/icons/social/social-insta-wt.svg" alt="Instagram"
+                            class="social-icon-default" />
+                        <img src="https://www.resulticks.com/images/icons/social/social-insta.svg" alt="Instagram"
+                            class="social-icon-hover" />
+                    </a>
+                </div>
+            </div>
+        </div>
+    </footer>
+    <!-- Colorful Bottom Strips -->
+    <div class="footer-strips">
+        <div class="footer-strip"></div>
+        <div class="footer-strip"></div>
+        <div class="footer-strip"></div>
+        <div class="footer-strip"></div>
+        <div class="footer-strip"></div>
+    </div>
 
-            // Update progress bar
-            function updateProgress() {
-                const totalFields = form.querySelectorAll('input[required], textarea[required]').length;
-                let filledFields = 0;
+    <!-- Bootstrap 5 JS Bundle -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 
-                form.querySelectorAll('input[required], textarea[required]').forEach((field) => {
-                    if (field.type === 'radio' || field.type === 'checkbox') {
-                        const name = field.name;
-                        const checked = form.querySelector(`input[name="${name}"]:checked`);
-                        if (checked) filledFields++;
-                    } else {
-                        if (field.value.trim() !== '') filledFields++;
-                    }
-                });
+    <script>
+        // Form validation and submission
+        const form = document.getElementById('customerSurveyForm');
+        const surveyForm = document.getElementById('surveyForm');
+        const thankYou = document.getElementById('thankYou');
+        const progressFill = document.getElementById('progressFill');
 
-                // Handle checkbox groups separately
-                const checkboxGroups = form.querySelectorAll('.checkbox-group');
-                checkboxGroups.forEach((group) => {
-                    const checkboxes = group.querySelectorAll('input[type="checkbox"][required]');
-                    if (checkboxes.length > 0) {
-                        const checked = group.querySelectorAll('input[type="checkbox"]:checked');
-                        if (checked.length > 0) {
-                            filledFields += checkboxes.length;
-                        }
-                    }
-                });
+        // Update progress bar
+        function updateProgress() {
+            const totalFields = form.querySelectorAll('input[required], textarea[required]').length;
+            let filledFields = 0;
 
-                const progress = Math.min((filledFields / totalFields) * 100, 100);
-                progressFill.style.width = progress + '%';
-                progressFill.setAttribute('aria-valuenow', progress);
-            }
+            form.querySelectorAll('input[required], textarea[required]').forEach((field) => {
+                if (field.type === 'radio' || field.type === 'checkbox') {
+                    const name = field.name;
+                    const checked = form.querySelector(`input[name="${name}"]:checked`);
+                    if (checked) filledFields++;
+                } else {
+                    if (field.value.trim() !== '') filledFields++;
+                }
+            });
 
-            // Add event listeners for progress tracking
-            form.addEventListener('input', updateProgress);
-            form.addEventListener('change', updateProgress);
-
-            // Checkbox validation
+            // Handle checkbox groups separately
             const checkboxGroups = form.querySelectorAll('.checkbox-group');
             checkboxGroups.forEach((group) => {
                 const checkboxes = group.querySelectorAll('input[type="checkbox"][required]');
                 if (checkboxes.length > 0) {
-                    checkboxes.forEach((checkbox) => {
-                        checkbox.addEventListener('change', function () {
-                            const checked = group.querySelectorAll('input[type="checkbox"]:checked');
-                            const questionGroup = group.closest('.question-group');
-                            if (checked.length > 0) {
-                                questionGroup.classList.remove('error');
-                                // Remove required from all checkboxes in group
-                                checkboxes.forEach((cb) => cb.removeAttribute('required'));
-                            }
-                        });
-                    });
+                    const checked = group.querySelectorAll('input[type="checkbox"]:checked');
+                    if (checked.length > 0) {
+                        filledFields += checkboxes.length;
+                    }
                 }
             });
 
-            // Form submission
-            form.addEventListener('submit', function (e) {
-                e.preventDefault();
+            const progress = Math.min((filledFields / totalFields) * 100, 100);
+            progressFill.style.width = progress + '%';
+            progressFill.setAttribute('aria-valuenow', progress);
+        }
 
-                // Validate checkbox groups
-                let isValid = true;
-                checkboxGroups.forEach((group) => {
-                    const checkboxes = group.querySelectorAll('input[type="checkbox"]');
-                    const hasRequired = Array.from(checkboxes).some((cb) => cb.hasAttribute('required'));
-                    if (hasRequired) {
+        // Add event listeners for progress tracking
+        form.addEventListener('input', updateProgress);
+        form.addEventListener('change', updateProgress);
+
+        // Checkbox validation
+        const checkboxGroups = form.querySelectorAll('.checkbox-group');
+        checkboxGroups.forEach((group) => {
+            const checkboxes = group.querySelectorAll('input[type="checkbox"][required]');
+            if (checkboxes.length > 0) {
+                checkboxes.forEach((checkbox) => {
+                    checkbox.addEventListener('change', function () {
                         const checked = group.querySelectorAll('input[type="checkbox"]:checked');
                         const questionGroup = group.closest('.question-group');
-                        if (checked.length === 0) {
-                            questionGroup.classList.add('error');
-                            isValid = false;
-                        } else {
+                        if (checked.length > 0) {
                             questionGroup.classList.remove('error');
+                            // Remove required from all checkboxes in group
+                            checkboxes.forEach((cb) => cb.removeAttribute('required'));
                         }
-                    }
+                    });
                 });
+            }
+        });
 
-                // Validate required fields
-                const requiredFields = form.querySelectorAll('[required]');
-                requiredFields.forEach((field) => {
-                    const questionGroup = field.closest('.question-group');
-                    if (field.type === 'radio') {
-                        const name = field.name;
-                        const checked = form.querySelector(`input[name="${name}"]:checked`);
-                        if (!checked) {
-                            questionGroup.classList.add('error');
-                            isValid = false;
-                        } else {
-                            questionGroup.classList.remove('error');
-                        }
-                    } else if (field.type === 'checkbox') {
-                        if (field.id === 'terms_conditions') {
-                            // Special handling for terms checkbox
-                            if (!field.checked) {
-                                questionGroup.classList.add('error');
-                                isValid = false;
-                            } else {
-                                questionGroup.classList.remove('error');
-                            }
-                        }
-                        // Other checkboxes already handled above
+        // Form submission
+        form.addEventListener('submit', function (e) {
+            e.preventDefault();
+
+            // Validate checkbox groups
+            let isValid = true;
+            checkboxGroups.forEach((group) => {
+                const checkboxes = group.querySelectorAll('input[type="checkbox"]');
+                const hasRequired = Array.from(checkboxes).some((cb) => cb.hasAttribute('required'));
+                if (hasRequired) {
+                    const checked = group.querySelectorAll('input[type="checkbox"]:checked');
+                    const questionGroup = group.closest('.question-group');
+                    if (checked.length === 0) {
+                        questionGroup.classList.add('error');
+                        isValid = false;
                     } else {
-                        if (!field.value.trim()) {
+                        questionGroup.classList.remove('error');
+                    }
+                }
+            });
+
+            // Validate required fields
+            const requiredFields = form.querySelectorAll('[required]');
+            requiredFields.forEach((field) => {
+                const questionGroup = field.closest('.question-group');
+                if (field.type === 'radio') {
+                    const name = field.name;
+                    const checked = form.querySelector(`input[name="${name}"]:checked`);
+                    if (!checked) {
+                        questionGroup.classList.add('error');
+                        isValid = false;
+                    } else {
+                        questionGroup.classList.remove('error');
+                    }
+                } else if (field.type === 'checkbox') {
+                    if (field.id === 'terms_conditions') {
+                        // Special handling for terms checkbox
+                        if (!field.checked) {
                             questionGroup.classList.add('error');
                             isValid = false;
                         } else {
                             questionGroup.classList.remove('error');
                         }
                     }
+                    // Other checkboxes already handled above
+                } else {
+                    if (!field.value.trim()) {
+                        questionGroup.classList.add('error');
+                        isValid = false;
+                    } else {
+                        questionGroup.classList.remove('error');
+                    }
+                }
+            });
+
+            if (!isValid) {
+                alert('Please fill in all required fields.');
+                return;
+            }
+
+            // Collect form data
+            const formData = new FormData(form);
+            const data = {};
+            for (let [key, value] of formData.entries()) {
+                if (data[key]) {
+                    if (Array.isArray(data[key])) {
+                        data[key].push(value);
+                    } else {
+                        data[key] = [data[key], value];
+                    }
+                } else {
+                    data[key] = value;
+                }
+            }
+
+            // Log data (in a real application, this would be sent to a server)
+            console.log('Survey Data:', data);
+
+            // Show thank you message
+            surveyForm.style.display = 'none';
+            thankYou.style.display = 'block';
+
+            // Scroll to top
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        });
+
+        // Character counter for textareas
+        const textareas = form.querySelectorAll('textarea[maxlength="500"]');
+        textareas.forEach((textarea) => {
+            const counterId = 'counter_' + textarea.name;
+            const counter = document.getElementById(counterId);
+
+            if (counter) {
+                // Update counter on input
+                textarea.addEventListener('input', function () {
+                    counter.textContent = this.value.length;
                 });
 
-                if (!isValid) {
-                    alert('Please fill in all required fields.');
+                // Initialize counter
+                counter.textContent = textarea.value.length;
+            }
+        });
+
+        // Cancel button handler
+        document.getElementById('cancelBtn').addEventListener('click', function () {
+            if (confirm('Are you sure you want to cancel? All entered data will be lost.')) {
+                form.reset();
+                updateProgress();
+                // Reset character counters
+                textareas.forEach((textarea) => {
+                    const counterId = 'counter_' + textarea.name;
+                    const counter = document.getElementById(counterId);
+                    if (counter) {
+                        counter.textContent = '0';
+                    }
+                });
+            }
+        });
+
+        // Make radio-option divs clickable
+        document.querySelectorAll('.radio-option').forEach((radioOption) => {
+            radioOption.addEventListener('click', function (e) {
+                // Don't trigger if clicking directly on the input or label
+                if (e.target.tagName === 'INPUT' || e.target.tagName === 'LABEL') {
                     return;
                 }
-
-                // Collect form data
-                const formData = new FormData(form);
-                const data = {};
-                for (let [key, value] of formData.entries()) {
-                    if (data[key]) {
-                        if (Array.isArray(data[key])) {
-                            data[key].push(value);
-                        } else {
-                            data[key] = [data[key], value];
-                        }
-                    } else {
-                        data[key] = value;
-                    }
-                }
-
-                // Log data (in a real application, this would be sent to a server)
-                console.log('Survey Data:', data);
-
-                // Show thank you message
-                surveyForm.style.display = 'none';
-                thankYou.style.display = 'block';
-
-                // Scroll to top
-                window.scrollTo({ top: 0, behavior: 'smooth' });
-            });
-
-            // Character counter for textareas
-            const textareas = form.querySelectorAll('textarea[maxlength="500"]');
-            textareas.forEach((textarea) => {
-                const counterId = 'counter_' + textarea.name;
-                const counter = document.getElementById(counterId);
-
-                if (counter) {
-                    // Update counter on input
-                    textarea.addEventListener('input', function () {
-                        counter.textContent = this.value.length;
-                    });
-
-                    // Initialize counter
-                    counter.textContent = textarea.value.length;
+                // Find the radio input inside this div and click it
+                const radioInput = this.querySelector('input[type="radio"]');
+                if (radioInput && !radioInput.disabled) {
+                    radioInput.checked = true;
+                    // Trigger change event to update form state
+                    radioInput.dispatchEvent(new Event('change', { bubbles: true }));
                 }
             });
+        });
 
-            // Cancel button handler
-            document.getElementById('cancelBtn').addEventListener('click', function () {
-                if (confirm('Are you sure you want to cancel? All entered data will be lost.')) {
-                    form.reset();
-                    updateProgress();
-                    // Reset character counters
-                    textareas.forEach((textarea) => {
-                        const counterId = 'counter_' + textarea.name;
-                        const counter = document.getElementById(counterId);
-                        if (counter) {
-                            counter.textContent = '0';
-                        }
-                    });
+        // Make checkbox-option divs clickable
+        document.querySelectorAll('.checkbox-option').forEach((checkboxOption) => {
+            checkboxOption.addEventListener('click', function (e) {
+                // Don't trigger if clicking directly on the input or label
+                if (e.target.tagName === 'INPUT' || e.target.tagName === 'LABEL') {
+                    return;
+                }
+                // Find the checkbox input inside this div and toggle it
+                const checkboxInput = this.querySelector('input[type="checkbox"]');
+                if (checkboxInput && !checkboxInput.disabled) {
+                    checkboxInput.checked = !checkboxInput.checked;
+                    // Trigger change event to update form state
+                    checkboxInput.dispatchEvent(new Event('change', { bubbles: true }));
                 }
             });
+        });
 
-            // Make radio-option divs clickable
-            document.querySelectorAll('.radio-option').forEach((radioOption) => {
-                radioOption.addEventListener('click', function (e) {
-                    // Don't trigger if clicking directly on the input or label
-                    if (e.target.tagName === 'INPUT' || e.target.tagName === 'LABEL') {
-                        return;
-                    }
-                    // Find the radio input inside this div and click it
-                    const radioInput = this.querySelector('input[type="radio"]');
-                    if (radioInput && !radioInput.disabled) {
-                        radioInput.checked = true;
-                        // Trigger change event to update form state
-                        radioInput.dispatchEvent(new Event('change', { bubbles: true }));
-                    }
-                });
-            });
+        // Initialize progress bar
+        updateProgress();
+    </script>
+</body>
 
-            // Make checkbox-option divs clickable
-            document.querySelectorAll('.checkbox-option').forEach((checkboxOption) => {
-                checkboxOption.addEventListener('click', function (e) {
-                    // Don't trigger if clicking directly on the input or label
-                    if (e.target.tagName === 'INPUT' || e.target.tagName === 'LABEL') {
-                        return;
-                    }
-                    // Find the checkbox input inside this div and toggle it
-                    const checkboxInput = this.querySelector('input[type="checkbox"]');
-                    if (checkboxInput && !checkboxInput.disabled) {
-                        checkboxInput.checked = !checkboxInput.checked;
-                        // Trigger change event to update form state
-                        checkboxInput.dispatchEvent(new Event('change', { bubbles: true }));
-                    }
-                });
-            });
-
-            // Initialize progress bar
-            updateProgress();
-        </script>
-    </body>
 </html>

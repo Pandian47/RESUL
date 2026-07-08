@@ -130,6 +130,14 @@ const ROIContent = ({ setRoiContent }) => {
             setActiveSubmitAction(null);
         }
     }, [roiSaveLoader.isLoading]);
+
+    const isRoiFormClickOff =
+        Boolean(checkTrigger(location?.campaignType, location?.endDate)) ||
+        !statusIdCheck(location?.statusId);
+
+    const proceedPastRoi = () => {
+        setRoiContent(false);
+    };
     const reachRevenueRules = useMemo(
         () =>
             buildRevenuePerAudienceRules({
@@ -343,8 +351,9 @@ const ROIContent = ({ setRoiContent }) => {
 
     const submitROI = async (data) => {
         setActiveSubmitAction((prev) => prev || 'next');
-        if (!statusIdCheck(location?.statusId)) {
-            setRoiContent(false);
+        // Click-off / non-editable campaign: skip save + validation, go straight to Execute.
+        if (isRoiFormClickOff) {
+            proceedPastRoi();
             return;
         }
         const common = { userId, clientId, departmentId, campaignId: location?.campaignId ?? 0 };
@@ -374,7 +383,7 @@ const ROIContent = ({ setRoiContent }) => {
                     departmentId,
                 }),
             );
-            setRoiContent(false);
+            proceedPastRoi();
         }
     };
     const handleErrClose = () => {
@@ -403,14 +412,13 @@ const ROIContent = ({ setRoiContent }) => {
                     <h4>{ROI_CALCULATION}</h4>
                 </div>
                 <div
-                    className={`portlet-body d-flex flex-column justify-content-around text-center ${checkTrigger(location?.campaignType, location?.endDate)
+                    className={`portlet-body d-flex flex-column justify-content-around text-center ${
+                        isRoiFormClickOff
                             ? 'pe-none click-off'
-                            : !statusIdCheck(location?.statusId)
-                                ? 'pe-none click-off'
-                                : roiSaveLoader.isLoading
-                                    ? 'pe-none click-off'
-                                : ''
-                        }`}
+                            : roiSaveLoader.isLoading
+                              ? 'pe-none click-off'
+                              : ''
+                    }`}
                 >
                     <Row className="mt5">
                         <Col sm={{ span: 11, offset: 1 }}>
@@ -681,18 +689,30 @@ const ROIContent = ({ setRoiContent }) => {
                     {CANCEL}
                 </RSSecondaryButton>
                 <RSSecondaryButton
-                    type="submit"
+                    type={isRoiFormClickOff ? 'button' : 'submit'}
                     className={'color-primary-blue'}
                     id="rs_ROIContent_save"
-                    onClick={() => setActiveSubmitAction('save')}
+                    onClick={() => {
+                        if (isRoiFormClickOff) {
+                            proceedPastRoi();
+                            return;
+                        }
+                        setActiveSubmitAction('save');
+                    }}
                     isLoading={roiSaveLoader.isLoading && activeSubmitAction === 'save'}
                 >
                     {SAVE}
                 </RSSecondaryButton>
                 <RSPrimaryButton
-                    type="submit"
+                    type={isRoiFormClickOff ? 'button' : 'submit'}
                     id="rs_ROIContent_Next"
-                    onClick={() => setActiveSubmitAction('next')}
+                    onClick={() => {
+                        if (isRoiFormClickOff) {
+                            proceedPastRoi();
+                            return;
+                        }
+                        setActiveSubmitAction('next');
+                    }}
                     isLoading={roiSaveLoader.isLoading && activeSubmitAction === 'next'}
                 >
                     {NEXT}

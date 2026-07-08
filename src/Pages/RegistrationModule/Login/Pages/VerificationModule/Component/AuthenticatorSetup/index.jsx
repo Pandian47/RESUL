@@ -151,7 +151,7 @@ const AuthenticatorSetup = ({ onBack, onComplete }) => {
                             <p className="mb0">Connect your authenticator app</p>
                         </div>
 
-                        <div className="text-center mb10">
+                        <div className="text-center mb15">
                             <div className="d-inline-block p2 bg-white border border-r7">
                                 <img 
                                     src={qrCodeUrl} 
@@ -163,7 +163,7 @@ const AuthenticatorSetup = ({ onBack, onComplete }) => {
                         </div>
 
                         <div className="text-center mb15">
-                            <p className="mb5 lh-sm">Paste this key into your app to manually add the account if you can't scan</p>
+                            <small className="mb15 lh-sm">Paste this key into your app to manually add the account if you can't scan</small>
                             <div className="d-flex p10 border border-r10 d-inline-block position-relative justify-content-between">
                                 {!isCopied &&
                                 <small className="font-semi-bold">
@@ -250,6 +250,7 @@ const AuthenticatorSetup = ({ onBack, onComplete }) => {
                             type="button"
                             id="rs_authenticator_back"
                             onClick={handleBack}
+                            className="pr0"
                         >
                             Choose different method
                         </RSSecondaryButton>

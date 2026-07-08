@@ -81,7 +81,7 @@ const Top5Channels = () => {
                                 }}
                             >
                                 {channel ? (
-                                    <div className="d-flex align-items-center">
+                                    <div className="d-flex align-items-center ml15">
                                         <div className="float-start icon-container">
                                             <i className={`${channel?.icon} icon-xl white`} />
                                         </div>
@@ -94,7 +94,7 @@ const Top5Channels = () => {
                                         </div>
                                     </div>
                                 ) : (
-                                    <div className="d-flex align-items-center">
+                                    <div className="d-flex align-items-center ml15">
                                         <div className="float-start icon-container">
                                             <i className={` icon-xl white`} />
                                         </div>

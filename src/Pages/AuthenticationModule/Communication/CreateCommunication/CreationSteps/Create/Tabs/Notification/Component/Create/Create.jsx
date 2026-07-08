@@ -77,7 +77,7 @@ const ImageUploadMobile = () => {
             ...payload,
         };
 
-        const { data, status, message } = await dispatch(uploadWebPush({ payload: payloadData }));
+        const { data, status, message } = await dispatch(uploadWebPush({ payload: payloadData, loading: false }));
         const format = fileName.split('.')?.pop();
 
         if (status) {
@@ -433,7 +433,7 @@ const Create = ({ isSplit, fieldName }) => {
                 ...payload,
             };
 
-            let { data, status, message } = await dispatch(uploadWebPush({ payload: payloadData }));
+            let { data, status, message } = await dispatch(uploadWebPush({ payload: payloadData, loading: false }));
 
             let format = fileName.split('.')?.pop();
 
@@ -1089,9 +1089,10 @@ const Create = ({ isSplit, fieldName }) => {
 
                                         <RSTabber
                                             defaultClass={`col-md-2 tabTransparent `}
-                                            dynamicTab={`mb0 mini mt3`}
+                                            dynamicTab={`mb-25 mini mt3 float-end`}
                                             activeClass={`active`}
                                             className="rs-tabs row rsamp-dropdown"
+                                            wrapperClassName="mt-5"
                                             componentClassName={`webCreate-wrapper position-relative windows ${location?.campaignType === 'M' ? 'rs-web-mdc-preview' : ''} w-100`}
                                             defaultTab={0}
                                             tabData={[

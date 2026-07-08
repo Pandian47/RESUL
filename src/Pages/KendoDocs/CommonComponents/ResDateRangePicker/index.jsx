@@ -429,7 +429,7 @@ const ResDateRangePicker = ({
                     getData.customDate ? 'calendar-box' : ''
                 } ${getData.customDate && positionRight ? 'calendar-box-right' : ''}`}
                 animate={{
-                    width: getData.customDate ? 590 : 150,
+                    width: getData.customDate ? 590 : 155,
                     height: getData.customDate ? 347 : 227,
                     // padding: getData.customDate ? 10 : 5,
                 }}

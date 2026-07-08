@@ -2632,7 +2632,7 @@ const TargetListCreation = () => {
                                                                         <CommonSkeleton box width={160} height={25} />
                                                                     </div>
                                                                 ) : (
-                                                                    <div className="form-group ">
+                                                                    <div className={extractionCheck ? 'form-group' : ''}>
                                                                         <RSCheckbox
                                                                             control={control}
                                                                             name={`extractionCheck`}
@@ -3095,7 +3095,7 @@ const TargetListCreation = () => {
                                 isPrimaryText={OK}
                             />
                         )}
-                        {showActiveCommunicationListWarning && <RSConfirmationModal
+                        {!showEditListSkeleton && !showEditListError && showActiveCommunicationListWarning && <RSConfirmationModal
                                 show={showActiveCommunicationListWarning}
                                 header="Info"
                                 text="This list is currently used in an active communication. Changes may affect audience count and Reports."

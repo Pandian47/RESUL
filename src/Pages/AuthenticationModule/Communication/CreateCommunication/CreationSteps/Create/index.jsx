@@ -13,7 +13,7 @@ import RSProgressSteps from 'Components/ProgressSteps';
 import useComponentWillUnmount from 'Hooks/useComponentWillUnMount';
 import CampaignInfoCard from '../Component/CampaignInfoCard/CampaignInfoCard';
 
-import { VERTICAL_TAB_CONFIG, getChanelName } from './constant';
+import { VERTICAL_TAB_CONFIG, getChanelName, shouldShowAuthoringTabChangeConfirmation } from './constant';
 import { planningSteps } from '../Plan/constants';
 import { getSessionId } from 'Reducers/globalState/selector';
 import { selectCreateCommunicationState } from 'Reducers/communication/createCommunication/Create/selectors';
@@ -211,7 +211,7 @@ const Create = () => {
                                                 activeClass="active"
                                                 tabData={tabs}
                                                 defaultTab={currentTab}
-                                                isTabChangeConfirmation={isDirty}
+                                                isTabChangeConfirmation={shouldShowAuthoringTabChangeConfirmation(isDirty)}
                                                 callBack={(_, index) => {
                                                     window.scrollTo(0, 0);
                                                     if (currentTab !== index) {

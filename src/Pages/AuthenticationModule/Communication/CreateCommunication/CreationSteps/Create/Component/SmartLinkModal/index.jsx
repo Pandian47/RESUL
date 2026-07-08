@@ -1,5 +1,5 @@
 import { cloneDeep as _cloneDeep, filter as _filter, get as _get, isEmpty as _isEmpty, map as _map } from 'Utils/modules/lodashReplacements';
-import { statusIdCheck } from 'Utils/modules/campaignUtils';
+import { getCampaignStatusIdFromRoute, isCompletedCampaign, statusIdCheck } from 'Utils/modules/campaignUtils';
 import { Fragment, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useDispatch, useSelector, useStore } from 'react-redux';
 import { useLocation } from 'react-router-dom';
@@ -48,6 +48,9 @@ import SmartLinkModalSkeleton from 'Components/Skeleton/Components/SmartLinkModa
 const EDITABLE_STATUS_IDS = [7, 54, 6];
 const excludedChannelIds = [6, 16];
 
+const resolveIsCampaignCompleted = (statusId) =>
+    isCompletedCampaign(statusId) || isCompletedCampaign(getCampaignStatusIdFromRoute());
+
 const getSmartLinkTabMeta = (index) => ({
     id: `smartLink${index + 1}`,
     text: '',
@@ -64,35 +67,36 @@ const SmartLink = ({ handleClose, show, statusId, openWithAddNewTab = false }) =
     const isViewOnly = isSmartLinkViewOnly(pathname);
     const { savedChannelStatusId, exisingLinks } = useSelector(({ communicationPlanReducer }) => communicationPlanReducer);
     const campaignId = _get(state, 'campaignId', 0);
-    const campaignType = _get(state, 'campaignType', 'S');
+    const isCampaignCompleted = resolveIsCampaignCompleted(statusId);
+
     const { canEditExistingSmartLink, canAddnewSmartLink } = useMemo(() => {
-         let list = Array.isArray(savedChannelStatusId) ? savedChannelStatusId : [];
-         list = list.filter(
-            (item) => !excludedChannelIds.includes(Number(item?.channelId))
-            );
-         const fallback = statusIdCheck(statusId);
-         if (list.length === 1) {
+        // Completed: view existing only — no edit, no new Smart Link, no missing-channel add.
+        if (isCampaignCompleted || isViewOnly) {
+            return { canEditExistingSmartLink: false, canAddnewSmartLink: false };
+        }
+
+        let list = Array.isArray(savedChannelStatusId) ? savedChannelStatusId : [];
+        list = list.filter((item) => !excludedChannelIds.includes(Number(item?.channelId)));
+        const fallback = statusIdCheck(statusId);
+
+        if (list.length === 1) {
             const statusIdToCheck = list[0]?.statusId ?? statusId;
-            const campDetails = {content: [{statusId: statusIdToCheck}], triggerPlayPauseStatus: list[0]?.triggerPlayPauseStatus}
             const canEdit = statusIdCheck(statusIdToCheck);
-            const canAdd = statusIdCheck(statusIdToCheck, campaignType, campDetails);
-            return { canEditExistingSmartLink: canEdit, canAddnewSmartLink: canAdd };
+            // In-progress: lock existing when status blocks edit; still allow adding missing platforms / new tabs.
+            return { canEditExistingSmartLink: canEdit, canAddnewSmartLink: true };
         }
+
         if (list.length > 1) {
-            let canEdiExisting;
-            let canAddNew;
-            if(!fallback){
-                canEdiExisting = list.every((s) => EDITABLE_STATUS_IDS.includes(Number(s?.statusId)));
-                canAddNew = true //list.some((s) => EDITABLE_STATUS_IDS.includes(Number(s?.statusId)));
-            }else{
-                canEdiExisting = true
-                canAddNew = true
+            if (!fallback) {
+                const canEdiExisting = list.every((s) => EDITABLE_STATUS_IDS.includes(Number(s?.statusId)));
+                // Non-editable in-progress multi-channel: allow append / new tab, never override via edit flags.
+                return { canEditExistingSmartLink: canEdiExisting, canAddnewSmartLink: true };
             }
-            return { canEditExistingSmartLink: canEdiExisting, canAddnewSmartLink: canAddNew };
+            return { canEditExistingSmartLink: true, canAddnewSmartLink: true };
         }
-        
-        return { canEditExistingSmartLink: fallback, canAddnewSmartLink: fallback };
-    }, [savedChannelStatusId, statusId, show]);
+
+        return { canEditExistingSmartLink: fallback, canAddnewSmartLink: true };
+    }, [savedChannelStatusId, statusId, show, isCampaignCompleted, isViewOnly]);
     const { smartLink1, smartLink2 } = useSelector((state) => getGeneratedLink(state));
     
     const TAB_CONFIG = [
@@ -109,6 +113,7 @@ const SmartLink = ({ handleClose, show, statusId, openWithAddNewTab = false }) =
                     isEdit={false}
                     canEditExistingSmartLink={canEditExistingSmartLink}
                     canAddnewSmartLink={canAddnewSmartLink}
+                    isCampaignCompleted={isCampaignCompleted}
                 />
             ),
             add: circle_plus_medium,
@@ -203,11 +208,12 @@ const SmartLink = ({ handleClose, show, statusId, openWithAddNewTab = false }) =
                             isEdit={true}
                             canEditExistingSmartLink={canEditExistingSmartLink}
                             canAddnewSmartLink={canAddnewSmartLink}
+                            isCampaignCompleted={isCampaignCompleted}
                         />
                     ),
                     ...(total?.length < MAX_SMART_LINKS &&
                         total?.length - 1 === index && {
-                            isAdd: !canAddnewSmartLink,
+                            isAdd: !canAddnewSmartLink || isCampaignCompleted,
                             add: circle_plus_medium,
                         }),
                     ...(index !== 0 &&
@@ -222,7 +228,9 @@ const SmartLink = ({ handleClose, show, statusId, openWithAddNewTab = false }) =
                 applyPendingAutoAdd &&
                 pendingAutoAddRef.current &&
                 tempTabState.length < MAX_SMART_LINKS &&
-                !isViewOnly
+                !isViewOnly &&
+                !isCampaignCompleted &&
+                canAddnewSmartLink
             ) {
                 pendingAutoAddRef.current = false;
                 const newIdx = tempTabState.length;
@@ -240,6 +248,7 @@ const SmartLink = ({ handleClose, show, statusId, openWithAddNewTab = false }) =
                             isEdit={false}
                             canEditExistingSmartLink={canEditExistingSmartLink}
                             canAddnewSmartLink={canAddnewSmartLink}
+                            isCampaignCompleted={isCampaignCompleted}
                         />
                     ),
                     remove: circle_minus_fill_medium,
@@ -255,7 +264,16 @@ const SmartLink = ({ handleClose, show, statusId, openWithAddNewTab = false }) =
 
             return tempTabState;
         },
-        [tab, statusId, canEditExistingSmartLink, canAddnewSmartLink, setValue, smartLinkFriendlyNames, isViewOnly],
+        [
+            tab,
+            statusId,
+            canEditExistingSmartLink,
+            canAddnewSmartLink,
+            setValue,
+            smartLinkFriendlyNames,
+            isViewOnly,
+            isCampaignCompleted,
+        ],
     );
 
     const syncFormToReducer = useCallback(
@@ -448,7 +466,7 @@ const SmartLink = ({ handleClose, show, statusId, openWithAddNewTab = false }) =
     };
 
     const onAddTab = (index) => {
-        if (isViewOnly) return;
+        if (isViewOnly || isCampaignCompleted || !canAddnewSmartLink) return;
         if (smartLink[`smartLink${index}`] == '') return;
         const getSmartlink = SMARTLINK_NAME[index];
         const temp = [...tab];
@@ -465,6 +483,7 @@ const SmartLink = ({ handleClose, show, statusId, openWithAddNewTab = false }) =
                     isEdit={false}
                     canEditExistingSmartLink={canEditExistingSmartLink}
                     canAddnewSmartLink={canAddnewSmartLink}
+                    isCampaignCompleted={isCampaignCompleted}
                 />
             ),
             remove: circle_minus_fill_medium,
@@ -522,13 +541,22 @@ const SmartLink = ({ handleClose, show, statusId, openWithAddNewTab = false }) =
     );
 
     const displayTabs = useMemo(() => {
+        if (isCampaignCompleted || isViewOnly || !canAddnewSmartLink) {
+            return tab.map((tabItem) => ({
+                ...tabItem,
+                isAdd: true,
+                ...(isCampaignCompleted || isViewOnly
+                    ? { isRemove: true }
+                    : { isRemove: tabItem.remove ? true : tabItem.isRemove }),
+            }));
+        }
         if (!isViewOnly) return tab;
         return tab.map((tabItem) => ({
             ...tabItem,
             isAdd: tabItem.add ? true : tabItem.isAdd,
             isRemove: tabItem.remove ? true : tabItem.isRemove,
         }));
-    }, [tab, isViewOnly]);
+    }, [tab, isViewOnly, isCampaignCompleted, canAddnewSmartLink]);
 
     // Tab labels are controlled by the "smart link name" input inside each tab.
 

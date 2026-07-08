@@ -123,6 +123,9 @@ const RequestApproval = ({
     const [currentInputEmail, setCurrentInputEmail] = useState('');
     const isApprovalInputEmail = _get(approvalSettings, 'isApprovalInputEmail', false);
     const isRequestApproval = _get(approvalSettings, 'requestApproval', false);
+    const showSendButtonColumn =
+        !isDynamic &&
+        ((!isCustomapproval && !isRequestApproval) || (isSendButton && isRequestApproval));
     // const testEmail = _get(approvalSettings, 'testEmail.email', '');
     const testEmail = _get(approvalSettings, 'testEmail', '');
     const testEmailFromInput = _get(approvalSettings, 'testEmail.email', '');
@@ -1526,6 +1529,7 @@ const RequestApproval = ({
                                 </Row>
                             </Col>
 
+                            {showSendButtonColumn && (
                             <Col md={isDynamic ? 4 : 2}>
                                 {!isCustomapproval && !isRequestApproval && (
                                     <RSPrimaryButton
@@ -1597,6 +1601,7 @@ const RequestApproval = ({
                                     </RSPrimaryButton>
                                 )}
                             </Col>
+                            )}
                         </>
                     </Row>
                 </div>

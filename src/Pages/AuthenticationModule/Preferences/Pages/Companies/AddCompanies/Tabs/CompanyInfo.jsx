@@ -1038,19 +1038,8 @@ const CompanyInfo = ({
                                                         companyAddSupportDatas?.ParentInfo?.parentclientName?.length
                                                     }
                                                     placeholder={PARENT_COMPANY}
-                                                    isCustomIcon={true}
+                                                    rightTooltip = {PARENT_COMPANY_POP_HOVER}
                                                 />
-                                                <div className="form-field-icon">
-                                                    <RSTooltip
-                                                        position="bottom"
-                                                        text={PARENT_COMPANY_POP_HOVER}
-                                                    >
-                                                        <i
-                                                            className={`${circle_question_mark_mini} icon-xs`}
-                                                            id="rs_CompanyInfo_questionmark"
-                                                        ></i>
-                                                    </RSTooltip>
-                                                </div>
                                             </div>
                                         </Col>
 

@@ -102,9 +102,9 @@ export const resolveGalleryBannerSrc = (imagePath, contentThumbnail) => {
  * @returns {string}
  */
 export const resolveGalleryMediaForSocialPreview = (data = {}) => {
-    const fromPath = resolveStringifiedMediaUrl(imagePath ?? imageUrl);
+    const fromPath = resolveStringifiedMediaUrl(data.imagePath ?? data.imageUrl);
     if (fromPath) return normalizePreviewSrc(fromPath, false);
-    const fallbacks = [contentThumbnail, attachment, previewImage];
+    const fallbacks = [data.contentThumbnail, data.attachment, data.previewImage];
     for (const v of fallbacks) {
         if (v != null && String(v).trim() !== '') {
             const n = normalizePreviewSrc(String(v).trim(), false);
@@ -113,3 +113,4 @@ export const resolveGalleryMediaForSocialPreview = (data = {}) => {
     }
     return '';
 };
+

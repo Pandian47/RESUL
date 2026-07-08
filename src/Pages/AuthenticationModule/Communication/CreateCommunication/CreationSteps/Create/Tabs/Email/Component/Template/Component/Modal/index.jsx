@@ -118,9 +118,9 @@ const TemplateModal = ({
         }
     }, [state]);
     const handleSave = (data) => {
-        if (templateName !== '' && templateCategory !== '') {
+        if (data.templateName !== '' && data?.templateCategory !== '') {
             handleDirect();
-        } else if (templateCategory === '') {
+        } else if (data?.templateCategory === '') {
             setError('templateCategory', {
                 type: 'custom',
                 message: 'Select category',
@@ -204,6 +204,7 @@ const TemplateModal = ({
                 campaignType: state?.campaignType,
                 ...state,
                 dynamiclistId: campaign['campaignType'] === 'T' ? _get(state, 'dynamicListId', 0) : 0,
+                dynamiclistId: state?.campaignType === 'T' ? _get(state, 'dynamicListId', 0) : 0,
                 ...(campaign['campaignType'] === 'M' && mdcContentSetupDetails),
             };
             let payload =
@@ -270,14 +271,14 @@ const TemplateModal = ({
                     SplitType: '',
                     channelDetailId:
                         _type?.toLowerCase() === 'web'
-                            ? WebPushNotifyChannelDetailID
+                            ? data?.WebPushNotifyChannelDetailID
                             : _type?.toLowerCase() === 'mobile'
-                                ? MobilePushNotifyChannelDetailID
+                                ? data?.MobilePushNotifyChannelDetailID
                                 : 0,
                     departmentId,
                     clientId,
                     userId,
-                    edmChannelId: edmChannelId || 0,
+                    edmChannelId: data?.edmChannelId || 0,
                 };
                 const token = localStorage.getItem('accessToken');
                 // Update location state with channelDetailId for fromEnvi
@@ -294,13 +295,13 @@ const TemplateModal = ({
                             savedChannelsId: updatedSavedChannelsId,
                             mdcContentSetupDetails: {
                                 ...state.mdcContentSetupDetails,
-                                channelDetailId: edmChannelId || 0,
+                                channelDetailId: data?.edmChannelId || 0,
                             },
                         }
                         : {
                             ...state,
                             savedChannelsId: updatedSavedChannelsId,
-                            channelDetailId: edmChannelId || 0,
+                            channelDetailId: data?.edmChannelId || 0,
                         }),
                     currentIndex: channelId == 8 ? 0 : 1,
                     activeSplitName: getValues('splitTest') ? currentSplitName(getValues('currentSplitTab')) : '',
@@ -327,14 +328,14 @@ const TemplateModal = ({
                     templateId: 0,
                     channelDetailId:
                         _type?.toLowerCase() === 'web'
-                            ? WebPushNotifyChannelDetailID
+                            ? data?.WebPushNotifyChannelDetailID
                             : _type?.toLowerCase() === 'mobile'
-                                ? MobilePushNotifyChannelDetailID
+                                ? data?.MobilePushNotifyChannelDetailID
                                 : 0,
                     departmentId,
                     clientId,
                     userId,
-                    edmChannelId: edmChannelId || 0,
+                    edmChannelId: data?.edmChannelId || 0,
                     fromEnvi: locationEnvi,
                     campaignType: campaign['campaignType'],
                     ...(templateData && { data: templateData }),
@@ -373,14 +374,14 @@ const TemplateModal = ({
             SplitType: '',
             channelDetailId:
                 _type?.toLowerCase() === 'web'
-                    ? WebPushNotifyChannelDetailID
+                    ? data?.WebPushNotifyChannelDetailID
                     : _type?.toLowerCase() === 'mobile'
-                        ? MobilePushNotifyChannelDetailID
+                        ? data?.MobilePushNotifyChannelDetailID
                         : 0,
             departmentId,
             clientId,
             userId,
-            edmChannelId: edmChannelId || 0,
+            edmChannelId: data?.edmChannelId || 0,
             activeSplitName: getValues('splitTest') ? currentSplitName(getValues('currentSplitTab')) : '',
             ...getSavedPushChannelFlagPayload(_type)
         };
@@ -398,13 +399,13 @@ const TemplateModal = ({
                     savedChannelsId: updatedSavedChannelsId,
                     mdcContentSetupDetails: {
                         ...state.mdcContentSetupDetails,
-                        channelDetailId: edmChannelId || 0,
+                        channelDetailId: data?.edmChannelId || 0,
                     },
                 }
                 : {
                     ...state,
                     savedChannelsId: updatedSavedChannelsId,
-                    channelDetailId: edmChannelId || 0,
+                    channelDetailId: data?.edmChannelId || 0,
                 }),
             currentIndex: channelId == 8 ? 0 : 1,
         };
@@ -427,14 +428,14 @@ const TemplateModal = ({
             templateId: 0,
             channelDetailId:
                 _type?.toLowerCase() === 'web'
-                    ? WebPushNotifyChannelDetailID
+                    ? data?.WebPushNotifyChannelDetailID
                     : _type?.toLowerCase() === 'mobile'
-                        ? MobilePushNotifyChannelDetailID
+                        ? data?.MobilePushNotifyChannelDetailID
                         : 0,
             departmentId,
             clientId,
             userId,
-            edmChannelId: edmChannelId || 0,
+            edmChannelId: data?.edmChannelId || 0,
             fromEnvi: locationEnvi,
             campaignType: campaign['campaignType'],
             ...(templateData && { data: templateData }),
@@ -473,14 +474,14 @@ const TemplateModal = ({
                 SplitType: '',
                 channelDetailId:
                     _type?.toLowerCase() === 'web'
-                        ? WebPushNotifyChannelDetailID
+                        ? data?.WebPushNotifyChannelDetailID
                         : _type?.toLowerCase() === 'mobile'
-                            ? MobilePushNotifyChannelDetailID
+                            ? data?.MobilePushNotifyChannelDetailID
                             : 0,
                 departmentId,
                 clientId,
                 userId,
-                edmChannelId: edmChannelId || 0,
+                edmChannelId: data?.edmChannelId || 0,
                 templateDate: stateAIBuilder.templateDate,
                 templateCategory: temp_templateCategory?.categoryName || '',
                 ...(templateData && {

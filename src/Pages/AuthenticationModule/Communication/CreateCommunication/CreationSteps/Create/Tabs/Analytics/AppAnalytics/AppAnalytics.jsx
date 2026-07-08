@@ -17,7 +17,7 @@ import { resetCreateCommunication, updateTab, updateDirtyState } from 'Reducers/
 import { useNavigate } from 'react-router-dom';
 import RSConfirmationModal from 'Components/ConfirmationModal';
 import { useDispatch, useSelector } from 'react-redux';
-import { availableTabs, getPreCampaignStatus } from '../../../constant';
+import { availableTabs, getPreCampaignStatus, shouldPromptSkipChannelConfirmation } from '../../../constant';
 
 import { getSessionId } from 'Reducers/globalState/selector';
 import {
@@ -82,7 +82,7 @@ const AppAnalytics = () => {
     const [statusIDCheck, setstatusIDCheck] = useState(state?.statusId || null);
     const isAppAnalyticsClickOff =
         checkTrigger(state?.campaignType, state?.endDate) ||
-        !statusIdCheck(statusIDCheck || state?.statusId);
+        !statusIdCheck(statusIDCheck || state?.statusId, state?.campaignType, undefined);
     const screenListTemp = useSelector((state) => screenListSelector(state));
     const { userId, clientId, departmentId, departmentName, isAgency } = useSelector((state) => getSessionId(state));
     const { smartLink1, smartLink2 } = useSelector((state) => getGeneratedLink(state));
@@ -194,14 +194,9 @@ const AppAnalytics = () => {
             }
     }, [JSON.stringify(dirtyFields)]);
     useEffect(() => {
-        if (checkSave) {
-            if (!resolvedMobileAppId || !smartLink1 || !Object.values(smartLink)[0]) setIsSmartLink(true);
-            else setIsSmartLink(false);
-        } else {
-            if (!resolvedMobileAppId || !smartLink1 || !Object.values(smartLink)[0]) setIsSmartLink(true);
-            else setIsSmartLink(false);
-        }
-    }, [smartLink1, smartLink, resolvedMobileAppId, showSmartLink]);
+        const hasMobileSmartLink = Boolean(String(smartLink?.smartLink2 || '').trim());
+        setIsSmartLink(!resolvedMobileAppId || !hasMobileSmartLink);
+    }, [smartLink, resolvedMobileAppId]);
 
     let appGoalListTemp =
         state?.secondaryGoal === 'Engagement' || state?.secondaryGoal === 'Conversion'
@@ -751,6 +746,16 @@ const AppAnalytics = () => {
         return true;
     };
     const formSubmitHandler = async (data, type) => {
+        // Click-off: never call save API — buttons should navigate only.
+        if (isAppAnalyticsClickOff) {
+            if (type === 'save') {
+                dispatch(resetCreateCommunication());
+                navigate('/communication', { replace: true, state: { index: 0 } });
+            } else {
+                handleNavigation();
+            }
+            return;
+        }
         // debugger;
         //console.log('data: ', data);
         let checkResult = [];
@@ -894,14 +899,15 @@ const AppAnalytics = () => {
             >
                 <div className={`box-design bd-top-border ${checkTrigger(state?.campaignType, state?.endDate)
                         ? 'pe-none click-off'
-                        : !statusIdCheck(statusIDCheck || state?.statusId)
+                        : !statusIdCheck(statusIDCheck || state?.statusId, state?.campaignType, undefined)
                             ? 'pe-none click-off'
                             : ''
                     }`}>
-                    {isSmartLink && (
-                        <SmartLinkEnable
+                    <SmartLinkEnable
                             message={smartLinkOverlayMessage}
                             secondaryButton={false}
+                            requiresMobileApp
+                            isChannelLoading={showEditSkeleton && (checkSave || isSavedChannel)}
                             onSave={() => setIsSmartLink(false)}
                             onReject={() => {
                                 dispatch(showTabsSmartlink(true));
@@ -910,7 +916,6 @@ const AppAnalytics = () => {
                             ignoreButton
                             onIgnore={() => {handleNavigation()}}
                         />
-                    )}
                     <div className="form-group mt20">
                         <Row>
                             <Col sm={{ offset: 1, span: 2 }} className="pr0">
@@ -1098,6 +1103,15 @@ const AppAnalytics = () => {
                     </RSSecondaryButton>
                     <RSSecondaryButton
                         onClick={() => {
+                            // Click-off: skip save API, leave Create like Cancel/list flow.
+                            if (isAppAnalyticsClickOff) {
+                                dispatch(resetCreateCommunication());
+                                navigate('/communication', {
+                                    replace: true,
+                                    state: { index: 0 },
+                                });
+                                return;
+                            }
                             handleSubmit((data) => formSubmitHandler(data, 'save'))();
                         }}
                         className="color-primary-blue"
@@ -1112,8 +1126,16 @@ const AppAnalytics = () => {
                         blockBodyPointerEvents
                         disabledClass={isSubmitting ? 'pe-none click-off' : ''}
                         onClick={() => {
-                            // debugger;
+                            // Click-off: navigate only — no validation / saveMOBILEAnalyticsChannel.
+                            if (isAppAnalyticsClickOff) {
+                                handleNavigation();
+                                return;
+                            }
                             if (!isDirty && !isValid) {
+                                if (!shouldPromptSkipChannelConfirmation()) {
+                                    handleNavigation();
+                                    return;
+                                }
                                 setNavigate_confirm(true);
                             } else {
                                 handleSubmit((data) => formSubmitHandler(data, 'form', false))();

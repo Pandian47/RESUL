@@ -622,19 +622,9 @@ const AddUser = ({ nextScreen, companies = false, companyBack, campanyEdit, curr
                                             meter={generatePassword ? false : password?.length > 0 ? true : false}
                                             rules={nameEmailEdit ? {} : state.passwordRules}
                                             disabled={generatePassword || adUser || nameEmailEdit}
+                                            smallText = {MIN_8_CHARACTERS}
+                                            rightTooltip = {PASSWORD_MAX_15_CHARACTERS}
                                         />
-                                        <small className="mt3">
-                                            {MIN_8_CHARACTERS}{' '}
-                                            <RSPPophover
-                                                position="bottom"
-                                                pophover={PASSWORD_MAX_15_CHARACTERS}
-                                            >
-                                                <i
-                                                    className={` ${circle_question_mark_mini} color-primary-blue icon-xs position-relative top2`}
-                                                    id="circle_question_mark"
-                                                ></i>
-                                            </RSPPophover>
-                                        </small>
                                     </div>
                                 </Col>
                             </Row>

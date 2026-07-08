@@ -86,6 +86,10 @@ const addAudienceReducer = createSlice({
                 excelFilesData: payload,
             };
         },
+        setChildCategoryList: (state, { payload }) => ({
+            ...state,
+            childCategoryList: payload || [],
+        }),
         resetAll: () => ({ ...initialState }),
         // resetAll: () => () => initialState,
     },
@@ -107,6 +111,7 @@ export const {
     updateListAnalysisData,
     setEditFlowData,
     updateExcelFilesData,
+    setChildCategoryList,
     resetAll,
 } = addAudienceReducer.actions;
 

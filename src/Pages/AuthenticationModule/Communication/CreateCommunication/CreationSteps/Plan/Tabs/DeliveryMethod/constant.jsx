@@ -40,6 +40,7 @@ export const REDUCER_INITIAL_STATE = {
     currentFrequencyTab: 0,
     isReferenceSaved: false,
     referenceDocketFileName: '',
+    isCommunicationReferenceIconEnabled: false,
 };
 
 export const getMetrixValue = (type) => {
@@ -845,6 +846,54 @@ export const TOOLTIP_TEXT_ANALYTICS_TYPES = (
     </Fragment>
 );
 
+/** API may return a flat array or `{ communicationReference: [...] }`. */
+export const normalizeReferenceConfig = (data) => {
+    if (!data) return [];
+    if (Array.isArray(data)) return data;
+    if (Array.isArray(data?.communicationReference)) return data.communicationReference;
+    if (data?.data) return normalizeReferenceConfig(data.data);
+    return [];
+};
+
+export const isReferenceConfigResponseOk = (response) => {
+    const list = normalizeReferenceConfig(response?.data ?? response);
+    if (list.length > 0) return true;
+    const status = response?.status;
+    return status === true || status === 1;
+};
+
+export const buildReferenceFormStateFromConfig = (referenceConfigList = []) => {
+    let tempGrouping = {};
+    let tempPriority = {};
+    const tempData = referenceConfigList.filter((item) => {
+        if (item?.columnValue === 'Communication Grouping ID') {
+            tempGrouping = { ...item };
+        }
+        if (item?.columnValue === 'Priority') {
+            tempPriority = { ...item };
+        }
+        return item?.columnValue !== 'Communication Grouping ID' && item?.columnValue !== 'Priority';
+    });
+
+    return {
+        priority: tempPriority,
+        grouping: tempGrouping,
+        reference: [...(tempData || [])],
+    };
+};
+
+export const getCommunicationReferenceFormState = (communicationReferenceData) => {
+    if (!communicationReferenceData || Array.isArray(communicationReferenceData)) {
+        return { grouping: {}, priority: {}, reference: [], docketFilename: '' };
+    }
+    return {
+        grouping: communicationReferenceData?.grouping ?? {},
+        priority: communicationReferenceData?.priority ?? {},
+        reference: communicationReferenceData?.reference ?? [],
+        docketFilename: communicationReferenceData?.docketFilename,
+    };
+};
+
 export const handleReferenceData = (referenceData, referenceList, version, docketFile) => {
     // console.log('referenceData:@@@ ', referenceData);
 
@@ -1050,6 +1099,12 @@ export const isPlanPayloadEqual = (current, bound) => {
     );
 };
 
+export const COMPLETED_STATUS_ID = 9;
+export const ALERT_STATUS_ID = 52;
+
+export const isCompletedOrAlertStatus = (statusId) =>
+    [COMPLETED_STATUS_ID, ALERT_STATUS_ID].includes(parseInt(statusId, 10));
+
 export const handleWithoutAPICallNavigation = async ({
     payload,
     props,
@@ -1066,7 +1121,7 @@ export const handleWithoutAPICallNavigation = async ({
     };
     const shouldNavigateWithoutApi =
         forceNavigateWithoutApi ||
-        ((payload?.campaignType === 'T' || payload?.campaignType === 'S') &&
+        (['T', 'S', 'M'].includes(payload?.campaignType) &&
             (campaignTypeWiseStatusIdCheck[payload?.campaignType] || [])?.includes(parseInt(props?.statusId, 10)));
     if (shouldNavigateWithoutApi) {
         if (props?.buttonType === 'save') {

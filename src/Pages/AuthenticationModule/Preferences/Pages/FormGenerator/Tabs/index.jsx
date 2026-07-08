@@ -124,11 +124,13 @@ const AddFormGenerator = () => {
                                     tabData={ADD_FORM_TYPES(setCurrentTab, isRunEnv)}
                                     cTabsBig
                                     defaultTab={currentTab}
+                                    componentClassName="pl0"
                                     isHeadingBlock
                                     refresh={isEditMode ? false : true}
                                     isRefreshConfirmation={true}
                                     disableOtherTabs
                                     isFormRefresh
+                                    isCreateCommunication={!isEditMode}
                                     heading={'Select the form type'}
                                     callBack={(_, currentIndex) => setCurrentTab(currentIndex)}
                                 />

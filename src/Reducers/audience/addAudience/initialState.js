@@ -19,6 +19,7 @@ const initialState = {
     mappingDataLoading: false,
     excelFilesData: [],
     insightData: {},
+    childCategoryList: [],
 };
 
 export default initialState;

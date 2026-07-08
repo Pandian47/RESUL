@@ -10,7 +10,7 @@ import {
 import { MAX_LENGTH50 } from 'Constants/GlobalConstant/Regex';
 import { ATTRIBUTES, DATASETS_DISABLED, SEARCH_ATTRIBUTES_VALUES } from 'Constants/GlobalConstant/Placeholders';
 import { circle_arrow_down_fill_edge_mini, circle_arrow_up_fill_edge_mini, expand_all_medium, justify_dropdown_mini } from 'Constants/GlobalConstant/Glyphicons';
-import { Fragment, useContext, useMemo, useState } from 'react';
+import { Fragment, useContext, useLayoutEffect, useMemo, useState } from 'react';
 import { hasIn as _hasIn, get as _get } from 'Utils/modules/lodashReplacements';
 import { Accordion, Card } from 'react-bootstrap';
 import { useFormContext } from 'react-hook-form';
@@ -18,9 +18,8 @@ import { useFormContext } from 'react-hook-form';
 import RSSearchField from 'Components/RSSearchField';
 import RSTooltip from 'Components/RSTooltip';
 import { KendoIconDropdown } from 'Components/RSDropDown';
-import { RSCheckbox } from 'Components/RSInput';
 import RSBootstrapdown from 'Components/FormFields/RSBootstrapdown';
-// import RSCheckbox from 'Components/FormFields/RSCheckbox';
+import RSCheckbox from 'Components/FormFields/RSCheckbox';
 import {
     addBrandError,
     addPartnerError,
@@ -34,6 +33,45 @@ import useQueryParams from 'Hooks/useQueryParams';
 import usePartnerDataEnabled from 'Hooks/usePartnerDataEnabled';
 import { useSelector } from 'react-redux';
 import { SegmentAttributesSkeleton } from 'Components/Skeleton/Components/SkeletonOverall';
+
+const AttributeDropdownCheckbox = ({
+    control,
+    setValue,
+    categoryIndex,
+    itemIndex,
+    attributeItem,
+    isAttributeChecked,
+    isAttributeDisabled,
+    isLookAlikeItem,
+    onRowClick,
+}) => {
+    const attributeCheckboxName = `_attribute_${categoryIndex}_${itemIndex}`;
+
+    useLayoutEffect(() => {
+        setValue(attributeCheckboxName, isAttributeChecked, {
+            shouldDirty: false,
+            shouldValidate: false,
+        });
+    }, [attributeCheckboxName, isAttributeChecked, setValue]);
+
+    return (
+        <div
+            className={isLookAlikeItem ? 'look-alike-attribute-row' : 'attribute-dropdown-row'}
+            onMouseDown={(event) => event.stopPropagation()}
+            onClick={onRowClick}
+        >
+            <RSCheckbox
+                control={control}
+                name={attributeCheckboxName}
+                defaultValue={isAttributeChecked}
+                labelName={attributeItem.labelText}
+                disabledchk={isAttributeDisabled}
+                containerClass={isLookAlikeItem ? 'look-alike-attribute' : ''}
+                isError={false}
+            />
+        </div>
+    );
+};
 
 const Attributes = ({
     data,
@@ -51,7 +89,7 @@ const Attributes = ({
     const { SubSegmentExp_List, fullAttributeJSONValues } = useSelector(
         ({ dataTargetListReducer }) => dataTargetListReducer,
     );
-    const { watch, trigger, getFieldState, getValues, formState, reset } = useFormContext();
+    const { watch, trigger, getFieldState, getValues, formState, reset, control, setValue } = useFormContext();
     const [isExpandedAll, setIsExpandedAll] = useState(true);
     const [activeKey, setActiveKey] = useState(0);
     const [searchedAttribute, setSearchedAttribute] = useState('');
@@ -342,8 +380,20 @@ const Attributes = ({
         const attributeItem = itemProps?.item ?? itemProps;
         if (!attributeItem) return;
         if (attributeItem?.sOLRCountValue === 0 || !isListNameValidForAttributes) return;
-        insertRemoveAttributes(!isAttributeSelectedInFilters(attributeItem), itemProps, categoryIndex);
+        insertRemoveAttributes(!isAttributeInActiveGroup(attributeItem), itemProps, categoryIndex);
     };
+
+    const isAttributeInActiveGroup = (attributeItem) => {
+        if (!attributeItem?.labelText || !filterGroups?.activeGroup) return false;
+        return Boolean(
+            enabledisableAttribute(getValues()[filterGroups.activeGroup], attributeItem.labelText),
+        );
+    };
+
+    const isAttributeSelectedInFilters = (attributeItem) =>
+        filterGroups?.groups?.some((group) =>
+            Boolean(enabledisableAttribute(getValues()[group], attributeItem.labelText)),
+        ) ?? false;
 
     const RenderAttribute = ({ item: itemProps, index: categoryIndex }) => {
         const attributeItem = itemProps?.item ?? itemProps;
@@ -354,23 +404,19 @@ const Attributes = ({
         const isLookAlikeItem = Boolean(attributeItem?.isLookAlike);
         const isAttributeDisabled =
             attributeItem?.sOLRCountValue === 0 || !isListNameValidForAttributes;
-        const isAttributeChecked = isAttributeSelectedInFilters(attributeItem);
 
         return (
-            <div
-                className={isLookAlikeItem ? 'look-alike-attribute-row' : 'attribute-dropdown-row'}
-                onMouseDown={(event) => event.stopPropagation()}
-                onClick={(event) => handleAttributeRowClick(event, itemProps, categoryIndex)}
-            >
-                <RSCheckbox
-                    key={itemIndex}
-                    disabled={isAttributeDisabled}
-                    labelName={attributeItem.labelText}
-                    checked={isAttributeChecked}
-                    containerClass={isLookAlikeItem ? 'look-alike-attribute' : ''}
-                    onChange={() => {}}
-                />
-            </div>
+            <AttributeDropdownCheckbox
+                control={control}
+                setValue={setValue}
+                categoryIndex={categoryIndex}
+                itemIndex={itemIndex}
+                attributeItem={attributeItem}
+                isAttributeChecked={isAttributeSelectedInFilters(attributeItem)}
+                isAttributeDisabled={isAttributeDisabled}
+                isLookAlikeItem={isLookAlikeItem}
+                onRowClick={(event) => handleAttributeRowClick(event, itemProps, categoryIndex)}
+            />
         );
     };
 
@@ -441,21 +487,12 @@ const Attributes = ({
         ? true
         : !getListnameState?.invalid && !getListerrorState && !_isEmpty;
 
-    const isAttributeInActiveGroup = (attributeItem) => {
-        if (!attributeItem?.labelText || !filterGroups?.activeGroup) return false;
-        return Boolean(
-            enabledisableAttribute(getValues()[filterGroups.activeGroup], attributeItem.labelText),
-        );
-    };
-
     const isAttributeUsedInOtherGroups = (attributeItem, excludeGroup = null) =>
         filterGroups?.groups?.some(
             (group) =>
                 group !== excludeGroup &&
                 Boolean(enabledisableAttribute(getValues()[group], attributeItem.labelText)),
         ) ?? false;
-
-    const isAttributeSelectedInFilters = (attributeItem) => isAttributeInActiveGroup(attributeItem);
 
     const handleClickOff = (list) => {
         if (list?.category === 'File' && locationAudience?.isMDCSubSegment && SubSegmentExp_List?.[0]?.listType === 1) {

@@ -9,7 +9,6 @@ import { uniq as _uniq ,flatten as _flatten } from 'Utils/modules/lodashReplacem
 
 
 import RSTooltip from 'Components/RSTooltip';
-import NoDataAvailableRender from 'Components/FormFields/Component/NoDataAvailableRender';
 import PlannerEventInfoSkeleton from 'Components/Skeleton/Components/PlannerEventInfoSkeleton';
 
 const EventInfoModal = ({
@@ -74,15 +73,11 @@ const EventInfoModal = ({
             // headerTitleTooltip={true}
             bodyClassName=""
             body={
-                <div className="rs-planner-events-wrapper mb10">
+                <div className="rs-planner-events-wrapper ">
                     {isLoading ? (
                         <PlannerEventInfoSkeleton />
                     ) : isFailure || !hasCampaigns ? (
-                        <div className="rs-planner-events-empty">
-                            <div className="gallery-no-data-message">
-                                <NoDataAvailableRender />
-                            </div>
-                        </div>
+                      <PlannerEventInfoSkeleton isError = {true}/>
                     ) : (
                         <Carousel
                             // variant="dark"

@@ -8,7 +8,9 @@ import RSInput from 'Components/FormFields/RSInput';
 
 
 const SettingsModal = ({ show, handleClose, isEdit, editName = false, type='' }) => {
-    const { control ,formState: { errors },} = useFormContext();
+    const { control, watch, formState: { errors } } = useFormContext();
+    const numberOfPeopleAdded = watch('numberOfPeopleAdded');
+    const isSaveDisabled = !numberOfPeopleAdded || !!errors.numberOfPeopleAdded;
 
     return (
         <RSModal
@@ -43,7 +45,7 @@ const SettingsModal = ({ show, handleClose, isEdit, editName = false, type='' })
             footer={
                 <>
                     <RSSecondaryButton onClick={() => handleClose(false)}>Cancel</RSSecondaryButton>
-                    <RSPrimaryButton className={`${!!numberOfPeopleAdded ? 'click-off' : ''}`} onClick={() => handleClose(true)}>Save</RSPrimaryButton>
+                    <RSPrimaryButton className={isSaveDisabled ? 'click-off' : ''} onClick={() => handleClose(true)}>Save</RSPrimaryButton>
                 </>
             }
         />

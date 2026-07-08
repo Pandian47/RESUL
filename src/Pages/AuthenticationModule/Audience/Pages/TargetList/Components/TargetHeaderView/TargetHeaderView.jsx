@@ -47,6 +47,43 @@ const LIST_NAME_SUGGEST_DEBOUNCE_MS = 400;
 const LIST_NAME_SUGGEST_MIN_CHARS = 3;
 const TARGET_ADVANCE_SEARCH_OPTIONS = ['List name', 'List type', 'Created by'];
 
+const hasTargetAdvanceFilterFields = (formState = {}) =>
+    Boolean(
+        formState.list_type?.length ||
+            formState.approval_status?.length ||
+            formState.status?.length ||
+            formState.created_by?.length ||
+            (formState.sort_type != null && formState.sort_type !== AUDIENCE_LIST_DEFAULT_SORT_BY_ID),
+    );
+
+const resolveTargetIsAdvanceSearch = (meta = {}, formState = {}) => {
+    if (meta?.isAdvanceSearch != null) {
+        return Boolean(meta.isAdvanceSearch);
+    }
+    return hasTargetAdvanceFilterFields(formState);
+};
+
+const buildTargetAudienceFormStateFromFilters = (filters = {}) => {
+    const formState = {
+        communication_name_text: String(
+            filters?.communication_name?.rawValue ?? filters.communication_name?.displayValue ?? '',
+        )?.trim() ?? '',
+        list_type: filters.list_type?.rawValue?.length ? filters.list_type.rawValue : [],
+        approval_status: filters.approval_status?.rawValue?.length ? filters.approval_status.rawValue : [],
+        status: filters.status?.rawValue?.length ? filters.status.rawValue : [],
+        created_by: filters.created_by?.rawValue?.length ? filters.created_by.rawValue : [],
+    };
+    if (filters.sort_type != null) {
+        const raw = filters.sort_type.rawValue;
+        const sortCandidate = raw != null && typeof raw === 'object' ? raw.id ?? raw : raw;
+        const sortId = Number(sortCandidate);
+        if (Number.isFinite(sortId)) {
+            formState.sort_type = sortId;
+        }
+    }
+    return formState;
+};
+
 const TARGET_LIST_TYPE_FILTER_META = {
     key: 'list_type',
     data: LISTS,
@@ -130,6 +167,7 @@ const TargetHeaderView = ({ targetListViewLen }) => {
         setInitialGridPagination,
         setPageConfig,
         pageConfig,
+        clearLastDispatchedTargetListParams,
     } = useContext(TargetListContext);
 
     const applyPaginationReset = useCallback(
@@ -204,8 +242,12 @@ const TargetHeaderView = ({ targetListViewLen }) => {
             }));
     };
 
-    const handleAdvanceSearch = (data) => {
+    const handleAdvanceSearch = (data, meta = {}) => {
         const pagination = applyPaginationReset();
+        const isAdvanceSearch = resolveTargetIsAdvanceSearch(meta, data);
+        if (meta?.forceSubmit) {
+            clearLastDispatchedTargetListParams?.();
+        }
         setisDateFilter(true);
         setParams((prev) => {
             const fil = { ...prev.filteration };
@@ -287,15 +329,18 @@ const TargetHeaderView = ({ targetListViewLen }) => {
             return {
                 ...prev,
                 pagination,
-                isAdvanceSearch: true,status:'',
+                isAdvanceSearch,
+                status: '',
                 isFilteration: true,
                 filteration: fil,
             };
         });
     };
 
-    const handleSearchText = (data) => {
+    const handleSearchText = (data, meta = {}) => {
         const pagination = applyPaginationReset();
+        const isAdvanceSearch =
+            data.type === 'List name' ? resolveTargetIsAdvanceSearch(meta, {}) : true;
         if (data.type === 'List type') {
             if (['All list', 'My list'].includes(data.text)) {
                 if (data?.text === 'All list') {
@@ -311,7 +356,7 @@ const TargetHeaderView = ({ targetListViewLen }) => {
             setParams((prev) => ({
                 ...prev,
                 pagination,
-                isAdvanceSearch: true, 
+                isAdvanceSearch,
                 isFilteration: true,
                 filteration: {
                     ...prev.filteration,
@@ -410,13 +455,14 @@ const TargetHeaderView = ({ targetListViewLen }) => {
             filteration: { listName, searchValue, listType },
         } = params;
         
-        if (!status && (searchValue || listType)) {
+        if (!status && (searchValue || listName || listType)) {
             const pagination = applyPaginationReset();
             setSearchValueSync((prev) => ({ rev: prev.rev + 1, value: '' }));
             setParams((prev) => ({
                 ...prev,
                 filteration: {
                     ...prev.filteration,
+                    listName: '',
                     listType: '',
                     searchBy: '',
                     isContains: false,
@@ -567,7 +613,7 @@ const TargetHeaderView = ({ targetListViewLen }) => {
         setNameSuggestLoading(false);
         const text = String(label ?? '').trim();
         setSearchValueSync((prev) => ({ rev: prev.rev + 1, value: text }));
-        handleSearchText({ type: 'List name', text });
+        handleSearchText({ type: 'List name', text }, { isAdvanceSearch: false });
     };
 
     const handleSearchExpandedChange = useCallback((expanded) => {
@@ -594,6 +640,11 @@ const TargetHeaderView = ({ targetListViewLen }) => {
         }
         const prev = prevAudienceAdvanceFiltersRef.current;
         prevAudienceAdvanceFiltersRef.current = filters;
+
+        if (meta?.forceSubmit) {
+            handleAdvanceSearch(buildTargetAudienceFormStateFromFilters(filters), meta);
+            return;
+        }
 
         const wasRemoved = (key) =>
             prev &&
@@ -642,7 +693,7 @@ const TargetHeaderView = ({ targetListViewLen }) => {
                 formState.sort_type = sortId;
             }
         }
-        handleAdvanceSearch(formState);
+        handleAdvanceSearch(formState, meta);
     };
 
     const handleAdvanceCommunicationNameSearchChange = useCallback(
@@ -744,15 +795,18 @@ const TargetHeaderView = ({ targetListViewLen }) => {
                      * Must clear `searchValueSync` and list-name filter fields or the main bar re-fills from the last rev.
                      */
                     if (!text) {
+                        if (meta?.skipListNameClearOnEmpty) {
+                            return;
+                        }
                         const pagination = applyPaginationReset();
                         setSearchValueSync((prev) => ({ rev: prev.rev + 1, value: '' }));
                         setisDateFilter(true);
                         setParams((prev) => ({
                             ...prev,
                             pagination,
-                            isAdvanceSearch: true,
+                            isAdvanceSearch: meta?.isAdvanceSearch ?? false,
                             isFilteration: true,
-                            status:'',
+                            status: '',
                             filteration: {
                                 ...prev.filteration,
                                 listName: '',
@@ -764,11 +818,14 @@ const TargetHeaderView = ({ targetListViewLen }) => {
                         return;
                     }
                     setSearchValueSync((prev) => ({ rev: prev.rev + 1, value: text }));
-                    handleSearchText({
-                        type: meta?.type || 'List name',
-                        text,
-                        searchValue: meta?.searchValue ?? text,
-                    });
+                    handleSearchText(
+                        {
+                            type: meta?.type || 'List name',
+                            text,
+                            searchValue: meta?.searchValue ?? text,
+                        },
+                        meta,
+                    );
                 }}
                 onSearchChange={handleTargetSearchChange}
                 onSearchExpandedChange={handleSearchExpandedChange}

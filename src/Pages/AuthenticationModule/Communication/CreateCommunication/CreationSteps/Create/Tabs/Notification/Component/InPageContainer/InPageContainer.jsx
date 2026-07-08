@@ -108,11 +108,11 @@ const InPageContainer = ({ data, type, onBannerSelect, fieldName = '' }) => {
         if (hasAppliedEditBannerRef.current) {
             return;
         }
-        const editId = editDetails?.bannerId;
+        const editId = data?.editDetails?.bannerId;
         if (!editId || editId <= 0) {
             return;
         }
-        if (bindBannerToListItem(list, editDetails)) {
+        if (bindBannerToListItem(list, data.editDetails)) {
             hasAppliedEditBannerRef.current = true;
         }
     };
@@ -247,9 +247,9 @@ const InPageContainer = ({ data, type, onBannerSelect, fieldName = '' }) => {
             ), bannerList[0])
             : null;
 
-        const rawBannerFromData = bannerDetails?.bannerId
-            ? bannerDetails
-            : (editDetails?.bannerId > 0 ? editDetails : null);
+        const rawBannerFromData = data?.bannerDetails?.bannerId
+            ? data.bannerDetails
+            : (data?.editDetails?.bannerId > 0 ? data.editDetails : null);
         const currentFormBanner = getValues('inPageBanner');
         const rawBanner = rawBannerFromData?.bannerId ? rawBannerFromData : currentFormBanner;
 
@@ -278,11 +278,11 @@ const InPageContainer = ({ data, type, onBannerSelect, fieldName = '' }) => {
         }
     }, [
         bannerList,
-        bannerDetails,
-        bannerDetails?.bannerId,
-        bannerDetails?.bannerName,
-        editDetails?.bannerId,
-        editDetails?.bannerName,
+        data?.bannerDetails,
+        data?.bannerDetails?.bannerId,
+        data?.bannerDetails?.bannerName,
+        data?.editDetails?.bannerId,
+        data?.editDetails?.bannerName,
         getValues,
         setValue,
     ]);
@@ -291,10 +291,10 @@ const InPageContainer = ({ data, type, onBannerSelect, fieldName = '' }) => {
         setLoading(true);
 
         const payload = {
-            appId: type === 'mobile' ? (appId || '') : '',
+            appId: type === 'mobile' ? (data?.appId || '') : '',
             bannerName: '',
             bannerSize: '',
-            domainName: type !== 'mobile' ? (domainName || '') : '',
+            domainName: type !== 'mobile' ? (data?.domainName || '') : '',
         };
 
         try {
@@ -331,7 +331,7 @@ const InPageContainer = ({ data, type, onBannerSelect, fieldName = '' }) => {
         if (!isAgree) return;
 
         const selectedBanner = getValues(inPageBannerName);
-        const selectedDomain = selectedBanner?.domainName || domainName || '';
+        const selectedDomain = selectedBanner?.domainName || data?.domainName || '';
         if (!selectedDomain) return;
 
         const reqs = localStorage.getItem('accessToken') || '';

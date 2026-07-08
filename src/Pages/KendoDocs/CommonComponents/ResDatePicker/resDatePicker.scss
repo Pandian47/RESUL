@@ -89,7 +89,7 @@
             input {
                 padding: 0;
                 height: 35px;
-                color: $secondary-grey;
+                color: $primary-black;
                 font-size: $font-xsm;
             }
         }
@@ -163,12 +163,15 @@
 .k-animation-container.rsDatePicketPopupCSS,
 .k-animation-container.k-calendar-container,
 .k-animation-container.res-datepicker-popup {
-    margin-top: -7px;
+    // margin-top: 5px;
+    margin-bottom: 5px;
 
     .k-popup {
         border: 1px solid $quaternary-blue;
-        margin-top: -3px;
+        // margin-top: -3px;
         background: $white;
+        border-radius: 10px;
+        overflow: hidden;
 
         .k-calendar-navigation {
             width: 4em;
@@ -207,7 +210,9 @@
         }
     }
 }
-
+.k-popup .k-calendar {
+    border: 0;
+}
 .k-calendar {
     .k-calendar-caption,
     .k-meta-header,
@@ -255,7 +260,7 @@
         &:hover,
         &:focus {
             .k-link {
-                border-radius: 0;
+                border-radius: 5px;
                 background-color: $primary-blue !important;
                 color: $white !important;
                 box-shadow: none;
@@ -338,12 +343,14 @@
 
     > .k-animation-container,
     > .k-animation-container.k-calendar-container {
-        overflow: visible !important;
+        overflow: hidden !important;
         z-index: 1101 !important;
 
         .k-child-animation-container,
         .k-popup {
-            overflow: visible !important;
+            overflow: inherit !important;
+            margin-top: 5px;
+            margin-bottom: 5px;
         }
 
         // Shell width is set in JS to match the trigger input — keep inner popup contained

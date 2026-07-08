@@ -88,6 +88,35 @@
     }
 }
 
+.segment_loader.rs-button-loading-icon {
+    width: 0;
+    height: 0;
+    max-width: 0;
+    max-height: 0;
+    border-width: 0;
+    opacity: 0;
+    overflow: hidden;
+    transform: translateX(15px);
+    transition:
+        width 0.25s ease-in-out,
+        height 0.25s ease-in-out,
+        max-width 0.25s ease-in-out,
+        max-height 0.25s ease-in-out,
+        border-width 0.25s ease-in-out,
+        opacity 0.25s ease-in-out,
+        transform 0.25s ease-in-out;
+}
+
+.segment_loader.rs-button-loading-icon.is-active {
+    width: 16px;
+    height: 16px;
+    max-width: 16px;
+    max-height: 16px;
+    border-width: 2px;
+    opacity: 1;
+    transform: translateX(0);
+}
+
 //RSButtonSecondary
 .rs-button-secondary {
     @include color($color: $secondary-orange, $bg: transparent);

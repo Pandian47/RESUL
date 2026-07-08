@@ -57,7 +57,7 @@ import {
     updateTab,
     updateVerticalTab,
 } from 'Reducers/communication/createCommunication/Create/reducer';
-import { availableTabs, communicationChannels, getPreCampaignStatus, mergeChannelAudiences, getPastPlanDurationBlockedState, validatePastPlanDurationOnSubmit, PAST_PLAN_DURATION_CLICK_OFF_CLASS } from '../../constant';
+import { availableTabs, communicationChannels, getPreCampaignStatus, mergeChannelAudiences, getPastPlanDurationBlockedState, validatePastPlanDurationOnSubmit, PAST_PLAN_DURATION_CLICK_OFF_CLASS, shouldPromptSkipChannelConfirmation } from '../../constant';
 import {
     getDatafromSocialPost,
     getFacebookCountries,
@@ -272,6 +272,7 @@ const SocialPost = ({ type, subChannelId }) => {
     const domainSegment = (locationRouter.pathname.split('/')[1] || '').toLowerCase();
     const dispatch = useDispatch();
     const locationAds = useQueryParams('/communication');
+    const location = locationAds;
     const { timeZoneList } = getmasterData();
     const { failureApiErrors } = useSelector(({ globalstate }) => globalstate);
     const { timeZoneId } = getUserDetails();
@@ -344,10 +345,6 @@ const SocialPost = ({ type, subChannelId }) => {
     const [targetPopover, setTargetPopover] = useState(false);
     const [isRefresh, setRefresh] = useState(false);
 
-    // Call UTC time API on component mount
-    useEffect(() => {
-        dispatch(getUtcTimeNow());
-    }, [dispatch]);
     const [previewFlag, setPreviewFlage] = useState(false);
     const [imagePreviewStatus, setImagePreviewStatus] = useState(false);
     const [mediaStatus, setMediaStatus] = useState(false);
@@ -660,7 +657,7 @@ const SocialPost = ({ type, subChannelId }) => {
         }
         if (!smartLink1 && !tabSmartLink_Flag) {
             if (locationAds && campaignId > 0) {
-                if (!statusIdCheck(fetchedSocialPostStatusId)) {
+                if (!statusIdCheck(fetchedSocialPostStatusId, location?.campaignType, undefined)) {
                     //getSmartLink();
                 } else {
                     setIsSmartLink(false);
@@ -1719,22 +1716,18 @@ const SocialPost = ({ type, subChannelId }) => {
                     <div
                         className={`box-design bd-top-border ${checkTrigger(locationAds?.campaignType, locationAds?.endDate)
                             ? 'pe-none click-off'
-                            : !statusIdCheck(fetchedSocialPostStatusId)
+                            : !statusIdCheck(fetchedSocialPostStatusId, location?.campaignType, undefined)
                                 ? 'click-off'
                                 : ''
                             }`}
                     >
-                        {!tabSmartLink_Flag &&
-                            tabSmartLink_Flag !== null &&
-                            statusIdCheck(fetchedSocialPostStatusId) && (
-                                <SmartLinkEnable
+                        <SmartLinkEnable
                                     onSave={() => setIsSmartLink(false)}
                                     onReject={() => {
                                         dispatch(showTabsSmartlink(true));
                                         setIsSmartLink(false);
                                     }}
                                 />
-                            )}
                         <div className="form-group pt20">
                             <Row>
                                 <Col sm={{ offset: 1, span: 2 }}>
@@ -2518,7 +2511,7 @@ const SocialPost = ({ type, subChannelId }) => {
                         <RSSecondaryButton
                             className={`color-primary-blue${checkTrigger(location?.campaignType, location?.endDate)
                                 ? 'pe-none click-off'
-                                : !statusIdCheck(fetchedSocialPostStatusId)
+                                : !statusIdCheck(fetchedSocialPostStatusId, location?.campaignType, undefined)
                                     ? 'pe-none click-off'
                                     : ''
                                 } ${Object.keys(errors)?.length > 0 ? 'click-off' : ''} ${isPastPlanDurationBlocked ? PAST_PLAN_DURATION_CLICK_OFF_CLASS : ''}`}
@@ -2538,7 +2531,7 @@ const SocialPost = ({ type, subChannelId }) => {
                         <RSPrimaryButton
                             className={` ${checkTrigger(location?.campaignType, location?.endDate)
                                 ? 'pe-none click-off'
-                                : !statusIdCheck(fetchedSocialPostStatusId)
+                                : !statusIdCheck(fetchedSocialPostStatusId, location?.campaignType, undefined)
                                     ? 'pe-none click-off'
                                     : ''
                                 } ${Object.keys(errors)?.length > 0 ? 'click-off' : ''} ${isDirty && Object.keys(errors)?.length > 0 ? 'click-off' : ''
@@ -2549,7 +2542,11 @@ const SocialPost = ({ type, subChannelId }) => {
                             onClick={() => {
                                 if (isPastPlanDurationBlocked) return;
                                 if (!isDirty && !isValid) {
-                                    setNavigate_confirm(true);
+                                    if (!shouldPromptSkipChannelConfirmation()) {
+                                    handleNavigation();
+                                    return;
+                                }
+                                setNavigate_confirm(true);
                                 } else {
                                     handleSubmit((data) => postSaveSocialPost(data, 'next'))();
                                 }

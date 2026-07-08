@@ -146,26 +146,6 @@ const ExistingUser = ({ onAuthLoadingChange = () => { } }) => {
         };
     }, []);
 
-    useEffect(() => {
-        const isMasterData = localStorage.getItem('masterData');
-        if (isMasterData && isMasterData !== 'null') return;
-        let cancelled = false;
-        const prefetch = () => {
-            if (!cancelled) dispatch(getMasterData(false));
-        };
-        if (typeof requestIdleCallback === 'function') {
-            const idleId = requestIdleCallback(prefetch, { timeout: 5000 });
-            return () => {
-                cancelled = true;
-                cancelIdleCallback(idleId);
-            };
-        }
-        const timerId = setTimeout(prefetch, 2000);
-        return () => {
-            cancelled = true;
-            clearTimeout(timerId);
-        };
-    }, [dispatch]);
 
     useEffect(() => {
         try {

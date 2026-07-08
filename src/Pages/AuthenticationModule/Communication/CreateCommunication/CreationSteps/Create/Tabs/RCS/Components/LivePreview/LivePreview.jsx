@@ -13,6 +13,8 @@ import { useDispatch, useSelector } from 'react-redux';
 import { getLiveTest } from 'Reducers/communication/createCommunication/Create/request';
 import { BRAND_ID } from 'Constants/GlobalConstant/Placeholders';
 import { Carousel } from 'react-bootstrap';
+import RSMobilePreview from 'Components/Previews/RSMobilePreview';
+import { PREVIEW_SOURCE } from 'Components/Previews/RSMobilePreview/utils';
 const LivePreview = ({
     show,
     content = '',

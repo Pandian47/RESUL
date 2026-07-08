@@ -11,7 +11,8 @@ import useQueryParams from 'Hooks/useQueryParams';
 const SMPP = () => {
     const dispatch = useDispatch()
     const queryState = useQueryParams('/preferences/communication-settings');
-    let addSenderFromComm = queryState?.from === 'messaging' && queryState?.addType === 'addSenderId';
+    const addSenderFromComm =
+        queryState?.from === 'CreateCommunication' && queryState?.mode === 'add';
     const { failureApiErrors } = useSelector(({ globalstate }) => globalstate);
     const [ failedApi, setFailedApi] = useState('')
     const [gridCreate, setGridCreate] = useState(ACTION_INITIAL_STATE);

@@ -1,7 +1,10 @@
 import { onlyNumbers } from 'Utils/modules/inputValidators';
+import { validateIsCustomNavigate } from 'Utils/modules/navigation';
+import { updateQueryParams } from 'Utils/modules/urlQuery';
 import { DOMAIN_NAME_EXISTS } from 'Constants/GlobalConstant/ValidationMessage';
-import { useCallback, useContext, useEffect, useState } from 'react';
+import { useCallback, useContext, useEffect, useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
 import { useForm, FormProvider } from 'react-hook-form';
 import { parse } from 'tldts';
 import { getSessionId } from 'Reducers/globalState/selector';
@@ -12,6 +15,7 @@ import RSInput from 'Components/FormFields/RSInput';
 
 import { Row, Col } from 'react-bootstrap';
 import useApiLoader from 'Hooks/useApiLoader';
+import useQueryParams from 'Hooks/useQueryParams';
 import { FIELD_BOTH_LOADER_CONFIG as fieldLoaderConfig } from 'Hooks/loaderTypes';
 import { CommunicationSettingsDomainEditSkeletonGate } from 'Components/Skeleton/Components/PreferencesSubPageRouteSkeleton';
 
@@ -22,6 +26,14 @@ import { ActionsType } from '../..';
 
 const STEP_INPUT = 'input';
 const STEP_CONNECT = 'connect';
+
+const CREATE_COMM_DOMAIN_QUERY_KEYS_TO_CLEAR = {
+    backNavigationDetails: null,
+    backAction: null,
+    mode: null,
+    from: null,
+    campaignType: null,
+};
 
 function getQuickAddDomainPrimaryButtonState({
     isEditMode,
@@ -55,6 +67,11 @@ const QuickAddDomain = ({ mode, settingsId, domainStatus }) => {
     const [originalDomainName, setOriginalDomainName] = useState('');
     const [originalVolume, setOriginalVolume] = useState('');
     const dispatch = useDispatch();
+    const navigate = useNavigate();
+    const queryState = useQueryParams('/preferences/communication-settings');
+    const isNavigatingBackRef = useRef(false);
+    const isCreateCommDomainFlow =
+        queryState?.from === 'CreateCommunication' && queryState?.mode === 'add';
     const { clientId, userId, departmentId } = useSelector((state) => getSessionId(state));
     const { setActions } = useContext(ActionsType);
     const isEditMode = mode === 'edit' && settingsId;
@@ -207,16 +224,18 @@ const QuickAddDomain = ({ mode, settingsId, domainStatus }) => {
             const detail = event.detail || {};
             if (detail.success) {
                 sendDKIMMailDetails(detail.domain);
+            } else if (isCreateCommDomainFlow && !isEditMode) {
+                handleReturn();
             } else {
-                setActions({
-                    type: 'Domain Settings',
-                    state: {},
-                });
+                handleReturnToDomainSettings();
             }
         };
         window.addEventListener('onEntriClose', handleOnEntriClose, false);
         return () => {
             window.removeEventListener('onEntriClose', handleOnEntriClose);
+            if (isCreateCommDomainFlow && !isEditMode && !isNavigatingBackRef.current) {
+                updateQueryParams(CREATE_COMM_DOMAIN_QUERY_KEYS_TO_CLEAR);
+            }
         };
     }, []);
 
@@ -243,13 +262,30 @@ const QuickAddDomain = ({ mode, settingsId, domainStatus }) => {
     const sendDKIMMailDetails = async (domainName) => {
         const payload = { domainName, userId, clientId, departmentId };
         const { status } = await dispatch(sendDkimDetailsMail(payload));
+        if (isCreateCommDomainFlow && !isEditMode) {
+            handleReturn();
+            return;
+        }
         if (status) {
             setOpenAlertModal(true);
         }
+        handleReturnToDomainSettings();
+    };
+
+    const handleReturnToDomainSettings = () => {
         setActions({
             type: 'Domain Settings',
             state: {},
         });
+    };
+
+    const handleReturn = () => {
+        if (isCreateCommDomainFlow && !isEditMode) {
+            isNavigatingBackRef.current = true;
+            validateIsCustomNavigate(queryState, queryState, navigate, handleReturnToDomainSettings, { dispatch });
+            return;
+        }
+        handleReturnToDomainSettings();
     };
 
     const handleListNameValid = (isValid) => {
@@ -602,10 +638,7 @@ const QuickAddDomain = ({ mode, settingsId, domainStatus }) => {
                                     blockInteraction={isDomainSubmitting}
                             onClick={() => {
                                         if (isDomainSubmitting) return;
-                                setActions({
-                                    type: 'Domain Settings',
-                                    state: {},
-                                });
+                                handleReturn();
                             }}
                         >
                             {'Cancel'}
@@ -665,18 +698,20 @@ const QuickAddDomain = ({ mode, settingsId, domainStatus }) => {
                     primaryButtonText="Ok"
                     secondaryButton={false}
                     handleConfirm={() => {
-                        setDkimFailModal(null)
-                        setActions({
-                            type: 'Domain Settings',
-                            state: {},
-                        });
+                        setDkimFailModal(null);
+                        if (isCreateCommDomainFlow && !isEditMode) {
+                            handleReturn();
+                        } else {
+                            handleReturnToDomainSettings();
+                        }
                     }}
                     handleClose={() => {
-                        setDkimFailModal(null)
-                        setActions({
-                            type: 'Domain Settings',
-                            state: {},
-                        });
+                        setDkimFailModal(null);
+                        if (isCreateCommDomainFlow && !isEditMode) {
+                            handleReturn();
+                        } else {
+                            handleReturnToDomainSettings();
+                        }
                     }}
                     header="Domain setup"
                 />

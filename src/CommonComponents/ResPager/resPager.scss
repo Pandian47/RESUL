@@ -350,12 +350,12 @@
     &.showing-below {
         .k-popup,
         .k-popup.k-list-container {
-            margin-top: -2px;
-            margin-bottom: 0;
-            border-radius: 0 0 5px 5px;
+            margin-top: 5px;
+            margin-bottom: 5px;
+            border-radius: 5px;
 
             .k-list {
-                border-radius: 0 0 5px 5px;
+                border-radius: 5px;
             }
         }
     }
@@ -363,12 +363,12 @@
     &.showing-top {
         .k-popup,
         .k-popup.k-list-container {
-            margin-top: 0;
-            margin-bottom: -2px;
-            border-radius: 5px 5px 0 0;
+            margin-top: 5px;
+            margin-bottom: 5px;
+            border-radius: 5px;
 
             .k-list {
-                border-radius: 5px 5px 0 0;
+                border-radius: 5px;
             }
         }
     }
@@ -385,35 +385,38 @@
 
         .k-list {
             border: 0;
-            border-radius: 0 0 5px 5px;
+            border-radius: 5px;
             box-shadow: none;
 
-            .k-list-content .k-list-ul {
+            .k-list-content {
+                margin: 5px;
+                .k-list-ul {
 
-                .k-list-item,
-                >li {
-                    border: 0;
-                    border-bottom: 0;
-                    padding: 6px 8px;
-                    min-height: auto;
-                    line-height: 1.5;
-                    font-size: $font-xs;
-                    color: $primary-black;
-                    text-align: center;
-                    justify-content: center;
+                    .k-list-item,
+                    >li {
+                        border: 0;
+                        border-bottom: 0;
+                        padding: 6px 8px;
+                        min-height: auto;
+                        line-height: 1.5;
+                        font-size: $font-xs;
+                        color: $primary-black;
+                        text-align: center;
+                        justify-content: center;
 
-                    &:hover,
-                    &.k-hover,
-                    &.k-focus {
-                        background-color: $secondary-blue;
-                        color: $white;
-                        border-radius: 0;
-                    }
+                        &:hover,
+                        &.k-hover,
+                        &.k-focus {
+                            background-color: $secondary-blue;
+                            color: $white;
+                            // border-radius: 0;
+                        }
 
-                    // Hide the active page size from popup options (value stays in the picker input)
-                    &.k-selected,
-                    &[aria-selected='true'] {
-                        display: none !important;
+                        // Hide the active page size from popup options (value stays in the picker input)
+                        &.k-selected,
+                        &[aria-selected='true'] {
+                            display: none !important;
+                        }
                     }
                 }
             }

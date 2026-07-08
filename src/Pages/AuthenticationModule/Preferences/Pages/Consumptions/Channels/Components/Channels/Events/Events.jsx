@@ -1,13 +1,12 @@
 import { download_medium } from 'Constants/GlobalConstant/Glyphicons';
 import { encodeUrl } from 'Utils/modules/crypto';
 import { getUserCurrentFormat, getYYMMDD } from 'Utils/modules/dateTime';
-import { truncateTitle } from 'Utils/modules/displayCore';
 import { numberWithCommas } from 'Utils/modules/formatters';
 import { Fragment, useEffect, useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import KendoGrid from 'Components/RSKendoGrid';
 
-import RSTooltip from 'Components/RSTooltip';
+import TruncateCell from 'Components/RSKendoGrid/TruncateCell';
 
 import { map as _map } from 'Utils/modules/lodashReplacements';
 import { getSessionId } from 'Reducers/globalState/selector';
@@ -167,67 +166,49 @@ const ConsumptionEvents = () => {
                                     filter: 'text',
                                     cell: ({ dataItem, field }) => {
                                         return (
-                                            <td>
-                                                <div className="d-flex justify-content-between">
-                                                    <span
-                                                        className="cursor-pointer link-underline-hover color-primary-black"
-                                                        onClick={() => {
-                                                            dispatch(
-                                                                updateAnalyticsDetail({
-                                                                    channelName: consumptionChannel?.lable,
-                                                                    campaignId: dataItem?.campaignID,
-                                                                    from: 'analytics',
-                                                                    blastId: dataItem?.blastShortCode,
-                                                                    channelId: 39,
-                                                                    currIndex:
-                                                                        dataItem?.deliveryMethod === 'Multi dimension'
-                                                                            ? dataItem?.mdcLevel - 1
-                                                                            : 0,
-                                                                }),
-                                                            );
-                                                            const state = {
-                                                                channelName: consumptionChannel?.lable,
-                                                                campaignId: dataItem?.campaignID,
-                                                                from: dataItem?.campaignID,
-                                                                campaignName: dataItem?.campaignName,
-                                                                isGolden: dataItem?.isGoldCampaign,
-                                                                channelId: dataItem?.channelId,
-                                                                iswinnerSplit: dataItem?.iswinnerSplit,
-                                                                iswinnerSplitType: dataItem?.iswinnerSplitType,
-                                                                startDate: dataItem?.displayStartdate,
-                                                                endDate: dataItem?.displayEnddate,
-                                                                campaignTypeValue: dataItem?.campaignTypeValue,
-                                                                subSegmentFriendlyName: dataItem?.subSegmentLevelFriendlyName,
-                                                               subSegmentLevel: dataItem?.subSegmentLevel,
-                                                               isSplitAB: dataItem?.isSplitAB
-                                                            };
-                                                            const encryptState = encodeUrl(state);
-                                                            navigate(`/analytics/analytics-report?q=${encryptState}`, {
-                                                                state,
-                                                            });
-                                                            // navigate(`/analytics/detail-analytics`, {
-                                                            //     state: {
-                                                            //         channelName: consumptionChannel?.lable,
-                                                            //         campaignId: dataItem?.campaignID,
-                                                            //     },
-                                                            // });
-                                                        }}
-                                                    >
-                                                        {dataItem?.[field]?.length > 15 ? (
-                                                            <RSTooltip
-                                                                text={`${dataItem?.[field]}`}
-                                                                position="top"
-                                                                innerContent={false}
-                                                            >
-                                                                <span className="m0">
-                                                                    {truncateTitle(dataItem?.[field], 15)}
-                                                                </span>
-                                                            </RSTooltip>
-                                                        ) : (
-                                                            <span className="m0">{dataItem?.[field]}</span>
-                                                        )}
-                                                    </span>
-                                                </div>
+                                            <td
+                                                className="cursor-pointer link-underline-hover color-primary-black"
+                                                onClick={() => {
+                                                    dispatch(
+                                                        updateAnalyticsDetail({
+                                                            channelName: consumptionChannel?.lable,
+                                                            campaignId: dataItem?.campaignID,
+                                                            from: 'analytics',
+                                                            blastId: dataItem?.blastShortCode,
+                                                            channelId: 39,
+                                                            currIndex:
+                                                                dataItem?.deliveryMethod === 'Multi dimension'
+                                                                    ? dataItem?.mdcLevel - 1
+                                                                    : 0,
+                                                        }),
+                                                    );
+                                                    const state = {
+                                                        channelName: consumptionChannel?.lable,
+                                                        campaignId: dataItem?.campaignID,
+                                                        from: dataItem?.campaignID,
+                                                        campaignName: dataItem?.campaignName,
+                                                        isGolden: dataItem?.isGoldCampaign,
+                                                        channelId: dataItem?.channelId,
+                                                        iswinnerSplit: dataItem?.iswinnerSplit,
+                                                        iswinnerSplitType: dataItem?.iswinnerSplitType,
+                                                        startDate: dataItem?.displayStartdate,
+                                                        endDate: dataItem?.displayEnddate,
+                                                        campaignTypeValue: dataItem?.campaignTypeValue,
+                                                        subSegmentFriendlyName: dataItem?.subSegmentLevelFriendlyName,
+                                                        subSegmentLevel: dataItem?.subSegmentLevel,
+                                                        isSplitAB: dataItem?.isSplitAB,
+                                                    };
+                                                    const encryptState = encodeUrl(state);
+                                                    navigate(`/analytics/analytics-report?q=${encryptState}`, {
+                                                        state,
+                                                    });
+                                                }}
+                                            >
+                                                <TruncateCell
+                                                    value={dataItem?.[field] ?? ''}
+                                                    noTable={true}
+                                                    wrapperClassName="m0"
+                                                />
                                             </td>
                                         );
                                     },

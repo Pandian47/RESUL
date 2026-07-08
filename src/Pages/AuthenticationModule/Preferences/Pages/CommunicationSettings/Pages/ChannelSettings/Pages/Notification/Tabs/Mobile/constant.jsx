@@ -1,19 +1,33 @@
 import { lazy } from 'react';
-import { renderEmbeddedLazyInner } from '../../../../constant';
+import { MOBILE_INNER_TAB_CONFIG, renderEmbeddedLazyInner } from '../../../../constant';
+
+export { MOBILE_INNER_TAB_CONFIG };
 
 const AppsList = lazy(() => import('./Tabs/AppsList'));
 const Geofencing = lazy(() => import('./Tabs/Geofencing/Geofencing'));
+const Beacons = lazy(() => import('./Tabs/Beacons/Beacons'));
 const LifetimeCap = lazy(() => import('./Tabs/LifetimeCap'));
 const UserDeviceSetup = lazy(() => import('./Tabs/UserDeviceSetup'));
 
 export const MOBILE_FORM_ACTIONS_PORTAL_ID = 'pref-cs-mobile-form-actions';
 
-export const MOBILE_TABBER_CONFIG = [
-    { id: 1020, text: 'Apps list', disable: false, component: renderEmbeddedLazyInner(AppsList) },
-    { id: 1021, text: 'User device setup', disable: false, component: renderEmbeddedLazyInner(UserDeviceSetup) },
-    { id: 1023, text: 'Geofencing', disable: false, component: renderEmbeddedLazyInner(Geofencing) },
-    { id: 1024, text: 'Lifetime cap', disable: true, component: renderEmbeddedLazyInner(LifetimeCap) },
-];
+const MOBILE_TAB_COMPONENTS = {
+    appsList: renderEmbeddedLazyInner(AppsList),
+    userDeviceSetup: renderEmbeddedLazyInner(UserDeviceSetup),
+    geofencing: renderEmbeddedLazyInner(Geofencing),
+    beacons: renderEmbeddedLazyInner(Beacons),
+    lifetimeCap: renderEmbeddedLazyInner(LifetimeCap),
+};
+
+export const getMobileTabConfig = () =>
+    MOBILE_INNER_TAB_CONFIG.filter((tab) => tab.id !== 'quiet-hours-mobile').map((tab) => ({
+        id: tab.id,
+        text: tab.text,
+        disable: tab.disable ?? false,
+        component: MOBILE_TAB_COMPONENTS[tab.id],
+    }));
+
+export const MOBILE_TABBER_CONFIG = getMobileTabConfig();
 
 export const USERLIST = {
     data: [

@@ -2,7 +2,7 @@ import { useEffect, useMemo } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 
 import RSTabbar from 'Components/RSTabber';
-import { MESSAGING_TAB_CONFIG } from '../../constant';
+import { MESSAGING_TAB_CONFIG, shouldShowAuthoringTabChangeConfirmation } from '../../constant';
 import { updateTab } from 'Reducers/communication/createCommunication/Create/reducer';
 import useQueryParams from 'Hooks/useQueryParams';
 import { getChannelId } from 'Utils/modules/communicationChannels';
@@ -76,7 +76,7 @@ const MessagingTab = () => {
             activeClass={`active`}
             defaultTab={currentIndex}
             tabData={finalMessagingTabConfig}
-            isTabChangeConfirmation={isDirty}
+            isTabChangeConfirmation={shouldShowAuthoringTabChangeConfirmation(isDirty)}
             callBack={(tabs, index) => {
                 if (currentIndex !== index) {
                     dispatch(

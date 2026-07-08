@@ -36,6 +36,39 @@
             }
         }
     }
+@keyframes circlePop {
+    0% {
+        transform: scale(0);
+        opacity: 0;
+    }
+    100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+@keyframes descFadeInLeft {
+    0% {
+        opacity: 0;
+        transform: translateX(-15px);
+    }
+    100% {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+@keyframes descFadeInRight {
+    0% {
+        opacity: 0;
+        transform: translateX(15px);
+    }
+    100% {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
     .activityLevelBlock {
         position: relative;
         display: flex;
@@ -46,6 +79,7 @@
             border-radius: 50%;
             position: absolute;
             text-align: center;
+            animation: circlePop 0.65s cubic-bezier(0.34, 1.56, 0.64, 1) both;
             h1 {
                 color: $white;
                 padding-top: 24px;
@@ -60,6 +94,7 @@
                 font-size: 15px;
                 padding-left: 20px;
                 line-height: 18px;
+                opacity: 0;
                 &.right {
                     left: inherit;
                     right: 0;
@@ -85,10 +120,12 @@
                 background-color: #043adb;
                 width: 400px;
                 height: 400px;
+                animation-delay: 0.1s;
                 & .desc {
                     left: -300px;
                     top: 100px;
                     width: 275px;
+                    animation: descFadeInLeft 0.5s ease-out 0.6s both;
                     &:before {
                         background-color: #043adb;
                     }
@@ -98,10 +135,12 @@
                 background-color: #ff5c01;
                 width: 325px;
                 height: 325px;
+                animation-delay: 0.25s;
                 & .desc {
                     left: -340px;
                     top: 140px;
                     width: 275px;
+                    animation: descFadeInLeft 0.5s ease-out 0.75s both;
                     &:before {
                         background-color: #ff5c01;
                     }
@@ -111,8 +150,10 @@
                 background-color: #8ad000;
                 width: 250px;
                 height: 250px;
+                animation-delay: 0.4s;
                 & .desc {
                     width: 325px;
+                    animation: descFadeInRight 0.5s ease-out 0.9s both;
                     &.right {
                         left: 375px;
                         top: -50px;
@@ -126,8 +167,10 @@
                 width: 175px;
                 height: 175px;
                 background: url(#{$image}/audienceAnalytics360/user-aa360-activity.svg) #ff4351 no-repeat center 75px;
+                animation-delay: 0.55s;
                 & .desc {
                     width: 325px;
+                    animation: descFadeInRight 0.5s ease-out 1.05s both;
                     &.right {
                         left: 340px;
                         top: -10px;

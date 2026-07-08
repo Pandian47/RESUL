@@ -11,7 +11,8 @@ import { BRAND_ATTRIBUTE_NOT_SELECTED, CONFIRM_OPT_IN } from 'Constants/GlobalCo
 import { ARE_YOU_SURE_DELETE, BRAND_ID_NOT_EXISTS, CANCEL, CONFIRM, DELETE_USER_ROLE, DOUBLE_OPT_IN, LIST_ANALYSIS, MAP_DATA_ATTRIBUTES, NEW_AUDIENCE_LIST, OK, POTENTIAL_AUDIENCE, RESTART, REVIEW_COLUMN_MAPPING_BEFORE_CONFIRM, SAVE, TO_MAP_THE_DATA, WARNING } from 'Constants/GlobalConstant/Placeholders';
 import { alert_medium, alert_xlarge } from 'Constants/GlobalConstant/Glyphicons';
 import { useEffect, useMemo, useReducer, useRef, useState } from 'react';
-import { get as _get,last as _last,find as _find,first as _first,cloneDeep as _cloneDeep,unionBy as _uniqBy } from 'Utils/modules/lodashReplacements';
+import { useForm } from 'react-hook-form';
+import { get as _get,last as _last,find as _find,first as _first,cloneDeep as _cloneDeep,unionBy as _uniqBy, compact as _compact } from 'Utils/modules/lodashReplacements';
 import { Row, Col, Container } from 'react-bootstrap';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
@@ -23,8 +24,7 @@ import CustomHeaderColumn from './Components/CustomHeaderColumn/CustomHeaderColu
 import NewAttributeModal from 'Pages/AuthenticationModule/Components/NewAttributeModal';
 import AudienceImportModal from './Components/AudienceImportModal/AudienceImportModal';
 import AddImportAudienceSkeleton from './Components/AddImportAudienceSkeleton';
-
-import { RSCheckbox } from 'Components/RSInput';
+import RSCheckbox from 'Components/FormFields/RSCheckbox';
 import { RSPrimaryButton, RSSecondaryButton } from 'Components/Buttons';
 import {
     attributeMapping,
@@ -42,7 +42,7 @@ import {
     saveDataAttribute,
 } from 'Reducers/preferences/datacatalogue/request';
 import { getSessionId } from 'Reducers/globalState/selector';
-
+import MappingPreviewGrid from './Components/MappingPreviewGrid';
 import CacheManager from 'Utils/cacheManager';
 import useQueryParams from 'Hooks/useQueryParams';
 import RSModal from 'Components/RSModal';
@@ -50,6 +50,8 @@ import { updateImportAudience } from 'Reducers/audience/addAudience/reducer';
 import useApiLoader from 'Hooks/useApiLoader';
 
 import { FIELD_LOADER_CONFIG } from 'Hooks/loaderTypes';
+
+const DOUBLE_OPT_IN_FIELD = 'isDoubleOptIn';
 
 const AddImportAudience = () => {
     const navigate = useNavigate();
@@ -78,10 +80,13 @@ const AddImportAudience = () => {
     const userDetails = getUserDetails();
     const [isBrandIDModal, setIsBrandIDModal] = useState(false);
     const [showSavePreviewModal,setShowSavePreviewModal] = useState(false)
+    const [savePreviewRows, setSavePreviewRows] = useState([]);
+
     const fromMySql = pageFrom === 'manual entry';
 
-    const remoteSettingId = audienceData?.remoteSettingId || audienceData?.remoteSettingID || 0;
+    const remoteSettingId = audienceData?.remoteSettingId || 0;
     const importHistoryId = audienceData?.importHistoryId || audienceData?.importhistoryId || 0;
+    const editHistoryId = audienceData?.editHistoryId || 0;
     const jobId = pageFrom === 'csv' ? _get(state, 'data.audienceData.jobId', 0) : Number(remoteSettingId) || 0;
     //jobId = fromCSV ? _get(state, 'data.audienceData.jobId', 0) : +_get(state, 'data.audienceData.data', 0);
     const listType = _get(state, 'data.listType', 'Target list');
@@ -89,6 +94,7 @@ const AddImportAudience = () => {
 
     const catType = _get(state, 'data.catType', '');
     const catTypeName = _get(state, 'data.catTypeName', '');
+    const isEditFlow = state?.mode === 'edit' || state?.isEdit === true;
     // console.log('catTypeName: ', catTypeName);
 
     const { attributeMappingData, audienceCount, mappingDataLoading } = useSelector(
@@ -101,6 +107,22 @@ const AddImportAudience = () => {
     const { departmentId, clientId, userId } = useSelector((state) => getSessionId(state));
 
     const [audienceState, dispatchState] = useReducer(stateReducer, INITIAL_STATE);
+    const { control, setValue, setError, clearErrors } = useForm({
+        defaultValues: { [DOUBLE_OPT_IN_FIELD]: false },
+    });
+
+    useEffect(() => {
+        setValue(DOUBLE_OPT_IN_FIELD, audienceState.isDoubleOptIn);
+    }, [audienceState.isDoubleOptIn, setValue]);
+
+    useEffect(() => {
+        if (audienceState?.errDoubleOptIn) {
+            setError(DOUBLE_OPT_IN_FIELD, { message: audienceState.errDoubleOptIn });
+            return;
+        }
+        clearErrors(DOUBLE_OPT_IN_FIELD);
+    }, [audienceState?.errDoubleOptIn, setError, clearErrors]);
+
     const {
         selectedAttribute,
         uniqueKeyIndex,
@@ -127,11 +149,16 @@ const AddImportAudience = () => {
             userId,
             departmentId,
         };
+        if (isEditFlow) {
+            payload.isEdit = true;
+        }
         if (listType === 'Seed list' && !!jobId) {
             dispatch(getSeedDataAttributes(payload, true, getCsvListType(listType)));
         } else if (state?.isBiDirectionEnabled && audienceData?.connectionMode?.typeId === 2) {
-            let payloadsCustom = {...audienceData?.connectorPayload}
-
+            let payloadsCustom = {...audienceData?.connectorPayload};
+            if (isEditFlow) {
+                payloadsCustom.isEdit = true;
+            }
             dispatch(get_CRM_Table_Columns({ payloadsCustom, dispatchState }));
             dispatchState({
                 type: 'UPDATE',
@@ -150,6 +177,9 @@ const AddImportAudience = () => {
                 userId,
                 departmentId,
             };
+            if (isEditFlow) {
+                payloadsCustom.isEdit = true;
+            }
             dispatch(attributeMappingSFTP({ payloadsCustom }));
         }
         const remotesettingIdData = remoteSettingId;
@@ -160,6 +190,9 @@ const AddImportAudience = () => {
                 userId,
                 departmentId,
             };
+            if (isEditFlow) {
+                payloadsCustom.isEdit = true;
+            }
             dispatch(attributeMappingSFTP({ payloadsCustom }));
 
             // const data = _get(state, 'data.audienceData.arr', '').split(','); //'adhoclist.EmailID, SOLRAttributeValues.DepartmentID'.split(',')
@@ -409,8 +442,7 @@ const AddImportAudience = () => {
             mode: 'create',
             loaderConfig: FIELD_LOADER_CONFIG,
         });
-
-    const handleFormSubmit = async () => {
+    const validateBeforeSave = () => {
         // console.log('Data catalog attr :::::::::: ', dataCatalogueAttrs, attributeMappingData, audienceState);
         if (!audienceState.isDoubleOptIn && !fromTLSLML) {
             dispatchState({
@@ -418,15 +450,41 @@ const AddImportAudience = () => {
                 payload: CONFIRM_OPT_IN,
                 field: 'errDoubleOptIn',
             });
-            return;
+            return false;
         } else if (
             BRAND_ID_CHECK.includes(listType) &&
             !_find(primarykey, ['selectedIcon.name', 'user']) &&
             !ResulToCRM
         ) {
-            setAttrError(audienceState, dispatchState, BRAND_ATTRIBUTE_NOT_SELECTED);
-        } else {
-            if (pageFrom === 'csv') {
+            setAttrError(audienceState, dispatchState, error.BRAND_ATTRIBUTE_NOT_SELECTED);
+            return false;
+        }
+        return true;
+    };
+    const getSavePreviewRows = () => {
+        const headerRow = _first(attributeMappingData) || [];
+        const mappedRows = _compact(
+            selectedAttribute.map((attr, index) => {
+                if (!attr || !headerRow[index]) return null;
+                const mappedAttribute = attr.attributeName === '<< Ignore >>' ? 'Ignore' : attr.attributeName;
+                return {
+                    sourceColumnName: headerRow[index],
+                    destinationColumnName: mappedAttribute,
+                };
+            }),
+        );
+        return mappedRows;
+    };
+
+    const handleOpenSavePreview = () => {
+        if (!validateBeforeSave()) return;
+        setSavePreviewRows(getSavePreviewRows());
+        setShowSavePreviewModal(true);
+    };
+    const handleFormSubmit = async () => {
+        if (!validateBeforeSave()) return;
+        setShowSavePreviewModal(false);
+        if (pageFrom === 'csv') {
                 const payload = {
                     ...csvPayload(
                         attributeMappingData,
@@ -445,6 +503,7 @@ const AddImportAudience = () => {
                     connectorId: state?.data?.type?.data?.remoteDataSourceID || 0,
                     connectorName: state?.data?.type?.data?.sourceName || '',
                     importhistoryId: importHistoryId || 0,
+                    editHistoryId: editHistoryId || 0,
                 };
                 const response = await runAudienceSave(() =>
                     dispatch(
@@ -474,7 +533,11 @@ const AddImportAudience = () => {
                     userId,
                     connectorId: 8 || 0,
                     importHistoryId: importHistoryId || 0,
+                    editHistoryId: editHistoryId || 0,
                 };
+                if (isEditFlow) {
+                    payload.isEdit = true;
+                }
 
                 const { status } = await runAudienceSave(() =>
                     dispatch(saveSFTPColumnMapping({ payload, dispatchState, navigate, loading: false })),
@@ -488,7 +551,7 @@ const AddImportAudience = () => {
                 }
             } else if (fromMySql && !ResulToCRM) {
                 const payload = {
-                    remoteSettingId: state?.data?.audienceData?.data?.remoteSettingId || 0,
+                    remoteSettingId: remoteSettingId || state?.data?.audienceData?.data?.remoteSettingId || 0,
                     catType,
                     catTypeName,
                     ...csvPayload(attributeMappingData, selectedAttribute, uniqueKeyIndex, dataCatalogueAttrs),
@@ -499,7 +562,11 @@ const AddImportAudience = () => {
                     connectorId: state?.data?.type?.data?.remoteDataSourceID || 0,
                     connectorName: state?.data?.type?.data?.sourceName || '',
                     importHistoryId: importHistoryId || 0,
+                    editHistoryId: editHistoryId || 0,
                 };
+                if (isEditFlow) {
+                    payload.isEdit = true;
+                }
                 if (
                     state?.data?.type.data?.remoteDataSourceID === 1 ||
                     state?.data?.type.data?.remoteDataSourceID === 2
@@ -551,6 +618,7 @@ const AddImportAudience = () => {
                         attributeMappingData,
                         selectedAttribute,
                     ),
+                    editHistoryId: editHistoryId || 0,
                 };
                 const { status } = await runAudienceSave(() =>
                     dispatch(SyncCRM_ExistingColumns({ payload, dispatchState, navigate, loading: false })),
@@ -563,7 +631,7 @@ const AddImportAudience = () => {
                     });
                 }
             }
-        }
+      
     };
 
     const isSaveLoading = audienceSaveAPI.isLoading;
@@ -708,11 +776,13 @@ const AddImportAudience = () => {
                             {!fromTLSLML && 
                                 <div className="float-start">
                                     <RSCheckbox
-                                        type="checkbox"
+                                        control={control}
+                                        name={DOUBLE_OPT_IN_FIELD}
                                         labelName={DOUBLE_OPT_IN}
-                                        name={DOUBLE_OPT_IN}
-                                        checked={audienceState.isDoubleOptIn}
-                                        onChange={(status) => {
+                                        key={audienceState.isDoubleOptIn}
+                                        defaultValue={audienceState.isDoubleOptIn}
+                                        handleChange={(event) => {
+                                            const status = event.target.checked;
                                             const errorMessage = !status ? CONFIRM_OPT_IN : null;
                                             dispatchState({
                                                 type: 'UPDATE_DOUBLE_OPTIN',
@@ -722,7 +792,6 @@ const AddImportAudience = () => {
                                                 },
                                             });
                                         }}
-                                        errorMessage={audienceState?.errDoubleOptIn || ''}
                                     />
                                 </div>
                             }
@@ -780,7 +849,7 @@ const AddImportAudience = () => {
                         </RSPrimaryButton> */}
                                 <RSPrimaryButton
                                     className={getEnableStatus(audienceState, ResulToCRM) ? '' : 'click-off'}
-                                    onClick={handleFormSubmit}
+                                    onClick={handleOpenSavePreview}
                                     isLoading={isSaveLoading}
                                     blockBodyPointerEvents={isSaveLoading}
                                 >
@@ -795,7 +864,7 @@ const AddImportAudience = () => {
             {/* Modals */}
             {/* <SaveModal saveModal={saveModal} dispatchState={dispatchState} /> */}
             {/* <ListAnalysis listAnalysis={listAnalysis} dispatchState={dispatchState} /> */}
-            <RSConfirmationModal
+            {audienceState.isDeleteColumn && <RSConfirmationModal
                 show={audienceState.isDeleteColumn}
                 text={ARE_YOU_SURE_DELETE}
                 primaryButtonText={OK}
@@ -813,7 +882,7 @@ const AddImportAudience = () => {
                         deleteHeaderColumn(audienceState, dispatchState, navigate);
                     }
                 }}
-            />
+            />}
             {audienceState.isNewAttributeModal && (
                 <NewAttributeModal
                     show={audienceState.isNewAttributeModal}
@@ -829,7 +898,7 @@ const AddImportAudience = () => {
                     catType={catTypeName}
                 />
             )}
-            <AudienceImportModal
+            {audienceState.isAudienceImport && <AudienceImportModal
                 show={audienceState.isAudienceImport}
                 handleClose={() => {
                     dispatchState({
@@ -839,8 +908,8 @@ const AddImportAudience = () => {
                     });
                 }}
                 audienceMode={state?.from}
-            />
-            <RSModal
+            />}
+            {showSavePreviewModal && <RSModal
                 show={showSavePreviewModal}
                 size={'lg'}
                 header={'Confirm attribute mapping'}
@@ -873,8 +942,8 @@ const AddImportAudience = () => {
                         </RSPrimaryButton>
                     </>
                 }
-            />
-            <RSModal
+            />}
+            {isBrandIDModal && <RSModal
                 show={isBrandIDModal}
                 size={'md'}
                 noBottomBorder
@@ -896,7 +965,7 @@ const AddImportAudience = () => {
                         <div className="mt10">{BRAND_ID_NOT_EXISTS} </div>
                     </div>
                 }
-            />
+            />}
             {getWarningPopupMessage(failureApiErrors, dispatch)}
         </div>
     );

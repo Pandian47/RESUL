@@ -1,17 +1,108 @@
 import { getUserCurrentFormat } from 'Utils/modules/dateTime';
-import { truncateTitle } from 'Utils/modules/displayCore';
-import { NEW_COMMUNICATION_S, ONGOING_COMMUNICATION_S } from 'Constants/GlobalConstant/Placeholders';
+import {
+    NEW_COMMUNICATION_S,
+    NO_EVENTS_FOUND,
+    ONGOING_COMMUNICATION_S,
+} from 'Constants/GlobalConstant/Placeholders';
 import { square_minus_fill_mini, square_plus_fill_mini } from 'Constants/GlobalConstant/Glyphicons';
-import { Fragment, useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import RSModal from 'Components/RSModal';
 import NoDataAvailableRender from 'Components/FormFields/Component/NoDataAvailableRender';
 import PlannerModalSkeleton from 'Components/Skeleton/Components/PlannerModalSkeleton';
-
-import RSTooltip from 'Components/RSTooltip';
-import {
+import TruncatedCell from 'Components/RSKendoGrid/TruncateCell';import {
     normalizePlannerDayModalEvents,
     shouldShowPlannerModalEmpty,
 } from 'Reducers/communication/planner/plannerModalUtils';
+
+const PlannerSectionHeader = ({ isExpanded, title, count, onIconClick }) => (
+    <div className="rspem-section-header d-flex align-items-center gap-2">
+        <i
+            className={`${
+                isExpanded ? square_minus_fill_mini : square_plus_fill_mini
+            } ${isExpanded ? 'color-primary-blue' : 'color-secondary-grey'} icon-md flex-shrink-0`}
+            onClick={onIconClick}
+            role="button"
+            tabIndex={0}
+            aria-expanded={isExpanded}
+            onKeyDown={(event) => {
+                if (event.key === 'Enter' || event.key === ' ') {
+                    event.preventDefault();
+                    onIconClick(event);
+                }
+            }}
+        />
+        <span className="rspem-section-title flex-grow-1">{title}</span>
+        <span
+            className={`rspem-section-count badge badge-pill flex-shrink-0 bg-${
+                isExpanded ? 'primary-blue' : 'secondary-grey'
+            }`}
+        >
+            {count ?? 0}
+        </span>
+    </div>
+);
+
+const PlannerEventSection = ({
+    isExpanded,
+    onToggle,
+    title,
+    count,
+    events,
+    onSelectEvent,
+    truncateNames = false,
+}) => (
+    <div className="card rspem-section-card mb0" onClick={onToggle}>
+        <div className="rspem-section">
+            <PlannerSectionHeader
+                isExpanded={isExpanded}
+                title={title}
+                count={count}
+                onIconClick={(event) => {
+                    event.stopPropagation();
+                    onToggle();
+                }}
+            />
+            {isExpanded ? (
+                <div
+                    className="rspem-section-panel"
+                    onClick={(event) => event.stopPropagation()}
+                    onKeyDown={(event) => event.stopPropagation()}
+                    role="presentation"
+                >
+                    {events?.length ? (
+                        <div className="rspem-section-body accordion-collapse css-scrollbar">
+                            {events.map((item, index) => (
+                                <div
+                                    key={item?.campaignId ?? item?.blastScheduleGuid ?? index}
+                                    className="planner-body-card py7 px5"
+                                    onClick={(event) => {
+                                        event.stopPropagation();
+                                        onSelectEvent(item);
+                                    }}
+                                >
+                                    {truncateNames ? (
+                                        <TruncatedCell
+                                            value={item?.campaignName}
+                                            noTable
+                                            wrapperClassName="d-block"
+                                        />
+                                    ) : (
+                                        <span>{item?.campaignName}</span>
+                                    )}
+                                </div>
+                            ))}
+                        </div>
+                    ) : (
+                        <NoDataAvailableRender
+                            className="rspem-section-no-data"
+                            message={NO_EVENTS_FOUND}
+                        />
+                    )}
+                </div>
+            ) : null}
+        </div>
+    </div>
+);
 
 const PlannerModal = ({
     show,
@@ -33,8 +124,8 @@ const PlannerModal = ({
 
     useEffect(() => {
         if (!show) return;
-        setShowEvent({ eventData: false, onGoingCom: false });
-    }, [show, headingDate]);
+        setShowEvent({ eventData: false, onGoingCom: Boolean(showMore) });
+    }, [show, headingDate, showMore]);
 
     const showContentSkeleton = isLoading || (!showMore && !isFailure && events == null);
     const showEmpty = shouldShowPlannerModalEmpty({
@@ -56,128 +147,33 @@ const PlannerModal = ({
                     {showContentSkeleton ? (
                         <PlannerModalSkeleton />
                     ) : showEmpty ? (
-                        <NoDataAvailableRender className="rspem-no-data" />
+                        <NoDataAvailableRender className="rspem-no-data" message={NO_EVENTS_FOUND} />
                     ) : (
-                        <div>
-                            {!showMore && (
-                                <div
-                                    className="card mb10 m0 pb0"
-                                    onClick={() => setShowEvent((pre) => ({ ...pre, eventData: !pre.eventData }))}
-                                >
-                                    <div className="">
-                                        <div className="d-flex">
-                                            <i
-                                                className={`${
-                                                    !showEvent.eventData
-                                                        ? square_plus_fill_mini
-                                                        : square_minus_fill_mini
-                                                }  ${
-                                                    !showEvent.eventData ? 'color-secondary-grey' : 'color-primary-blue'
-                                                }  mt2 mr5 icon-md`}
-                                                onClick={(e) => {
-                                                    e.stopPropagation();
-                                                    setShowEvent((pre) => ({ ...pre, eventData: !pre.eventData }));
-                                                }}
-                                            ></i>
-                                            {NEW_COMMUNICATION_S}
-                                            <span
-                                                className={`badge badge-pill ml10 bg-${
-                                                    !showEvent.eventData ? 'secondary-grey' : 'primary-blue'
-                                                }  m-auto`}
-                                            >
-                                                {upComingEvents?.length ?? 0}
-                                            </span>
-                                        </div>
-                                        <div
-                                            className="accordion-collapse css-scrollbar mb10 "
-                                            style={{ maxHeight: '240px' }}
-                                        >
-                                            {showEvent.eventData &&
-                                                upComingEvents?.map((item, index) => {
-                                                    return (
-                                                        <Fragment key={index}>
-                                                            <div
-                                                                className="planner-body-card py7  px5"
-                                                                onClick={() => handleSelectEvent(item)}
-                                                            >
-                                                                <span>{item.campaignName}</span>
-                                                            </div>
-                                                        </Fragment>
-                                                    );
-                                                })}
-                                        </div>
-                                        {!upComingEvents?.length && showEvent.eventData && (
-                                            <div className="py50 text-center">
-                                                <span>No events found</span>
-                                            </div>
-                                        )}
-                                    </div>
-                                </div>
-                            )}
+                        <div className="rspem-sections">
+                            {!showMore ? (
+                                <PlannerEventSection
+                                    isExpanded={showEvent.eventData}
+                                    onToggle={() =>
+                                        setShowEvent((pre) => ({ ...pre, eventData: !pre.eventData }))
+                                    }
+                                    title={NEW_COMMUNICATION_S}
+                                    count={upComingEvents?.length}
+                                    events={upComingEvents}
+                                    onSelectEvent={handleSelectEvent}
+                                />
+                            ) : null}
 
-                            <div
-                                className="card mb10 m0 pb0"
-                                onClick={() => setShowEvent((pre) => ({ ...pre, onGoingCom: !pre.onGoingCom }))}
-                            >
-                                <div className="">
-                                    <div className="d-flex ">
-                                        <i
-                                            className={`${
-                                                !showEvent.onGoingCom
-                                                    ? square_plus_fill_mini
-                                                    : square_minus_fill_mini
-                                            } ${
-                                                !showEvent.onGoingCom ? 'color-secondary-grey' : 'color-primary-blue'
-                                            }   mr5 icon-md`}
-                                            onClick={(e) => {
-                                                e.stopPropagation();
-                                                setShowEvent((pre) => ({ ...pre, onGoingCom: !pre.onGoingCom }));
-                                            }}
-                                        ></i>
-                                        {!showMore
-                                            ? ONGOING_COMMUNICATION_S
-                                            : NEW_COMMUNICATION_S}
-                                        <span
-                                            className={`px10 color-whites ml10  bg-${
-                                                !showEvent.onGoingCom ? 'secondary-grey' : 'primary-blue'
-                                            } m-auto`}
-                                            style={{ borderRadius: '5px' }}
-                                        >
-                                            {onGointEvents?.length ?? 0}
-                                        </span>
-                                    </div>
-                                    <div className="accordion-collapse css-scrollbar mb10" style={{ maxHeight: '240px' }}>
-                                        {showEvent.onGoingCom &&
-                                            onGointEvents?.map((item, index) => {
-                                                return (
-                                                    <Fragment key={index}>
-                                                        <div
-                                                            className="planner-body-card py7 px5"
-                                                            onClick={() => handleSelectEvent(item)}
-                                                        >
-                                                            {item?.campaignName?.length > 30 ? (
-                                                                <RSTooltip
-                                                                    position="top"
-                                                                    text={item?.campaignName}
-                                                                    className="d-inline-block"
-                                                                >
-                                                                    <span>{truncateTitle(item?.campaignName, 30)}</span>
-                                                                </RSTooltip>
-                                                            ) : (
-                                                                item?.campaignName
-                                                            )}
-                                                        </div>
-                                                    </Fragment>
-                                                );
-                                            })}
-                                    </div>
-                                    {!onGointEvents?.length && showEvent.onGoingCom && (
-                                        <div className="mt30  border-bottom text-center">
-                                            <span>No events found</span>
-                                        </div>
-                                    )}
-                                </div>
-                            </div>
+                            <PlannerEventSection
+                                isExpanded={showEvent.onGoingCom}
+                                onToggle={() =>
+                                    setShowEvent((pre) => ({ ...pre, onGoingCom: !pre.onGoingCom }))
+                                }
+                                title={showMore ? NEW_COMMUNICATION_S : ONGOING_COMMUNICATION_S}
+                                count={onGointEvents?.length}
+                                events={onGointEvents}
+                                onSelectEvent={handleSelectEvent}
+                                truncateNames
+                            />
                         </div>
                     )}
                 </div>

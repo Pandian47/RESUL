@@ -10,7 +10,7 @@ import { FormProvider, useForm, useFormContext } from 'react-hook-form';
 import { useSelector } from 'react-redux';
 import { getSummaryList } from 'Reducers/analytics/analyticsSummary/selector';
 
-import { getUrlFormat } from './utils';
+import { getUrlFormat, getUrlFormatForMedia } from './utils';
 import { CHANNELS, normalizeProps, PREVIEW_SOURCE } from './utils';
 import {
     handlePreviewSms,
@@ -56,7 +56,11 @@ const RSMobilePreviewInner = (props) => {
     const displayName = clientId?.clientName || firstName || '';
     const previewImageError = !!formErrors?.previewImage;
 
-    useEffect(() => setUrlFormat(getUrlFormat(previewImage || imagePath)), [previewImage, imagePath]);
+    useEffect(() => {
+        const src = previewImage || imagePath || header;
+        setUrlFormat(getUrlFormatForMedia(src, mediaType));
+        setImageError(false);
+    }, [previewImage, imagePath, header, mediaType]);
 
     const timestampLabel = getfullFormat(schedule || date || new Date());
     const isListing = !!(carouselJSON || contentJson || mdcType || fromGallery || sourceConfig?.isListing);
@@ -68,8 +72,8 @@ const RSMobilePreviewInner = (props) => {
                 return Array.isArray(parsed) ? parsed : [parsed];
             } catch { return []; }
         }
-        return { bannerValue: previewImage || imagePath || '', cardDesctiption: content || smsContent, actions: [] };
-    }, [isCarousel, carouselJSON, content, smsContent, imagePath, previewImage]);
+        return { bannerValue: previewImage || imagePath || header || '', cardDesctiption: content || smsContent, actions: [] };
+    }, [isCarousel, carouselJSON, content, smsContent, imagePath, previewImage, header]);
 
     const parsedData = useMemo(() => {
         try {

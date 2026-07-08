@@ -1,10 +1,11 @@
 import { createResulGenieHostRedux } from 'resul-genie-ui';
 
 import { baseURL } from 'Constants/EndPoints';
+import request from 'Utils/Http';
 import userImg from 'Assets/Images/user.svg';
 
 const host = createResulGenieHostRedux({
-    post: (cfg) => post(cfg),
+    post: (cfg) => request.post(cfg),
     baseURL,
     initialStateOptions: { defaultUserImg: userImg },
 });
